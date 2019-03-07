@@ -188,7 +188,7 @@ Makeituser.updatePaymentById = function(id, user, result){
                     statusHttp: statusHttp,
                     statusBool: statusBool,
                     message: message,
-                    data: data
+                    result: data
                 });
             }
 };
@@ -204,17 +204,18 @@ Makeituser.createAppointment = function createAppointment(req, result) {
                 else{
                     console.log(res.insertId);
                    
-                   returnResponse(200, true, "Appointment Created Sucessfully", res);
+                   returnResponse(200, true, "Appointment Created Sucessfully", res.insertId);
                 }
             });   
             
             
-            function returnResponse(statusHttp, statusBool, message, data) {
+            function returnResponse(statusHttp, statusBool, message,data ) {
                 result({
                     statusHttp: statusHttp,
                     statusBool: statusBool,
                     message: message,
-                    data: data,
+                    result: data
+                
                 });
             }
 };
@@ -237,7 +238,9 @@ console.log(id.orderid);
             result(null, err);
         }
         else{
-            sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
+           // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
+             sql.query("select * from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
+         
                 if(err) {
                     console.log("error: ", err);
                     result(null, err);
@@ -266,6 +269,55 @@ console.log(id.orderid);
 Makeituser.orderlistbyuserid = function(id, result){
     
     sql.query("select * from Orders WHERE makeit_user_id  = '"+id+"' order by orderid desc", function (err, res) {
+
+        
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          console.log('User : ', res);  
+
+         let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result: res
+            }; 
+
+         result(null, resobj);
+        }
+    });  
+};
+
+
+Makeituser.all_order_list = function(result){
+    
+    sql.query("select * from Orders order by orderid desc", function (err, res) {
+
+        
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          console.log('User : ', res);  
+
+         let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result: res
+            }; 
+
+         result(null, resobj);
+        }
+    });  
+};
+
+
+Makeituser.all_order_list_bydate = function(req,result){
+    
+        console.log(req.body);
+    sql.query("select * from Orders WHERE ordertime BETWEEN '"+req.startdate+"' AND '"+req.enddate+"' order by orderid desc", function (err, res) {
 
         
         if(err) {

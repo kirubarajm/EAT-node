@@ -27,8 +27,6 @@ exports.create_a_user = function(req, res) {
     res.json(user);
   });
   }
-  
-
 };
 
 exports.creat_a_appointment = function(req, res) {
@@ -126,6 +124,25 @@ exports.orderview = function(req, res) {
   });
  };
 
+
+ exports.all_order_list = function(req, res) {
+  Makeituser.all_order_list(function(err, result){
+    if (err)
+    res.send(err);
+    res.json(result); 
+  });
+ };
+
+ exports.all_order_list_bydate = function(req, res) {
+  // console.log(req.body);
+  Makeituser.all_order_list_bydate(req.body,function(err, result){
+    if (err)
+    res.send(err);
+    res.json(result); 
+  });
+ };
+
+
  exports.orderstatus = function(req, res) {
   
   Makeituser.orderstatusbyorderid( req.body,function(err, result){
@@ -136,11 +153,3 @@ exports.orderview = function(req, res) {
  };
 
 
-//  exports.orderlist = function(req, res) {
-//   console.log(req.params);
-//   Makeituser.orderlistbyuserid( req.params.id,function(err, result){
-//     if (err)
-//     res.send(err);
-//     res.json(result); 
-//   });
-//  };

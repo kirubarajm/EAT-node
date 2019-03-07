@@ -252,8 +252,6 @@ app.route('/faq/:id')
       .get(eatuser.virtual_eatusersearch)
 
 
-
-
       /*Admin Api*/
       app.route('/admin/eatusers/add')
       .post(eatuser.create_a_eatuser);
@@ -261,6 +259,5 @@ app.route('/faq/:id')
       app.route('/admin/eatusers/')
       .post(eatuser.list_all_virtual_eatuser);
 
-   
  
     };

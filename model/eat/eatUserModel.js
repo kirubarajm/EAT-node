@@ -13,7 +13,7 @@ var Eatuser = function(eatuser){
     this.virutal= eatuser.virutal;
 };
 
-Eatuser.createUser = function createUser(newUser, result) { 
+Eatuser.createUser = function createUser(newUser, result) {   
     
     if(newUser.virutal==null)
     newUser.virutal=0;
@@ -29,7 +29,7 @@ Eatuser.createUser = function createUser(newUser, result) {
               let resobj = {  
                 success: sucobj,
                 message:mesobj,
-                res: res.insertId 
+                userid: res.insertId 
                 }; 
           
              result(null, resobj);
@@ -89,6 +89,66 @@ Eatuser.remove = function(id, result){
                  result(null, res);
                 }
             }); 
+};
+
+
+
+Eatuser.getAllVirtualUser = function getAllVirtualUser(req,result) {
+    //console.log(req);
+    var query = "select * from User";
+    if(req.id !== 'all'){
+        query = "select * from User where virutal = "+req.id+" "
+    }
+    //var search= req.search
+    if(req.id !== 'all' && req.search){
+        query = query+" and (phoneno LIKE  '%"+req.search+"%' OR email LIKE  '%"+req.search+"%' or name LIKE  '%"+req.search+"% ') "
+    }else if(req.search){
+        query = query+" where phoneno LIKE  '%"+req.search+"%' OR email LIKE  '%"+req.search+"%' or name LIKE  '%"+req.search+"% ' "
+    }
+    
+
+    sql.query(query, function (err, res) {
+
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          console.log('User : ', res);  
+
+         result(null, res);
+        }
+    }); 
+    // sql.query("Select * from User where virutal = '"+req+"'", function (err, res) {
+
+    //         if(err) {
+    //             console.log("error: ", err);
+    //             result(null, err);
+    //         }
+    //         else{
+    //           console.log('User : ', res);  
+
+    //          result(null, res);
+    //         }
+    //     });   
+};
+
+
+Eatuser.virtual_eatusersearch = function virtual_eatusersearch(req,result) {
+   
+ console.log(req);
+    sql.query("select * from User where phoneno LIKE  '%"+req.search+"%' OR email LIKE  '%"+req.search+"%' or name LIKE  '%"+req.search+"%  ' " , function (err, res) {
+
+            if(err) {
+                console.log("error: ", err);
+                result(null, err);
+            }
+            else{
+              console.log('User : ', res);  
+
+             result(null, res);
+            }
+        });   
 };
 
 module.exports= Eatuser;
