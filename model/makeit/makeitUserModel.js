@@ -267,50 +267,55 @@ console.log(id.orderid);
 
 
 Makeituser.orderlistbyuserid = function(id, result){
+    console.log(id);
+    if(id){
+    var query = "select * from Orders WHERE makeit_user_id  = '"+id+"' order by orderid desc";
+    }else{
+    var query = "select * from Orders order by orderid desc";
+    }
     
-    sql.query("select * from Orders WHERE makeit_user_id  = '"+id+"' order by orderid desc", function (err, res) {
+    sql.query(query, function (err, res) {
 
-        
         if(err) {
             console.log("error: ", err);
             result(null, err);
         }
         else{
-          console.log('User : ', res);  
-
-         let sucobj=true;
-            let resobj = {  
+          console.log('Product : ', res);  
+          let sucobj=true;
+          let resobj = {  
             success: sucobj,
-            result: res
+            result: res 
             }; 
 
          result(null, resobj);
         }
-    });  
+    }); 
 };
 
 
 Makeituser.all_order_list = function(result){
     
-    sql.query("select * from Orders order by orderid desc", function (err, res) {
+    var query = "select * from Orders order by orderid desc";
 
         
+    sql.query(query, function (err, res) {
+
         if(err) {
             console.log("error: ", err);
             result(null, err);
         }
         else{
-          console.log('User : ', res);  
-
-         let sucobj=true;
-            let resobj = {  
+          console.log('Product : ', res);  
+          let sucobj=true;
+          let resobj = {  
             success: sucobj,
-            result: res
+            result: res 
             }; 
 
          result(null, resobj);
         }
-    });  
+    }); 
 };
 
 

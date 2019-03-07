@@ -16,7 +16,7 @@ module.exports = function(app) {
   var fav = require('../controllers/eat/FavController');
   var faq = require('../controllers/common/FaqController');
   var allocation = require('../controllers/sales/AllocationController');
-
+  var orders = require('../controllers/common/OrderController');
 
   // todoList Routes
   app.route('/tasks')
@@ -39,7 +39,7 @@ module.exports = function(app) {
     .put(eatuser.update_a_user)
     .delete(eatuser.delete_a_user);
 
-
+  
 
    //Routes for moveit users
 
@@ -208,11 +208,11 @@ app.route('/faq/:id')
     .delete(faq.delete_a_faq);
     
 
- /* app.route('/order')
+ /*app.route('/order')
     .get(order.list_all_order)
     .post(order.create_a_order);
 
-  app.route('/order/:id')
+   app.route('/order/:id')
     .get(order.read_a_order)
     .put(order.update_a_order)
     .delete(order.delete_a_order);*/
@@ -222,7 +222,7 @@ app.route('/faq/:id')
     // .post(makeituser.createorder);
 
     app.route('/makeit/orders')
-    .get(makeituser.all_order_list);
+    .get(makeituser.orderlist);
 
     app.route('/makeit/orders/listbydate')
     .post(makeituser.all_order_list_bydate);
@@ -259,5 +259,15 @@ app.route('/faq/:id')
       app.route('/admin/eatusers/')
       .post(eatuser.list_all_virtual_eatuser);
 
- 
+      app.route('/admin/ordercreate')
+        .post(orders.eatuser_order_create)
+
+        app.route('/admin/orders')
+        .post(orders.list_all_orders)
+
+
+        // Orders API
+        app.route('/orders/ordercreate')
+        .post(orders.eatuser_order_create)
+
     };

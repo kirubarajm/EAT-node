@@ -1,47 +1,41 @@
 'use strict';
 
-var Product = require('../../model/makeit/productModel.js');
+var Order = require('../../model/common/orderModel.js');
 
-exports.list_all_product = function(req, res) {
-  Product.getAllProduct(function(err, product) {
+exports.list_all_product = function (req, res) {
+  Order.getAllProduct(function (err, product) {
     console.log('controller')
     if (err)
       res.send(err);
-      console.log('res', product);
-    res.send(product);
-  });
-};
-
-exports.list_all_virtual_product = function(req, res) {
-  Product.getAllVirutalProduct(function(err, product) {
-    console.log('controller')
-    if (err)
-      res.send(err);
-      console.log('res', product);
+    console.log('res', product);
     res.send(product);
   });
 };
 
 
-exports.create_a_product = function(req, res) {
-  var new_product = new Product(req.body);
-  console.log(new_product);
+exports.eatuser_order_create = function (req, res) {
+  var new_Order = new Order(req.body);
+  var order_item = req.body.orderitems;
+  //console.log(order_item);
+  //console.log(new_Order);
   //handles null error 
-   if(!new_product.product_name){
-            res.status(400).send({ error:true, message: 'Please provide name' });
-    }
-  else{
-  Product.createProduct(new_product, function(err, product) {
-    if (err)
-      res.send(err);
-    res.json(product);
-  });
+  if (!new_Order.userid || !new_Order.price || !new_Order.makeit_user_id || !new_Order.delivery_charge) {
+
+    res.status(400).send({ error: true, message: 'Please provide userid/price/makeit_user_id/delivery_charge' });
+
+  }
+  else {
+    Order.createOrder(new_Order, order_item, function (err, result) {
+      if (err)
+        res.send(err);
+      res.json(result);
+    });
   }
 };
 
 
-exports.read_a_product = function(req, res) {
-  Product.getProductById(req.params.id, function(err, product) {
+exports.read_a_product = function (req, res) {
+  Order.getProductById(req.params.id, function (err, product) {
     if (err)
       res.send(err);
     res.json(product);
@@ -49,8 +43,8 @@ exports.read_a_product = function(req, res) {
 };
 
 
-exports.update_a_product = function(req, res) {
- Product.updateById(req.params.id, new Product(req.body), function(err, product) {
+exports.update_a_product = function (req, res) {
+  Order.updateById(req.params.id, new Product(req.body), function (err, product) {
     if (err)
       res.send(err);
     res.json(product);
@@ -58,11 +52,20 @@ exports.update_a_product = function(req, res) {
 };
 
 
-exports.delete_a_product = function(req, res) {
- Product.remove( req.params.id, function(err, product) {
+exports.delete_a_product = function (req, res) {
+  Order.remove(req.params.id, function (err, product) {
     if (err)
       res.send(err);
     res.json({ message: 'Product successfully deleted' });
   });
 };
 
+exports.list_all_orders = function(req, res) {
+  Order.get_all_orders(req.body,function(err, user) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', user);
+    res.send(user);
+  });
+};

@@ -13,6 +13,8 @@ var Eatuser = function(eatuser){
     this.virutal= eatuser.virutal;
 };
 
+
+
 Eatuser.createUser = function createUser(newUser, result) {   
     
     if(newUser.virutal==null)
@@ -106,7 +108,6 @@ Eatuser.getAllVirtualUser = function getAllVirtualUser(req,result) {
         query = query+" where phoneno LIKE  '%"+req.search+"%' OR email LIKE  '%"+req.search+"%' or name LIKE  '%"+req.search+"% ' "
     }
     
-
     sql.query(query, function (err, res) {
 
         if(err) {
@@ -150,5 +151,9 @@ Eatuser.virtual_eatusersearch = function virtual_eatusersearch(req,result) {
             }
         });   
 };
+
+
+
+
 
 module.exports= Eatuser;
