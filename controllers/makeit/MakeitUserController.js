@@ -145,3 +145,11 @@ exports.orderview = function(req, res) {
  };
 
 
+//  exports.orderlist = function(req, res) {
+//   console.log(req.params);
+//   Makeituser.orderlistbyuserid( req.params.id,function(err, result){
+//     if (err)
+//     res.send(err);
+//     res.json(result); 
+//   });
+//  };
