@@ -221,6 +221,12 @@ app.route('/faq/:id')
     // app.route('/createorder')
     // .post(makeituser.createorder);
 
+    app.route('/makeit/orders')
+    .get(makeituser.all_order_list);
+
+    app.route('/makeit/orders/listbydate')
+    .post(makeituser.all_order_list_bydate);
+
     app.route('/makeit/orders/:id')
       .get(makeituser.orderlist);
 
@@ -235,7 +241,26 @@ app.route('/faq/:id')
 
     app.route('/product/moveliveproduct/')
       .post(product.moveliveproduct);
-   app.route('/product/productitem/:productid')
-   .get(product.productitemlist);
+
+    app.route('/product/productitem/:productid')
+      .get(product.productitemlist);
+
+    app.route('/virtual/eatusers')
+      .get(eatuser.list_all_virtual_eatuser)
+
+      app.route('/virtual/:search')
+      .get(eatuser.virtual_eatusersearch)
+
+
+
+
+      /*Admin Api*/
+      app.route('/admin/eatusers/add')
+      .post(eatuser.create_a_eatuser);
+
+      app.route('/admin/eatusers/')
+      .post(eatuser.list_all_virtual_eatuser);
+
+   
  
     };

@@ -10,19 +10,30 @@ var Eatuser = function(eatuser){
     this.locality = eatuser.locality;
     this.password = eatuser.password;
     this.created_at = new Date();
+    this.virutal= eatuser.virutal;
 };
 
-Eatuser.createUser = function createUser(newUser, result) {    
+Eatuser.createUser = function createUser(newUser, result) { 
+    
+    if(newUser.virutal==null)
+    newUser.virutal=0;
         sql.query("INSERT INTO User set ?", newUser, function (err, res) {
                 
-                if(err) {
-                    console.log("error: ", err);
-                    result(err, null);
-                }
-                else{
-                    console.log(res.insertId);
-                    result(null, res.insertId);
-                }
+            if(err) {
+                console.log("error: ", err);
+                result(null, err);
+            }
+            else{
+              let sucobj=true;
+              let mesobj = "Virtual User Created successfully";
+              let resobj = {  
+                success: sucobj,
+                message:mesobj,
+                res: res.insertId 
+                }; 
+          
+             result(null, resobj);
+            }
             });           
 };
 

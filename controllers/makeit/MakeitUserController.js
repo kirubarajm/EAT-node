@@ -27,16 +27,7 @@ exports.create_a_user = function(req, res) {
     res.json(user);
   });
   }
-
-
- function returnResponse(statusHttp, statusBool, message, data) {
-        resultData({
-            statusHttp: statusHttp,
-            statusBool: statusBool,
-            message: message,
-            data: data
-        });
-    }
+  
 
 };
 
