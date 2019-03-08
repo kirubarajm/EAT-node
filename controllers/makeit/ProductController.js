@@ -98,3 +98,15 @@ exports.moveliveproduct = function(req, res) {
     res.send(product);
   });
 };
+
+
+
+exports.admin_list_all_product = function(req, res) {
+  Product.admin_list_all_product(req.body,function(err, product) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', product);
+    res.send(product);
+  });
+};

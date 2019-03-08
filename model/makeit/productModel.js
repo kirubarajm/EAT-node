@@ -230,4 +230,29 @@ Product.productitemlist = function productitemlist(req,result) {
       });   
 };
 
+
+Product.admin_list_all_product = function admin_list_all_product(req,result) {
+
+
+    var query = "Select * from Product where makeit_userid = '"+req.makeit_userid+"'"
+
+    if(req.search){
+      query = query+" and (product_name LIKE  '%"+req.search+"%')";
+   }
+      
+   
+        sql.query(query, function (err, res) {
+
+          if(err) {
+              console.log("error: ", err);
+              result(null, err);
+            }
+            else{
+            console.log('User : ', res);  
+          result(null, res);
+        }
+});   
+};
+
+
 module.exports= Product;

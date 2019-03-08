@@ -98,15 +98,18 @@ Eatuser.remove = function(id, result){
 Eatuser.getAllVirtualUser = function getAllVirtualUser(req,result) {
     //console.log(req);
     var query = "select * from User";
-    if(req.id !== 'all'){
-        query = "select * from User where virutal = "+req.id+" "
+    
+    if(req.virtualid !== 'all'){
+        query = "select * from User where virutal = "+req.virtualid+" "
     }
-    //var search= req.search
-    if(req.id !== 'all' && req.search){
+    
+    if(req.virtualid !== 'all' && req.search){
         query = query+" and (phoneno LIKE  '%"+req.search+"%' OR email LIKE  '%"+req.search+"%' or name LIKE  '%"+req.search+"% ') "
     }else if(req.search){
         query = query+" where phoneno LIKE  '%"+req.search+"%' OR email LIKE  '%"+req.search+"%' or name LIKE  '%"+req.search+"% ' "
     }
+    
+    console.log(query);
     
     sql.query(query, function (err, res) {
 

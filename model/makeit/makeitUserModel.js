@@ -30,28 +30,33 @@ if(newUser.appointment_status==null)
     newUser.appointment_status=0;
         sql.query("INSERT INTO MakeitUser set ?", newUser, function (err, res) {
                 
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }else{
+           
+            sql.query("Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ", res.insertId, function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
-                   // result(err, null);
-                    returnResponse(400, false, "error",err);
+                    result(err, null);
                 }
                 else{
-                    console.log(res.insertId);
-                
-                      returnResponse(200, true, "Registration Sucessfully", res.insertId,newUser);
-                
-                }
-            });           
+                   let sucobj=true;
+                   let message = "Registration Sucessfully Done";
+                    let resobj = {  
+                    success: sucobj,
+                    message:message,
+                    result: res
+                    }; 
 
-            function returnResponse(statusHttp, statusBool, message, data) {
-                result({
-                    statusHttp: statusHttp,
-                    statusBool: statusBool,
-                    message: message,
-                    data: data,
-                    newUser : newUser
-                });
-            }
+                 result(null, resobj);
+              
+                }
+            });  
+        }
+            });           
+      
+            
   };
 
 
@@ -158,6 +163,7 @@ Makeituser.checkLogin = function checkLogin(req, result) {
                     result(resobj, null);
                 }
                 else{
+                    
                     let sucobj=(res.length==1)?'true':'false';
                     let resobj = {  
                     success: sucobj,
@@ -197,27 +203,42 @@ Makeituser.createAppointment = function createAppointment(req, result) {
 
         sql.query("INSERT INTO Bookingtime (makeit_userid, date_time) values (?,?) ", [req.makeit_userid,req.date_time], function (err, res) {
                 
-                if(err) {
-                    console.log("error: ", err);
-                    returnResponse(400, false, "error", err);
-                }
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
                 else{
-                    console.log(res.insertId);
                    
-                   returnResponse(200, true, "Appointment Created Sucessfully", res.insertId);
-                }
+                    sql.query("UPDATE MakeitUser SET appointment_status = 1 WHERE userid = ?",req.makeit_userid, function (err, res) {
+                        if(err) {
+                            console.log("error: ", err);    
+                            result(err, null);
+                        }
+                        
+                   sql.query("Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ", req.makeit_userid, function (err, res) {             
+                    if(err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                    }
+                    else{
+                       let sucobj=true;
+                       let message = "Appointment Created Sucessfully";
+                        let resobj = {  
+                        success: sucobj,
+                        message:message,
+                        result: res
+                        }; 
+    
+                     result(null, resobj);
+                  
+                    }
+                }); 
+            });    
+            }
             });   
             
             
-            function returnResponse(statusHttp, statusBool, message,data ) {
-                result({
-                    statusHttp: statusHttp,
-                    statusBool: statusBool,
-                    message: message,
-                    result: data
-                
-                });
-            }
+           
 };
 
 
@@ -246,7 +267,7 @@ console.log(id.orderid);
                     result(null, err);
                 }
                 else{
-                  console.log('User : ', responce); 
+                  
                   temp =  responce;
                   let sucobj=true;
                   let resobj = {  
@@ -255,7 +276,7 @@ console.log(id.orderid);
                   data : temp
                   }; 
       
-               result(null, resobj);
+                 result(null, resobj);
                 }   
             });
         
@@ -346,7 +367,6 @@ Makeituser.all_order_list_bydate = function(req,result){
 
 Makeituser.orderstatusbyorderid = function(id, result){
 
-
     sql.query("UPDATE Orders SET orderstatus = ? WHERE orderid = ?", [id.orderstatusid, id.orderid], function (err, res) {
         if(err) {
             console.log("error: ", err);
@@ -369,4 +389,67 @@ Makeituser.orderstatusbyorderid = function(id, result){
 
 
 
+  Makeituser.get_admin_list_all_makeitusers = function(req, result){
+    console.log(req);
+
+    var query = "select * from MakeitUser";
+   
+    var searchquery = "name LIKE  '%"+req.search+"%'";
+
+    if(req.appointment_status !== 'all'){
+    var query = query+" WHERE appointment_status  = '"+req.appointment_status+"'";
+    }
+
+    if(req.appointment_status !== 'all' && req.search){
+        query = query+" and ("+searchquery+")"
+    }else if(req.search){
+        query = query+" where " +searchquery
+    }
+
+    
+    sql.query(query, function (err, res) {
+
+
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          console.log('Product : ', res);  
+          let sucobj=true;
+          let resobj = {  
+            success: sucobj,
+            result: res 
+            }; 
+
+         result(null, resobj);
+        }
+    }); 
+};
+
+
+
+Makeituser.updatemakeit_user_approval = function(req, result){
+    
+    sql.query("UPDATE MakeitUser SET appointment_status = 2 ,verified_status = '"+req.verified_status+"' WHERE userid = ?",req.makeit_userid, function (err, res) {
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          let sucobj=true;
+          let message = "Makeit user verify status updated";
+          let resobj = {  
+            success: sucobj,
+            message:message,
+            result: res 
+            }; 
+
+         result(null, resobj);
+        }
+    
+    }); 
+
+           
+};
 module.exports= Makeituser;

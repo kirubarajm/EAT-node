@@ -77,7 +77,10 @@ module.exports = function(app) {
   app.route('/makeit/paymentregistration/:userid')
     .put(makeituser.update_payment_registration)
 
-  app.route('/makeit/bookappointment/:userid')
+  // app.route('/makeit/bookappointment/:userid')
+  //   .put(makeituser.creat_a_appointment)
+
+    app.route('/makeit/bookappointment')
     .put(makeituser.creat_a_appointment)
 
 
@@ -248,26 +251,41 @@ app.route('/faq/:id')
     app.route('/virtual/eatusers')
       .get(eatuser.list_all_virtual_eatuser)
 
-      app.route('/virtual/:search')
+    app.route('/virtual/:search')
       .get(eatuser.virtual_eatusersearch)
 
 
       /*Admin Api*/
-      app.route('/admin/eatusers/add')
+    app.route('/admin/eatusers/add')
       .post(eatuser.create_a_eatuser);
 
-      app.route('/admin/eatusers/')
+    app.route('/admin/eatusers/')
       .post(eatuser.list_all_virtual_eatuser);
 
-      app.route('/admin/ordercreate')
-        .post(orders.eatuser_order_create)
+    app.route('/admin/ordercreate')
+      .post(orders.eatuser_order_create);
 
-        app.route('/admin/orders')
-        .post(orders.list_all_orders)
+    app.route('/admin/orders')
+      .post(orders.list_all_orders);
+
+    app.route('/admin/ordersassign')
+      .put(orders.un_assign_orders);
+
+    app.route('/admin/ordersunassign')
+      .get(orders.un_assign_orders);
+
+    app.route('/admin/product')
+      .post(product.admin_list_all_product);
+
+    app.route('/admin/makeituser')
+      .post(makeituser.admin_list_all_makeitusers);
+
+    app.route('/admin/makeituserapproval')
+      .put(makeituser.admin_makeit_user_approval);
 
 
         // Orders API
-        app.route('/orders/ordercreate')
+    app.route('/orders/ordercreate')
         .post(orders.eatuser_order_create)
 
     };

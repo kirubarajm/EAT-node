@@ -69,3 +69,22 @@ exports.list_all_orders = function(req, res) {
     res.send(user);
   });
 };
+
+
+exports.update_ordermovieit = function (req, res) {
+
+  Order.ordermovieit(req.body, function (err, result) {
+    if (err)
+      res.send(err);
+    res.json(result);
+  });
+};
+
+
+exports.un_assign_orders = function (req, res) {
+  Order.getUnassignorders(function (err, result) {
+    if (err)
+      res.send(err);
+    res.json(result);
+  });
+};

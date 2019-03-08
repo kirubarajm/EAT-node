@@ -35,12 +35,15 @@ exports.creat_a_appointment = function(req, res) {
             res.status(400).send({ error:true, message: 'Please provide name/phoneno' });
     }
   else{*/
+    if(!req.body.makeit_userid || !req.body.date_time){
+      res.status(400).send({ error:true, message: 'Please makeit_userid/date_time' });
+}else{
   Makeituser.createAppointment(req.body, function(err, user) {
     if (err)
       res.send(err);
     res.json(user);
   });
-  //}
+}
 };
 
 
@@ -153,3 +156,26 @@ exports.orderview = function(req, res) {
  };
 
 
+
+ exports.admin_list_all_makeitusers = function(req, res) {
+  console.log(req.body);
+  Makeituser.get_admin_list_all_makeitusers( req.body,function(err, result){
+    if (err)
+    res.send(err);
+    res.json(result); 
+  });
+ };
+
+
+ exports.admin_makeit_user_approval = function(req, res) {
+
+  if(!req.body.makeit_userid || !req.body.verified_status){
+    res.status(400).send({ error:true, message: 'Please makeit_userid/verified_status' });
+}else{
+  Makeituser.updatemakeit_user_approval(req.body, function(err, user) {
+     if (err)
+       res.send(err);
+     res.json(user);
+   });
+  }
+ };
