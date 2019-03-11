@@ -68,3 +68,11 @@ exports.delete_a_allocation = function(req, res) {
   });
 };
 
+exports.update_a_followupstatus = function(req, res) {
+  Allocation.update_a_followupstatus(new Allocation(req.body),function(err, allocation) {
+     if (err)
+       res.send(err);
+     res.json(allocation);
+   });
+ };
+ 

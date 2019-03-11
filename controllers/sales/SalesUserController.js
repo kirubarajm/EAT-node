@@ -1,6 +1,7 @@
 'use strict';
 
 var Salesuser = require('../../model/sales/salesUserModel.js');
+var Makeitrating = require('../../model/makeit/makeitRatingModel.js');
 
 exports.list_all_user = function(req, res) {
   Salesuser.getAllUser(function(err, user) {
@@ -64,4 +65,23 @@ exports.checklogin = function(req, res) {
       res.send(err);
     res.json(user);
   });
+};
+
+
+
+exports.create_a_rating = function(req, res) {
+  var new_rating = new Makeitrating(req.body);
+  //handles null error 
+   if(!new_rating.makeit_userid || !new_rating.rating || !new_rating.sales_emp_id){
+
+            res.status(400).send({ error:true, message: 'Please provide makeit_userid/rating/sales_emp_id' });
+
+    }
+  else{
+    Makeitrating.createRating(new_rating, function(err, result) {
+    if (err)
+      res.send(err);
+    res.json(result);
+  });
+}
 };

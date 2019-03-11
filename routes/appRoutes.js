@@ -198,6 +198,8 @@ module.exports = function(app) {
 
 
 
+
+
  app.route('/faqs/:id')
     .get(faq.list_all_faqbytype);
 
@@ -256,22 +258,22 @@ app.route('/faq/:id')
 
 
       /*Admin Api*/
-    app.route('/admin/eatusers/add')
+    app.route('/admin/eatuser/add')
       .post(eatuser.create_a_eatuser);
 
     app.route('/admin/eatusers/')
       .post(eatuser.list_all_virtual_eatuser);
 
-    app.route('/admin/ordercreate')
+    app.route('/admin/order/add')
       .post(orders.eatuser_order_create);
 
     app.route('/admin/orders')
       .post(orders.list_all_orders);
 
-    app.route('/admin/ordersassign')
+    app.route('/admin/orders/assign')
       .put(orders.un_assign_orders);
 
-    app.route('/admin/ordersunassign')
+    app.route('/admin/orders/unassign')
       .get(orders.un_assign_orders);
 
     app.route('/admin/product')
@@ -280,12 +282,51 @@ app.route('/faq/:id')
     app.route('/admin/makeituser')
       .post(makeituser.admin_list_all_makeitusers);
 
-    app.route('/admin/makeituserapproval')
+    app.route('/admin/makeituser/approval')
       .put(makeituser.admin_makeit_user_approval);
+
+    app.route('/admin/makeituser/add')
+      .post(makeituser.create_a_user);
+
+    app.route('/admin/salesuser/add')
+      .post(salesuser.create_a_user);
+
+    app.route('/admin/moveituser/add')
+      .post(moveituser.create_a_user);
+
+    app.route('/admin/appointments')
+      .get(makeituser.list_all_appointment);
+
+    app.route('/admin/appointment/assign')
+      .post(allocation.create_a_allocation);
+
+    app.route('/admin/eatuser/:userid')
+      .get(eatuser.read_a_user)
+      .put(eatuser.update_a_user)
+      .delete(eatuser.delete_a_user);
+
+      app.route('/admin/makeituser/:userid')
+      .get(makeituser.read_a_user)
+      .put(makeituser.update_a_user)
+      .delete(makeituser.delete_a_user);
+
 
 
         // Orders API
     app.route('/orders/ordercreate')
-        .post(orders.eatuser_order_create)
+      .post(orders.eatuser_order_create)
+
+
+        //Sales API
+
+    app.route('/sales/followupstatus')
+      .put(allocation.update_a_followupstatus);
+
+    app.route('/sales/faq')
+      .get(faq.list_all_faq);
+
+    app.route('/sales/rating')
+    .post(salesuser.create_a_rating);
+
 
     };

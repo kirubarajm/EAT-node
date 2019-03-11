@@ -1,5 +1,6 @@
 'user strict';
 var sql = require('../db.js');
+var Makeituser = require('../../model/makeit/makeitUserModel.js');
 
 //Task object constructor
 var Allocation = function(allocation){
@@ -101,5 +102,34 @@ Allocation.remove = function(id, result){
                 }
             }); 
 };
+
+
+Allocation.update_a_followupstatus = function(req, result){
+
+    console.log(req);
+    sql.query("UPDATE Allocation SET status = ? WHERE makeit_userid = ? and sales_emp_id = ?" , [req.status,req.makeit_userid,req.sales_emp_id], function (err, res) {
+            if(err) {
+                console.log("error: ", err);
+                  result(null, err);
+               }
+             else{
+                var makeitfollowupstatus = new Makeituser(req);
+                Makeituser.update_makeit_followup_status(makeitfollowupstatus, function (err, result) {
+                    if (err)
+                    result.send(err);
+                    // res.json(result);
+                }); 
+                
+                let sucobj=true;
+                let mesobj = "Follow up status updated successfully";
+                let resobj = {  
+                success: sucobj,
+                message:mesobj
+                }; 
+            
+                    result(null, resobj);
+                  }
+              }); 
+  };
 
 module.exports= Allocation;

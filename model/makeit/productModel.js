@@ -1,5 +1,6 @@
 'user strict';
 var sql = require('../db.js');
+var Productitem = require('../../model/makeit/productitemsModel.js');
 
 //Task object constructor
 var Product = function(product){
@@ -29,9 +30,6 @@ Product.createProduct = function createProduct(newProduct,itemlist, result) {
   
   
     var resobj = {};
-
-    console.log(newProduct);
-    console.log(itemlist);
         sql.query("INSERT INTO Product set ?", newProduct, function (err, res) {
                 
                 if(err) {
@@ -39,30 +37,53 @@ Product.createProduct = function createProduct(newProduct,itemlist, result) {
                     result(err, null);
                 }
                 else{
-                   // console.log(res.insertId);
-
-                   for(var i = 0; i < itemlist.length; i++){                    
-                  
-                    sql.query("INSERT INTO Productitem(productid,itemid) values ('"+itemlist[i].productid+"','"+itemlist[i].productitemid+"')", function (err, res) {
                    
-                       if(err) {
-                           console.log("error: ", err);
-                           result(null, err);
-                       }
-                       else{
+                   var productid = res.insertId
+
+                   for(var i = 0; i < itemlist.length; i++){
+                    console.log(itemlist[i]);
+                    var product_item = new Productitem(itemlist[i]);
+                    //new Productitem(itemlist[i]);
+                    product_item.productid = productid;
+
+                    Productitem.createProductitems(product_item, function (err, result) {
+                      if (err)
+                          res.send(err);
+                      // res.json(result);
+                  });
+
+
+                  let sucobj=true;
+                  let mesobj = "Product Item Created successfully";
+                  let resobj = {  
+                  success: sucobj,
+                  message:mesobj,
+                  productid: productid
+                       }; 
+
+                  result(null, resobj);
+      
+                  
+                  //   sql.query("INSERT INTO Productitem(productid,itemid) values ('"+itemlist[i].productid+"','"+itemlist[i].productitemid+"')", function (err, res) {
+                   
+                  //      if(err) {
+                  //          console.log("error: ", err);
+                  //          result(null, err);
+                  //      }
+                  //      else{
                
-                        let sucobj=true;
-                        let mesobj= "Productitem Created Sucessfully";
-                           let resobj = {  
-                           success: sucobj,
-                           message: mesobj,
-                           res: res
-                           }; 
-                           result(resobj);
+                  //       let sucobj=true;
+                  //       let mesobj= "Productitem Created Sucessfully";
+                  //          let resobj = {  
+                  //          success: sucobj,
+                  //          message: mesobj,
+                  //          res: res
+                  //          }; 
+                  //          result(resobj);
                            
-                       }
+                  //      }
                       
-                   }); 
+                  //  }); 
                  }  
 
                
@@ -193,8 +214,14 @@ Product.moveliveproduct = function(req,result){
       result(null, err);
   }
   else{
+    var mesobj = {};
     let sucobj=true;
-    let mesobj = "Updated successfully";
+     if(req.active_status == 1){
+           mesobj = "Product added to live successfully";
+          }else{
+          mesobj = "Product removed from live successfully";
+         }
+   // let mesobj = "Product added live successfully";
     let resobj = {  
       success: sucobj,
       message:mesobj,

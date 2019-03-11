@@ -26,7 +26,7 @@ exports.list_all_virtual_product = function(req, res) {
 exports.create_a_product = function(req, res) {
   var new_product = new Product(req.body);
   // console.log(req.body.itemid);
-   var itemlist = req.body.itemid;
+   var itemlist = req.body.items;
   // console.log(new_product);
   //handles null error 
    if(!new_product.product_name){

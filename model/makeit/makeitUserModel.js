@@ -9,12 +9,12 @@ var Makeituser = function(makeituser){
     this.email = makeituser.email;
     this.phoneno = makeituser.phoneno;
     this.bank_account_no = makeituser.bank_account_no;
-    this.verified_status=makeituser.verified_status;
+    this.verified_status=makeituser.verified_status || '0';
     this.appointment_status=makeituser.appointment_status;
     this.referalcode = makeituser.referalcode;
     this.localityid = makeituser.localityid;
     this.lat = makeituser.lat;
-    this.long = makeituser.long;
+    this.lon = makeituser.lon;
     this.password = makeituser.password;
     this.brandname = makeituser.brandname;
     this.created_at = new Date();
@@ -22,6 +22,7 @@ var Makeituser = function(makeituser){
     this.ifsc = makeituser.ifsc;
     this.bank_holder_name = makeituser.bank_holder_name;
     this.address = makeituser.address;
+    this.virtual = makeituser.virtual || 0;
 };
 
 Makeituser.createUser = function createUser(newUser, result) {  
@@ -442,7 +443,7 @@ Makeituser.updatemakeit_user_approval = function(req, result){
           let resobj = {  
             success: sucobj,
             message:message,
-            result: res 
+            //result: res 
             }; 
 
          result(null, resobj);
@@ -452,4 +453,17 @@ Makeituser.updatemakeit_user_approval = function(req, result){
 
            
 };
+
+
+
+Makeituser.update_makeit_followup_status = function(makeitfollowupstatus, result){
+    sql.query("UPDATE MakeitUser SET appointment_status = ? WHERE makeit_userid = ? " , [makeitfollowupstatus.status,makeitfollowupstatus.makeit_userid], function (err, res) {
+            if(err) {
+                console.log("error: ", err);
+                  result(null, err);
+               }
+             
+              }); 
+  };
+
 module.exports= Makeituser;
