@@ -85,3 +85,16 @@ exports.create_a_rating = function(req, res) {
   });
 }
 };
+
+
+
+
+exports.salesSearch = function(req, res) {
+  Salesuser.getAllsalesSearch(req.body,function(err, user) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', user);
+    res.send(user);
+  });
+};

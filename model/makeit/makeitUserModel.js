@@ -103,8 +103,9 @@ Makeituser.getAllUser = function getAllUser(result) {
 
 
 Makeituser.getAllUserByAppointment = function getAllUserByAppointment(result) {
-        sql.query("Select * from MakeitUser where appointment_status=0 order by created_at DESC", function (err, res) {
-
+   
+      //  sql.query("Select * from MakeitUser where appointment_status=1 order by created_at DESC", function (err, res) {
+        sql.query(" Select * from Bookingtime as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1", function (err, res) {
                 if(err) {
                     console.log("error: ", err);
                     result(null, err);
@@ -432,7 +433,7 @@ Makeituser.orderstatusbyorderid = function(id, result){
 
 Makeituser.updatemakeit_user_approval = function(req, result){
     
-    sql.query("UPDATE MakeitUser SET appointment_status = 2 ,verified_status = '"+req.verified_status+"' WHERE userid = ?",req.makeit_userid, function (err, res) {
+    sql.query("UPDATE MakeitUser SET appointment_status = 3 ,verified_status = '"+req.verified_status+"' WHERE userid = ?",req.makeit_userid, function (err, res) {
         if(err) {
             console.log("error: ", err);
             result(null, err);

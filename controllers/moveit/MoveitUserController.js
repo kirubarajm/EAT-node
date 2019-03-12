@@ -65,3 +65,14 @@ exports.checklogin = function(req, res) {
     res.json(user);
   });
 };
+
+
+exports.moveitSearch = function(req, res) {
+  Moveituser.getAllmoveitSearch(req.body,function(err, user) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', user);
+    res.send(user);
+  });
+};

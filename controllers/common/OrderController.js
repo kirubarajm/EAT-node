@@ -71,9 +71,9 @@ exports.list_all_orders = function(req, res) {
 };
 
 
-exports.update_ordermovieit = function (req, res) {
+exports.order_assign = function (req, res) {
 
-  Order.ordermovieit(req.body, function (err, result) {
+  Order.order_assign(req.body, function (err, result) {
     if (err)
       res.send(err);
     res.json(result);

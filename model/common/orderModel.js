@@ -1,6 +1,6 @@
 'user strict';
 var sql = require('../db.js');
-var Orderitem = require('../../model/common/orderitemsModel.js');
+var Orderitem = require('../../model/common/orderItemsModel.js');
 //Task object constructor
 var Order = function (order) {
     this.userid = order.userid;
@@ -180,7 +180,7 @@ Order.get_all_orders = function get_all_orders(req,result) {
 
 
 
-Order.ordermovieit = function (req, result) {
+Order.order_assign = function (req, result) {
     //     var today = new Date();
     //     var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
     //     var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
@@ -201,7 +201,7 @@ Order.ordermovieit = function (req, result) {
             let resobj = {  
               success: sucobj,
               message:message,
-              result: res 
+             
               }; 
   
            result(null, resobj);
@@ -212,8 +212,10 @@ Order.ordermovieit = function (req, result) {
 
 Order.getUnassignorders = function getUnassignorders(result) {
 
+   /// Select * from Orders as ors left join User as us on ors.userid=us .userid where ors.moveit_status = '0';
+   // sql.query("Select * from Orders where moveit_status = '0' ", function (err, res) {
 
-    sql.query("Select * from Orders where moveit_status = '0' ", function (err, res) {
+        sql.query("Select * from Orders as ors left join User as us on ors.userid=us.userid where ors.moveit_status = '0'", function (err, res) {
 
         if(err) {
             console.log("error: ", err);

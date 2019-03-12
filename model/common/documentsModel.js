@@ -1,5 +1,8 @@
 'user strict';
 var sql = require('../db.js');
+const AWS = require('aws-sdk')
+const fs = require('fs')
+
 
 var AWS_ACCESS_KEY='AKIAJJQUEYLIU23E63OA';
 var AWS_SECRET_ACCESS_KEY='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';
@@ -166,5 +169,99 @@ Documents.remove = function(id, result){
                 }
             }); 
 };
+
+
+
+Documents.newdocumentupload = function newdocumentupload(newDocument, result) {    
+
+    console.log(newDocument.files.lic); // the uploaded file object
+     
+     if (Object.keys(newDocument.files).length == 0) {
+     return result.status(400).send('No files were uploaded.');
+     }
+ 
+ 
+     const fs = require('fs');
+     const AWS = require('aws-sdk');
+     const s3 = new AWS.S3({
+     accessKeyId: AWS_ACCESS_KEY,
+     secretAccessKey: AWS_SECRET_ACCESS_KEY
+     });
+    
+     var fileName = newDocument.files.lic;
+
+          const params = {
+              Bucket: 'eattovo', // pass your bucket name
+              Key: fileName.name, // file will be saved as testBucket/contacts.csv
+              Body: fileName.data
+          };
+      
+          console.log(params);
+          console.log(params.Body);
+          s3.upload(params, (err, data) => {
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+                //console.log(res.insertId);                    
+                let sucobj='true';
+                let message = 'Doucment uploaded successfully';
+                let resobj = {  
+                success: sucobj,
+                message:message,
+                data:data
+                };
+                result(null, resobj);
+            }
+        })
+          
+            
+ };
+
+
+ Documents.createnewDocument = function createnewDocument(newdocument, res) {
+
+       var  documentlist = newdocument.documentlist
+
+    sql.query("INSERT INTO Documents_Sales set ?", newdocument, function (err, res1) {
+
+        if (err) {
+            console.log("error: ", err);
+            res(null, err);
+        }
+
+        var orderid = res1.insertId
+
+
+        for (var i = 0; i < documentlist.length; i++) {
+            var orderitem = new Orderitem(orderItems[i]);
+            orderitem.orderid = orderid;
+
+            // Orderitem.createOrderitems(orderitem, function (err, result) {
+            //     if (err)
+            //         res.send(err);
+            //     // res.json(result);
+            // });
+
+        }
+
+              let sucobj=true;
+              let mesobj = "Order Created successfully";
+              let resobj = {  
+                success: sucobj,
+                message:mesobj,
+                orderid: orderid
+                }; 
+        res(null, resobj);
+
+
+
+    });
+
+
+};
+
+
 
 module.exports=Documents;

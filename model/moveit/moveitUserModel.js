@@ -109,4 +109,30 @@ Moveituser.checkLogin = function checkLogin(req, result) {
             });   
 };
 
+
+
+
+
+Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req ,result) {
+    
+    
+    var query = "Select * from MoveitUser";
+    
+    if(req.search && req.search !==''){
+         query = query+" where name LIKE  '%"+req.search+"%'";
+    }
+
+    sql.query(query, function (err, res) {
+
+            if(err) {
+                console.log("error: ", err);
+                result(null, err);
+            }
+            else{
+              console.log('User : ', res);  
+
+             result(null, res);
+            }
+        });   
+};
 module.exports= Moveituser;

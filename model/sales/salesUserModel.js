@@ -111,4 +111,29 @@ Salesuser.checkLogin = function checkLogin(req, result) {
             });   
 };
 
+
+Salesuser.getAllsalesSearch = function getAllsalesSearch(req ,result) {
+    
+    
+    var query = "Select * from Sales_QA_employees ";
+    
+    if(req.search && req.search !==''){
+         query = query+" where name LIKE  '%"+req.search+"%'";
+    }
+
+    sql.query(query, function (err, res) {
+
+            if(err) {
+                console.log("error: ", err);
+                result(null, err);
+            }
+            else{
+              console.log('User : ', res);  
+
+             result(null, res);
+            }
+        });   
+};
+
+
 module.exports= Salesuser;

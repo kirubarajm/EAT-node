@@ -67,3 +67,44 @@ exports.delete_a_documents = function(req, res) {
     res.json({ message: 'Document successfully deleted' });
   });
 };
+
+
+
+exports.upload_a_documents = function(req, res) {
+  var new_documents = new Document(req.body);
+  //console.log(req.files);
+  //handles null error 
+   if(!new_documents){
+
+            res.status(400).send({ error:true, message: 'Please provide documents name' });
+
+    }
+  else{
+  Document.newdocumentupload(req, function(err, documents) {
+    if (err)
+      res.send(err);
+    res.json(documents);
+  });
+}
+};
+
+
+
+
+exports.create_a_new_documents = function(req, res) {
+  var new_documents = new Document(req.body);
+  //console.log(req.files);
+  //handles null error 
+   if(!new_documents){
+
+            res.status(400).send({ error:true, message: 'Please provide documents name' });
+
+    }
+  else{
+  Document.createnewDocument(req, function(err, documents) {
+    if (err)
+      res.send(err);
+    res.json(documents);
+  });
+}
+};

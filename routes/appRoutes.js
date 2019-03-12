@@ -270,8 +270,8 @@ app.route('/faq/:id')
     app.route('/admin/orders')
       .post(orders.list_all_orders);
 
-    app.route('/admin/orders/assign')
-      .put(orders.un_assign_orders);
+    app.route('/admin/order/assign')
+      .put(orders.order_assign);
 
     app.route('/admin/orders/unassign')
       .get(orders.un_assign_orders);
@@ -305,10 +305,19 @@ app.route('/faq/:id')
       .put(eatuser.update_a_user)
       .delete(eatuser.delete_a_user);
 
-      app.route('/admin/makeituser/:userid')
+    app.route('/admin/makeituser/:userid')
       .get(makeituser.read_a_user)
       .put(makeituser.update_a_user)
       .delete(makeituser.delete_a_user);
+      
+    app.route('/admin/salesusers')
+      .post(salesuser.salesSearch);
+
+    app.route('/admin/moveitusers')
+      .post(moveituser.moveitSearch);
+
+     
+    
 
 
 
@@ -328,5 +337,15 @@ app.route('/faq/:id')
     app.route('/sales/rating')
     .post(salesuser.create_a_rating);
 
+    app.route('/sales/documentUpload')
+    .post(documents.upload_a_documents);
+
+    app.route('/sales/documentCreate')
+    .post(documents.create_a_new_documents);
+
+
+
+    // Common
+  
 
     };
