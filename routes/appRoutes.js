@@ -17,6 +17,7 @@ module.exports = function(app) {
   var faq = require('../controllers/common/FaqController');
   var allocation = require('../controllers/sales/AllocationController');
   var orders = require('../controllers/common/OrderController');
+  var salesdocument = require('../controllers/common/DocumentsalesController');
 
   // todoList Routes
   app.route('/tasks')
@@ -316,6 +317,17 @@ app.route('/faq/:id')
     app.route('/admin/moveitusers')
       .post(moveituser.moveitSearch);
 
+    app.route('/admin/salesusers/:userid')
+      .get(salesuser.read_a_user)
+      .put(salesuser.update_a_user)
+      .delete(salesuser.delete_a_user);
+
+    app.route('/admin/moveitusers/:userid')
+      .get(moveituser.read_a_user)
+      .put(moveituser.update_a_user)
+      .delete(moveituser.delete_a_user);
+    
+
      
     
 
@@ -335,17 +347,19 @@ app.route('/faq/:id')
       .get(faq.list_all_faq);
 
     app.route('/sales/rating')
-    .post(salesuser.create_a_rating);
+      .post(salesuser.create_a_rating);
 
     app.route('/sales/documentUpload')
-    .post(documents.upload_a_documents);
+     .post(documents.upload_a_documents);
 
     app.route('/sales/documentCreate')
-    .post(documents.create_a_new_documents);
+      .post(salesdocument.create_a_new_documents);
 
-
+        
+    app.route('/sales/documents/:dname')
+     .delete(salesdocument.remove_s3_sales_doc);
 
     // Common
-  
+
 
     };

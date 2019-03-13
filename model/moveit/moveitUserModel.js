@@ -33,14 +33,20 @@ Moveituser.createUser = function createUser(newUser, result) {
 
 Moveituser.getUserById = function getUserById(userId, result) {
         sql.query("Select * from MoveitUser where userid = ? ", userId, function (err, res) {             
-                if(err) {
-                    console.log("error: ", err);
-                    result(err, null);
-                }
-                else{
-                    result(null, res);
-              
-                }
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+               let sucobj=true;
+                let resobj = {  
+                success: sucobj,
+                result: res
+                }; 
+
+             result(null, resobj);
+          
+            }
             });   
 };
 

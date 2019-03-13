@@ -62,4 +62,12 @@ var usertype = [{
     "usertypeid":1,"usertype":"virtual_user",
 }];
 
+
+var documenttype = [{
+    "documenttypeid":0,"documenttype":"Kitchen image",
+    "documenttypeid":1,"documenttype":"Kitchen Appliances",
+    "documenttypeid":2,"documenttype":"Packaging image",
+    "documenttypeid":3,"documenttype":"Signature image"
+}]
+
 module.exports = connection;

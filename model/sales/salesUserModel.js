@@ -35,14 +35,20 @@ Salesuser.createUser = function createUser(newUser, result) {
 
 Salesuser.getUserById = function getUserById(userId, result) {
         sql.query("Select * from Sales_QA_employees where id = ? ", userId, function (err, res) {             
-                if(err) {
-                    console.log("error: ", err);
-                    result(err, null);
-                }
-                else{
-                    result(null, res);
-              
-                }
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+               let sucobj=true;
+                let resobj = {  
+                success: sucobj,
+                result: res
+                }; 
+
+             result(null, resobj);
+          
+            }
             });   
 };
 

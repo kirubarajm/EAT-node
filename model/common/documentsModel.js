@@ -1,17 +1,25 @@
 'user strict';
 var sql = require('../db.js');
-const AWS = require('aws-sdk')
-const fs = require('fs')
+var path = require('path');
 
 
 var AWS_ACCESS_KEY='AKIAJJQUEYLIU23E63OA';
 var AWS_SECRET_ACCESS_KEY='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';
 
 //Task object constructor
+// var Documents = function(documents){
+//     this.moveit_userid = documents.documentsname;
+//     this.driver_lic=documents.lat_range;
+//     this.long_range=documents.long_range;
+//     this.created_at = new Date();
+// };
+
+
+
 var Documents = function(documents){
-    this.moveit_userid = documents.documentsname;
-    this.driver_lic=documents.lat_range;
-    this.long_range=documents.long_range;
+    this.type = documents.type;
+    this.url=documents.url;
+    this.docid=documents.docid;
     this.created_at = new Date();
 };
 
@@ -174,7 +182,7 @@ Documents.remove = function(id, result){
 
 Documents.newdocumentupload = function newdocumentupload(newDocument, result) {    
 
-    console.log(newDocument.files.lic); // the uploaded file object
+    //console.log(newDocument.files.lic); // the uploaded file object
      
      if (Object.keys(newDocument.files).length == 0) {
      return result.status(400).send('No files were uploaded.');
@@ -189,17 +197,20 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
      });
     
      var fileName = newDocument.files.lic;
-
+        var name = fileName.name;
+        
+        var name = Date.now() + '-' + name
+     
           const params = {
-              Bucket: 'eattovo', // pass your bucket name
-              Key: fileName.name, // file will be saved as testBucket/contacts.csv
-              Body: fileName.data
+              Bucket: 'eattovo/upload/sales/makeit', // pass your bucket name
+              Key: name, // file will be saved as testBucket/contacts.csv
+              Body: fileName.data,
+              ContentType:'image/jpg',
+              ACL:'public-read'  
           };
       
-          console.log(params);
-          console.log(params.Body);
           s3.upload(params, (err, data) => {
-            if(err) {
+            if(err) {   
                 console.log("error: ", err);
                 result(err, null);
             }
@@ -220,45 +231,14 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
  };
 
 
- Documents.createnewDocument = function createnewDocument(newdocument, res) {
+ Documents.createnewDocumentlist = function createnewDocumentlist(documentlist, res) {
 
-       var  documentlist = newdocument.documentlist
-
-    sql.query("INSERT INTO Documents_Sales set ?", newdocument, function (err, res1) {
-
+    sql.query("INSERT INTO Documents set ?", documentlist, function (err, result) {
         if (err) {
             console.log("error: ", err);
             res(null, err);
         }
-
-        var orderid = res1.insertId
-
-
-        for (var i = 0; i < documentlist.length; i++) {
-            var orderitem = new Orderitem(orderItems[i]);
-            orderitem.orderid = orderid;
-
-            // Orderitem.createOrderitems(orderitem, function (err, result) {
-            //     if (err)
-            //         res.send(err);
-            //     // res.json(result);
-            // });
-
-        }
-
-              let sucobj=true;
-              let mesobj = "Order Created successfully";
-              let resobj = {  
-                success: sucobj,
-                message:mesobj,
-                orderid: orderid
-                }; 
-        res(null, resobj);
-
-
-
     });
-
 
 };
 
