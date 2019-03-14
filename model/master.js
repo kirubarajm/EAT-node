@@ -47,8 +47,8 @@ var ordertype = [{
 }];
 
 var liveproductstatus = [{
-    "active_statusid":0,"active_status":"movelivepeoduct",
-    "active_statusid":1,"active_status":"removelivepeoduct"
+    "active_statusid":0,"active_status":"removelivepeoduct",
+    "active_statusid":1,"active_status":"movelivepeoduct"
 }];
 
 
@@ -68,6 +68,12 @@ var documenttype = [{
     "documenttypeid":1,"documenttype":"Kitchen Appliances",
     "documenttypeid":2,"documenttype":"Packaging image",
     "documenttypeid":3,"documenttype":"Signature image"
+}]
+
+
+var moveonlinestatus = [{
+    "moveonlinestatusid":0,"moveonlinestatus":"offline",
+    "moveonlinestatusid":1,"moveonlinestatus":"online",
 }]
 
 module.exports = connection;

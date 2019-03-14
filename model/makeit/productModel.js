@@ -22,6 +22,7 @@ var Product = function(product){
     this.saturday=product.saturday;
     this.sunday=product.sunday;
     this.created_at = new Date();
+    this.quantity = product.quantity;
 
 };
 
@@ -29,7 +30,6 @@ var Product = function(product){
 Product.createProduct = function createProduct(newProduct,itemlist, result) {   
   
   
-    var resobj = {};
         sql.query("INSERT INTO Product set ?", newProduct, function (err, res) {
                 
                 if(err) {
@@ -41,17 +41,17 @@ Product.createProduct = function createProduct(newProduct,itemlist, result) {
                    var productid = res.insertId
 
                    for(var i = 0; i < itemlist.length; i++){
-                    console.log(itemlist[i]);
+                     
                     var product_item = new Productitem(itemlist[i]);
-                    //new Productitem(itemlist[i]);
+                
                     product_item.productid = productid;
 
                     Productitem.createProductitems(product_item, function (err, result) {
                       if (err)
                           res.send(err);
-                      // res.json(result);
+                      res.json(result);
                   });
-
+                }
 
                   let sucobj=true;
                   let mesobj = "Product Item Created successfully";
@@ -63,31 +63,10 @@ Product.createProduct = function createProduct(newProduct,itemlist, result) {
 
                   result(null, resobj);
       
-                  
-                  //   sql.query("INSERT INTO Productitem(productid,itemid) values ('"+itemlist[i].productid+"','"+itemlist[i].productitemid+"')", function (err, res) {
-                   
-                  //      if(err) {
-                  //          console.log("error: ", err);
-                  //          result(null, err);
-                  //      }
-                  //      else{
-               
-                  //       let sucobj=true;
-                  //       let mesobj= "Productitem Created Sucessfully";
-                  //          let resobj = {  
-                  //          success: sucobj,
-                  //          message: mesobj,
-                  //          res: res
-                  //          }; 
-                  //          result(resobj);
-                           
-                  //      }
-                      
-                  //  }); 
                  }  
 
                
-                }
+                
                 
             });           
 };
@@ -154,12 +133,13 @@ Product.getAllVirutalProduct = function getAllVirutalProduct(result) {
 };
 
 Product.updateById = function(id, user, result){
-  sql.query("UPDATE Product SET task = ? WHERE productid = ?", [task.task, id], function (err, res) {
+  sql.query("UPDATE Product SET image = ? WHERE productid = ?", [id.image, id.productid], function (err, res) {
           if(err) {
               console.log("error: ", err);
                 result(null, err);
              }
            else{   
+             console.log('test');
              result(null, res);
                 }
             }); 
@@ -181,8 +161,6 @@ Product.remove = function(id, result){
 
 
 Product.getAllliveProduct = function getAllliveProduct(liveproductid,result) {
-
-  console.log(liveproductid);
   sql.query("Select * from Product where active_status = '1' and makeit_userid = "+liveproductid.makeit_userid+"", function (err, res) {
 
           if(err) {
@@ -206,7 +184,6 @@ Product.getAllliveProduct = function getAllliveProduct(liveproductid,result) {
 
 
 Product.moveliveproduct = function(req,result){
-  console.log(req);
   sql.query("UPDATE Product SET active_status = ? WHERE productid = ?",[req.active_status,req.productid], function (err, res) {
        
     if(err) {
@@ -237,7 +214,6 @@ Product.moveliveproduct = function(req,result){
 
 Product.productitemlist = function productitemlist(req,result) {
 
-  console.log(req);
   sql.query("select pt.itemid,pt.quantity,mi.menuitem_name from Productitem pt join Menuitem mi on pt.itemid = mi.menuitemid where pt.productid = "+req.productid+"", function (err, res) {
 
           if(err) {
@@ -279,6 +255,26 @@ Product.admin_list_all_product = function admin_list_all_product(req,result) {
           result(null, res);
         }
 });   
+};
+
+
+Product.update_quantity_byid = function update_quantity_byid (req, result){
+
+  sql.query("UPDATE Product SET quantity = ? WHERE productid = ? and makeit_userid = ?", [req.quantity,req.productid, req.makeit_userid], function (err, res) {
+          if(err) {
+              console.log("error: ", err);
+                result(null, err);
+             }else{  
+              let sucobj=true;
+              let message = "Quantity added successfully";
+              let resobj = {  
+                success: sucobj,
+                message:message,
+                }; 
+             result(null, resobj);
+            }
+           
+            }); 
 };
 
 

@@ -181,32 +181,54 @@ Order.get_all_orders = function get_all_orders(req,result) {
 
 
 Order.order_assign = function (req, result) {
-    //     var today = new Date();
-    //     var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-    //     var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
-    //     var dateTime = date+' '+time;  
+     
+    sql.query("Select online_status From MoveitUser where userid= '"+req.moveit_user_id+"' ", function (err, res1) {
 
-     console.log(req);
-
-    sql.query("UPDATE Orders SET moveit_user_id = ?,moveit_status = '1' WHERE orderid = ?", [req.moveit_user_id,req.orderid], function (err, res) {
-        
-        if(err) {
+        if (err) {
             console.log("error: ", err);
             result(null, err);
         }
-        else{
-            
-            let sucobj=true;
-            let message = "Order Assign Sucessfully";
-            let resobj = {  
-              success: sucobj,
-              message:message,
-             
-              }; 
-  
-           result(null, resobj);
+        else {
+                    
+                 var  online_status = res1[0].online_status
+                // console.log(online_status);
+                if(online_status == 1 || !online_status){
+                    sql.query("UPDATE Orders SET moveit_user_id = ? WHERE orderid = ?", [req.moveit_user_id,req.orderid], function (err, res) {
+        
+                        if(err) {
+                            console.log("error: ", err);
+                            result(null, err);
+                        }
+                        else{
+                            
+                            let sucobj=true;
+                            let message = "Order Assign Sucessfully";
+                            let resobj = {  
+                              success: sucobj,
+                              message:message,
+                             
+                              }; 
+                  
+                           result(null, resobj);
+                        }
+                    });
+        }else{
+
+                    let sucobj=true;
+                    let message = "Move it user is offline";
+                    let resobj = {  
+                      success: sucobj,
+                      message:message,
+                     
+                      }; 
+          
+                   result(null, resobj);
+        }
         }
     });
+        
+
+    
 };
 
 

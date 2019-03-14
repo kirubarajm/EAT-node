@@ -7,7 +7,6 @@ var Productitem = function (productitem) {
     this.productid = productitem.productid;
     this.itemid = productitem.itemid;
     this.quantity = productitem.quantity;
-    //this.created_at = new Date();
 };
 
 Productitem.createProductitems = function createProductitems(product_item, res) {

@@ -153,8 +153,8 @@ Makeituser.remove = function(id, result){
 };
 
 Makeituser.checkLogin = function checkLogin(req, result) {
-        var reqs = [req.email,req.password];
-        sql.query("Select * from MakeitUser where email = ? and password = ?", reqs, function (err, res) {             
+        var reqs = [req.phoneno,req.password];
+        sql.query("Select * from MakeitUser where phoneno = ? and password = ?", reqs, function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
                     

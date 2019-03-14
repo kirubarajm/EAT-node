@@ -92,8 +92,8 @@ Moveituser.remove = function(id, result){
 };
 
 Moveituser.checkLogin = function checkLogin(req, result) {
-        var reqs = [req.email,req.password];
-        sql.query("Select * from MoveitUser where email = ? and password = ?", reqs, function (err, res) {             
+        var reqs = [req.phoneno,req.password];
+        sql.query("Select * from MoveitUser where phoneno = ? and password = ?", reqs, function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
                     
@@ -141,4 +141,35 @@ Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req ,result) {
             }
         });   
 };
+
+
+
+Moveituser.update_online_status = function(req, result){
+
+    console.log(req);
+    sql.query("UPDATE MoveitUser SET online_status = ? WHERE userid = ?", [req.online_status, req.userid], function (err, res) {
+           
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+            if(req.online_status == 1){
+                key = "Move online";
+            }else{
+                key = "Move offline";
+            }
+           let sucobj=true;
+           let message = key;
+            let resobj = {  
+            success: sucobj,
+            message:message
+            }; 
+
+         result(null, resobj);
+        }
+    }); 
+  };
+
+
 module.exports= Moveituser;

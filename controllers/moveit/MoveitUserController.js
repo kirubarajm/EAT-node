@@ -76,3 +76,13 @@ exports.moveitSearch = function(req, res) {
     res.send(user);
   });
 };
+
+
+exports.moveit_live_status = function(req, res) {
+  Moveituser.update_online_status(req.body, function(err, user) {
+     if (err)
+       res.send(err);
+     res.json(user);
+   });
+ };
+ 

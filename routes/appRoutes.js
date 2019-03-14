@@ -257,6 +257,9 @@ app.route('/faq/:id')
     app.route('/virtual/:search')
       .get(eatuser.virtual_eatusersearch)
 
+    app.route('/makeit/addquantity')
+     .put(product.add_quantity);
+
 
       /*Admin Api*/
     app.route('/admin/eatuser/add')
@@ -364,5 +367,12 @@ app.route('/faq/:id')
 
     // Common
 
+    // Moveit
+    app.route('/moveit/faqs/:id')
+    .get(faq.list_all_faqbytype);
+
+    app.route('/moveit/status')
+    .put(moveituser.moveit_live_status);
+    
 
     };

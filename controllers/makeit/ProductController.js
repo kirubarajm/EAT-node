@@ -25,10 +25,8 @@ exports.list_all_virtual_product = function(req, res) {
 
 exports.create_a_product = function(req, res) {
   var new_product = new Product(req.body);
-  // console.log(req.body.itemid);
    var itemlist = req.body.items;
-  // console.log(new_product);
-  //handles null error 
+  
    if(!new_product.product_name){
             res.status(400).send({ error:true, message: 'Please provide name' });
     }
@@ -100,7 +98,6 @@ exports.moveliveproduct = function(req, res) {
 };
 
 
-
 exports.admin_list_all_product = function(req, res) {
   Product.admin_list_all_product(req.body,function(err, product) {
     console.log('controller')
@@ -110,3 +107,25 @@ exports.admin_list_all_product = function(req, res) {
     res.send(product);
   });
 };
+
+
+
+// exports.add_quantity = function(req, res) {
+//   console.log(req.body)
+//   Product.update_quantity_byid(req.body, function(err, product) {
+//      if (err)
+//        res.send(err);
+//      res.json(product);
+//    });
+//  };
+ 
+
+ exports.add_quantity = function(req, res) {
+
+  console.log(req.body);
+  Product.update_quantity_byid(req.body, function(err, result) {
+     if (err)
+       res.send(err);
+     res.json(result);
+   });
+ };
