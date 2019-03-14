@@ -317,12 +317,12 @@ app.route('/faq/:id')
     app.route('/admin/moveitusers')
       .post(moveituser.moveitSearch);
 
-    app.route('/admin/salesusers/:userid')
+    app.route('/admin/salesuser/:userid')
       .get(salesuser.read_a_user)
       .put(salesuser.update_a_user)
       .delete(salesuser.delete_a_user);
 
-    app.route('/admin/moveitusers/:userid')
+    app.route('/admin/moveituser/:userid')
       .get(moveituser.read_a_user)
       .put(moveituser.update_a_user)
       .delete(moveituser.delete_a_user);
@@ -354,6 +354,9 @@ app.route('/faq/:id')
 
     app.route('/sales/documentCreate')
       .post(salesdocument.create_a_new_documents);
+
+   app.route('/sales/documentView')
+      .post(salesdocument.sales_document_view);
 
         
     app.route('/sales/documents/:dname')
