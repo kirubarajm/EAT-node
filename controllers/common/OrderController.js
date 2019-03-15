@@ -88,3 +88,34 @@ exports.un_assign_orders = function (req, res) {
     res.json(result);
   });
 };
+
+
+exports.orderlist_by_moveit_userid = function(req, res) {
+
+  Order.orderlistbymoveituserid(req.params.moveit_user_id,function(err, result){
+    if (err)
+    res.send(err);
+    res.json(result); 
+  });
+ };
+
+
+ exports.orderview = function(req, res) {
+
+  Order.orderviewbymoveituser( req.params.orderid, function(err, result) {
+     if (err)
+       res.send(err);
+       res.json(result);
+   });
+ };
+
+
+ exports.order_pickup_status = function (req, res) {
+
+  console.log(req);
+  Order.order_pickup_status_by_moveituser(req.body, function (err, result) {
+    if (err)
+      res.send(err);
+    res.json(result);
+  });
+};

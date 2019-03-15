@@ -129,3 +129,14 @@ exports.admin_list_all_product = function(req, res) {
      res.json(result);
    });
  };
+
+
+ exports.add_quantity_productlive = function(req, res) {
+
+  
+  Product.update_quantity_product_byid(req.body, function(err, result) {
+     if (err)
+       res.send(err);
+     res.json(result);
+   });
+ };

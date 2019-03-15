@@ -155,9 +155,9 @@ Moveituser.update_online_status = function(req, result){
         }
         else{
             if(req.online_status == 1){
-                key = "Move online";
+                key = "Moved online";
             }else{
-                key = "Move offline";
+                key = "Moved offline";
             }
            let sucobj=true;
            let message = key;

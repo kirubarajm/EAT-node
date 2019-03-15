@@ -278,4 +278,25 @@ Product.update_quantity_byid = function update_quantity_byid (req, result){
 };
 
 
+
+Product.update_quantity_product_byid = function update_quantity_product_byid (req, result){
+
+  sql.query("UPDATE Product SET quantity = ?,active_status = ? WHERE productid = ? and makeit_userid = ?", [req.quantity,req.active_status,req.productid, req.makeit_userid], function (err, res) {
+          if(err) {
+              console.log("error: ", err);
+                result(null, err);
+             }else{  
+              let sucobj=true;
+              let message = "Quantity added successfully / Product Moved live successfully";
+              let resobj = {  
+                success: sucobj,
+                message:message,
+                }; 
+             result(null, resobj);
+            }
+           
+            }); 
+};
+
+
 module.exports= Product;

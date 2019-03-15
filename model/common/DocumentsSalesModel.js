@@ -163,8 +163,9 @@ Documentsales.remove = function(id, result){
 
 
 
-Documentsales.getsalesDocumentById = function getsalesDocumentById(id, result) {
-    sql.query("Select * from Documents_Sales as dcs left join Documents as dc on dcs.docid=dc.docid where dcs.sales_userid = ?  and dcs.makeit_userid = ?", id.sales_userid,id.makeit_userid, function (err, res) {             
+Documentsales.getsalesDocumentById = function getsalesDocumentById(req, result) {
+   
+    sql.query("Select * from Documents_Sales as dcs left join Documents as dc on dcs.docid=dc.docid where dcs.sales_userid = ?  and dcs.makeit_userid = ?", [req.sales_userid,req.makeit_userid], function (err, res) {             
             if(err) {
                 console.log("error: ", err);
                 result(err, null);

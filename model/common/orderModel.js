@@ -13,11 +13,11 @@ var Order = function (order) {
     this.vocher = order.vocher;
     this.payment_type = order.payment_type;
     this.makeit_user_id = order.makeit_user_id;
-    this.moveit_user_id = order.moveit_user_id;
+    this.moveit_user_id = order.moveit_user_id ||0;
     this.cus_lat = order.cus_lat;
     this.cus_lon = order.cus_lon;
     this.makeit_status = order.makeit_status || '0';
-    this.moveit_status = order.moveit_status || '0';
+  //  this.moveit_status = order.moveit_status || '0';
     this.moveit_expected_delivered_time = order.moveit_expected_delivered_time;
     this.moveit_actual_delivered_time = order.moveit_actual_delivered_time;
     this.moveit_remarks_order = order.moveit_remarks_order;
@@ -116,6 +116,7 @@ Order.getAllVirtualOrder = function getAllVirtualOrder(result) {
 };
 
 Order.updateById = function (id, user, result) {
+    console.log('test');
     sql.query("UPDATE Orders SET moveit_user_id = ? WHERE orderid = ?", [id, id], function (err, res) {
         if (err) {
             console.log("error: ", err);
@@ -237,7 +238,7 @@ Order.getUnassignorders = function getUnassignorders(result) {
    /// Select * from Orders as ors left join User as us on ors.userid=us .userid where ors.moveit_status = '0';
    // sql.query("Select * from Orders where moveit_status = '0' ", function (err, res) {
 
-        sql.query("Select * from Orders as ors left join User as us on ors.userid=us.userid where ors.moveit_status = '0'", function (err, res) {
+        sql.query("Select * from Orders as ors left join User as us on ors.userid=us.userid where ors.moveit_user_id = 0", function (err, res) {
 
         if(err) {
             console.log("error: ", err);
@@ -256,5 +257,120 @@ Order.getUnassignorders = function getUnassignorders(result) {
     });
 };
 
+
+
+Order.orderlistbymoveituserid = function(moveit_user_id, result){
+    
+    var query = "select * from Orders WHERE moveit_user_id  = '"+moveit_user_id+"'";
+
+    
+    sql.query(query, function (err, res) {
+
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          let sucobj=true;
+          let resobj = {  
+            success: sucobj,
+            result: res 
+            }; 
+
+         result(null, resobj);
+        }
+    }); 
+};
+
+
+
+
+
+Order.orderviewbymoveituser = function(orderid, result){
+     
+               // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
+                 sql.query("select ot.productid,pt.product_name,ot.quantity,ot.price,ot.gst,ot.created_at,ot.orderid from OrderItem ot left outer join Product pt on ot.productid = pt.productid where ot.orderid = '" + orderid +"'", function (err, responce) {
+             
+                    if(err) {
+                        console.log("error: ", err);
+                        result(null, err);
+                    }
+                    else{
+                      
+                     
+                      let sucobj=true;
+                      let resobj = {  
+                      success: sucobj,
+                      res: responce
+                      }; 
+          
+                     result(null, resobj);
+                    }   
+                });
+            
+         
+    };
+
+
+
+    Order.order_pickup_status_by_moveituser = function (req,  result) {
+     
+
+        sql.query("Select * from Orders where orderid = ?",[req.orderid], function (err, res1) {
+
+            if (err) {
+                console.log("error: ", err);
+                result(null, err);
+            }
+            else {
+                
+                  var  getmoveitid = res1[0].moveit_user_id;
+
+                  console.log(getmoveitid);
+
+                  if(getmoveitid === req.moveit_user_id ){
+
+                    sql.query("UPDATE Orders SET orderstatus = ? WHERE orderid = ? and moveit_user_id =?", [req.orderstatus, req.orderid, req.moveit_user_id], function (err, res) {
+                        if(err) {
+                            console.log("error: ", err);
+                            result(null, err);
+                        }
+                        else{
+                          
+                         
+                          let sucobj=true;
+                          let message = "Order Pickedup successfully";
+                          let resobj = {  
+                          success: sucobj,
+                          message:message,
+                          res: res
+                          }; 
+              
+                         result(null, resobj);
+                        }   
+                    });
+
+                  }else{
+                    let sucobj=true;
+                    let message = "Following order is not assigned to you!";
+                    let resobj = {  
+                    success: sucobj,
+                    message:message,
+                    
+                    }; 
+        
+                   result(null, resobj);
+                  }
+
+
+
+            }
+        });
+
+
+        
+       
+    };
+    
 
 module.exports = Order;

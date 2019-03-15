@@ -328,8 +328,7 @@ Makeituser.all_order_list = function(result){
             console.log("error: ", err);
             result(null, err);
         }
-        else{
-          console.log('Product : ', res);  
+        else{ 
           let sucobj=true;
           let resobj = {  
             success: sucobj,

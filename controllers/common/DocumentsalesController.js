@@ -105,7 +105,7 @@ exports.remove_s3_sales_doc = function(req, res) {
 
 
   exports.sales_document_view = function(req, res) {
-    console.log(req.body);
+   
     DocumentSales.getsalesDocumentById(req.body, function(err, documents) {
     if (err)
       res.send(err);

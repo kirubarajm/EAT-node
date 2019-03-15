@@ -148,7 +148,7 @@ exports.orderview = function(req, res) {
 
  exports.orderstatus = function(req, res) {
   
-  Makeituser.orderstatusbyorderid( req.body,function(err, result){
+  Makeituser.orderlistbymoveituserid( req.body,function(err, result){
     if (err)
     res.send(err);
     res.json(result); 

@@ -228,7 +228,7 @@ app.route('/faq/:id')
     // .post(makeituser.createorder);
 
     app.route('/makeit/orders')
-    .get(makeituser.orderlist);
+    .get(makeituser.all_order_list);
 
     app.route('/makeit/orders/listbydate')
     .post(makeituser.all_order_list_bydate);
@@ -259,6 +259,9 @@ app.route('/faq/:id')
 
     app.route('/makeit/addquantity')
      .put(product.add_quantity);
+
+    app.route('/makeit/addquantityandproductlive')
+     .put(product.add_quantity_productlive);
 
 
       /*Admin Api*/
@@ -371,8 +374,17 @@ app.route('/faq/:id')
     app.route('/moveit/faqs/:id')
     .get(faq.list_all_faqbytype);
 
-    app.route('/moveit/status')
+    app.route('/moveit/onlinestatus')
     .put(moveituser.moveit_live_status);
+
+    app.route('/moveit/orders/:moveit_user_id')
+    .get(orders.orderlist_by_moveit_userid);
+
+    app.route('/moveit/vorders/:orderid')
+      .get(orders.orderview);
+
+    app.route('/moveit/orderpickupstatus')
+      .put(orders.order_pickup_status);
     
 
     };
