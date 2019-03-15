@@ -22,7 +22,7 @@ var Product = function(product){
     this.saturday=product.saturday;
     this.sunday=product.sunday;
     this.created_at = new Date();
-    this.quantity = product.quantity;
+    this.quantity = product.quantity ||0;
 
 };
 
@@ -247,12 +247,18 @@ Product.admin_list_all_product = function admin_list_all_product(req,result) {
         sql.query(query, function (err, res) {
 
           if(err) {
-              console.log("error: ", err);
-              result(null, err);
-            }
-            else{
-            console.log('User : ', res);  
-          result(null, res);
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          console.log('Product : ', res);  
+          let sucobj=true;
+          let resobj = {  
+            success: sucobj,
+            result: res 
+            }; 
+
+         result(null, resobj);
         }
 });   
 };

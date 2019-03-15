@@ -77,4 +77,15 @@ var moveonlinestatus = [{
     "moveonlinestatusid":1,"moveonlinestatus":"online",
 }]
 
+
+var paymentstatus = [{
+    "paymentstatusid":0,"paymentstatus":"Pending",
+    "paymentstatusid":1,"paymentstatus":"Paid",
+    "paymentstatusid":2,"paymentstatus":"Cancelled",
+    "paymentstatusid":3,"paymentstatus":"Refunded",
+    "paymentstatusid":4,"paymentstatus":"Declined",
+    "paymentstatusid":5,"paymentstatus":"onliIncompletene",
+
+}]
+
 module.exports = connection;

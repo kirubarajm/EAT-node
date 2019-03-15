@@ -385,6 +385,9 @@ app.route('/faq/:id')
 
     app.route('/moveit/orderpickupstatus')
       .put(orders.order_pickup_status);
+
+      app.route('/moveit/orderdeliverystatus')
+      .put(orders.order_delivery_status);
     
 
     };

@@ -144,8 +144,9 @@ Order.remove = function (id, result) {
 
 Order.get_all_orders = function get_all_orders(req,result) {
     //console.log(req);
-    var query = "select od.userid,us.name,od.ordertime,od.locality,od.delivery_charge,od.ordertype,od.orderstatus,od.gst,od.vocher,od.payment_type,od.makeit_user_id,od.moveit_user_id,od.cus_lat,od.cus_lon,od.cus_address,od.makeit_status,od.moveit_status,od.price,od.payment_status from Orders od join User us on od.userid = us.userid ";
-   
+   // Select * from Orders as ors left join User as us on ors.userid=us.userid where ors.moveit_user_id = 0
+  //  var query = "select od.userid,us.name,od.ordertime,od.locality,od.delivery_charge,od.ordertype,od.orderstatus,od.gst,od.vocher,od.payment_type,od.makeit_user_id,od.moveit_user_id,od.cus_lat,od.cus_lon,od.cus_address,od.makeit_status,od.price,od.payment_status from Orders od join User us on od.userid = us.userid ";
+    var query = "Select * from Orders as od left join User as us on od.userid=us.userid"
     var searchquery = "us.phoneno LIKE  '%"+req.search+"%' OR us.email LIKE  '%"+req.search+"%' or us.name LIKE  '%"+req.search+"%'  or od.orderid LIKE  '%"+req.search+"%'";
     if(req.virtualid !== 'all'){
         query = query+ " where us.virutal = '"+req.virtualid+"'";
@@ -362,15 +363,66 @@ Order.orderviewbymoveituser = function(orderid, result){
                    result(null, resobj);
                   }
 
+            }
+        });
 
+     
+    };
+    
+
+
+
+    Order.order_delivery_status_by_moveituser = function (req,  result) {
+
+        
+     
+        sql.query("Select * from Orders where orderid = ? and moveit_user_id = ?",[req.orderid, req.moveit_user_id], function (err, res1) {
+
+            if (err) {
+                console.log("error: ", err);
+                result(null, err);
+            }
+            else {
+                console.log(res1);
+                    // check the payment status - 1 is paid
+                  if(res1[0].payment_status === 1){
+
+                    sql.query("UPDATE Orders SET orderstatus = ? WHERE orderid = ? and moveit_user_id =?", [req.orderstatus, req.orderid, req.moveit_user_id], function (err, res) {
+                        if(err) {
+                            console.log("error: ", err);
+                            result(null, err);
+                        }
+                        else{
+                          
+                         
+                          let sucobj=true;
+                          let message = "Order Delivery successfully";
+                          let resobj = {  
+                          success: sucobj,
+                          message:message
+                          }; 
+              
+                         result(null, resobj);
+                        }   
+                    });
+
+                  }else{
+                    let sucobj=true;
+                    let message = "Payment not yet paid!";
+                    let resobj = {  
+                    success: sucobj,
+                    message:message,
+                    payment_status : res1[0].payment_status
+                    
+                    }; 
+        
+                   result(null, resobj);
+                  }
 
             }
         });
 
-
-        
-       
+     
     };
     
-
 module.exports = Order;

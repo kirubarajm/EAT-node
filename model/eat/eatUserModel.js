@@ -121,12 +121,17 @@ Eatuser.getAllVirtualUser = function getAllVirtualUser(req,result) {
 
         if(err) {
             console.log("error: ", err);
-            result(null, err);
+            result(err, null);
         }
         else{
-          console.log('User : ', res);  
+           let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result: res
+            }; 
 
-         result(null, res);
+         result(null, resobj);
+      
         }
     }); 
     // sql.query("Select * from User where virutal = '"+req+"'", function (err, res) {

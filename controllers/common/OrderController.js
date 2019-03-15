@@ -86,6 +86,7 @@ exports.un_assign_orders = function (req, res) {
     if (err)
       res.send(err);
     res.json(result);
+
   });
 };
 
@@ -114,6 +115,15 @@ exports.orderlist_by_moveit_userid = function(req, res) {
 
   console.log(req);
   Order.order_pickup_status_by_moveituser(req.body, function (err, result) {
+    if (err)
+      res.send(err);
+    res.json(result);
+  });
+};
+
+exports.order_delivery_status = function (req, res) {
+
+  Order.order_delivery_status_by_moveituser(req.body, function (err, result) {
     if (err)
       res.send(err);
     res.json(result);

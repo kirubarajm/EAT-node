@@ -117,7 +117,7 @@ Allocation.remove = function(id, result){
 
 Allocation.update_a_followupstatus = function(req, result){
 
-    console.log(req);
+    
     sql.query("UPDATE Allocation SET status = ? WHERE makeit_userid = ? and sales_emp_id = ?" , [req.status,req.makeit_userid,req.sales_emp_id], function (err, res) {
             if(err) {
                 console.log("error: ", err);

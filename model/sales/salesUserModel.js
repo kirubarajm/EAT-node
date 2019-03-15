@@ -129,15 +129,20 @@ Salesuser.getAllsalesSearch = function getAllsalesSearch(req ,result) {
 
     sql.query(query, function (err, res) {
 
-            if(err) {
-                console.log("error: ", err);
-                result(null, err);
-            }
-            else{
-              console.log('User : ', res);  
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+           let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result: res
+            }; 
 
-             result(null, res);
-            }
+         result(null, resobj);
+      
+        }
         });   
 };
 
