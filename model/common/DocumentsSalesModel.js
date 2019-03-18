@@ -111,8 +111,10 @@ sql.query("UPDATE MoveitUser SET Documents = ? WHERE docid = ?", [documents.task
         }); 
 };
 
-Documentsales.remove = function(id, result){
- sql.query("DELETE FROM Documents_Sales WHERE docid = ?", [id], function (err, res) {
+Documentsales.remove = function(req, result){
+
+    console.log(req);
+ sql.query("DELETE FROM Documents_Sales WHERE docid = ?", [req.did], function (err, res) {
 
             if(err) {
                 console.log("error: ", err);

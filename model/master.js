@@ -25,8 +25,9 @@ var OrderStatus = [{
     "OrderStatusid":1,"OrderStatus":"orderAccept",
     "OrderStatusid":2,"OrderStatus":"orderPrepare",
     "OrderStatusid":3,"OrderStatus":"orderPacked",
-    "OrderStatusid":4,"OrderStatus":"orderPickedup",
-    "OrderStatusid":5,"OrderStatus":"orderDelivered"
+    "OrderStatusid":4,"OrderStatus":"kitchen reached",
+    "OrderStatusid":5,"OrderStatus":"orderPickedup",
+    "OrderStatusid":6,"OrderStatus":"orderDelivered"
 }];
 
 var paymenttype = [{

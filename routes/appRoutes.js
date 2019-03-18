@@ -56,7 +56,7 @@ module.exports = function(app) {
   app.route('/moveit/registration')
     .post(moveituser.create_a_user);
   app.route('/moveit/login')
-    .get(moveituser.checklogin)
+    .post(moveituser.checklogin)
 
    //Routes for makeit users
 
@@ -365,8 +365,8 @@ app.route('/faq/:id')
       .post(salesdocument.sales_document_view);
 
         
-    app.route('/sales/documents/:dname')
-     .delete(salesdocument.remove_s3_sales_doc);
+    app.route('/sales/document/remove')
+     .delete(documents.remove_s3_sales_doc);
 
     // Common
 
@@ -386,8 +386,14 @@ app.route('/faq/:id')
     app.route('/moveit/orderpickupstatus')
       .put(orders.order_pickup_status);
 
-      app.route('/moveit/orderdeliverystatus')
+    app.route('/moveit/orderdeliverystatus')
       .put(orders.order_delivery_status);
+
+    app.route('/moveit/moveitstatus')
+      .put(orders.moveit_kitchen_reached);
+
+    app.route('/moveit/qualitycheck')
+      .post(moveituser.moveit_kitchen_qualitycheck);
     
 
     };

@@ -262,8 +262,9 @@ Order.getUnassignorders = function getUnassignorders(result) {
 
 Order.orderlistbymoveituserid = function(moveit_user_id, result){
     
-    var query = "select * from Orders WHERE moveit_user_id  = '"+moveit_user_id+"'";
+  //  var query = "select * from Orders WHERE moveit_user_id  = '"+moveit_user_id+"'";
 
+        var query = "Select ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid where ors.moveit_user_id  = "+moveit_user_id+"";
     
     sql.query(query, function (err, res) {
 
@@ -272,6 +273,9 @@ Order.orderlistbymoveituserid = function(moveit_user_id, result){
             result(null, err);
         }
         else{
+
+
+
           let sucobj=true;
           let resobj = {  
             success: sucobj,
@@ -371,11 +375,10 @@ Order.orderviewbymoveituser = function(orderid, result){
     
 
 
+   
 
     Order.order_delivery_status_by_moveituser = function (req,  result) {
-
-        
-     
+    
         sql.query("Select * from Orders where orderid = ? and moveit_user_id = ?",[req.orderid, req.moveit_user_id], function (err, res1) {
 
             if (err) {
@@ -425,4 +428,63 @@ Order.orderviewbymoveituser = function(orderid, result){
      
     };
     
+    Order.moveit_kitchen_reached_status = function (req,  result) {
+     
+        var kitchenreachtime = new Date();
+
+     sql.query("Select * from Orders where orderid = ?",[req.orderid], function (err, res1) {
+
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else {
+            
+              var  getmoveitid = res1[0].moveit_user_id;
+
+              console.log(getmoveitid);
+
+              if(getmoveitid === req.moveit_user_id ){
+
+                sql.query("UPDATE Orders SET orderstatus = ?,moveit_reached_time = ? WHERE orderid = ? and moveit_user_id =?", [req.orderstatus,kitchenreachtime, req.orderid, req.moveit_user_id], function (err, res) {
+                    if(err) {
+                        console.log("error: ", err);
+                        result(null, err);
+                    }
+                    else{
+                      
+                     
+                      let sucobj=true;
+                      let message = "kitchen reached successfully";
+                      let resobj = {  
+                      success: sucobj,
+                      message:message,
+                      res: res
+                      }; 
+          
+                     result(null, resobj);
+                    }   
+                });
+
+              }else{
+                let sucobj=true;
+                let message = "Following order is not assigned to you!";
+                let resobj = {  
+                success: sucobj,
+                message:message,
+                
+                }; 
+    
+               result(null, resobj);
+              }
+
+        }
+    });
+
+ 
+};
+
+
+
+
 module.exports = Order;

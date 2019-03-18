@@ -11,7 +11,7 @@ var Makeitrating = function (makeitrating) {
 
 
 Makeitrating.createRating = function createRating(new_rating, result) {    
-    sql.query("INSERT INTO Makeit_Rating set ?", new_rating, function (err, res) {
+    sql.query("INSERT INTO SalesRatingForMakeit set ?", new_rating, function (err, res) {
             
             if(err) {
                 console.log("error: ", err);

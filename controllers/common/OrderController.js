@@ -129,3 +129,32 @@ exports.order_delivery_status = function (req, res) {
     res.json(result);
   });
 };
+
+exports.moveit_kitchen_reached = function (req, res) {
+
+  Order.moveit_kitchen_reached_status(req.body, function (err, result) {
+    if (err)
+      res.send(err);
+    res.json(result);
+  });
+};
+
+
+
+exports.moveit_kitchen_qualitycheck = function (req, res) {
+  var kitchenquality = new Order(req.body);
+  
+  //handles null error 
+  if (!kitchenquality.moveit_userid || !kitchenquality.orderid || !kitchenquality.makeit_user_id || !kitchenquality.enabled) {
+
+    res.status(400).send({ error: true, message: 'Please provide moveit_userid/orderid/makeit_user_id/enabled' });
+
+  }
+  else {
+    Order.create_moveit_kitchen_qualitycheck(kitchenquality, function (err, result) {
+      if (err)
+        res.send(err);
+      res.json(result);
+    });
+  }
+};

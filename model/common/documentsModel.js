@@ -2,9 +2,21 @@
 var sql = require('../db.js');
 var path = require('path');
 
-
+    
 var AWS_ACCESS_KEY='AKIAJJQUEYLIU23E63OA';
 var AWS_SECRET_ACCESS_KEY='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';
+const fs = require('fs');
+     const AWS = require('aws-sdk');
+     const s3 = new AWS.S3({
+     accessKeyId: AWS_ACCESS_KEY,
+     secretAccessKey: AWS_SECRET_ACCESS_KEY
+     });
+
+
+
+
+
+
 
 //Task object constructor
 // var Documents = function(documents){
@@ -53,12 +65,12 @@ Documents.createDocument = function createDocument(newDocument, result) {
     });*/
     
 
-    const fs = require('fs');
-    const AWS = require('aws-sdk');
-    const s3 = new AWS.S3({
-    accessKeyId: AWS_ACCESS_KEY,
-    secretAccessKey: AWS_SECRET_ACCESS_KEY
-    });
+    // const fs = require('fs');
+    // const AWS = require('aws-sdk');
+    // const s3 = new AWS.S3({
+    // accessKeyId: AWS_ACCESS_KEY,
+    // secretAccessKey: AWS_SECRET_ACCESS_KEY
+    // });
 
 
     if(newDocument.files.lic)
@@ -164,7 +176,11 @@ Documents.updateById = function(id, documents, result){
                 }
             }); 
 };
+
+
 Documents.remove = function(id, result){
+
+    console.log();
      sql.query("DELETE FROM Documents WHERE docid = ?", [id], function (err, res) {
 
                 if(err) {
@@ -189,13 +205,10 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
      }
  
  
-     const fs = require('fs');
-     const AWS = require('aws-sdk');
-     const s3 = new AWS.S3({
-     accessKeyId: AWS_ACCESS_KEY,
-     secretAccessKey: AWS_SECRET_ACCESS_KEY
-     });
+     
     
+
+     
      var fileName = newDocument.files.lic;
         var name = fileName.name;
         
@@ -242,6 +255,52 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
 
 };
 
+
+
+Documents.remove_document = function(req, result){
+
+
+
+        const fs = require('fs');
+        const AWS = require('aws-sdk');
+        const s3 = new AWS.S3({
+        accessKeyId: AWS_ACCESS_KEY,
+        secretAccessKey: AWS_SECRET_ACCESS_KEY
+        });
+       
+        
+        var dname = req.dname;
+           
+           //var name = Date.now() + '-' + name
+        
+             const params = {
+                 Bucket: 'eattovo', // pass your bucket name
+                 Key: dname, // file will be saved as testBucket/contacts.csv
+             };
+
+            console.log(params);
+
+             s3.deleteObject(params, (err, data) => {
+                if(err) {   
+                    console.log("error: ", err);
+                    result(err, null);
+                }
+                else{
+                                  
+                    let sucobj='true';
+                    let message = 'Doucment deleted successfully';
+                    let resobj = {  
+                    success: sucobj,
+                    message:message,
+                    data:data
+                    };
+                    result(null, resobj);
+                }
+            })
+                         
+        
+   
+};
 
 
 module.exports=Documents;

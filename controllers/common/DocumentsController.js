@@ -90,3 +90,17 @@ exports.upload_a_documents = function(req, res) {
 };
 
 
+
+exports.remove_s3_sales_doc = function(req, res) {
+  
+  if(!req.body.dname){
+       res.status(400).send({ error:true, message: 'Please provide documents name' });
+   }
+ else{
+  Document.remove_document(req.body, function(err, documents) {
+   if (err)
+     res.send(err);
+   res.json(documents);
+ });
+}
+};

@@ -95,7 +95,7 @@ exports.remove_s3_sales_doc = function(req, res) {
           res.status(400).send({ error:true, message: 'Please provide documents name' });
       }
     else{
-      DocumentSales.remove(req.body.dname, function(err, documents) {
+      DocumentSales.remove(req.body, function(err, documents) {
       if (err)
         res.send(err);
       res.json(documents);

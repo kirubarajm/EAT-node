@@ -104,7 +104,9 @@ Moveituser.checkLogin = function checkLogin(req, result) {
                     result(resobj, null);
                 }
                 else{
-                    let sucobj=(res.length==1)?'true':'false';
+                        len = res.length;
+                    console.log(len);
+                    let sucobj=(res.length !==0)?'true':'false';
                     let resobj = {  
                     success: sucobj,
                     result: res 

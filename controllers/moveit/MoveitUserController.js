@@ -1,6 +1,7 @@
 'use strict';
 
 var Moveituser = require('../../model/moveit/moveitUserModel.js');
+var MoveitRatingForMakeit = require('../../model/moveit/MoveitRatingForMakeitModel.js');
 
 exports.list_all_user = function(req, res) {
   Moveituser.getAllUser(function(err, user) {
@@ -86,3 +87,22 @@ exports.moveit_live_status = function(req, res) {
    });
  };
  
+
+ exports.moveit_kitchen_qualitycheck = function (req, res) {
+  var kitchenquality = new MoveitRatingForMakeit(req.body);
+  var kitchenqualitylist = req.body.qualitychecklist
+
+  if(!kitchenqualitylist){
+
+    res.status(400).send({ error:true, message: 'Please provide kitchenqualitylist' });
+
+}
+else{
+
+    MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck(kitchenquality,kitchenqualitylist, function (err, result) {
+      if (err)
+        res.send(err);
+      res.json(result);
+    });
+}
+};
