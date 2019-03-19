@@ -286,7 +286,7 @@ app.route('/faq/:id')
     app.route('/admin/product')
       .post(product.admin_list_all_product);
 
-    app.route('/admin/makeituser')
+    app.route('/admin/makeitusers')
       .post(makeituser.admin_list_all_makeitusers);
 
     app.route('/admin/makeituser/approval')

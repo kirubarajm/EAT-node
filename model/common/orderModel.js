@@ -143,13 +143,17 @@ Order.remove = function (id, result) {
 };
 
 Order.get_all_orders = function get_all_orders(req,result) {
+    var orderlimit = 20;
+    var page = req.page||1;
+    var startlimit = (page - 1)*orderlimit;
+    
     //console.log(req);
    // Select * from Orders as ors left join User as us on ors.userid=us.userid where ors.moveit_user_id = 0
   //  var query = "select od.userid,us.name,od.ordertime,od.locality,od.delivery_charge,od.ordertype,od.orderstatus,od.gst,od.vocher,od.payment_type,od.makeit_user_id,od.moveit_user_id,od.cus_lat,od.cus_lon,od.cus_address,od.makeit_status,od.price,od.payment_status from Orders od join User us on od.userid = us.userid ";
     var query = "Select * from Orders as od left join User as us on od.userid=us.userid"
     var searchquery = "us.phoneno LIKE  '%"+req.search+"%' OR us.email LIKE  '%"+req.search+"%' or us.name LIKE  '%"+req.search+"%'  or od.orderid LIKE  '%"+req.search+"%'";
     if(req.virtualid !== 'all'){
-        query = query+ " where us.virutal = '"+req.virtualid+"'";
+        query = query+ " where od.ordertype = '"+req.virtualid+"'";
        
     }
     //var search= req.search
@@ -158,23 +162,33 @@ Order.get_all_orders = function get_all_orders(req,result) {
     }else if(req.search){
         query = query+" where " +searchquery
     }
-    
-    query=query+ " order by od.orderid desc";
-    sql.query(query, function (err, res) {
+       
+   var  limitquery=query+ " order by od.orderid desc limit "+startlimit+","+orderlimit+" ";
+  
+    sql.query(limitquery, function (err, res1) {
 
         if(err) {
             console.log("error: ", err);
             result(null, err);
         }
-        else{
-            
-            let sucobj=true;
-            let resobj = {  
-              success: sucobj,
-              result: res 
-              }; 
-  
-           result(null, resobj);
+        else{  var totalcount = 0;
+
+            sql.query(query, function (err, res2) {
+                 totalcount = res2.length;
+
+                 let sucobj=true;
+                 let resobj = {  
+                   success: sucobj,
+                   totalorder:totalcount,
+                   result: res1
+                   
+                   }; 
+       
+                result(null, resobj);
+
+               
+             }); 
+        
         }
     }); 
     
@@ -264,8 +278,10 @@ Order.orderlistbymoveituserid = function(moveit_user_id, result){
     
   //  var query = "select * from Orders WHERE moveit_user_id  = '"+moveit_user_id+"'";
 
-        var query = "Select ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid where ors.moveit_user_id  = "+moveit_user_id+"";
-    
+      //  var query = "Select ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid where ors.moveit_user_id  = "+moveit_user_id+"";
+    // var query = "Select GROUP_CONCAT(ot.productid) as productid,GROUP_CONCAT(pt.product_name) as product_name,ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid join OrderItem ot on ot.orderid = ors.orderid join Product pt on ot.productid=pt.productid where ors.moveit_user_id ="+moveit_user_id+"";
+       // var query = "Select GROUP_CONCAT('[',(CONCAT('{productid:', ot.productid, ', product_name:',pt.product_name,'}')),']') as products,ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid join OrderItem ot on ot.orderid = ors.orderid join Product pt on ot.productid=pt.productid where ors.moveit_user_id = "+moveit_user_id+"";
+        var query = "Select concat('[',GROUP_CONCAT(CONCAT('{productid:', ot.productid, ', product_name:',pt.product_name,'}')),']') items,ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid join OrderItem ot on ot.orderid = ors.orderid join Product pt on ot.productid=pt.productid where ors.moveit_user_id =10";
     sql.query(query, function (err, res) {
 
         if(err) {
@@ -273,9 +289,9 @@ Order.orderlistbymoveituserid = function(moveit_user_id, result){
             result(null, err);
         }
         else{
-
-
-
+               // var orders = res.map(x =>JSON.stringify(x));
+            
+            
           let sucobj=true;
           let resobj = {  
             success: sucobj,

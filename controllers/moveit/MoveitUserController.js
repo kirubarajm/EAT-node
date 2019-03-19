@@ -1,7 +1,7 @@
 'use strict';
 
 var Moveituser = require('../../model/moveit/moveitUserModel.js');
-var MoveitRatingForMakeit = require('../../model/moveit/MoveitRatingForMakeitModel.js');
+var MoveitRatingForMakeit = require('../../model/moveit/moveitRatingForMakeitModel');
 
 exports.list_all_user = function(req, res) {
   Moveituser.getAllUser(function(err, user) {

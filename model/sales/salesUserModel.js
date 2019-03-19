@@ -120,12 +120,19 @@ Salesuser.checkLogin = function checkLogin(req, result) {
 
 Salesuser.getAllsalesSearch = function getAllsalesSearch(req ,result) {
     
-    
-    var query = "Select * from Sales_QA_employees ";
-    
+    var today = new Date();
+
+    console.log(today);
+  //  var query = "Select * from Sales_QA_employees ";
+
+   // var query = "Select se.id,se.name,se.address,se.phoneno,COUNT(al.sales_emp_id) totalassigned from Sales_QA_employees se left join Allocation al on se.id = al.sales_emp_id ";
+    var  query = "Select se.id,se.name,se.address,se.email,se.password,se.phoneno,COUNT(al.sales_emp_id) totalassigned from Sales_QA_employees se left join Allocation al on se.id = al.sales_emp_id and DATE(al.assign_date) = CURDATE()";
     if(req.search && req.search !==''){
-         query = query+" where name LIKE  '%"+req.search+"%'";
+         query = query+"where se.name LIKE  '%"+req.search+"%'";
     }
+
+            query = query+" group by se.id"
+          //DATE(al.assign_date) = CURDATE() 
 
     sql.query(query, function (err, res) {
 
