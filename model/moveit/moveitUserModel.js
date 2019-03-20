@@ -14,6 +14,10 @@ var Moveituser = function(moveituser){
     this.localityid = moveituser.localityid;
     this.password = moveituser.password;
     this.created_at = new Date();
+    this.bank_name = moveituser.bank_name;
+    this.ifsc = moveituser.ifsc;
+    this.bank_holder_name = moveituser.bank_holder_name;
+    this.moveit_hub = moveituser.moveit_hub;
     
 };
 
@@ -39,7 +43,7 @@ Moveituser.createUser = function createUser(newUser, result) {
 };
 
 Moveituser.getUserById = function getUserById(userId, result) {
-        sql.query("Select * from MoveitUser where userid = ? ", userId, function (err, res) {             
+        sql.query("Select * From MoveitUser mu INNER JOIN  Moveit_hubs mh  ON mu.moveit_hub = mh.moveithub_id where mu.userid = ? ", userId, function (err, res) {             
             if(err) {
                 console.log("error: ", err);
                 result(err, null);
@@ -100,7 +104,7 @@ Moveituser.remove = function(id, result){
 
 Moveituser.checkLogin = function checkLogin(req, result) {
         var reqs = [req.phoneno,req.password];
-        sql.query("Select * from MoveitUser where phoneno = ? and password = ?", reqs, function (err, res) {             
+        sql.query("Select * from MoveitUser where phoneno = ? and password = ? limit 1", reqs, function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
                     
@@ -111,8 +115,8 @@ Moveituser.checkLogin = function checkLogin(req, result) {
                     result(resobj, null);
                 }
                 else{
-                        len = res.length;
-                    console.log(len);
+                        
+                   
                     let sucobj=(res.length !==0)?'true':'false';
                     let resobj = {  
                     success: sucobj,
@@ -185,5 +189,8 @@ Moveituser.update_online_status = function(req, result){
     }); 
   };
 
+
+
+  
 
 module.exports= Moveituser;

@@ -10,7 +10,7 @@ var Eatuser = function(eatuser){
     this.locality = eatuser.locality;
     this.password = eatuser.password;
     this.created_at = new Date();
-    this.virutal= eatuser.virutal;
+    this.virutalkey= eatuser.virutal;
 };
 
 
@@ -102,11 +102,14 @@ Eatuser.remove = function(id, result){
 
 
 Eatuser.getAllVirtualUser = function getAllVirtualUser(req,result) {
-    //console.log(req);
+    var userlimit = 20;
+    var page = req.page||1;
+    var startlimit = (page - 1)*userlimit;
+    
     var query = "select * from User";
     
     if(req.virtualid !== 'all'){
-        query = "select * from User where virutal = "+req.virtualid+" "
+        query = "select * from User where virutalkey = "+req.virtualid+" "
     }
     
     if(req.virtualid !== 'all' && req.search){
@@ -115,37 +118,33 @@ Eatuser.getAllVirtualUser = function getAllVirtualUser(req,result) {
         query = query+" where phoneno LIKE  '%"+req.search+"%' OR email LIKE  '%"+req.search+"%' or name LIKE  '%"+req.search+"% ' "
     }
     
-    console.log(query);
+    var  limitquery=query+ " order by userid desc limit "+startlimit+","+userlimit+" ";
     
-    sql.query(query, function (err, res) {
+    sql.query(limitquery, function (err, res) {
 
         if(err) {
             console.log("error: ", err);
             result(err, null);
         }
         else{
-           let sucobj=true;
-            let resobj = {  
-            success: sucobj,
-            result: res
-            }; 
+            var totalcount = 0;
 
-         result(null, resobj);
-      
+            sql.query(query, function (err, res2) {
+                 totalcount = res2.length;
+
+                 let sucobj=true;
+                 let resobj = {  
+                   success: sucobj,
+                   totalcount:totalcount,
+                   result: res
+                   
+                   }; 
+       
+                result(null, resobj);
+            });
         }
     }); 
-    // sql.query("Select * from User where virutal = '"+req+"'", function (err, res) {
-
-    //         if(err) {
-    //             console.log("error: ", err);
-    //             result(null, err);
-    //         }
-    //         else{
-    //           console.log('User : ', res);  
-
-    //          result(null, res);
-    //         }
-    //     });   
+  
 };
 
 

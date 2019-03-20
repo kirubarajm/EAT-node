@@ -26,14 +26,13 @@ exports.list_all_allocation_by_salesempid = function(req, res) {
 
 
 exports.create_a_allocation = function(req, res) {
-  var new_allocation = new Allocation(req.body);
-  console.log(new_allocation);
+
   //handles null error 
-   if(!new_allocation.sales_emp_id){
+   if(!req.body.sales_emp_id){
             res.status(400).send({ error:true, message: 'Please provide sales_emp_id' });
     }
   else{
-  Allocation.createAllocation(new_allocation, function(err, allocation) {
+  Allocation.updateAllocation(req.body, function(err, allocation) {
     if (err)
       res.send(err);
     res.json(allocation);

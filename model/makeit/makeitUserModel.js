@@ -22,7 +22,7 @@ var Makeituser = function(makeituser){
     this.ifsc = makeituser.ifsc;
     this.bank_holder_name = makeituser.bank_holder_name;
     this.address = makeituser.address;
-    this.virtual = makeituser.virtual || 0;
+    this.virutalkey = makeituser.virtual || 0;
 };
 
 Makeituser.createUser = function createUser(newUser, result) {  
@@ -105,7 +105,7 @@ Makeituser.getAllUser = function getAllUser(result) {
 Makeituser.getAllUserByAppointment = function getAllUserByAppointment(result) {
    
       //  sql.query("Select * from MakeitUser where appointment_status=1 order by created_at DESC", function (err, res) {
-        sql.query(" Select * from Bookingtime as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1", function (err, res) {
+        sql.query(" Select * from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1", function (err, res) {
                 if(err) {
                     console.log("error: ", err);
                     result(null, err);
@@ -393,13 +393,31 @@ Makeituser.orderstatusbyorderid = function(id, result){
   Makeituser.get_admin_list_all_makeitusers = function(req, result){
     console.log(req);
 
+    
+//    var appointment_status = req.appointment_status || 'all'
+//    var virtualid = req.virtualid || 'all'
+//    var search = req.search || ''
+
     var query = "select * from MakeitUser";
    
     var searchquery = "name LIKE  '%"+req.search+"%'";
 
+    
+
     if(req.appointment_status !== 'all'){
-    var query = query+" WHERE appointment_status  = '"+req.appointment_status+"'";
+    var query = query+" WHERE appointment_status  = '"+req.appointment_status+"' ";
     }
+
+    // if(req.appointment_status !== 'all' && req.appointment_status !== 'all'){
+    //     query = query+" and virutalkey  = '"+req.virtualid+"' )"
+    // }
+
+    // if(req.req.virtualid !== 'all'){
+    //     var query = query+" WHERE virutalkey  = '"+req.virtualid+"' ";
+    //     }
+
+
+
 
     if(req.appointment_status !== 'all' && req.search){
         query = query+" and ("+searchquery+")"
@@ -407,7 +425,7 @@ Makeituser.orderstatusbyorderid = function(id, result){
         query = query+" where " +searchquery
     }
 
-    
+
     sql.query(query, function (err, res) {
 
 
@@ -420,7 +438,9 @@ Makeituser.orderstatusbyorderid = function(id, result){
           let sucobj=true;
           let resobj = {  
             success: sucobj,
-            result: res 
+        
+            result: res
+           
             }; 
 
          result(null, resobj);

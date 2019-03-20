@@ -332,6 +332,9 @@ app.route('/faq/:id')
       .get(moveituser.read_a_user)
       .put(moveituser.update_a_user)
       .delete(moveituser.delete_a_user);
+
+
+    
     
 
      
@@ -392,8 +395,17 @@ app.route('/faq/:id')
     app.route('/moveit/moveitstatus')
       .put(orders.moveit_kitchen_reached);
 
+      app.route('/moveit/makeitrating')
+      .put(moveituser.moveit_kitchen_rating);
+
     app.route('/moveit/qualitycheck')
       .post(moveituser.moveit_kitchen_qualitycheck);
+
+    app.route('/moveit/paymentstatus')
+      .put(orders.order_payment_status);
+
+      app.route('/moveit/ordershistory/:moveit_user_id')
+      .get(orders.orderhistory_by_moveit_userid);
     
 
     };

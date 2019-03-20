@@ -6,15 +6,16 @@ var Makeituser = require('../../model/makeit/makeitUserModel.js');
 var Allocation = function(allocation){
     this.makeit_userid = allocation.makeit_userid;
     this.sales_emp_id=allocation.sales_emp_id;
-    this.assign_date=new Date();
+    this.assign_date=allocation.assign_date;
     this.assignedby=allocation.assignedby;
     this.status=allocation.status;
     this.created_at = new Date();
+    this.booking_date_time = allocation.booking_date_time;
 };
 
 
-Allocation.createAllocation = function createAllocation(newAllocation, result) {    
-        sql.query("INSERT INTO Allocation set ?", newAllocation, function (err, res) {
+Allocation.createAllocation = function createAllocation(req, result) {    
+        sql.query("INSERT INTO Allocation set ?", req, function (err, res) {
                 
                 if(err) {
                     console.log("error: ", err);
@@ -23,24 +24,67 @@ Allocation.createAllocation = function createAllocation(newAllocation, result) {
                 else{
                     console.log(res.insertId);
                     
-                    sql.query("UPDATE MakeitUser SET appointment_status = 2 WHERE userid = ?", newAllocation.makeit_userid, function (err, res) {
-                        if(err) {
-                            console.log("error: ", err);
-                            result(err, null);
-                        } else{
+                    // sql.query("UPDATE MakeitUser SET appointment_status = 2 WHERE userid = ?", newAllocation.makeit_userid, function (err, res) {
+                    //     if(err) {
+                    //         console.log("error: ", err);
+                    //         result(err, null);
+                    //     } else{
+                    //         let sucobj=true;
+                    //         let message = "Appointment assign successfully";
+                    //         let resobj = {  
+                    //         success: sucobj,
+                    //         message:message,
+                    //         result: res.insertId 
+                    //         }; 
+                    //         result(null, resobj);
+                    //     }
+                    // });   
                             let sucobj=true;
-                            let message = "Appointment assign successfully";
+                            let message = "Booking time updated successfully";
                             let resobj = {  
                             success: sucobj,
                             message:message,
                             result: res.insertId 
                             }; 
-                            result(null, resobj);
-                        }
-                    });    
+                            result(null, resobj); 
                 }
             });           
 };
+
+
+Allocation.updateAllocation = function updateAllocation(req, result) { 
+
+    sql.query("update Allocation set sales_emp_id = ?, assignedby = ?, assign_date = ?, status = ? where makeit_userid = ?",[req.sales_emp_id,req.assignedby,new Date(),req.status,req.makeit_userid] , function (err, res) {
+            
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+                
+                
+                sql.query("UPDATE MakeitUser SET appointment_status = 2 WHERE userid = ?", req.makeit_userid, function (err, res) {
+                    if(err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                    } else{
+                        let sucobj=true;
+                        let message = "Appointment assign successfully";
+                        let resobj = {  
+                        success: sucobj,
+                        message:message
+                        }; 
+                        result(null, resobj);
+                    }
+                });   
+            
+            }
+        });           
+};
+
+
+
+
 
 Allocation.getAllocationById = function getAllocationById(userId, result) {
         sql.query("Select * from Allocation where aid = ? ", userId, function (err, res) {             

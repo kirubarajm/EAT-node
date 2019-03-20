@@ -112,8 +112,6 @@ exports.orderlist_by_moveit_userid = function(req, res) {
 
 
  exports.order_pickup_status = function (req, res) {
-
-  console.log(req);
   Order.order_pickup_status_by_moveituser(req.body, function (err, result) {
     if (err)
       res.send(err);
@@ -158,3 +156,26 @@ exports.moveit_kitchen_qualitycheck = function (req, res) {
     });
   }
 };
+
+
+
+exports.order_payment_status = function (req, res) {
+
+  Order.order_payment_status_by_moveituser(req.body, function (err, result) {
+    if (err)
+      res.send(err);
+    res.json(result);
+  });
+};
+
+exports.orderhistory_by_moveit_userid = function(req, res) {
+
+  Order.orderhistorybymoveituserid(req.params.moveit_user_id,function(err, result){
+    if (err)
+    res.send(err);
+    res.json(result); 
+  });
+ };
+
+
+

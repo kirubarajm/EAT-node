@@ -106,3 +106,13 @@ else{
     });
 }
 };
+
+exports.moveit_kitchen_rating = function (req, res) {
+
+  MoveitRatingForMakeit.MoveitRatingForMakeit(req.body, function (err, result) {
+    if (err)
+      res.send(err);
+    res.json(result);
+  });
+};
+

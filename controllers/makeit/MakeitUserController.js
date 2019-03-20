@@ -1,6 +1,7 @@
 'use strict';
 
 var Makeituser = require('../../model/makeit/makeitUserModel.js');
+var Allocation = require('../../model/sales/allocationModel');
 
 exports.list_all_user = function(req, res) {
   Makeituser.getAllUser(function(err, user) {
@@ -29,22 +30,41 @@ exports.create_a_user = function(req, res) {
   }
 };
 
+// exports.creat_a_appointment = function(req, res) {
+// /*  var new_user = new Makeituser(req.body);
+//    if(!new_user.name || !new_user.phoneno){
+//             res.status(400).send({ error:true, message: 'Please provide name/phoneno' });
+//     }
+//   else{*/
+//     if(!req.body.makeit_userid || !req.body.date_time){
+//       res.status(400).send({ error:true, message: 'Please makeit_userid/date_time' });
+// }else{
+//   Makeituser.createAppointment(req.body, function(err, user) {
+//     if (err)
+//       res.send(err);
+//     res.json(user);
+//   });
+// }
+// };
+
+
 exports.creat_a_appointment = function(req, res) {
-/*  var new_user = new Makeituser(req.body);
-   if(!new_user.name || !new_user.phoneno){
-            res.status(400).send({ error:true, message: 'Please provide name/phoneno' });
-    }
-  else{*/
-    if(!req.body.makeit_userid || !req.body.date_time){
-      res.status(400).send({ error:true, message: 'Please makeit_userid/date_time' });
-}else{
-  Makeituser.createAppointment(req.body, function(err, user) {
-    if (err)
-      res.send(err);
-    res.json(user);
-  });
-}
-};
+  var new_allocation = new Allocation(req.body);
+  /*  var new_user = new Makeituser(req.body);
+     if(!new_user.name || !new_user.phoneno){
+              res.status(400).send({ error:true, message: 'Please provide name/phoneno' });
+      }
+    else{*/
+      if(!req.body.makeit_userid ){
+        res.status(400).send({ error:true, message: 'Please makeit_userid/date_time' });
+  }else{
+    Allocation.createAllocation(new_allocation, function(err, user) {
+      if (err)
+        res.send(err);
+      res.json(user);
+    });
+  }
+  };
 
 
 
