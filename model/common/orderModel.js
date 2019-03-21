@@ -1,6 +1,7 @@
 'user strict';
 var sql = require('../db.js');
 var Orderitem = require('../../model/common/orderItemsModel.js');
+var MoveitRatingForMakeit = require('../../model/moveit/moveitRatingForMakeitModel');
 //Task object constructor
 var Order = function (order) {
     this.userid = order.userid;
@@ -337,22 +338,28 @@ Order.orderviewbymoveituser = function(orderid, result){
 
 
 
-    Order.order_pickup_status_by_moveituser = function (req,  result) {
+Order.order_pickup_status_by_moveituser = function (req,  result) {
      
+    var kitchenquality = new MoveitRatingForMakeit(req);
+    var kitchenqualitylist = req.qualitychecklist;
 
-        sql.query("Select * from Orders where orderid = ?",[req.orderid], function (err, res1) {
+        sql.query("Select * from Orders where orderid = ?",[kitchenquality.orderid], function (err, res1) {
 
             if (err) {
                 console.log("error: ", err);
                 result(null, err);
             }
             else {
-                console.log("test ");
-                  var  getmoveitid = res1[0].moveit_user_id;
+               
+                      MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck(kitchenquality,kitchenqualitylist, function (err, res2) {
+                        if (err)
+                        res.send(err);
+                        
+                      });
 
-                  if(getmoveitid === req.moveit_user_id ){
+                  if(res1[0].moveit_user_id === kitchenquality.moveit_userid ){
 
-                    sql.query("UPDATE Orders SET orderstatus = ? WHERE orderid = ? and moveit_user_id =?", [req.orderstatus, req.orderid, req.moveit_user_id], function (err, res) {
+                    sql.query("UPDATE Orders SET orderstatus = ? WHERE orderid = ? and moveit_user_id =?", [kitchenquality.orderstatus, kitchenquality.orderid, kitchenquality.moveit_user_id], function (err, res) {
                         if(err) {
                             console.log("error: ", err);
                             result(null, err);
@@ -365,7 +372,6 @@ Order.orderviewbymoveituser = function(orderid, result){
                           let resobj = {  
                           success: sucobj,
                           message:message,
-                          res: res
                           }; 
               
                          result(null, resobj);

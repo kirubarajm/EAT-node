@@ -112,11 +112,20 @@ exports.orderlist_by_moveit_userid = function(req, res) {
 
 
  exports.order_pickup_status = function (req, res) {
+    
+  // var kitchenqualitylist = req.body.qualitychecklist;
+
+  // console.log(kitchenqualitylist);
+  //   if(kitchenqualitylist.length === 0 || kitchenqualitylist.length === undefined || kitchenqualitylist.length === null) {
+  //     res.status(400).send({ error: true, message: 'Please provide order quality list' });
+  //   }else{
+
   Order.order_pickup_status_by_moveituser(req.body, function (err, result) {
     if (err)
       res.send(err);
     res.json(result);
   });
+// }
 };
 
 exports.order_delivery_status = function (req, res) {

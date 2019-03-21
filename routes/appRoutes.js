@@ -333,6 +333,11 @@ app.route('/faq/:id')
       .put(moveituser.update_a_user)
       .delete(moveituser.delete_a_user);
 
+    app.route('/admin/moveit/documentUpload')
+      .post(documents.upload_a_documents);
+    
+      app.route('/admin/sales/documentUpload')
+      .post(documents.upload_a_documents);
 
     
     

@@ -16,6 +16,9 @@ var MoveitRatingForMakeit = function (moveitratingformakeit) {
 
 MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck = function create_moveit_kitchen_qualitycheck(kitchenquality,kitchenqualitylist, res) {
 
+    // console.log(kitchenquality);
+    // console.log(kitchenqualitylist);
+
 
     for (let i = 0; i < kitchenqualitylist.length; i++) {
        

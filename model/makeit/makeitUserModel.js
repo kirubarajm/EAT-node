@@ -29,35 +29,58 @@ Makeituser.createUser = function createUser(newUser, result) {
 
 if(newUser.appointment_status==null)
     newUser.appointment_status=0;
-        sql.query("INSERT INTO MakeitUser set ?", newUser, function (err, res) {
+
+
+    sql.query("Select * from MakeitUser where phoneno = '"+newUser.phoneno+"' OR email= '"+newUser.email+"' " , function (err, res) {             
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+              
+               if(res.length == 0){
+            sql.query("INSERT INTO MakeitUser set ?", newUser, function (err, res1) {
                 
-            if(err) {
-                console.log("error: ", err);
-                result(err, null);
-            }else{
-           
-            sql.query("Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ", res.insertId, function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
                     result(err, null);
-                }
-                else{
-                   let sucobj=true;
-                   let message = "Registration Sucessfully Done";
-                    let resobj = {  
-                    success: sucobj,
-                    message:message,
-                    result: res
-                    }; 
+                }else{
+               
+                sql.query("Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ", res1.insertId, function (err, res) {             
+                    if(err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                    }
+                    else{
+                       let sucobj=true;
+                       let message = "Registration Sucessfully Done";
+                        let resobj = {  
+                        success: sucobj,
+                        message:message,
+                        result: res1
+                        }; 
+    
+                     result(null, resobj);
+                  
+                    }
+                });  
+            }
+         });
+        }else{
 
-                 result(null, resobj);
-              
-                }
-            });  
+                     let sucobj=true;
+                       let message = "Following user already Exist! Please check it mobile number / email" ;
+                        let resobj = {  
+                        success: sucobj,
+                        message:message
+                        }; 
+    
+                     result(null, resobj);
+
         }
-            });           
       
-            
+        }
+    });              
   };
 
 
@@ -391,39 +414,58 @@ Makeituser.orderstatusbyorderid = function(id, result){
 
 
   Makeituser.get_admin_list_all_makeitusers = function(req, result){
-    console.log(req);
-
-    
-//    var appointment_status = req.appointment_status || 'all'
-//    var virtualid = req.virtualid || 'all'
-//    var search = req.search || ''
+   
+   req.appointment_status = ""+req.appointment_status 
+   
+   req.virtualid = ""+req.virtualid 
+//    rsearch = req.search || ''
 
     var query = "select * from MakeitUser";
    
     var searchquery = "name LIKE  '%"+req.search+"%'";
 
-    
+    if(req.appointment_status !=='all' && req.virtualid !=='all' && !req.search){
 
-    if(req.appointment_status !== 'all'){
-    var query = query+" WHERE appointment_status  = '"+req.appointment_status+"' ";
-    }
+         query = query+" WHERE appointment_status  = '"+req.appointment_status+"' and virutalkey  = '"+req.virtualid+"'";
 
-    // if(req.appointment_status !== 'all' && req.appointment_status !== 'all'){
-    //     query = query+" and virutalkey  = '"+req.virtualid+"' )"
+    }else if(req.virtualid !=='all' && !req.search){
+
+         query = query+" WHERE virutalkey  = '"+req.virtualid+"'";
+
+    }else if(req.appointment_status !=='all' && !req.search){
+
+        query = query+" WHERE appointment_status  = '"+req.appointment_status+"'";
+
+   }else if(req.appointment_status !=='all' && req.virtualid !=='all' && req.search){
+
+         query = query+" WHERE appointment_status  = '"+req.appointment_status+"' and virutalkey  = '"+req.virtualid+"' and "+searchquery;
+
+    }else if(req.virtualid !=='all' && req.search){
+
+         query = query+" WHERE virutalkey  = '"+req.virtualid+"'and "+searchquery;
+
+    }else if(req.appointment_status !=='all' && req.search){
+
+        query = query+" WHERE appointment_status  = '"+req.appointment_status+"'and "+searchquery;
+
+    }else if(req.search){
+            query = query+" where " +searchquery
+        }
+
+
+
+    // if(req.appointment_status !== 'all'){
+    //      query = query+" WHERE appointment_status  = '"+req.appointment_status+"' ";
     // }
 
-    // if(req.req.virtualid !== 'all'){
-    //     var query = query+" WHERE virutalkey  = '"+req.virtualid+"' ";
-    //     }
 
-
-
-
-    if(req.appointment_status !== 'all' && req.search){
-        query = query+" and ("+searchquery+")"
-    }else if(req.search){
-        query = query+" where " +searchquery
-    }
+    // if(req.virtualid !== 'all' && req.search){
+    //     query = query+" and ("+searchquery+")"
+    // }else if(req.appointment_status !== 'all' && req.search){
+    //     query = query+" and ("+searchquery+")"
+    // }else if(req.search){
+    //     query = query+" where " +searchquery
+    // }
 
 
     sql.query(query, function (err, res) {
@@ -438,7 +480,6 @@ Makeituser.orderstatusbyorderid = function(id, result){
           let sucobj=true;
           let resobj = {  
             success: sucobj,
-        
             result: res
            
             }; 

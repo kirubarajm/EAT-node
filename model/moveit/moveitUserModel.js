@@ -134,12 +134,21 @@ Moveituser.checkLogin = function checkLogin(req, result) {
 
 Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req ,result) {
     
+    req.vacant =  req.vacant || 'all'
     
     var query = "Select * from MoveitUser";
     
-    if(req.search && req.search !==''){
-         query = query+" where name LIKE  '%"+req.search+"%'";
+        console.log(req.vacant);
+     if(req.vacant !== 'all'){
+             query = query+" where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6) ";
+        }
+
+    if(req.vacant !== 'all' && req.search){
+         query = query+" and name LIKE  '%"+req.search+"%'";
+    }else if(req.search){
+        query = query+" where name LIKE  '%"+req.search+"%'";
     }
+    
 
     sql.query(query, function (err, res) {
 
@@ -151,6 +160,7 @@ Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req ,result) {
            let sucobj=true;
             let resobj = {  
             success: sucobj,
+            query:query,
             result: res
             }; 
 
