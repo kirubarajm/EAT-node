@@ -104,3 +104,40 @@ exports.remove_s3_sales_doc = function(req, res) {
  });
 }
 };
+
+
+
+
+exports.moveit_upload_a_documents = function(req, res) {
+  var new_documents = new Document(req.body);
+  
+   if(!new_documents){
+
+            res.status(400).send({ error:true, message: 'Please provide documents name' });
+
+    }
+  else{
+  Document.newmoveitdocumentupload(req, function(err, documents) {
+    if (err)
+      res.send(err);
+    res.json(documents);
+  });
+}
+};
+
+exports.sales_upload_a_documents = function(req, res) {
+  var new_documents = new Document(req.body);
+  
+   if(!new_documents){
+
+            res.status(400).send({ error:true, message: 'Please provide documents name' });
+
+    }
+  else{
+  Document.newsalesdocumentupload(req, function(err, documents) {
+    if (err)
+      res.send(err);
+    res.json(documents);
+  });
+}
+};

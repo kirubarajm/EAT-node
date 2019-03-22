@@ -22,7 +22,7 @@ var Makeituser = function(makeituser){
     this.ifsc = makeituser.ifsc;
     this.bank_holder_name = makeituser.bank_holder_name;
     this.address = makeituser.address;
-    this.virutalkey = makeituser.virtual || 0;
+    this.virtualkey = makeituser.virtualkey || 0;
 };
 
 Makeituser.createUser = function createUser(newUser, result) {  
@@ -53,11 +53,11 @@ if(newUser.appointment_status==null)
                     }
                     else{
                        let sucobj=true;
-                       let message = "Registration Sucessfully Done";
+                       let message = "Registration Sucessfully";
                         let resobj = {  
                         success: sucobj,
                         message:message,
-                        result: res1
+                        result: res
                         }; 
     
                      result(null, resobj);
@@ -85,7 +85,10 @@ if(newUser.appointment_status==null)
 
 
 Makeituser.getUserById = function getUserById(userId, result) {
-        sql.query("Select * from MakeitUser where userid = ? ", userId, function (err, res) {             
+
+    var query1 = "select concat('[',GROUP_CONCAT(CONCAT('{url :"+"', st.url,'"+"}')),']') url,mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey from MakeitUser as mu join Documents_Sales as ds on mu.userid = ds.makeit_userid join Documents as st on ds.docid = st.docid where mu.userid = '"+userId+"'";
+
+        sql.query(query1, function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
                     result(err, null);
@@ -94,6 +97,7 @@ Makeituser.getUserById = function getUserById(userId, result) {
                    let sucobj=true;
                     let resobj = {  
                     success: sucobj,
+                    query1:query1,
                     result: res
                     }; 
 
@@ -102,6 +106,9 @@ Makeituser.getUserById = function getUserById(userId, result) {
                 }
             });   
 };
+
+
+
 
 Makeituser.getAllUser = function getAllUser(result) {
         sql.query("Select * from MakeitUser", function (err, res) {
@@ -417,32 +424,32 @@ Makeituser.orderstatusbyorderid = function(id, result){
    
    req.appointment_status = ""+req.appointment_status 
    
-   req.virtualid = ""+req.virtualid 
+   req.virtualkey = ""+req.virtualkey 
 //    rsearch = req.search || ''
 
     var query = "select * from MakeitUser";
    
     var searchquery = "name LIKE  '%"+req.search+"%'";
 
-    if(req.appointment_status !=='all' && req.virtualid !=='all' && !req.search){
+    if(req.appointment_status !=='all' && req.virtualkey !=='all' && !req.search){
 
-         query = query+" WHERE appointment_status  = '"+req.appointment_status+"' and virutalkey  = '"+req.virtualid+"'";
+         query = query+" WHERE appointment_status  = '"+req.appointment_status+"' and virtualkey  = '"+req.virtualkey+"'";
 
-    }else if(req.virtualid !=='all' && !req.search){
+    }else if(req.virtualkey !=='all' && !req.search){
 
-         query = query+" WHERE virutalkey  = '"+req.virtualid+"'";
+         query = query+" WHERE virtualkey  = '"+req.virtualkey+"'";
 
     }else if(req.appointment_status !=='all' && !req.search){
 
         query = query+" WHERE appointment_status  = '"+req.appointment_status+"'";
 
-   }else if(req.appointment_status !=='all' && req.virtualid !=='all' && req.search){
+   }else if(req.appointment_status !=='all' && req.virtualkey !=='all' && req.search){
 
-         query = query+" WHERE appointment_status  = '"+req.appointment_status+"' and virutalkey  = '"+req.virtualid+"' and "+searchquery;
+         query = query+" WHERE appointment_status  = '"+req.appointment_status+"' and virtualkey  = '"+req.virtualkey+"' and "+searchquery;
 
-    }else if(req.virtualid !=='all' && req.search){
+    }else if(req.virtualkey !=='all' && req.search){
 
-         query = query+" WHERE virutalkey  = '"+req.virtualid+"'and "+searchquery;
+         query = query+" WHERE virtualkey  = '"+req.virtualkey+"'and "+searchquery;
 
     }else if(req.appointment_status !=='all' && req.search){
 

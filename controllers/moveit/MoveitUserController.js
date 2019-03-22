@@ -15,7 +15,14 @@ exports.list_all_user = function(req, res) {
 
 
 exports.create_a_user = function(req, res) {
+  var newdocument = {};
   var new_user = new Moveituser(req.body);
+      // newdocument.driver_lic = req.body.driver_lic;
+      // newdocument.vech_insurance = req.body.vech_insurance;
+      // newdocument.vech_rcbook = req.body.vech_rcbook;
+      // newdocument.photo = req.body.photo;
+      // newdocument.legal_document = req.body.legal_document;
+
   //handles null error 
    if(!new_user.name || !new_user.phoneno){
 

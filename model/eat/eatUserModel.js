@@ -10,15 +10,25 @@ var Eatuser = function(eatuser){
     this.locality = eatuser.locality;
     this.password = eatuser.password;
     this.created_at = new Date();
-    this.virutalkey= eatuser.virutal;
+    this.virtualkey= eatuser.virtualkey;
 };
 
 
 
 Eatuser.createUser = function createUser(newUser, result) {   
     
-    if(newUser.virutal==null)
-    newUser.virutal=0;
+    if(newUser.virtualkey==null)
+    newUser.virtualkey=0;
+
+    sql.query("Select * from User where phoneno = '"+newUser.phoneno+"' OR email= '"+newUser.email+"' " , function (err, res) {             
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+
+            if(res.length == 0){
+
         sql.query("INSERT INTO User set ?", newUser, function (err, res) {
                 
             if(err) {
@@ -36,7 +46,28 @@ Eatuser.createUser = function createUser(newUser, result) {
           
              result(null, resobj);
             }
-            });           
+            });  
+             }else{
+
+            let sucobj=true;
+              let message = "Following user already Exist! Please check it mobile number / email" ;
+               let resobj = {  
+               success: sucobj,
+               message:message
+               }; 
+
+            result(null, resobj);
+
+}
+
+}
+});  
+            
+
+
+
+
+
 };
 
 Eatuser.getUserById = function getUserById(userId, result) {
@@ -108,11 +139,11 @@ Eatuser.getAllVirtualUser = function getAllVirtualUser(req,result) {
     
     var query = "select * from User";
     
-    if(req.virtualid !== 'all'){
-        query = "select * from User where virutalkey = "+req.virtualid+" "
+    if(req.virtualkey !== 'all'){
+        query = "select * from User where virtualkey = "+req.virtualkey+" "
     }
     
-    if(req.virtualid !== 'all' && req.search){
+    if(req.virtualkey !== 'all' && req.search){
         query = query+" and (phoneno LIKE  '%"+req.search+"%' OR email LIKE  '%"+req.search+"%' or name LIKE  '%"+req.search+"% ') "
     }else if(req.search){
         query = query+" where phoneno LIKE  '%"+req.search+"%' OR email LIKE  '%"+req.search+"%' or name LIKE  '%"+req.search+"% ' "

@@ -12,10 +12,22 @@ var Salesuser = function(salesuser){
     this.localityid = salesuser.localityid;
     this.password = salesuser.password;
     this.created_at = new Date();
+    this.id_proof = salesuser.id_proof;
+    this.add_proof = salesuser.add_proof;
+    this.birth_cer = salesuser.birth_cer;
 };
 
-Salesuser.createUser = function createUser(newUser, result) {    
-        sql.query("INSERT INTO Sales_QA_employees set ?", newUser, function (err, res) {
+Salesuser.createUser = function createUser(newUser, result) { 
+    
+    sql.query("Select * from Sales_QA_employees where phoneno = '"+newUser.phoneno+"' OR email= '"+newUser.email+"' " , function (err, res) {             
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+
+            if(res.length == 0){
+        sql.query("INSERT INTO Sales_QA_employees set ?", newUser, function (err, res1) {
                 
                 if(err) {
                     console.log("error: ", err);
@@ -23,14 +35,32 @@ Salesuser.createUser = function createUser(newUser, result) {
                 }
                 else{
                     console.log(res.insertId);                    
-                    let sucobj='true';
-                    let resobj = {  
-                    success: sucobj,
-                    result: res.insertId
-                    };
-                    result(null, resobj);
+                    let sucobj=true;
+                       let message = "Registration Sucessfully";
+                        let resobj = {  
+                        success: sucobj,
+                        message:message
+                        }; 
+    
+                     result(null, resobj);
                 }
-            });           
+            });   
+        }else{
+
+            let sucobj=true;
+              let message = "Following user already Exist! Please check it mobile number / email" ;
+               let resobj = {  
+               success: sucobj,
+               message:message
+               }; 
+
+            result(null, resobj);
+
+}
+
+}
+});  
+         
 };
 
 Salesuser.getUserById = function getUserById(userId, result) {
@@ -122,7 +152,7 @@ Salesuser.getAllsalesSearch = function getAllsalesSearch(req ,result) {
     
     var today = new Date();
 
-    console.log(today);
+   
   //  var query = "Select * from Sales_QA_employees ";
 
    // var query = "Select se.id,se.name,se.address,se.phoneno,COUNT(al.sales_emp_id) totalassigned from Sales_QA_employees se left join Allocation al on se.id = al.sales_emp_id ";

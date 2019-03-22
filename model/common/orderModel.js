@@ -11,7 +11,7 @@ var Order = function (order) {
     this.ordertype = order.ordertype||0;
     this.orderstatus = order.orderstatus ||0;
     this.gst = order.gst;
-    this.vocher = order.vocher;
+    this.coupon = order.coupon;
     this.payment_type = order.payment_type;
     this.makeit_user_id = order.makeit_user_id;
     this.moveit_user_id = order.moveit_user_id ||0;
@@ -22,8 +22,8 @@ var Order = function (order) {
     this.moveit_expected_delivered_time = order.moveit_expected_delivered_time;
     this.moveit_actual_delivered_time = order.moveit_actual_delivered_time;
     this.moveit_remarks_order = order.moveit_remarks_order;
-    this.makeit_expected_delivered_time = order.makeit_expected_delivered_time;
-    this.makeit_actual_delivered_time = order.moveit_actual_delivered_time;
+    this.makeit_expected_preparing_time = order.makeit_expected_preparing_time;
+    this.makeit_actual_preparing_time = order.makeit_actual_preparing_time;
     this.created_at = new Date();
     this.price = order.price;
     this.payment_status = order.payment_status;
@@ -153,12 +153,12 @@ Order.get_all_orders = function get_all_orders(req,result) {
   //  var query = "select od.userid,us.name,od.ordertime,od.locality,od.delivery_charge,od.ordertype,od.orderstatus,od.gst,od.vocher,od.payment_type,od.makeit_user_id,od.moveit_user_id,od.cus_lat,od.cus_lon,od.cus_address,od.makeit_status,od.price,od.payment_status from Orders od join User us on od.userid = us.userid ";
     var query = "Select * from Orders as od left join User as us on od.userid=us.userid"
     var searchquery = "us.phoneno LIKE  '%"+req.search+"%' OR us.email LIKE  '%"+req.search+"%' or us.name LIKE  '%"+req.search+"%'  or od.orderid LIKE  '%"+req.search+"%'";
-    if(req.virtualid !== 'all'){
-        query = query+ " where od.ordertype = '"+req.virtualid+"'";
+    if(req.virtualkey !== 'all'){
+        query = query+ " where od.ordertype = '"+req.virtualkey+"'";
        
     }
     //var search= req.search
-    if(req.virtualid !== 'all' && req.search){
+    if(req.virtualkey !== 'all' && req.search){
         query = query+" and ("+searchquery+")"
     }else if(req.search){
         query = query+" where " +searchquery
@@ -413,7 +413,7 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
                     // check the payment status - 1 is paid
                   if(res1[0].payment_status === 1){
 
-                    sql.query("UPDATE Orders SET orderstatus = ? WHERE orderid = ? and moveit_user_id =?", [req.orderstatus, req.orderid, req.moveit_user_id], function (err, res) {
+                    sql.query("UPDATE Orders SET orderstatus = ?,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?", [req.orderstatus,new Date(), req.orderid, req.moveit_user_id], function (err, res) {
                         if(err) {
                             console.log("error: ", err);
                             result(null, err);

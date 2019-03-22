@@ -18,6 +18,7 @@ module.exports = function(app) {
   var allocation = require('../controllers/sales/AllocationController');
   var orders = require('../controllers/common/OrderController');
   var salesdocument = require('../controllers/common/DocumentsalesController');
+  var moveitdocument = require('../controllers/common/DocumentmoveitController');
 
   // todoList Routes
   app.route('/tasks')
@@ -333,17 +334,19 @@ app.route('/faq/:id')
       .put(moveituser.update_a_user)
       .delete(moveituser.delete_a_user);
 
-    app.route('/admin/moveit/documentUpload')
-      .post(documents.upload_a_documents);
+    // app.route('/admin/moveit/documentUpload')
+    //   .post(documents.upload_a_documents);
     
-      app.route('/admin/sales/documentUpload')
-      .post(documents.upload_a_documents);
+    app.route('/admin/sales/documentupload')
+      .post(documents.sales_upload_a_documents);
 
-    
-    
+    app.route('/admin/moveit/documentupload')
+      .post(documents.moveit_upload_a_documents);
+      
 
-     
-    
+    app.route('/admin/moveit/documentstore')
+      .post(moveitdocument.create_a_documents);
+
 
 
 
@@ -409,8 +412,14 @@ app.route('/faq/:id')
     app.route('/moveit/paymentstatus')
       .put(orders.order_payment_status);
 
-      app.route('/moveit/ordershistory/:moveit_user_id')
+    app.route('/moveit/ordershistory/:moveit_user_id')
       .get(orders.orderhistory_by_moveit_userid);
+
+    app.route('/moveit/documentUpload')
+      .post(documents.moveit_upload_a_documents);
+
+    app.route('/moveit/documentstore')
+      .post(moveitdocument.create_a_documents);
     
 
     };
