@@ -86,7 +86,31 @@ Moveituser.createUser = function createUser(newUser, result) {
 };  
 
 Moveituser.getUserById = function getUserById(userId, result) {
-        sql.query("Select * From MoveitUser mu INNER JOIN  Moveit_hubs mh  ON mu.moveit_hub = mh.moveithub_id where mu.userid = ? ", userId, function (err, res) {             
+    sql.query("Select * From MoveitUser where userid = ? ", userId, function (err, res) {             
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+           let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result: res
+            }; 
+
+         result(null, resobj);
+      
+        }
+        });   
+};
+
+
+
+
+
+
+Moveituser.admin_getUserById = function getUserById(userId, result) {
+        sql.query("Select * From MoveitUser mu left join Moveit_hubs mh  ON mu.moveit_hub = mh.moveithub_id where mu.userid = ? ", userId, function (err, res) {             
             if(err) {
                 console.log("error: ", err);
                 result(err, null);
@@ -103,6 +127,9 @@ Moveituser.getUserById = function getUserById(userId, result) {
             }
             });   
 };
+
+
+
 
 Moveituser.getAllUser = function getAllUser(result) {
         sql.query("Select * from MoveitUser", function (err, res) {

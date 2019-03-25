@@ -80,3 +80,12 @@ exports.virtual_eatusersearch = function(req, res) {
 };
 
 
+exports.eat_dish_list = function(req, res) {
+  Eatuser.get_eat_dish_list(req.params,function(err, user) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', user);
+    res.send(user);
+  });
+};

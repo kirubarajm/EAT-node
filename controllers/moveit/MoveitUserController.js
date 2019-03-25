@@ -123,3 +123,10 @@ exports.moveit_kitchen_rating = function (req, res) {
   });
 };
 
+exports.admin_read_a_user = function(req, res) {
+  Moveituser.admin_getUserById(req.params.userid, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+};

@@ -85,23 +85,44 @@ if(newUser.appointment_status==null)
 
 
 Makeituser.getUserById = function getUserById(userId, result) {
+  
 
-    var query1 = "select concat('[',GROUP_CONCAT(CONCAT('{url :"+"', st.url,'"+"}')),']') url,mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey from MakeitUser as mu join Documents_Sales as ds on mu.userid = ds.makeit_userid join Documents as st on ds.docid = st.docid where mu.userid = '"+userId+"'";
-
+    //var query1 = "select mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey from MakeitUser as mu join Documents_Sales as ds on mu.userid = ds.makeit_userid join Documents as st on ds.docid = st.docid where mu.userid = '"+userId+"'";
+        var query1 = "Select * from MakeitUser where userid = '"+userId+"'";
         sql.query(query1, function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
                     result(err, null);
                 }
                 else{
-                   let sucobj=true;
-                    let resobj = {  
-                    success: sucobj,
-                    query1:query1,
-                    result: res
-                    }; 
 
-                 result(null, resobj);
+                    sql.query("select st.url,st.docid from Documents_Sales as ds join Documents as st on ds.docid = st.docid where ds.makeit_userid = '"+userId+"'", function (err, images) {
+
+                        if(err) {
+                            console.log("error: ", err);
+                            result(null, err);
+                        }
+                        else{
+                            res[0].gallery = images;   
+                            let sucobj=true;
+                            let resobj = {  
+                            success: sucobj,
+                            result: res,
+                            }; 
+                            
+                         result(null, resobj);
+                        }
+                    }); 
+
+                
+                //    let sucobj=true;
+                //     let resobj = {  
+                //     success: sucobj,
+                //     query1:query1,
+                //     result: res
+                //     }; 
+
+                //  result(null, resobj);
               
                 }
             });   

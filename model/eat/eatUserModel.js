@@ -184,20 +184,58 @@ Eatuser.virtual_eatusersearch = function virtual_eatusersearch(req,result) {
  console.log(req);
     sql.query("select * from User where phoneno LIKE  '%"+req.search+"%' OR email LIKE  '%"+req.search+"%' or name LIKE  '%"+req.search+"%  ' " , function (err, res) {
 
-            if(err) {
-                console.log("error: ", err);
-                result(null, err);
-            }
-            else{
-              console.log('User : ', res);  
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+           let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result: res
+            }; 
 
-             result(null, res);
-            }
+         result(null, resobj);
+      
+        }
         });   
 };
 
 
+Eatuser.get_eat_dish_list = function get_eat_dish_list(req,result) {
 
+        // var deg2rad ={};
+        // var theta = req.lon1 - req.lon2;
+        // var dist = Math.sin(deg2rad(req.lat1)) * Math.sin(deg2rad(req.lat2)) + Math.cos(deg2rad(req.lat1)) * Math.cos(deg2rad(req.lat2)) * Math.cos(deg2rad(theta));
+        // dist = Math.acos(dist);
+        // dist = rad2deg(dist);
+        // dist = dist * 60 * 1.1515;
+        // console.log(dist);
+        // if (sr.equals("K")) {
+        //     dist = dist * 1.609344;
+        // } else if (sr.equals("N")) {
+        //     dist = dist * 0.8684;
+        // }
+        // return (dist);
+
+    sql.query(" select * from Product", function (err, res) {
+
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+           let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result: res
+            }; 
+
+         result(null, resobj);
+      
+        }
+        });   
+};
 
 
 module.exports= Eatuser;

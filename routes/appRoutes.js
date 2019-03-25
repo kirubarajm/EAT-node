@@ -228,6 +228,8 @@ app.route('/faq/:id')
     // app.route('/createorder')
     // .post(makeituser.createorder);
 
+  // Makeit
+
     app.route('/makeit/orders')
     .get(makeituser.all_order_list);
 
@@ -330,7 +332,7 @@ app.route('/faq/:id')
       .delete(salesuser.delete_a_user);
 
     app.route('/admin/moveituser/:userid')
-      .get(moveituser.read_a_user)
+      .get(moveituser.admin_read_a_user)
       .put(moveituser.update_a_user)
       .delete(moveituser.delete_a_user);
 
@@ -421,5 +423,11 @@ app.route('/faq/:id')
     app.route('/moveit/documentstore')
       .post(moveitdocument.create_a_documents);
     
+
+
+    // Eat
+
+    app.route('/eatuser/dishlist')
+    .get(eatuser.eat_dish_list);
 
     };
