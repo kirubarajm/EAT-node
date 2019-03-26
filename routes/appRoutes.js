@@ -405,7 +405,7 @@ app.route('/faq/:id')
     app.route('/moveit/moveitstatus')
       .put(orders.moveit_kitchen_reached);
 
-      app.route('/moveit/makeitrating')
+    app.route('/moveit/makeitrating')
       .put(moveituser.moveit_kitchen_rating);
 
     app.route('/moveit/qualitycheck')
@@ -423,11 +423,21 @@ app.route('/faq/:id')
     app.route('/moveit/documentstore')
       .post(moveitdocument.create_a_documents);
     
-
+    app.route('/moveit/makeitrating')
+      .put(moveituser.moveit_kitchen_rating);
+    
+    app.route('/moveit/qualitychecklist')
+      .post(moveituser.moveit_quality_checklist);
 
     // Eat
 
     app.route('/eatuser/dishlist')
-    .get(eatuser.eat_dish_list);
+    .post(eatuser.eat_dish_list);
+
+    app.route('/eatuser/makeitlist')
+    .post(eatuser.eat_makeit_list);
+
+    app.route('/eatuser/makeitproductlist')
+    .post(eatuser.eat_makeit_product_list);
 
     };

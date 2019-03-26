@@ -115,4 +115,26 @@ MoveitRatingForMakeit.remove = function(id, result){
 };
 
 
+
+MoveitRatingForMakeit.get_moveit_quality_checklist = function get_moveit_quality_checklist(req,result) {
+
+    sql.query("Select mrm.quality_analysis_id as id,qa.description,mrm.enabled as status from MoveitRatingForMakeit mrm join quality_analysis qa on mrm.quality_analysis_id = qa.id where mrm.orderid = ? and mrm.makeit_userid = ?",[req.orderid,req.makeit_userid], function (err, res) {
+
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+           let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result : res
+            }; 
+    
+         result(null, resobj);
+      
+        }
+        });   
+};
+
 module.exports = MoveitRatingForMakeit;

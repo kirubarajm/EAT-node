@@ -106,11 +106,8 @@ Moveituser.getUserById = function getUserById(userId, result) {
 
 
 
-
-
-
 Moveituser.admin_getUserById = function getUserById(userId, result) {
-        sql.query("Select * From MoveitUser mu left join Moveit_hubs mh  ON mu.moveit_hub = mh.moveithub_id where mu.userid = ? ", userId, function (err, res) {             
+        sql.query("Select mu.*,mh.area_name From MoveitUser mu left join Moveit_hubs mh  on mu.moveit_hub = mh.moveithub_id where mu.userid = ? ", userId, function (err, res) {             
             if(err) {
                 console.log("error: ", err);
                 result(err, null);

@@ -130,3 +130,14 @@ exports.admin_read_a_user = function(req, res) {
     res.json(user);
   });
 };
+
+
+
+exports.moveit_quality_checklist = function (req, res) {
+
+  MoveitRatingForMakeit.get_moveit_quality_checklist(req.body, function (err, result) {
+    if (err)
+      res.send(err);
+    res.json(result);
+  });
+};

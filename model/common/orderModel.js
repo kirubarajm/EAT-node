@@ -45,7 +45,7 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
         if (err) {
             console.log("error: ", err);
             res(null, err);
-        }
+        }else{
 
         var orderid = res1.insertId
 
@@ -71,7 +71,7 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
                 }; 
         res(null, resobj);
 
-
+            }
 
     });
 
@@ -450,7 +450,8 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
             else {
                 console.log(res1);
                     // check the payment status - 1 is paid
-                  if(res1[0].payment_status === 1){
+                if(res1.length > 0){
+                  if(res1.length >0 && res1[0].payment_status === 1){
 
                     sql.query("UPDATE Orders SET orderstatus = ?,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?", [req.orderstatus,new Date(), req.orderid, req.moveit_user_id], function (err, res) {
                         if(err) {
@@ -476,15 +477,25 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
                     let message = "Payment not yet paid!";
                     let resobj = {  
                     success: sucobj,
-                    message:message,
-                    payment_status : res1[0].payment_status
+                    message:message
+                   // payment_status : res1[0].payment_status
                     
                     }; 
         
                    result(null, resobj);
                   }
-
+                }else{
+                    let sucobj=true;
+                    let message = "Please check your moveit_user details!";
+                    let resobj = {  
+                    success: sucobj,
+                    message:message
+                    }
+                    
+                   result(null, resobj);
+                }
             }
+       
         });
 
      

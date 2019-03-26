@@ -9,11 +9,11 @@ var registrationStatus = [{
 }];
 
 
-// Food Cycle for product 
+// Food Cycle for product 0 is disable 1 is enable for food cycle
 var foodcycle = [{
-    "foodcycleStatusid":1,"foodcycle":"breakfast",
-    "foodcycleStatusid":1,"foodcycle":"breakfast",
-    "foodcycleStatusid":1,"foodcycle":"breakfast",
+    "foodcycleStatusid":1,"foodcycle":"Breakfast",
+    "foodcycleStatusid":1,"foodcycle":"Lunch",
+    "foodcycleStatusid":1,"foodcycle":"Dinner",
 }];
 
 

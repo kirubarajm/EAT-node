@@ -202,23 +202,9 @@ Eatuser.virtual_eatusersearch = function virtual_eatusersearch(req,result) {
 };
 
 
-Eatuser.get_eat_dish_list = function get_eat_dish_list(req,result) {
+Eatuser.get_eat_dish_list = function(req,result) {
 
-        // var deg2rad ={};
-        // var theta = req.lon1 - req.lon2;
-        // var dist = Math.sin(deg2rad(req.lat1)) * Math.sin(deg2rad(req.lat2)) + Math.cos(deg2rad(req.lat1)) * Math.cos(deg2rad(req.lat2)) * Math.cos(deg2rad(theta));
-        // dist = Math.acos(dist);
-        // dist = rad2deg(dist);
-        // dist = dist * 60 * 1.1515;
-        // console.log(dist);
-        // if (sr.equals("K")) {
-        //     dist = dist * 1.609344;
-        // } else if (sr.equals("N")) {
-        //     dist = dist * 0.8684;
-        // }
-        // return (dist);
-
-    sql.query(" select * from Product", function (err, res) {
+    sql.query("Select mu.userid as makeit_userid,mu.name as makeit_username, pt.product_name, pt.productid,pt.image,pt.price,pt.vegtype as producttype,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid HAVING distance!= '' ORDER BY distance", function (err, res) {
 
         if(err) {
             console.log("error: ", err);
@@ -237,5 +223,50 @@ Eatuser.get_eat_dish_list = function get_eat_dish_list(req,result) {
         });   
 };
 
+
+
+
+Eatuser.get_eat_makeit_list = function(req,result) {
+
+    sql.query("Select MakeitUser.*,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser  HAVING distance!= '' ORDER BY distance", function (err, res) {
+
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+           let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result: res
+            }; 
+
+         result(null, resobj);
+      
+        }
+        });   
+};
+
+
+Eatuser.get_eat_makeit_product_list = function(req,result) {
+
+    sql.query("Select MakeitUser.*,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser  HAVING distance!= '' ORDER BY distance", function (err, res) {
+
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+           let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result: res
+            }; 
+
+         result(null, resobj);
+      
+        }
+        });   
+};
 
 module.exports= Eatuser;
