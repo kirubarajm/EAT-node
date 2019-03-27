@@ -280,6 +280,9 @@ app.route('/faq/:id')
     app.route('/admin/orders')
       .post(orders.list_all_orders);
 
+      app.route('/admin/order/:id')
+      .get(orders.order_view);
+
     app.route('/admin/order/assign')
       .put(orders.order_assign);
 

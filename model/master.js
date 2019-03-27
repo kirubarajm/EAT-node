@@ -73,7 +73,7 @@ var usertype = [{
 }];
 
 // image upload type 
-var documenttype = [{
+var documenttypemakeit = [{
     "documenttypeid":0,"documenttype":"Kitchen image",
     "documenttypeid":1,"documenttype":"Kitchen Appliances",
     "documenttypeid":2,"documenttype":"Packaging image",

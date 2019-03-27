@@ -450,7 +450,8 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
             else {
                 console.log(res1);
                     // check the payment status - 1 is paid
-                if(res1.length > 0){
+                if(res1.length > 0)
+                {
                   if(res1.length >0 && res1[0].payment_status === 1){
 
                     sql.query("UPDATE Orders SET orderstatus = ?,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?", [req.orderstatus,new Date(), req.orderid, req.moveit_user_id], function (err, res) {
@@ -568,6 +569,7 @@ Order.order_payment_status_by_moveituser = function (req,  result) {
         }
         else {
             console.log(res1);
+            if(res1.length > 0){
                 // check the payment status - 1 is paid
               if(res1[0].payment_status === 0){
 
@@ -592,17 +594,26 @@ Order.order_payment_status_by_moveituser = function (req,  result) {
 
               }else{
                 let sucobj=true;
-                let message = "Please check your payment status-!";
+                let message = "Already Payment has been paid!";
                 let resobj = {  
                 success: sucobj,
                 message:message,
-                payment_status : res1[0].payment_status
                 
                 }; 
     
                result(null, resobj);
               }
-
+            }else{
+                let sucobj=true;
+                let message = "Please check your orderid and moveit user id! / order values is null";
+                let resobj = {  
+                success: sucobj,
+                message:message,
+                
+                }; 
+    
+               result(null, resobj);
+            }
         }
     });
 };
@@ -719,6 +730,58 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
     }
         
   };
+
+
+
+  Order.orderviewbyadmin = function(req, result){
+     
+    console.log(req);
+    // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
+        sql.query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" + req.id +"'", function (err, res) {
+  
+         if(err) {
+             console.log("error: ", err);
+             result(null, err);
+         }
+         else{
+           
+          
+            for (let i = 0; i < res.length; i++) {
+                   
+               if (res[i].userdetail) {
+                res[i].userdetail = JSON.parse(res[i].userdetail)
+               }
+              
+               if (res[i].makeitdetail) {
+                res[i].makeitdetail = JSON.parse(res[i].makeitdetail)
+               }
+               if (res[i].moveitdetail) {
+                res[i].moveitdetail = JSON.parse(res[i].moveitdetail)  
+               }
+
+              
+               if (res[i].items) {
+                var items =  JSON.parse(res[i].items);
+                res[i].items=items.item;
+               }
+              
+            }
+            
+
+             let sucobj=true;
+                let resobj = {  
+                success: sucobj,
+                result: res
+                }; 
+
+             result(null, resobj);
+         }   
+     });
+ 
+
+};
+
+
 
 
 module.exports = Order;

@@ -96,7 +96,7 @@ Makeituser.getUserById = function getUserById(userId, result) {
                 }
                 else{
 
-                    sql.query("select st.url,st.docid from Documents_Sales as ds join Documents as st on ds.docid = st.docid where ds.makeit_userid = '"+userId+"'", function (err, images) {
+                    sql.query("select st.url,st.docid,st.type from Documents_Sales as ds join Documents as st on ds.docid = st.docid where ds.makeit_userid = '"+userId+"'", function (err, images) {
 
                         if(err) {
                             console.log("error: ", err);
@@ -115,14 +115,7 @@ Makeituser.getUserById = function getUserById(userId, result) {
                     }); 
 
                 
-                //    let sucobj=true;
-                //     let resobj = {  
-                //     success: sucobj,
-                //     query1:query1,
-                //     result: res
-                //     }; 
-
-                //  result(null, resobj);
+    
               
                 }
             });   
@@ -132,14 +125,22 @@ Makeituser.getUserById = function getUserById(userId, result) {
 
 
 Makeituser.getAllUser = function getAllUser(result) {
-        sql.query("Select * from MakeitUser", function (err, res) {
-
+       sql.query("Select * from MakeitUser", function (err, res) {
+   
+       // sql.query("select concat('[',GROUP_CONCAT(CONCAT('{"url :"', st.url,'"}')),']') url ,mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey  from MakeitUser as mu join Documents_Sales as ds on mu.userid = ds.makeit_userid join Documents as st on ds.docid = st.docid where mu.userid = 1 group by mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey ", function (err, res) {
+      //  sql.query("SELECT JSON_OBJECT('Orderid', ci.orderid,'Item', JSON_ARRAYAGG(JSON_OBJECT('Quantity', ci.quantity,'Productid', ci.productid))) AS ordata FROM Orders co JOIN OrderItem ci ON ci.orderid = co.orderid GROUP BY co.orderid", function (err, res) {
                 if(err) {
                     console.log("error: ", err);
                     result(null, err);
                 }
                 else{
-                  console.log('User : ', res);  
+                // res=  JSON.stringify(res);
+                for (let i = 0; i < res.length; i++) {
+                   
+                    res[i]=  JSON.parse(res[i].ordata);
+                    
+                }
+                
 
                  let sucobj=true;
                     let resobj = {  
@@ -325,7 +326,7 @@ console.log(id.orderid);
                   let sucobj=true;
                   let resobj = {  
                   success: sucobj,
-                  res: res,
+                  result: res,
                   data : temp
                   }; 
       
