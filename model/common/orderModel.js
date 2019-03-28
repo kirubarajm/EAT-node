@@ -48,7 +48,7 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
         }else{
 
         var orderid = res1.insertId
-
+        console.log(orderItems);
 
         for (var i = 0; i < orderItems.length; i++) {
             var orderitem = new Orderitem(orderItems[i]);
