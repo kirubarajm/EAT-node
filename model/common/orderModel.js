@@ -39,6 +39,16 @@ var Order = function (order) {
 
 Order.createOrder = function createOrder(newOrder, orderItems, res) {
 
+    // sql.query("Select * from Product where makeit_userid = ? and productid = ? ", newOrder.makeit_user_id,orderItems[0].productid, function (err, res) {
+    //     if (err) {
+    //         console.log("error: ", err);
+    //         result(err, null);
+    //     }
+    //     else {
+           
+       
+
+
 
     sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
 
@@ -72,10 +82,11 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
         res(null, resobj);
 
             }
-
     });
 
 
+    //     }
+    // });
 };
 
 
@@ -398,7 +409,7 @@ Order.order_pickup_status_by_moveituser = function (req,  result) {
 
                   if(res1[0].moveit_user_id === kitchenquality.moveit_userid ){
 
-                    sql.query("UPDATE Orders SET orderstatus = ? WHERE orderid = ? and moveit_user_id =?", [kitchenquality.orderstatus, kitchenquality.orderid, kitchenquality.moveit_user_id], function (err, res) {
+                    sql.query("UPDATE Orders SET orderstatus = ?  WHERE orderid = ? and moveit_user_id =?", [kitchenquality.orderstatus, kitchenquality.orderid, kitchenquality.moveit_user_id], function (err, res) {
                         if(err) {
                             console.log("error: ", err);
                             result(null, err);
@@ -436,8 +447,8 @@ Order.order_pickup_status_by_moveituser = function (req,  result) {
     };
     
 
+    
 
-   
 
 Order.order_delivery_status_by_moveituser = function (req,  result) {
     
@@ -448,7 +459,7 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
                 result(null, err);
             }
             else {
-                console.log(res1);
+                
                     // check the payment status - 1 is paid
                 if(res1.length > 0)
                 {
@@ -505,6 +516,9 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
     Order.moveit_kitchen_reached_status = function (req,  result) {
      
         var kitchenreachtime = new Date();
+        var twentyMinutesLater = new Date();
+        twentyMinutesLater.setMinutes(twentyMinutesLater.getMinutes() + 20);
+
 
      sql.query("Select * from Orders where orderid = ?",[req.orderid], function (err, res1) {
 
@@ -516,11 +530,9 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
             
               var  getmoveitid = res1[0].moveit_user_id;
 
-              console.log(getmoveitid);
-
               if(getmoveitid === req.moveit_user_id ){
 
-                sql.query("UPDATE Orders SET orderstatus = ?,moveit_reached_time = ? WHERE orderid = ? and moveit_user_id =?", [req.orderstatus,kitchenreachtime, req.orderid, req.moveit_user_id], function (err, res) {
+                sql.query("UPDATE Orders SET orderstatus = ?,moveit_reached_time = ?,moveit_expected_delivered_time = ? WHERE orderid = ? and moveit_user_id =?", [req.orderstatus,kitchenreachtime,twentyMinutesLater, req.orderid, req.moveit_user_id], function (err, res) {
                     if(err) {
                         console.log("error: ", err);
                         result(null, err);
@@ -533,7 +545,7 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
                       let resobj = {  
                       success: sucobj,
                       message:message,
-                      res: res
+                      
                       }; 
           
                      result(null, resobj);
@@ -665,7 +677,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
 
         for (let i = 0; i < rows.length; i++) {
 
-            var url = "Select ot.productid,pt.product_name from OrderItem ot join Product pt on ot.productid=pt.productid where ot.orderid = "+rows[i].orderid+"";
+            var url = "Select ot.productid,pt.product_name,ot.quantity from OrderItem ot join Product pt on ot.productid=pt.productid where ot.orderid = "+rows[i].orderid+"";
 
             let products = await query(url);
         
@@ -695,7 +707,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
   Order.orderlistbymoveituserid =  async function(moveit_user_id, result){
        
     try {
-        const rows = await query("Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id ="+moveit_user_id+"");
+        const rows = await query("Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id ="+moveit_user_id+"");
 
         if (rows.length > 0) {
             console.log("Fetching No of Store Id", rows.length)
@@ -709,7 +721,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
 
         for (let i = 0; i < rows.length; i++) {
 
-            var url = "Select ot.productid,pt.product_name from OrderItem ot join Product pt on ot.productid=pt.productid where ot.orderid = "+rows[i].orderid+"";
+            var url = "Select ot.productid,pt.product_name,ot.quantity from OrderItem ot join Product pt on ot.productid=pt.productid where ot.orderid = "+rows[i].orderid+"";
 
             let products = await query(url);
 
@@ -782,6 +794,100 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
 };
 
 
+ Order.orderviewbyeatuser = function(req, result){
+     
+    console.log(req);
+    // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
+        sql.query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" + req.id +"'", function (err, res) {
+  
+         if(err) {
+             console.log("error: ", err);
+             result(null, err);
+         }
+         else{
+           
+          
+            for (let i = 0; i < res.length; i++) {
+                   
+               if (res[i].userdetail) {
+                res[i].userdetail = JSON.parse(res[i].userdetail)
+               }
+              
+               if (res[i].makeitdetail) {
+                res[i].makeitdetail = JSON.parse(res[i].makeitdetail)
+               }
+               if (res[i].moveitdetail) {
+                res[i].moveitdetail = JSON.parse(res[i].moveitdetail)  
+               }
+
+              
+               if (res[i].items) {
+                var items =  JSON.parse(res[i].items);
+                res[i].items=items.item;
+               }
+              
+            }
+            
+
+             let sucobj=true;
+                let resobj = {  
+                success: sucobj,
+                result: res
+                }; 
+
+             result(null, resobj);
+         }   
+     });
+ 
+
+};
 
 
+Order.orderlistbyeatuser = function(req, result){
+     
+   // ,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items
+    // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
+        sql.query("SELECT ors.* from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" + req.id +"'", function (err, res) {
+  
+         if(err) {
+             console.log("error: ", err);
+             result(null, err);
+         }
+         else{
+           
+          
+            for (let i = 0; i < res.length; i++) {
+                   
+               if (res[i].userdetail) {
+                res[i].userdetail = JSON.parse(res[i].userdetail)
+               }
+              
+               if (res[i].makeitdetail) {
+                res[i].makeitdetail = JSON.parse(res[i].makeitdetail)
+               }
+               if (res[i].moveitdetail) {
+                res[i].moveitdetail = JSON.parse(res[i].moveitdetail)  
+               }
+
+              
+               if (res[i].items) {
+                var items =  JSON.parse(res[i].items);
+                res[i].items=items.item;
+               }
+              
+            }
+            
+
+             let sucobj=true;
+                let resobj = {  
+                success: sucobj,
+                result: res
+                }; 
+
+             result(null, resobj);
+         }   
+     });
+ 
+
+};
 module.exports = Order;

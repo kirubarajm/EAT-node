@@ -80,6 +80,28 @@ exports.order_view = function(req, res) {
   });
 };
 
+exports.order_view_eatuser = function(req, res) {
+  Order.orderviewbyeatuser(req.params,function(err, user) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', user);
+    res.send(user);
+  });
+};
+
+
+
+exports.order_list_eatuser = function(req, res) {
+  Order.orderlistbyeatuser(req.params,function(err, user) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', user);
+    res.send(user);
+  });
+};
+
 
 exports.order_assign = function (req, res) {
 

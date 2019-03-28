@@ -23,6 +23,7 @@ var Makeituser = function(makeituser){
     this.bank_holder_name = makeituser.bank_holder_name;
     this.address = makeituser.address;
     this.virtualkey = makeituser.virtualkey || 0;
+    this.img = makeituser.img;
 };
 
 Makeituser.createUser = function createUser(newUser, result) {  

@@ -19,6 +19,7 @@ module.exports = function(app) {
   var orders = require('../controllers/common/OrderController');
   var salesdocument = require('../controllers/common/DocumentsalesController');
   var moveitdocument = require('../controllers/common/DocumentmoveitController');
+  var eatuseraddress = require('../controllers/eat/EatUserAddressController');
 
   // todoList Routes
   app.route('/tasks')
@@ -280,7 +281,7 @@ app.route('/faq/:id')
     app.route('/admin/orders')
       .post(orders.list_all_orders);
 
-      app.route('/admin/order/:id')
+    app.route('/admin/order/:id')
       .get(orders.order_view);
 
     app.route('/admin/order/assign')
@@ -434,13 +435,32 @@ app.route('/faq/:id')
 
     // Eat
 
-    app.route('/eatuser/dishlist')
+    app.route('/eat/dishlist')
     .post(eatuser.eat_dish_list);
 
-    app.route('/eatuser/makeitlist')
+    app.route('/eat/makeitlist')
     .post(eatuser.eat_makeit_list);
 
-    app.route('/eatuser/makeitproductlist')
+    app.route('/eat/makeitproductlist')
     .post(eatuser.eat_makeit_product_list);
 
+    app.route('/eat/placeorder')
+    .post(orders.eatuser_order_create);
+
+    app.route('/eat/order/:id')
+      .get(orders.order_view_eatuser);
+
+    app.route('/eat/orderlist/:id')
+      .get(orders.order_list_eatuser);
+
+
+    //Eat user Address
+    app.route('/eat/address')
+    .get(eatuseraddress.list_all_address)
+    .post(eatuseraddress.create_a_address);
+   
+     app.route('/eat/address/:userid')
+    .get(eatuseraddress.read_a_user_address)
+    .put(eatuseraddress.update_a_user_address)
+    .delete(eatuseraddress.delete_a_user_address);
     };

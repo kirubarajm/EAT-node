@@ -1,14 +1,11 @@
 'user strict';
 
+var authentication = require('../dbConnection.js');
+
 var mysql = require('mysql');
 
 //local mysql db connection
-var connection = mysql.createConnection({
-    host     : 'eatinstance.crelormihi5z.ap-south-1.rds.amazonaws.com',
-    user     : 'eattovo',
-    password : 'eattv2020',
-    database : 'eattovo',
-});
+var connection = mysql.createConnection(authentication);
 
 connection.connect(function(err) {
     if (err) throw err;

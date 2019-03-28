@@ -228,7 +228,7 @@ Eatuser.get_eat_dish_list = function(req,result) {
 
 Eatuser.get_eat_makeit_list = function(req,result) {
 
-    sql.query("Select userid as makeit_userid,name as makeit_username,brandname as makeit_brandname,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser  HAVING distance!= '' ORDER BY distance", function (err, res) {
+    sql.query("Select userid as makeituserid,name as makeitusername,brandname as makeitbrandname,img as makeitimg ,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser  HAVING distance!= '' ORDER BY distance", function (err, res) {
 
         if(err) {
             console.log("error: ", err);
@@ -249,14 +249,28 @@ Eatuser.get_eat_makeit_list = function(req,result) {
 
 
 Eatuser.get_eat_makeit_product_list = function(req,result) {
+    console.log(req);
 
-    sql.query("Select MakeitUser.*,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser  HAVING distance!= '' ORDER BY distance", function (err, res) {
+   // sql.query("Select MakeitUser.*,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser  HAVING distance!= '' ORDER BY distance", function (err, res) {
+
+        sql.query("Select mk.name as makeitname,mk.email as makeitemail,mk.phoneno as makeitphonenumber,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid where mk.userid ="+req.makeit_userid+" and active_status = 1 and quantity !=0 ", function (err, res) {
+
 
         if(err) {
             console.log("error: ", err);
             result(err, null);
         }
         else{
+
+
+            for (let i = 0; i < res.length; i++) {
+                   
+                if (res[i].productlist) {
+                 res[i].productlist = JSON.parse(res[i].productlist)
+                }
+               
+               
+             }
            let sucobj=true;
             let resobj = {  
             success: sucobj,
