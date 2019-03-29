@@ -9,6 +9,7 @@ var Menuitem = function(menuitem){
     this.vegtype=menuitem.vegtype;
     this.price=menuitem.price;
     this.created_at = new Date();
+    this.price = menuitem.price;
 };
 
 /*

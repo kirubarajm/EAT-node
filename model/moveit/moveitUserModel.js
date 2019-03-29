@@ -240,7 +240,7 @@ Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req ,result) {
 
 Moveituser.update_online_status = function(req, result){
 
-    console.log(req);
+   
     sql.query("UPDATE MoveitUser SET online_status = ? WHERE userid = ?", [req.online_status, req.userid], function (err, res) {
            
         if(err) {
@@ -250,14 +250,18 @@ Moveituser.update_online_status = function(req, result){
         else{
             if(req.online_status == 1){
                 key = "Moved online";
+                key1 = true;
             }else{
                 key = "Moved offline";
+                key1 = false;
             }
            let sucobj=true;
            let message = key;
+           let onlinestatus = key1;
             let resobj = {  
             success: sucobj,
-            message:message
+            message:message,
+            onlinestatus:onlinestatus
             }; 
 
          result(null, resobj);

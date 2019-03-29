@@ -202,15 +202,25 @@ Eatuser.virtual_eatusersearch = function virtual_eatusersearch(req,result) {
 };
 
 
-Eatuser.get_eat_dish_list = function(req,result) {
+Eatuser.get_eat_dish_list = async function(req,result) {
+    
 
-    sql.query("Select mu.userid as makeit_userid,mu.name as makeit_username, pt.product_name, pt.productid,pt.image,pt.price,pt.vegtype as producttype,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid HAVING distance!= '' ORDER BY distance", function (err, res) {
+    sql.query("Select mu.userid as makeit_userid,mu.name as makeit_username, pt.product_name, pt.productid,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid HAVING distance!= '' ORDER BY distance", function (err, res) {
 
         if(err) {
             console.log("error: ", err);
             result(err, null);
         }
         else{
+                for (let i = 0; i < res.length; i++) {
+                    
+                    res[i].distance = res[i].distance.toFixed(2);
+                        //15min Food Preparation time , 3min 1 km
+                        res[i].eta  = Math.round(15 + (3 * res[i].distance) +" minutes");
+                    
+                   
+                }
+
            let sucobj=true;
             let resobj = {  
             success: sucobj,
@@ -235,6 +245,14 @@ Eatuser.get_eat_makeit_list = function(req,result) {
             result(err, null);
         }
         else{
+            for (let i = 0; i < res.length; i++) {
+                    
+            
+                //15min Food Preparation time , 3min 1 km
+            res[i].eta = 15 + (3 * res[i].distance) +" minutes";
+            
+        }
+
            let sucobj=true;
             let resobj = {  
             success: sucobj,

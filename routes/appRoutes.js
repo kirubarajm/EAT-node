@@ -349,9 +349,29 @@ app.route('/faq/:id')
     app.route('/admin/moveit/documentupload')
       .post(documents.moveit_upload_a_documents);
       
-
     app.route('/admin/moveit/documentstore')
       .post(moveitdocument.create_a_documents);
+
+    app.route('/admin/item/add')
+      .post(menuitem.create_a_menuitem);
+
+    app.route('/admin/items/:id')
+      .get(menuitem.read_a_menuitem);
+
+    app.route('/admin/product/add')
+      .post(product.create_a_product);
+
+    app.route('/admin/liveproduct/:makeit_userid')
+      .get(product.list_all_liveproduct);
+
+   app.route('/admin/product/view/:productid')
+      .get(product.productitemlist);
+
+    app.route('/admin/product/movetolive')
+      .post(product.moveliveproduct);
+
+
+   
 
 
 
@@ -438,19 +458,19 @@ app.route('/faq/:id')
     app.route('/eat/dishlist')
     .post(eatuser.eat_dish_list);
 
-    app.route('/eat/makeitlist')
+    app.route('/eat/kitchenlist')
     .post(eatuser.eat_makeit_list);
 
-    app.route('/eat/makeitproductlist')
+    app.route('/eat/products')
     .post(eatuser.eat_makeit_product_list);
 
     app.route('/eat/placeorder')
     .post(orders.eatuser_order_create);
 
-    app.route('/eat/order/:id')
+    app.route('/eat/order/:orderid')
       .get(orders.order_view_eatuser);
 
-    app.route('/eat/orderlist/:id')
+    app.route('/eat/orders/:userid')
       .get(orders.order_list_eatuser);
 
 

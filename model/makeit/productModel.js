@@ -201,8 +201,7 @@ Product.moveliveproduct = function(req,result){
    // let mesobj = "Product added live successfully";
     let resobj = {  
       success: sucobj,
-      message:mesobj,
-      result: res 
+      message:mesobj 
       }; 
 
    result(null, resobj);

@@ -136,11 +136,11 @@ Makeituser.getAllUser = function getAllUser(result) {
                 }
                 else{
                 // res=  JSON.stringify(res);
-                for (let i = 0; i < res.length; i++) {
+                // for (let i = 0; i < res.length; i++) {
                    
-                    res[i]=  JSON.parse(res[i].ordata);
+                //     res[i]=  JSON.parse(res[i].ordata);
                     
-                }
+                // }
                 
 
                  let sucobj=true;
