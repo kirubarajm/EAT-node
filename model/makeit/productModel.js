@@ -23,6 +23,7 @@ var Product = function(product){
     this.sunday=product.sunday;
     this.created_at = new Date();
     this.quantity = product.quantity ||0;
+    this.cusine = product.cusine;
 
 };
 

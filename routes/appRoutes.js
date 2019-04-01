@@ -370,7 +370,8 @@ app.route('/faq/:id')
     app.route('/admin/product/movetolive')
       .post(product.moveliveproduct);
 
-
+    app.route('/admin/makeituser/edit')
+      .put(makeituser.update_makeit_users);
    
 
 
@@ -483,4 +484,13 @@ app.route('/faq/:id')
     .get(eatuseraddress.read_a_user_address)
     .put(eatuseraddress.update_a_user_address)
     .delete(eatuseraddress.delete_a_user_address);
+
+    app.route('/eat/addressdelete')
+    .put(eatuseraddress.update_delete_status);
+
+    app.route('/eat/makeituser/:userid')
+      .get(makeituser.read_a_user)
+   
     };
+
+   

@@ -41,7 +41,7 @@ exports.read_a_user_address = function(req, res) {
 
 
 exports.update_a_user_address = function(req, res) {
-    EatuserAddress.updateById(req.params.userid, new Eatuser(req.body), function(err, user) {
+    EatuserAddress.updateById(req.body, new Eatuser(req.body), function(err, user) {
     if (err)
       res.send(err);
     res.json(user);
@@ -55,4 +55,12 @@ exports.delete_a_user_address = function(req, res) {
       res.send(err);
     res.json({ message: 'Eatuser successfully deleted' });
   });
+};
+
+exports.update_delete_status = function(req, res) {
+  EatuserAddress.update_delete_status(req.body, function(err, user) {
+  if (err)
+    res.send(err);
+  res.json(user);
+});
 };

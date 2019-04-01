@@ -205,7 +205,7 @@ Eatuser.virtual_eatusersearch = function virtual_eatusersearch(req,result) {
 Eatuser.get_eat_dish_list = async function(req,result) {
     
 
-    sql.query("Select mu.userid as makeit_userid,mu.name as makeit_username, pt.product_name, pt.productid,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid HAVING distance!= '' ORDER BY distance", function (err, res) {
+    sql.query("Select mu.userid as makeit_userid,mu.name as makeit_username, pt.product_name, pt.productid,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Fav fa on fa.productid = pt.productid HAVING distance!= '' ORDER BY distance", function (err, res) {
 
         if(err) {
             console.log("error: ", err);
@@ -214,9 +214,9 @@ Eatuser.get_eat_dish_list = async function(req,result) {
         else{
                 for (let i = 0; i < res.length; i++) {
                     
-                    res[i].distance = res[i].distance.toFixed(2);
-                        //15min Food Preparation time , 3min 1 km
-                        res[i].eta  = Math.round(15 + (3 * res[i].distance) +" minutes");
+                    eta = 15 + (3 * res[i].distance) ;
+                    //15min Food Preparation time , 3min 1 km
+                    res[i].eta =   Math.round(eta) +" mins" ;
                     
                    
                 }
@@ -238,20 +238,22 @@ Eatuser.get_eat_dish_list = async function(req,result) {
 
 Eatuser.get_eat_makeit_list = function(req,result) {
 
-    sql.query("Select userid as makeituserid,name as makeitusername,brandname as makeitbrandname,img as makeitimg ,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser  HAVING distance!= '' ORDER BY distance", function (err, res) {
+    sql.query("Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid HAVING distance!= '' ORDER BY distance", function (err, res) {
 
         if(err) {
             console.log("error: ", err);
             result(err, null);
         }
         else{
+            
             for (let i = 0; i < res.length; i++) {
                     
-            
-                //15min Food Preparation time , 3min 1 km
-            res[i].eta = 15 + (3 * res[i].distance) +" minutes";
-            
-        }
+                res[i].distance = res[i].distance.toFixed(2);
+                    //15min Food Preparation time , 3min 1 km
+                    eta = 15 + (3 * res[i].distance) ;
+                    
+                    res[i].eta =   Math.round(eta) +" mins" ;
+            }
 
            let sucobj=true;
             let resobj = {  
@@ -271,7 +273,7 @@ Eatuser.get_eat_makeit_product_list = function(req,result) {
 
    // sql.query("Select MakeitUser.*,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser  HAVING distance!= '' ORDER BY distance", function (err, res) {
 
-        sql.query("Select mk.name as makeitname,mk.email as makeitemail,mk.phoneno as makeitphonenumber,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid where mk.userid ="+req.makeit_userid+" and active_status = 1 and quantity !=0 ", function (err, res) {
+        sql.query("Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Fav fa on fa.makeit_userid = mk.userid where mk.userid ="+req.makeit_userid+" and active_status = 1 ", function (err, res) {
 
 
         if(err) {
@@ -285,6 +287,13 @@ Eatuser.get_eat_makeit_product_list = function(req,result) {
                    
                 if (res[i].productlist) {
                  res[i].productlist = JSON.parse(res[i].productlist)
+
+                 res[i].distance = res[i].distance.toFixed(2);
+                    //15min Food Preparation time , 3min 1 km
+                    eta = 15 + (3 * res[i].distance) ;
+                    
+                    res[i].eta =   Math.round(eta) +" mins" ;
+
                 }
                
                

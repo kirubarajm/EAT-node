@@ -6,6 +6,7 @@ var Fav = function(fav){
     this.eatuserid = fav.eatuserid;
     this.productid=fav.productid;
     this.created_at = new Date();
+    this.makeit_userid = fav.makeit_userid;
 };
 
 

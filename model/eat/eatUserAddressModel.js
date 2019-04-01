@@ -74,16 +74,23 @@ EatuserAddress.getAllAddress = function getAllAddress(result) {
             });   
 };
 
-EatuserAddress.updateById = function(id, user, result){
-  sql.query("UPDATE User SET task = ? WHERE userid = ?", [task.task, id], function (err, res) {
-          if(err) {
-              console.log("error: ", err);
-                result(null, err);
-             }
-           else{   
-             result(null, res);
-                }
-            }); 
+EatuserAddress.updateById = function(req, result){
+  sql.query("UPDATE User SET delete_status = ? WHERE userid = ?", [req.delete_status], function (err, res) {
+         if(err) {
+      console.log("error: ", err);
+      result(err, null);
+         }
+          else{
+            let sucobj=true;
+            let resobj = {  
+           success: sucobj,
+          result: res
+      }; 
+
+   result(null, resobj);
+
+  }
+}); 
 };
 
 EatuserAddress.remove = function(id, result){
@@ -101,4 +108,23 @@ EatuserAddress.remove = function(id, result){
 };
 
 
+EatuserAddress.update_delete_status = function(req, result){
+    sql.query("UPDATE Address SET delete_status = ? WHERE userid = ?", [req.delete_status,req.userid], function (err, res) {
+           if(err) {
+        console.log("error: ", err);
+        result(err, null);
+           }
+            else{
+              let sucobj=true;
+              message = 'Address removed sucessfully';
+              let resobj = {  
+             success: sucobj,
+             message :message
+        }; 
+  
+     result(null, resobj);
+  
+    }
+  }); 
+  };
 module.exports = EatuserAddress;

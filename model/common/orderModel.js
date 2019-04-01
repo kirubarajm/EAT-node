@@ -39,18 +39,40 @@ var Order = function (order) {
 
 Order.createOrder = function createOrder(newOrder, orderItems, res) {
 
-    // sql.query("Select * from Product where makeit_userid = ? and productid = ? ", newOrder.makeit_user_id,orderItems[0].productid, function (err, res) {
-    //     if (err) {
-    //         console.log("error: ", err);
-    //         result(err, null);
-    //     }
-    //     else {
-           
-       
+       // product = orderItems.productid;
+
+        console.log(orderItems);
+    if (newOrder.payment_type == 0) {
+
+           test =  quantitycheck(responce);
+           console.log(test);
+            ordercreate();
+
+    }else if(newOrder.payment_type == 1){
+
+        ordercreate();
+    }
+
+    function quantitycheck(responce){
+
+        sql.query("Select * From  Product  productid = ? ",orderItems.productid, function (err, res) {             
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+                responce(null, res);
+          
+            }
+        });   
 
 
+    }
 
-    sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
+
+    function ordercreate(){
+
+     sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
 
         if (err) {
             console.log("error: ", err);
@@ -58,8 +80,9 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
         }else{
 
         var orderid = res1.insertId
-        console.log(orderItems);
+        // console.log(orderItems);
 
+    
         for (var i = 0; i < orderItems.length; i++) {
             var orderitem = new Orderitem(orderItems[i]);
             orderitem.orderid = orderid;
@@ -71,7 +94,7 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
             });
 
         }
-
+        
               let sucobj=true;
               let mesobj = "Order Created successfully";
               let resobj = {  
@@ -84,10 +107,11 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
             }
     });
 
-
-    //     }
-    // });
+    }
+    
 };
+
+
 
 
 Order.getOrderById = function getOrderById(orderid, result) {

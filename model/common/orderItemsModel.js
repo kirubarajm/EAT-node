@@ -18,6 +18,18 @@ Orderitems.createOrderitems = function createOrderitems(order_item, res) {
         if (err) {
             console.log("error: ", err);
             res(null, err);
+        } else {
+
+            let sucobj=true;
+              let mesobj = "Order Item Created successfully";
+              let resobj = {  
+                success: sucobj,
+                message:mesobj,
+               // orderid: orderid
+                }; 
+
+            res(null, resobj);
+
         }
     });
 

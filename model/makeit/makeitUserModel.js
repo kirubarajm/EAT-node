@@ -24,6 +24,9 @@ var Makeituser = function(makeituser){
     this.address = makeituser.address;
     this.virtualkey = makeituser.virtualkey || 0;
     this.img = makeituser.img;
+    this.rating = makeituser.rating;
+    this.region = makeituser.region;
+    this.costfortwo = makeituser.costfortwo;
 };
 
 Makeituser.createUser = function createUser(newUser, result) {  
@@ -230,9 +233,11 @@ Makeituser.checkLogin = function checkLogin(req, result) {
             });   
 };
 
-Makeituser.updatePaymentById = function(id, user, result){
-    console.log(user);
-  sql.query("UPDATE MakeitUser SET bank_name = ?, ifsc=?, bank_account_no=?, bank_holder_name=? WHERE userid = ?", [user.bank_name,user.ifsc,user.bank_account_no,user.bank_holder_name, id], function (err, res) {
+
+
+Makeituser.update_makeit_users = function(id, user, result){
+   
+  sql.query("UPDATE MakeitUser SET  bank_name = ?, ifsc=?, bank_account_no=?, bank_holder_name=? WHERE userid = ?", [user.bank_name,user.ifsc,user.bank_account_no,user.bank_holder_name, id], function (err, res) {
           if(err) {
               console.log("error: ", err);
                // result(null, err);

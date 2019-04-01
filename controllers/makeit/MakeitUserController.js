@@ -199,3 +199,13 @@ exports.orderview = function(req, res) {
    });
   }
  };
+
+
+ exports.update_makeit_users = function(req, res) {
+  Makeituser.update_makeit_users(req.params.userid, new Makeituser(req.body), function(err, user) {
+     if (err)
+       res.send(err);
+     res.json(user);
+   });
+ };
+ 
