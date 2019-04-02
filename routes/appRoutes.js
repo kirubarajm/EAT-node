@@ -20,6 +20,7 @@ module.exports = function(app) {
   var salesdocument = require('../controllers/common/DocumentsalesController');
   var moveitdocument = require('../controllers/common/DocumentmoveitController');
   var eatuseraddress = require('../controllers/eat/EatUserAddressController');
+  var ordersitem = require('../controllers/common/OrderitemController');
 
   // todoList Routes
   app.route('/tasks')
@@ -490,6 +491,14 @@ app.route('/faq/:id')
 
     app.route('/eat/makeituser/:userid')
       .get(makeituser.read_a_user)
+
+      app.route('/admin/order/addtest')
+      .post(orders.createOrdertest);
+
+
+      app.route('/orderplace/itemadd')
+      .post(ordersitem.createOrderitemsonline);
+
    
     };
 

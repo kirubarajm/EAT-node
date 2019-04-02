@@ -237,7 +237,7 @@ Makeituser.checkLogin = function checkLogin(req, result) {
 
 Makeituser.update_makeit_users = function(id, user, result){
    
-  sql.query("UPDATE MakeitUser SET  bank_name = ?, ifsc=?, bank_account_no=?, bank_holder_name=? WHERE userid = ?", [user.bank_name,user.ifsc,user.bank_account_no,user.bank_holder_name, id], function (err, res) {
+  sql.query("UPDATE MakeitUser SET  bank_name = ?, ifsc=?, bank_account_no=?, bank_holder_name=? lat = ? brandname = ?,lon = ?,localityid = ?,region = ?, costfortwo = ? WHERE userid = ?", [user.bank_name,user.ifsc,user.bank_account_no,user.bank_holder_name,lat,brandname,lon,localityid,region,costfortwo, id], function (err, res) {
           if(err) {
               console.log("error: ", err);
                // result(null, err);
@@ -300,9 +300,6 @@ Makeituser.createAppointment = function createAppointment(req, result) {
             
            
 };
-
-
-
 
 
 

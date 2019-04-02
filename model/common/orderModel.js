@@ -3,6 +3,7 @@ var sql = require('../db.js');
 const util = require('util');
 var Orderitem = require('../../model/common/orderItemsModel.js');
 var MoveitRatingForMakeit = require('../../model/moveit/moveitRatingForMakeitModel');
+var Orderlock = require('../../model/common/lockorderModel');
 
 
 const query = util.promisify(sql.query).bind(sql);
@@ -39,13 +40,7 @@ var Order = function (order) {
 
 Order.createOrder = function createOrder(newOrder, orderItems, res) {
 
-       // product = orderItems.productid;
-
-        console.log(orderItems);
     if (newOrder.payment_type == 0) {
-
-           test =  quantitycheck(responce);
-           console.log(test);
             ordercreate();
 
     }else if(newOrder.payment_type == 1){
@@ -69,8 +64,7 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
 
     }
 
-
-    function ordercreate(){
+        function ordercreate(){
 
      sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
 
@@ -81,7 +75,7 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
 
         var orderid = res1.insertId
         // console.log(orderItems);
-
+        lockorder(orderid,responce);
     
         for (var i = 0; i < orderItems.length; i++) {
             var orderitem = new Orderitem(orderItems[i]);
@@ -915,7 +909,142 @@ Order.orderlistbyeatuser = function(req, result){
              result(null, resobj);
          }   
      });
- 
 
 };
+
+
+
+Order.createOrdertest = async function createOrdertest(newOrder, orderItems, result) {
+
+  const  productquantity = [];
+
+    for (let i = 0; i < orderItems.length; i++) {
+        sql.query("Select productid,quantity,product_name From Product where productid = '"+orderItems[i].productid+"' and quantity > '"+orderItems[i].quantity+"'", function (err, res) {             
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+                
+                if (res.length <= 0) {
+                    let sucobj=true;
+                    let mesobj = "Productid" +" "+ orderItems[i].productid + " quantity is not available";
+                    let resobj = {  
+                    success: sucobj,
+                    message:mesobj
+                    }; 
+                    result(null, resobj);
+                }else{
+
+                    
+
+                    productquantity.push(res);
+                   
+                    if (productquantity.length >= orderItems.length) {
+
+                        if (newOrder.payment_type == 0) {
+                            ordercreatecashondelivery();
+                        }else if(newOrder.payment_type == 1){
+                            ordercreateonline();
+                        }
+                     
+                        
+                        
+                    }
+                }
+
+                
+            }
+        }); 
+        
+    }
+
+        function ordercreatecashondelivery(){
+    
+         sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
+    
+            if (err) {
+                console.log("error: ", err);
+                res(null, err);
+            }else{
+    
+            var orderid = res1.insertId
+        
+            for (var i = 0; i < orderItems.length; i++) {
+                var orderitem = new Orderitem(orderItems[i]);
+                orderitem.orderid = orderid;
+    
+                Orderitem.createOrderitems(orderitem, function (err, orderitemresponce) {
+                    if (err)
+                    result.send(err);
+                        
+                });
+                
+            }
+           
+                  let sucobj=true;
+                  let mesobj = "Order Created successfully";
+                  let resobj = {  
+                    success: sucobj,
+                    message:mesobj,
+                    orderid: orderid
+                    }; 
+                    result(null, resobj);
+    
+                }
+        });
+    
+        }
+        
+        function ordercreateonline(){
+    
+            sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
+       
+               if (err) {
+                   console.log("error: ", err);
+                   res(null, err);
+               }else{
+       
+               var orderid = res1.insertId
+
+               
+           
+               for (var i = 0; i < orderItems.length; i++) {
+                   var orderitem = new Orderlock(orderItems[i]);
+                   orderitem.orderid = orderid;
+
+                   sql.query("update Product set quantity= quantity-? WHERE productid = ?", [orderitem.quantity,orderitem.productid], function (err, res2) {
+                    if(err) {
+                        console.log("error: ", err);
+                        res(null, err);
+                        console.log(res2);
+                       }
+                    }); 
+
+                    Orderlock.createOrderitems(orderitem, function (err, orderitemresponce) {
+                       if (err)
+                       result.send(err);
+                           
+                   });
+                   
+                  }
+    
+                     let sucobj=true;
+                     let resobj = {  
+                       success: sucobj,
+                       orderid: orderid
+                       }; 
+                       result(null, resobj);
+       
+                   }
+           });
+       
+           }
+           
+  
+};
+
+
+
+
 module.exports = Order;

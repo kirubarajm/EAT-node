@@ -218,5 +218,23 @@ exports.orderhistory_by_moveit_userid = function(req, res) {
   });
  };
 
+ exports.createOrdertest = function (req, res) {
+  var new_Order = new Order(req.body);
+  var order_item = req.body.orderitems;
+  //console.log(order_item);
+  //console.log(new_Order);
+  //handles null error 
+  if (!new_Order.userid || !new_Order.price || !new_Order.makeit_user_id || !new_Order.delivery_charge) {
 
+    res.status(400).send({ error: true, message: 'Please provide userid/price/makeit_user_id/delivery_charge' });
+
+  }
+  else {
+    Order.createOrdertest(new_Order, order_item, function (err, result) {
+      if (err)
+        res.send(err);
+      res.json(result);
+    });
+  }
+};
 
