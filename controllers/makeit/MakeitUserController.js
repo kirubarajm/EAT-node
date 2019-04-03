@@ -109,7 +109,7 @@ exports.update_a_user = function(req, res) {
 
 
 exports.update_payment_registration = function(req, res) {
- Makeituser.updatePaymentById(req.params.userid, new Makeituser(req.body), function(err, user) {
+ Makeituser.update_makeit_users(req.params.userid, new Makeituser(req.body), function(err, user) {
     if (err)
       res.send(err);
     res.json(user);
@@ -209,3 +209,12 @@ exports.orderview = function(req, res) {
    });
  };
  
+
+ exports.read_a_cartdetails = function(req, res) {
+  var cartitems = req.body.cartitems
+  Makeituser.read_a_cartdetails_makeitid(req.body,cartitems, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+};

@@ -24,7 +24,8 @@ var Moveituser = function(moveituser){
     this.vech_insurance = moveituser.vech_insurance;
     this.vech_rcbook = moveituser.vech_rcbook;
     this.photo = moveituser.photo;
-    this.legal_document = moveituser.legal_document;    
+    this.legal_document = moveituser.legal_document; 
+    this.branch = moveituser.branch;   
 };
 
 Moveituser.createUser = function createUser(newUser, result) { 

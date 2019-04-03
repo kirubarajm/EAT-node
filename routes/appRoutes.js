@@ -84,7 +84,7 @@ module.exports = function(app) {
   // app.route('/makeit/bookappointment/:userid')
   //   .put(makeituser.creat_a_appointment)
 
-    app.route('/makeit/bookappointment')
+  app.route('/makeit/bookappointment')
     .put(makeituser.creat_a_appointment)
 
 
@@ -492,12 +492,20 @@ app.route('/faq/:id')
     app.route('/eat/makeituser/:userid')
       .get(makeituser.read_a_user)
 
-      app.route('/admin/order/addtest')
-      .post(orders.createOrdertest);
+
+      // need to modify url
+    app.route('/eat/order/add')
+      .post(orders.eatcreateOrder);
+
+      app.route('/eat/orderplace')
+      .post(orders.online_order_place_conformation);
 
 
-      app.route('/orderplace/itemadd')
-      .post(ordersitem.createOrderitemsonline);
+      app.route('/eat/cartdetails')
+      .post(makeituser.read_a_cartdetails)
+
+      // app.route('/orderplace/')
+      // .post(ordersitem.createOrderitemsonline);
 
    
     };

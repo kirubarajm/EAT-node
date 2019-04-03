@@ -309,7 +309,6 @@ Product.update_quantity_product_byid = function update_quantity_product_byid (re
 Product.quantitydecrease = function(orderlist, result){
 
 
-
     sql.query("update Product set quantity= quantity-? WHERE productid = ", [orderlist.quantity, orderlist.productid], function (err, res) {
       if(err) {
           console.log("error: ", err);

@@ -35,6 +35,7 @@ var Order = function (order) {
     this.price = order.price;
     this.payment_status = order.payment_status;
     this.cus_address = order.cus_address;
+    this.lock_status = order.lock_status;
 };
 
 
@@ -75,7 +76,7 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
 
         var orderid = res1.insertId
         // console.log(orderItems);
-        lockorder(orderid,responce);
+        //lockorder(orderid,responce);
     
         for (var i = 0; i < orderItems.length; i++) {
             var orderitem = new Orderitem(orderItems[i]);
@@ -914,9 +915,10 @@ Order.orderlistbyeatuser = function(req, result){
 
 
 
-Order.createOrdertest = async function createOrdertest(newOrder, orderItems, result) {
-
+Order.eatcreateOrder = async function eatcreateOrder(newOrder, orderItems, result) {
+  
   const  productquantity = [];
+  
 
     for (let i = 0; i < orderItems.length; i++) {
         sql.query("Select productid,quantity,product_name From Product where productid = '"+orderItems[i].productid+"' and quantity > '"+orderItems[i].quantity+"'", function (err, res) {             
@@ -925,26 +927,29 @@ Order.createOrdertest = async function createOrdertest(newOrder, orderItems, res
                 result(err, null);
             }
             else{
-                
+            
                 if (res.length <= 0) {
+                    orderItems[i].availablity = false;
                     let sucobj=true;
                     let mesobj = "Productid" +" "+ orderItems[i].productid + " quantity is not available";
                     let resobj = {  
                     success: sucobj,
-                    message:mesobj
+                    message:mesobj,
+                    orderItems:orderItems
                     }; 
                     result(null, resobj);
                 }else{
 
-                    
+                    orderItems[i].availablity = true;
+                    orderItems[i].productquantity = productquantity.push(res);
 
-                    productquantity.push(res);
-                   
+                    console.log(productquantity.length);
                     if (productquantity.length >= orderItems.length) {
 
-                        if (newOrder.payment_type == 0) {
+                        if (newOrder.payment_type === 0) {
                             ordercreatecashondelivery();
-                        }else if(newOrder.payment_type == 1){
+                        }else if(newOrder.payment_type === 1){
+
                             ordercreateonline();
                         }
                      
@@ -997,7 +1002,7 @@ Order.createOrdertest = async function createOrdertest(newOrder, orderItems, res
         }
         
         function ordercreateonline(){
-    
+                console.log('test');
             sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
        
                if (err) {
@@ -1010,18 +1015,19 @@ Order.createOrdertest = async function createOrdertest(newOrder, orderItems, res
                
            
                for (var i = 0; i < orderItems.length; i++) {
-                   var orderitem = new Orderlock(orderItems[i]);
-                   orderitem.orderid = orderid;
+                   var orderitemlock = new Orderlock(orderItems[i]);
+                   orderitemlock.orderid = orderid;
 
-                   sql.query("update Product set quantity= quantity-? WHERE productid = ?", [orderitem.quantity,orderitem.productid], function (err, res2) {
-                    if(err) {
-                        console.log("error: ", err);
-                        res(null, err);
-                        console.log(res2);
-                       }
-                    }); 
-
-                    Orderlock.createOrderitems(orderitem, function (err, orderitemresponce) {
+                     var orderitem = new Orderitem(orderItems[i]);
+                     orderitem.orderid = orderid;
+    
+                     Orderitem.createOrderitems(orderitem, function (err, orderitemresponce) {
+                    if (err)
+                    result.send(err);
+                        
+                });
+            
+                    Orderlock.lockOrderitems(orderitemlock, function (err, orderitemresponce) {
                        if (err)
                        result.send(err);
                            
@@ -1045,6 +1051,84 @@ Order.createOrdertest = async function createOrdertest(newOrder, orderItems, res
 };
 
 
+
+Order.online_order_place_conformation = function(order_place, result){
+
+    if (order_place.payment_status == 1) {
+        var query = "update Orders set payment_status = '"+order_place.payment_status+"' WHERE orderid = '"+order_place.orderid+"' ";
+        let message = "Your order placed  successfully";
+        var orderdetailsquery = "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" + order_place.orderid +"'";
+
+        sql.query(query, function (err, res1) {
+            if(err) {
+                console.log("error: ", err);
+                  result(null, err);
+               }
+             else{ 
+
+                sql.query(orderdetailsquery, function (err, res2) {
+                    if(err) {
+                        console.log("error: ", err);
+                    }else{
+                        
+                        for (let i = 0; i < res2.length; i++) {
+                    
+                            res2[i].distance = res2[i].distance.toFixed(2);
+                                //15min Food Preparation time , 3min 1 km
+                                eta = 15 + (3 * res2[i].distance) ;
+                                
+                                res2[i].eta =   Math.round(eta) +" mins" ;
+                        }
+
+                        for (let i = 0; i < res2.length; i++) {
+                   
+                            if (res2[i].userdetail) {
+                             res2[i].userdetail = JSON.parse(res2[i].userdetail)
+                            }
+                           
+                            if (res2[i].makeitdetail) {
+                             res2[i].makeitdetail = JSON.parse(res2[i].makeitdetail)
+                            }
+                            if (res2[i].moveitdetail) {
+                             res2[i].moveitdetail = JSON.parse(res2[i].moveitdetail)  
+                            }
+             
+                           
+                            if (res2[i].items) {
+                             var items =  JSON.parse(res2[i].items);
+                             res2[i].items=items.item;
+                            }
+                           
+                         }
+
+                         let sucobj=true;
+                         let resobj = {  
+                          success: sucobj,
+                          message:message,
+                         orderdetails: res2
+                          }; 
+                         result(null, resobj);
+                       }
+                    });
+             
+                  }
+              }); 
+    
+
+    }else{
+
+        var query = "update Orders set payment_status = '"+order_place.payment_status+"' WHERE orderid = '"+order_place.orderid+"' ";
+        let sucobj=true;
+        let message = "Payment not yet be paid following order";
+        let resobj = {  
+          success: sucobj,
+          message:message,
+         orderid: order_place.orderid
+          }; 
+         result(null, resobj);   
+    }
+
+    };  
 
 
 module.exports = Order;

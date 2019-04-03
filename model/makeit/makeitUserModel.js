@@ -237,7 +237,7 @@ Makeituser.checkLogin = function checkLogin(req, result) {
 
 Makeituser.update_makeit_users = function(id, user, result){
    
-  sql.query("UPDATE MakeitUser SET  bank_name = ?, ifsc=?, bank_account_no=?, bank_holder_name=? lat = ? brandname = ?,lon = ?,localityid = ?,region = ?, costfortwo = ? WHERE userid = ?", [user.bank_name,user.ifsc,user.bank_account_no,user.bank_holder_name,lat,brandname,lon,localityid,region,costfortwo, id], function (err, res) {
+  sql.query("UPDATE MakeitUser SET bank_name = ?, ifsc=?, bank_account_no=?, bank_holder_name=? WHERE userid = ?", [user.bank_name,user.ifsc,user.bank_account_no,user.bank_holder_name, id], function (err, res) {
           if(err) {
               console.log("error: ", err);
                // result(null, err);
@@ -558,5 +558,54 @@ Makeituser.update_makeit_followup_status = function(makeitfollowupstatus, result
              
               }); 
   };
+
+
+
+
+
+  Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(req,cartitems, result) {
+
+  const productdetails = [];
+    for (let i = 0; i < cartitems.length; i++) {
+                          
+        var query2 = " Select * From Product where productid  = '"+cartitems[i].productid+"' ";
+
+         sql.query(query2, function (err, res) {  
+
+             if(err) {
+            console.log("error: ", err);
+            result(err, null);
+            }   
+            productdetails.push(res);
+
+            console.log(productdetails.length);
+        
+       });
+        }
+
+        var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid ="+req.makeit_userid+"";
+       
+        sql.query(query1, function (err, res1) {             
+                if(err) {
+                    console.log("error: ", err);
+                    result(err, null);
+                }
+                else{
+                       
+
+                    res1.push(productdetails);
+        
+                        let sucobj=true;
+                        let resobj = {  
+                        success: sucobj,
+                        result: res1,
+                        }; 
+                        
+                     result(null, resobj);
+                        
+              
+                }
+            });   
+};
 
 module.exports= Makeituser;

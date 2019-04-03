@@ -218,7 +218,7 @@ exports.orderhistory_by_moveit_userid = function(req, res) {
   });
  };
 
- exports.createOrdertest = function (req, res) {
+ exports.eatcreateOrder = function (req, res) {
   var new_Order = new Order(req.body);
   var order_item = req.body.orderitems;
   //console.log(order_item);
@@ -230,11 +230,31 @@ exports.orderhistory_by_moveit_userid = function(req, res) {
 
   }
   else {
-    Order.createOrdertest(new_Order, order_item, function (err, result) {
+    Order.eatcreateOrder(new_Order, order_item, function (err, result) {
       if (err)
         res.send(err);
       res.json(result);
     });
   }
 };
+
+
+
+exports.online_order_place_conformation = function (req, res) {
+  // var order_place = new Order(req.body);
+   console.log(req.body);
+  if (!req.body.orderid || !req.body.payment_type  ) {
+
+    res.status(400).send({ error: true, message: 'Please provide orderid/payment_type/lock_status/payment_status' });
+
+  }
+  else {
+    Order.online_order_place_conformation(req.body, function (err, result) {
+      if (err)
+        res.send(err);
+      res.json(result);
+    });
+  }
+};
+
 

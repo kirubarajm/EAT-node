@@ -61,7 +61,7 @@ Orderitems.createOrderitemsonline = function createOrderitemsonline(order_item, 
            
             var OrderItemid = result.insertId
 
-                sql.query("update Product set quantity= quantity-? WHERE productid = ?", [order_item.quantity,order_item.productid], function (err, res1) {
+            sql.query("update Product set quantity= quantity-? WHERE productid = ?", [order_item.quantity,order_item.productid], function (err, res1) {
                     if(err) {
                         console.log("error: ", err);
                         res(null, err);
