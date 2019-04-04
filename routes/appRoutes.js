@@ -378,10 +378,10 @@ module.exports = function (app) {
   app.route('/admin/makeituser/edit')
     .put(makeituser.edit_makeit_user_byid);
 
-  app.route('/admin/moveit/edit')
+  app.route('/admin/moveituser/edit')
     .put(moveituser.edit_moveit_user_byid);
 
-  app.route('/admin/sales/edit')
+  app.route('/admin/salesuser/edit')
     .put(salesuser.edit_a_user);
 
 
