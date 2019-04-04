@@ -24,21 +24,12 @@ Allocation.createAllocation = function createAllocation(req, result) {
                 else{
                     console.log(res.insertId);
                     
-                    // sql.query("UPDATE MakeitUser SET appointment_status = 2 WHERE userid = ?", newAllocation.makeit_userid, function (err, res) {
-                    //     if(err) {
-                    //         console.log("error: ", err);
-                    //         result(err, null);
-                    //     } else{
-                    //         let sucobj=true;
-                    //         let message = "Appointment assign successfully";
-                    //         let resobj = {  
-                    //         success: sucobj,
-                    //         message:message,
-                    //         result: res.insertId 
-                    //         }; 
-                    //         result(null, resobj);
-                    //     }
-                    // });   
+                    sql.query("UPDATE MakeitUser SET appointment_status = 1 WHERE userid = ?", req.makeit_userid, function (err, res) {
+                        if(err) {
+                            console.log("error: ", err);
+                            result(err, null);
+                        } 
+                    });   
                             let sucobj=true;
                             let message = "Booking time updated successfully";
                             let resobj = {  

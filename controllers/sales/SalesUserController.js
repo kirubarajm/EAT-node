@@ -98,3 +98,22 @@ exports.salesSearch = function(req, res) {
     res.send(user);
   });
 };
+
+exports.edit_a_user = function(req, res) {
+ 
+  //handles null error 
+   if(!req.body.id){
+
+            res.status(400).send({ error:true, message: 'Please provide sales id' });
+
+    }
+  else{
+
+  Salesuser.edit_sales_users(req.body, function(err, user) {
+     if (err)
+       res.send(err);
+     res.json(user);
+   });
+  }
+ };
+ 

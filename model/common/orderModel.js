@@ -482,7 +482,7 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
                     // check the payment status - 1 is paid
                 if(res1.length > 0)
                 {
-                  if(res1.length >0 && res1[0].payment_status === 1){
+                  if(res1[0].payment_status === 1){
 
                     sql.query("UPDATE Orders SET orderstatus = ?,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?", [req.orderstatus,new Date(), req.orderid, req.moveit_user_id], function (err, res) {
                         if(err) {
@@ -512,7 +512,7 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
                     success: sucobj,
                     message:message,
                     orderdeliverystatus:orderdeliverystatus
-                   // payment_status : res1[0].payment_status
+                
                     
                     }; 
         
@@ -531,10 +531,13 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
                 }
             }
        
-        });
-
-     
+        });     
     };
+    
+
+
+
+
     
     Order.moveit_kitchen_reached_status = function (req,  result) {
      

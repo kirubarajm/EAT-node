@@ -162,11 +162,19 @@ exports.orderlist_by_moveit_userid = function(req, res) {
 
 exports.order_delivery_status = function (req, res) {
 
-  Order.order_delivery_status_by_moveituser(req.body, function (err, result) {
-    if (err)
-      res.send(err);
-    res.json(result);
-  });
+  if (req.body.orderstatus === 6) {
+
+    Order.order_delivery_status_by_moveituser(req.body, function (err, result) {
+      if (err)
+        res.send(err);
+      res.json(result);
+    });
+
+  }else {
+
+    res.status(400).send({ error: true, message: 'Invalid Delivery status' });
+ 
+}
 };
 
 exports.moveit_kitchen_reached = function (req, res) {
