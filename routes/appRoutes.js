@@ -337,12 +337,12 @@ module.exports = function (app) {
 
   app.route('/admin/salesuser/:userid')
     .get(salesuser.read_a_user)
-    .put(salesuser.update_a_user)
+    //.put(salesuser.update_a_user)
     .delete(salesuser.delete_a_user);
 
   app.route('/admin/moveituser/:userid')
     .get(moveituser.admin_read_a_user)
-    .put(moveituser.update_a_user)
+   // .put(moveituser.update_a_user)
     .delete(moveituser.delete_a_user);
 
   // app.route('/admin/moveit/documentUpload')
