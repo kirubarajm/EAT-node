@@ -762,6 +762,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
             let products = await query(url);
 
             rows[i].items = products;
+            rows[i].locality = 'Guindy'; 
         }
         let sucobj=true;
         let resobj = {  
