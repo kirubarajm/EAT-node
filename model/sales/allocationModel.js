@@ -29,7 +29,9 @@ Allocation.createAllocation = function createAllocation(req, result) {
                             console.log("error: ", err);
                             result(err, null);
                         } 
-                    });   
+                    });  
+                    
+                    
                             let sucobj=true;
                             let message = "Booking time updated successfully";
                             let resobj = {  

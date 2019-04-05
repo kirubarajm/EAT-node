@@ -70,7 +70,7 @@ exports.list_all_virtual_eatuser = function(req, res) {
 
 exports.virtual_eatusersearch = function(req, res) {
  // console.log(req.params.phoneno);
-  Eatuser.virtual_eatusersearch(req.params.phoneno,function(err, user) {
+  Eatuser.virtual_eatusersearch(req.params.search,function(err, user) {
     console.log('controller')
     if (err)
       res.send(err);

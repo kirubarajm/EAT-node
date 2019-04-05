@@ -303,8 +303,8 @@ Moveituser.edit_moveit_user = function (req, result) {
         result(null, resobj);
     } else {
 
-        staticquery = "UPDATE MoveitUser SET ";
-        var column = '';
+         var staticquery = "UPDATE MoveitUser SET ";
+         var column = '';
         for (const [key, value] of Object.entries(req)) {
             //  console.log(`${key} ${value}`); 
 
@@ -315,7 +315,7 @@ Moveituser.edit_moveit_user = function (req, result) {
 
 
         }
-        query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
+       var query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
         console.log(query);
         sql.query(query, function (err, res) {
             if (err) {

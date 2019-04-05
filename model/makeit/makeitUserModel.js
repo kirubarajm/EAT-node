@@ -619,6 +619,8 @@ Makeituser.edit_makeit_users = function (req, result) {
 
         result(null, resobj);
     } else {
+
+        
         staticquery = "UPDATE MakeitUser SET ";
         var column = '';
         for (const [key, value] of Object.entries(req)) {
@@ -632,9 +634,8 @@ Makeituser.edit_makeit_users = function (req, result) {
 
         }
 
-
-        query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
-        console.log(query);
+      var  query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
+    
         sql.query(query, function (err, res) {
             if (err) {
                 console.log("error: ", err);

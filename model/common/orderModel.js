@@ -4,6 +4,7 @@ const util = require('util');
 var Orderitem = require('../../model/common/orderItemsModel.js');
 var MoveitRatingForMakeit = require('../../model/moveit/moveitRatingForMakeitModel');
 var Orderlock = require('../../model/common/lockorderModel');
+var master = require('../master');
 
 
 const query = util.promisify(sql.query).bind(sql);
@@ -40,6 +41,7 @@ var Order = function (order) {
 
 
 Order.createOrder = function createOrder(newOrder, orderItems, res) {
+
 
     if (newOrder.payment_type == 0) {
             ordercreate();
@@ -407,28 +409,34 @@ Order.orderviewbymoveituser = function(orderid, result){
 
 
 
-Order.order_pickup_status_by_moveituser = function (req,  result) {
+Order.order_pickup_status_by_moveituser =  function order_pickup_status_by_moveituser(req,kitchenqualitylist,  result) {
      
-    var kitchenquality = new MoveitRatingForMakeit(req);
-    var kitchenqualitylist = req.qualitychecklist;
-
-        sql.query("Select * from Orders where orderid = ?",[kitchenquality.orderid], function (err, res1) {
+        sql.query("Select * from Orders where orderid = ?",[req.orderid], function (err, res1) {
 
             if (err) {
                 console.log("error: ", err);
                 result(null, err);
             }
             else {
-               
-                      MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck(kitchenquality,kitchenqualitylist, function (err, res2) {
+
+                for (let i = 0; i < kitchenqualitylist.length; i++) {    
+                   var qualitylist = new MoveitRatingForMakeit(kitchenqualitylist[i]);
+                   qualitylist.orderid = req.orderid;
+                   qualitylist.makeit_userid = req.makeit_userid;
+                   qualitylist.moveit_userid = req.moveit_userid;
+                   
+        
+                      MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck(qualitylist, function (err, res2) {
                         if (err)
-                        res.send(err);
+                        result.send(err);
                         
                       });
+                }
+            
+            
+                  if(res1[0].moveit_user_id === req.moveit_userid ){
 
-                  if(res1[0].moveit_user_id === kitchenquality.moveit_userid ){
-
-                    sql.query("UPDATE Orders SET orderstatus = ?  WHERE orderid = ? and moveit_user_id =?", [kitchenquality.orderstatus, kitchenquality.orderid, kitchenquality.moveit_user_id], function (err, res) {
+                    sql.query("UPDATE Orders SET orderstatus = ?  WHERE orderid = ? and moveit_user_id =?", [req.orderstatus, req.orderid, req.moveit_user_id], function (err, res2) {
                         if(err) {
                             console.log("error: ", err);
                             result(null, err);
@@ -471,6 +479,8 @@ Order.order_pickup_status_by_moveituser = function (req,  result) {
 
 Order.order_delivery_status_by_moveituser = function (req,  result) {
     
+        console.log('test');
+
         sql.query("Select * from Orders where orderid = ? and moveit_user_id = ?",[req.orderid, req.moveit_user_id], function (err, res1) {
 
             if (err) {
@@ -733,7 +743,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
   Order.orderlistbymoveituserid =  async function(moveit_user_id, result){
        
     try {
-        const rows = await query("Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id ="+moveit_user_id+"");
+        const rows = await query("Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id ="+moveit_user_id+" order by ors.orderid desc");
 
         if (rows.length > 0) {
             console.log("Fetching No of Store Id", rows.length)

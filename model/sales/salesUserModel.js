@@ -197,7 +197,7 @@ Salesuser.edit_sales_users = function (req, result) {
         result(null, resobj);
     } else {
 
-        staticquery = "UPDATE Sales_QA_employees SET ";
+        var staticquery = "UPDATE Sales_QA_employees SET ";
         var column = '';
         for (const [key, value] of Object.entries(req)) {
             console.log(`${key} ${value}`);
@@ -210,8 +210,7 @@ Salesuser.edit_sales_users = function (req, result) {
 
         }
 
-
-        query = staticquery + column.slice(0, -1) + " where id = " + req.id;
+       var  query = staticquery + column.slice(0, -1) + " where id = " + req.id;
         console.log(query);
         sql.query(query, function (err, res) {
             if (err) {

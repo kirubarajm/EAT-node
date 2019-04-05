@@ -1,10 +1,12 @@
 'user strict';
 
 // makeit appointment status 
+
+var master = function(){
 var registrationStatus = [{
     "registrationStatusid":0,"registrationStatus":"Registration",
     "registrationStatusid":1,"registrationStatus":"Makeit Appoinment",
-    "registrationStatusid":2,"registrationStatus":"SalesA ssign",
+    "registrationStatusid":2,"registrationStatus":"Sales Assign",
     "registrationStatusid":3,"registrationStatus":"Admin Approval",
 }];
 
@@ -111,4 +113,10 @@ var qualitycheckenabletype = [{
     "id":1,"description" :'ok'
 }]
 
-module.exports = connection;
+var addresstype = [{
+    "addresstypeid":1,"description" :'Home',
+    "addresstypeid":2,"description" :'work',
+    "addresstypeid":3,"description" :'others',
+}]
+}
+module.exports = master;

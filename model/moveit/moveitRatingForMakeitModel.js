@@ -14,18 +14,10 @@ var MoveitRatingForMakeit = function (moveitratingformakeit) {
 
 
 
-MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck = function create_moveit_kitchen_qualitycheck(kitchenquality,kitchenqualitylist, res) {
+MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck = function create_moveit_kitchen_qualitycheck(kitchenqualitylist, res) {
 
-    // console.log(kitchenquality);
-    // console.log(kitchenqualitylist);
-
-
-    for (let i = 0; i < kitchenqualitylist.length; i++) {
-       
-        sql.query("INSERT INTO MoveitRatingForMakeit (makeit_userid,moveit_userid,quality_analysis_id,orderid,rating,enabled)values('"+kitchenquality.makeit_userid+"','"+kitchenquality.moveit_userid+"','"+kitchenqualitylist[i].quality_analysis_id+"','"+kitchenquality.orderid+"','"+kitchenquality.rating+"','"+kitchenqualitylist[i].enabled+"')", function (err, res1) {
-
-
-            
+        sql.query("INSERT INTO MoveitRatingForMakeit set ?", kitchenqualitylist, function (err, res1) {
+  
             if (err) {
                 console.log("error: ", err);
                 res(null, err);
@@ -41,9 +33,7 @@ MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck = function create_movei
             res(null, resobj);
 
                 
-        });
-    }
-    
+        });   
 };
 
 MoveitRatingForMakeit.getUserById = function getUserById(userId, result) {
@@ -118,7 +108,8 @@ MoveitRatingForMakeit.remove = function(id, result){
 
 MoveitRatingForMakeit.get_moveit_quality_checklist = function get_moveit_quality_checklist(req,result) {
 
-    sql.query("Select mrm.quality_analysis_id as id,qa.description,mrm.enabled as status from MoveitRatingForMakeit mrm join quality_analysis qa on mrm.quality_analysis_id = qa.id where mrm.orderid = ? and mrm.makeit_userid = ?",[req.orderid,req.makeit_userid], function (err, res) {
+    [req.orderid,req.makeit_userid]
+    sql.query("Select DISTINCT mrm.quality_analysis_id as id,qa.description,mrm.enabled,mrm.created_at as created_at from MoveitRatingForMakeit mrm join quality_analysis qa on mrm.quality_analysis_id = qa.id where mrm.orderid = '"+req.orderid+"' and mrm.makeit_userid = '"+req.makeit_userid+"' AND created_at= (select  MAX(created_at) from  MoveitRatingForMakeit where orderid = '"+req.orderid+"' and makeit_userid = '"+req.makeit_userid+"') ", function (err, res) {
 
         if(err) {
             console.log("error: ", err);

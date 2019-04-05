@@ -37,7 +37,13 @@ Eatuser.createUser = function createUser(newUser, result) {
             }
             else{
               let sucobj=true;
-              let mesobj = "Virtual User Created successfully";
+              
+              if ( newUser.virtualkey === 0) {
+                var mesobj = "Eat User Created successfully";
+              }else if(newUser.virtualkey === 1){
+                 mesobj = "Virtual User Created successfully";
+              }
+             
               let resobj = {  
                 success: sucobj,
                 message:mesobj,
@@ -71,7 +77,7 @@ Eatuser.createUser = function createUser(newUser, result) {
 };
 
 Eatuser.getUserById = function getUserById(userId, result) {
-        sql.query("Select * from User where userid = ? ", userId, function (err, res) {             
+        sql.query("Select userid,name,email,phoneno,Locality,created_at,virtualkey from User where userid = ? ", userId, function (err, res) {             
             if(err) {
                 console.log("error: ", err);
                 result(err, null);
@@ -179,10 +185,10 @@ Eatuser.getAllVirtualUser = function getAllVirtualUser(req,result) {
 };
 
 
-Eatuser.virtual_eatusersearch = function virtual_eatusersearch(req,result) {
+Eatuser.virtual_eatusersearch = function virtual_eatusersearch(search,result) {
    
- console.log(req);
-    sql.query("select * from User where phoneno LIKE  '%"+req.search+"%' OR email LIKE  '%"+req.search+"%' or name LIKE  '%"+req.search+"%  ' " , function (err, res) {
+ console.log(search);
+    sql.query("select * from User where phoneno LIKE  '%"+search+"%' OR email LIKE  '%"+search+"%' or name LIKE  '%"+search+"%  ' " , function (err, res) {
 
         if(err) {
             console.log("error: ", err);

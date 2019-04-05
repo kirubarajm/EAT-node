@@ -13,6 +13,8 @@ var EatuserAddress = function(eatuseraddress){
     this.lon = eatuseraddress.lon;
     this.landmark = eatuseraddress.landmark;
     this.created_at = new Date();
+    this.address_type = eatuseraddress.address_type;
+  
 };
 
 

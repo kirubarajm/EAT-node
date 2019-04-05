@@ -145,14 +145,14 @@ exports.orderlist_by_moveit_userid = function(req, res) {
 
  exports.order_pickup_status = function (req, res) {
     
-  // var kitchenqualitylist = req.body.qualitychecklist;
+   var kitchenqualitylist = req.body.qualitychecklist;
 
   // console.log(kitchenqualitylist);
   //   if(kitchenqualitylist.length === 0 || kitchenqualitylist.length === undefined || kitchenqualitylist.length === null) {
   //     res.status(400).send({ error: true, message: 'Please provide order quality list' });
   //   }else{
 
-  Order.order_pickup_status_by_moveituser(req.body, function (err, result) {
+  Order.order_pickup_status_by_moveituser(req.body,kitchenqualitylist, function (err, result) {
     if (err)
       res.send(err);
     res.json(result);
@@ -162,7 +162,7 @@ exports.orderlist_by_moveit_userid = function(req, res) {
 
 exports.order_delivery_status = function (req, res) {
 
-  if (req.body.orderstatus === 6) {
+  if (req.body.orderstatus === 6 || req.body.orderstatus === "6") {
 
     Order.order_delivery_status_by_moveituser(req.body, function (err, result) {
       if (err)
