@@ -56,3 +56,20 @@ exports.delete_a_menuitem = function(req, res) {
   });
 };
 
+
+
+exports.read_a_menuitem_byid = function(req, res) {
+  Menuitem.get_Menuitem_By_makeitid(req.params.makeit_userid, function(err, menuitem) {
+    if (err)
+      res.send(err);
+    res.json(menuitem);
+  });
+};
+
+exports.update_a_menuitem = function(req, res) {
+  Menuitem.update_a_menuitem_makeit_userid(req.body, function(err, menuitem) {
+     if (err)
+       res.send(err);
+     res.json(menuitem);
+   });
+ };

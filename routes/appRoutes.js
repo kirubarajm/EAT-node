@@ -272,6 +272,9 @@ module.exports = function (app) {
   app.route('/makeit/addquantityandproductlive')
     .put(product.add_quantity_productlive);
 
+  app.route('/makeit/menuitems/:makeit_userid')
+    .get(menuitem.read_a_menuitem_byid);
+
 
   /*Admin Api*/
   app.route('/admin/eatuser/add')
@@ -357,10 +360,10 @@ module.exports = function (app) {
   app.route('/admin/moveit/documentstore')
     .post(moveitdocument.create_a_documents);
 
-  app.route('/admin/item/add')
+  app.route('/admin/menuitem/add')
     .post(menuitem.create_a_menuitem);
 
-  app.route('/admin/items/:id')
+  app.route('/admin/menuitem/view/:id')
     .get(menuitem.read_a_menuitem);
 
   app.route('/admin/product/add')
@@ -384,7 +387,17 @@ module.exports = function (app) {
   app.route('/admin/salesuser/edit')
     .put(salesuser.edit_a_user);
 
+  app.route('/admin/menuitems/:makeit_userid')
+    .get(menuitem.read_a_menuitem_byid);
 
+  app.route('/admin/product/addquantity')
+    .put(product.add_quantity);
+
+  app.route('/admin/product/edit')
+    .put(product.update_a_product_by_makeit_userid);
+
+  app.route('/admin/item/edit')
+    .put(menuitem.update_a_menuitem);
 
 
 
@@ -465,6 +478,9 @@ module.exports = function (app) {
   app.route('/moveit/qualitychecklist')
     .post(moveituser.moveit_quality_checklist);
 
+
+
+
   // Eat
 
   app.route('/eat/dishlist')
@@ -502,7 +518,6 @@ module.exports = function (app) {
   app.route('/eat/makeituser/:userid')
     .get(makeituser.read_a_user)
 
-
   app.route('/eat/order/add')
     .post(orders.eatcreateOrder);
 
@@ -510,7 +525,11 @@ module.exports = function (app) {
     .post(orders.online_order_place_conformation);
 
   app.route('/eat/cartdetails')
-    .post(makeituser.read_a_cartdetails)
+    .post(makeituser.read_a_cartdetails);
+
+  app.route('/eat/cartcalculation')
+   .post(orders.cartcalculation);
+ 
 
   // app.route('/orderplace/')
   // .post(ordersitem.createOrderitemsonline);

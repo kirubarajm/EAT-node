@@ -140,3 +140,13 @@ exports.admin_list_all_product = function(req, res) {
      res.json(result);
    });
  };
+
+
+ exports.update_a_product_by_makeit_userid = function(req, res) {
+  Product.update_a_product_by_makeit_userid(req.body, function(err, product) {
+     if (err)
+       res.send(err);
+     res.json(product);
+   });
+ };
+ 

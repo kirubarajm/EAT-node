@@ -106,8 +106,59 @@ Menuitem.remove = function(id, result){
 };
 
 
+Menuitem.get_Menuitem_By_makeitid = function get_Menuitem_By_makeitid(userId, result) {
 
+    sql.query("Select * from Menuitem where makeit_userid = ? ", userId, function (err, res) {             
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+                let sucobj=true;
+                let resobj = {  
+                    success: sucobj,
+                    result: res 
+                 }; 
+                 result(null, resobj);
+            }
+        });   
+};
 
+Menuitem.update_a_menuitem_makeit_userid = function(req, result){
 
+    var staticquery = "UPDATE Menuitem SET ";
+    var column = '';
+    for (const [key, value] of Object.entries(req)) {
+        console.log(`${key} ${value}`);
+
+        if (key !== 'menuitemid') {
+            // var value = `=${value}`;
+            column = column + key + "='" + value + "',";
+        }
+    }
+
+   var  query = staticquery + column.slice(0, -1)  + " where makeit_userid = " + req.makeit_userid +" and menuitemid = "+req.menuitemid ;
+
+    console.log(query);
+    sql.query(query, function (err, res) {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else {
+
+            let sucobj = true;
+            let message = " Menu item updated successfully"
+            let resobj = {
+                success: sucobj,
+                message: message
+            };
+
+            result(null, resobj);
+        }
+
+    });
+  };
+  
 
 module.exports= Menuitem;

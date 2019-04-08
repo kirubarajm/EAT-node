@@ -566,6 +566,8 @@ Makeituser.update_makeit_followup_status = function (makeitfollowupstatus, resul
 Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(req, cartitems, result) {
 
     const productdetails = [];
+    const calculationdetails = [];
+
     for (let i = 0; i < cartitems.length; i++) {
 
         var query2 = " Select * From Product where productid  = '" + cartitems[i].productid + "' ";
@@ -576,13 +578,36 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
                 console.log("error: ", err);
                 result(err, null);
             }
+
+            productdetails.cartquantity = cartitems[i].quantity;
+            // console.log(productdetails.cartquantity);
+            // console.log(res[0].price);
+
+            var amount = res[0].price * cartitems[i].quantity;
+
+            res[0].amount = amount;
+            res[0].cartquantity = cartitems[i].quantity
+            
+            // var gst = (amount/100)*12.5;
+
+            // var Totalamount = amount + gst;
+
+            productdetails.amount = amount;
+            // calculationdetails.gst = gst;
+            // calculationdetails.Totalamount = Totalamount;
+            //  console.log(" amount : " + amount);
+            //  console.log(" gst : " + gst);
+            //  console.log(" Totalamount :" + Totalamount);
+            // calculateTotalamout();
+           // console.log(calculationdetails);
             productdetails.push(res);
+         
+         });
+        }
 
-            console.log(productdetails.length);
-
-        });
-    }
-
+        
+      
+       
     var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid =" + req.makeit_userid + "";
 
     sql.query(query1, function (err, res1) {
@@ -592,12 +617,22 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
         }
         else {
             res1.push(productdetails);
+            console.log(productdetails.length)
+              //  res1.productdetails = productdetails;
+            //    console.log(res1.length)
+
+            caltotatal ();
 
             let sucobj = true;
             let resobj = {
                 success: sucobj,
                 result: res1,
             };
+
+
+            function caltotatal(){
+
+            }
 
             result(null, resobj);
         }

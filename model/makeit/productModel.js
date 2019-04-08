@@ -24,6 +24,7 @@ var Product = function(product){
     this.created_at = new Date();
     this.quantity = product.quantity ||0;
     this.cusine = product.cusine;
+    this.updated_at = new Date()
 
 };
 
@@ -318,13 +319,48 @@ Product.quantitydecrease = function(orderlist, result){
          console.log('test');
          result(null, res);
             }
-        }); 
-    
-  
-
-
-  
+        });  
 };
+
+
+
+Product.update_a_product_by_makeit_userid = function(req, result){
+
+
+    var staticquery = "UPDATE Product SET ";
+    var column = '';
+    for (const [key, value] of Object.entries(req)) {
+        console.log(`${key} ${value}`);
+
+        if (key !== 'productid') {
+            // var value = `=${value}`;
+            column = column + key + "='" + value + "',";
+        }
+    }
+
+   var  query = staticquery + column.slice(0, -1)  + " where productid = " + req.productid;
+    console.log(query);
+    sql.query(query, function (err, res) {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else {
+
+            let sucobj = true;
+            let message = " Product updated successfully"
+            let resobj = {
+                success: sucobj,
+                message: message
+            };
+
+            result(null, resobj);
+        }
+
+    });
+
+};
+
 
 
 module.exports= Product;
