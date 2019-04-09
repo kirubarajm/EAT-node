@@ -11,16 +11,16 @@ var Product = function(product){
     this.image=product.image;
     this.preparetime=product.preparetime;
     this.price=product.price;
-    this.breakfast=product.breakfast;
-    this.lunch=product.lunch;
-    this.dinner=product.dinner;
-    this.monday=product.monday;
-    this.tuesday=product.tuesday;
-    this.wednesday=product.wednesday;
-    this.thrusday=product.thrusday;
-    this.friday=product.friday;
-    this.saturday=product.saturday;
-    this.sunday=product.sunday;
+    this.breakfast=product.breakfast || 0;
+    this.lunch=product.lunch || 0;
+    this.dinner=product.dinner || 0;
+    this.monday=product.monday || 0;
+    this.tuesday=product.tuesday || 0;
+    this.wednesday=product.wednesday || 0;
+    this.thrusday=product.thrusday || 0;
+    this.friday=product.friday || 0;
+    this.saturday=product.saturday || 0;
+    this.sunday=product.sunday || 0;
     this.created_at = new Date();
     this.quantity = product.quantity ||0;
     this.cusine = product.cusine;
@@ -294,7 +294,7 @@ Product.update_quantity_product_byid = function update_quantity_product_byid (re
                 result(null, err);
              }else{  
               let sucobj=true;
-              let message = "Quantity added successfully / Product Moved live successfully";
+              let message = "Quantity added and product moved to live successfully";
               let resobj = {  
                 success: sucobj,
                 message:message,
@@ -361,6 +361,45 @@ Product.update_a_product_by_makeit_userid = function(req, result){
 
 };
 
+Product.productview_by_productid = function productview_by_productid(req,result) {
+  const items = [];
+  sql.query(" select * from Product where productid = "+req.productid+"", function (err, res) {
 
+          if(err) {
+              console.log("error: ", err);
+              result(null, err);
+          }
+          else{
+
+            sql.query("select mi.menuitemid,mi.menuitem_name from Productitem pi join Menuitem mi on mi.Menuitemid = pi.productitemid where pi.productid = "+req.productid+"", function (err, res1) {
+
+              if(err) {
+                  console.log("error: ", err);
+                  result(null, err);
+              }else{
+                      
+                    for (let i = 0; i < res1.length; i++) {
+                      console.log('test');
+
+                      items.push(res1[i]);
+                      
+                    }
+
+                    res[0].items = items;
+                    let sucobj=true;
+                    let resobj = {  
+                      success: sucobj,
+                      result: res 
+                      }; 
+        
+                   result(null, resobj);
+              }
+
+            }); 
+       
+           
+          }
+      });   
+};
 
 module.exports= Product;

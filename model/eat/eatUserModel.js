@@ -315,4 +315,72 @@ Eatuser.get_eat_makeit_product_list = function(req,result) {
         });   
 };
 
+
+
+Eatuser.get_eat_dish_list_sort = function(req,result) {
+    
+    var filterquery = '';
+
+    const filterlist = req.filter;
+    if (filterlist) {
+        
+            for (let i = 0; i < filterlist.length; i++) {
+                
+                  filterquery = filterquery + " mu.region like '%"+filterlist[i].region+"%' or";
+            }
+    }
+    
+    filterquery = filterquery.slice(0, -2)
+    console.log(filterquery);
+    var query = "Select mu.userid as makeit_userid,mu.name as makeit_username,mu.img as makeit_image, pt.product_name, pt.productid,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Fav fa on fa.productid = pt.productid ";
+
+        if (req.search && req.filter) {
+            query = query +" where pt.product_name like '%"+req.search+"%' and" +filterquery;
+        }else if(filterlist && !req.search){
+            query = query +"where "+ filterquery;
+            
+        }else if(req.search && !req.filter){
+            query = query +" where pt.product_name like '%"+req.search+"%'";
+        }
+
+
+
+
+        if (req.price == 'low to high') {
+           var query = query + " ORDER BY pt.price ASC";
+        } else if (req.price == 'high to low') {
+             query = query + "  ORDER BY pt.price DESC";
+        }else{
+             query = query +" ORDER BY distance";
+        }
+        
+
+    console.log(query);
+    sql.query(query, function (err, res) {
+
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+                for (let i = 0; i < res.length; i++) {
+                    
+                    eta = 15 + (3 * res[i].distance) ;
+                    //15min Food Preparation time , 3min 1 km
+                    res[i].eta =   Math.round(eta) +" mins" ;  
+                }
+
+           let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result: res
+            }; 
+
+         result(null, resobj);
+      
+        }
+        });   
+};
+
+
 module.exports= Eatuser;

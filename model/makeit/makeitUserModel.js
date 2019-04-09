@@ -1,5 +1,6 @@
 'user strict';
 var sql = require('../db.js');
+var constant = require('../constant.js');
 
 
 
@@ -117,9 +118,6 @@ Makeituser.getUserById = function getUserById(userId, result) {
                     result(null, resobj);
                 }
             });
-
-
-
 
         }
     });
@@ -561,12 +559,15 @@ Makeituser.update_makeit_followup_status = function (makeitfollowupstatus, resul
 
 
 
-
-
 Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(req, cartitems, result) {
-
-    const productdetails = [];
-    const calculationdetails = [];
+ 
+  const gst = constant.gst ;
+  const delivery_charge = constant.deliverycharge;
+  const productdetails = [];
+  var totalamount = '';
+  var amount = '';
+  
+  var calculationdetails = {}
 
     for (let i = 0; i < cartitems.length; i++) {
 
@@ -578,35 +579,20 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
                 console.log("error: ", err);
                 result(err, null);
             }
-
-            productdetails.cartquantity = cartitems[i].quantity;
-            // console.log(productdetails.cartquantity);
-            // console.log(res[0].price);
-
-            var amount = res[0].price * cartitems[i].quantity;
+            //Product amount calculation
+            amount = res[0].price * cartitems[i].quantity;
+            //Product total amount calculation
+            totalamount =  +totalamount +  +amount ;
 
             res[0].amount = amount;
+
             res[0].cartquantity = cartitems[i].quantity
             
-            // var gst = (amount/100)*12.5;
-
-            // var Totalamount = amount + gst;
-
-            productdetails.amount = amount;
-            // calculationdetails.gst = gst;
-            // calculationdetails.Totalamount = Totalamount;
-            //  console.log(" amount : " + amount);
-            //  console.log(" gst : " + gst);
-            //  console.log(" Totalamount :" + Totalamount);
-            // calculateTotalamout();
-           // console.log(calculationdetails);
-            productdetails.push(res);
+            productdetails.push(res[0]);
          
          });
-        }
+    }
 
-        
-      
        
     var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid =" + req.makeit_userid + "";
 
@@ -616,23 +602,25 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
             result(err, null);
         }
         else {
-            res1.push(productdetails);
-            console.log(productdetails.length)
-              //  res1.productdetails = productdetails;
-            //    console.log(res1.length)
 
-            caltotatal ();
+            const gstcharge = (totalamount/100)*gst;
+            const grandtotal = +gstcharge +  +totalamount+  + delivery_charge; 
+      
+            calculationdetails.grandtotal = grandtotal;
+            calculationdetails.gstcharge = gstcharge;
+            calculationdetails.totalamount = totalamount;
+            calculationdetails.delivery_charge = delivery_charge;
 
+            res1[0].amountdetails = calculationdetails;
+            res1[0].item = productdetails;
+          
+            //res1.push(calculationdetails);
+           // res1.push(productdetails);
             let sucobj = true;
             let resobj = {
                 success: sucobj,
                 result: res1,
             };
-
-
-            function caltotatal(){
-
-            }
 
             result(null, resobj);
         }
@@ -653,9 +641,7 @@ Makeituser.edit_makeit_users = function (req, result) {
         };
 
         result(null, resobj);
-    } else {
-
-        
+    } else {  
         staticquery = "UPDATE MakeitUser SET ";
         var column = '';
         for (const [key, value] of Object.entries(req)) {
@@ -665,8 +651,6 @@ Makeituser.edit_makeit_users = function (req, result) {
                 // var value = `=${value}`;
                 column = column + key + "='" + value + "',";
             }
-
-
         }
 
       var  query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;

@@ -111,3 +111,14 @@ exports.eat_makeit_product_list = function(req, res) {
     res.send(user);
   });
 };
+
+
+exports.eat_dish_sort = function(req, res) {
+  Eatuser.get_eat_dish_list_sort(req.body,function(err, user) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', user);
+    res.send(user);
+  });
+}

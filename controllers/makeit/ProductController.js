@@ -88,6 +88,7 @@ exports.moveliveproduct = function(req, res) {
  };
 
  exports.productitemlist = function(req, res) {
+
   Product.productitemlist(req.params,function(err, product) {
     console.log('controller')
     if (err)
@@ -150,3 +151,14 @@ exports.admin_list_all_product = function(req, res) {
    });
  };
  
+
+ exports.productview = function(req, res) {
+   
+  Product.productview_by_productid(req.params,function(err, product) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', product);
+    res.send(product);
+  });
+};

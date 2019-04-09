@@ -373,10 +373,13 @@ module.exports = function (app) {
     .get(product.list_all_liveproduct);
 
   app.route('/admin/product/view/:productid')
-    .get(product.productitemlist);
+    .get(product.productview);
+
+  // app.route('/admin/product/movetolive')
+  //   .post(product.moveliveproduct);
 
   app.route('/admin/product/movetolive')
-    .post(product.moveliveproduct);
+    .post(product.add_quantity_productlive);
 
   app.route('/admin/makeituser/edit')
     .put(makeituser.edit_makeit_user_byid);
@@ -396,7 +399,7 @@ module.exports = function (app) {
   app.route('/admin/product/edit')
     .put(product.update_a_product_by_makeit_userid);
 
-  app.route('/admin/item/edit')
+  app.route('/admin/menuitem/edit')
     .put(menuitem.update_a_menuitem);
 
 
@@ -501,8 +504,6 @@ module.exports = function (app) {
   app.route('/eat/orders/:userid')
     .get(orders.order_list_eatuser);
 
-
-  //Eat user Address
   app.route('/eat/address')
     .get(eatuseraddress.list_all_address)
     .post(eatuseraddress.create_a_address);
@@ -527,8 +528,10 @@ module.exports = function (app) {
   app.route('/eat/cartdetails')
     .post(makeituser.read_a_cartdetails);
 
-  app.route('/eat/cartcalculation')
-   .post(orders.cartcalculation);
+    app.route('/eat/sort')
+    .post(eatuser.eat_dish_sort);
+
+
  
 
   // app.route('/orderplace/')
