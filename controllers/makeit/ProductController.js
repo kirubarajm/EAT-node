@@ -134,12 +134,18 @@ exports.admin_list_all_product = function(req, res) {
 
  exports.add_quantity_productlive = function(req, res) {
 
-  
+  if(!req.body.makeit_userid || !req.body.productid || !req.body.quantity){
+
+    res.status(400).send({ error:true, message: 'Please provide productid / makeit_userid / quantity' });
+
+}
+else{
   Product.update_quantity_product_byid(req.body, function(err, result) {
      if (err)
        res.send(err);
      res.json(result);
    });
+  }
  };
 
 

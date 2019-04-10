@@ -99,7 +99,7 @@ QueryAnswer.update_read_answer = function(req, result){
         for (let i = 0; i < aidlist.length; i++) {
             var query = "UPDATE Query_answers SET user_read = 1, updated_at = '"+date+"' WHERE aid = '"+aidlist[i].aid+"'";
 
-            console.log(query);
+          //  console.log(query);
              sql.query(query, function (err, res) {
                  if(err) {
                      console.log("error: ", err);
