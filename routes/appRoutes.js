@@ -21,6 +21,8 @@ module.exports = function (app) {
   var moveitdocument = require('../controllers/common/DocumentmoveitController');
   var eatuseraddress = require('../controllers/eat/EatUserAddressController');
   var ordersitem = require('../controllers/common/OrderitemController');
+  var queryquestion = require('../controllers/common/QueryquestionController');
+  var queryanswer = require('../controllers/common/QueryanswerController');
 
   // todoList Routes
   app.route('/tasks')
@@ -528,11 +530,37 @@ module.exports = function (app) {
   app.route('/eat/cartdetails')
     .post(makeituser.read_a_cartdetails);
 
-    app.route('/eat/sort')
+  app.route('/eat/sort')
     .post(eatuser.eat_dish_sort);
 
 
+
+
+  //query common  
+
+ app.route('/query')
+    .post(queryquestion.create_a_question);
+
+ app.route('/querylist')
+   .post(queryquestion.read_a_question);
+  
+app.route('/repliescount')
+   .post(queryanswer.read_a_answer_count);
  
+app.route('/queryanswer')
+   .post(queryanswer.create_a_answer);
+   
+app.route('/queryreplies/:aid')
+   .get(queryanswer.read_a_replies)
+
+app.route('/repliesread')
+.put(queryanswer.update_read_answer);
+
+
+  //query questions
+
+
+
 
   // app.route('/orderplace/')
   // .post(ordersitem.createOrderitemsonline);

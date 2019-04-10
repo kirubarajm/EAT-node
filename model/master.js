@@ -119,4 +119,15 @@ var addresstype = [{
     "addresstypeid":3,"description" :'others',
 }]
 }
+
+
+var appuserstype  = [{
+    "addresstypeid":0,"description" :'admin',
+    "addresstypeid":1,"description" :'makeit',
+    "addresstypeid":2,"description" :'moveit',
+    "addresstypeid":3,"description" :'sales',
+    "addresstypeid":4,"description" :'eat',
+
+}]
+
 module.exports = master;
