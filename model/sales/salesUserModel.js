@@ -197,7 +197,7 @@ Salesuser.edit_sales_users = function (req, result) {
         result(null, resobj);
     } else {
 
-        var staticquery = "UPDATE Sales_QA_employees SET ";
+        var staticquery = "UPDATE Sales_QA_employees SET updated_at = ?, ";
         var column = '';
         for (const [key, value] of Object.entries(req)) {
             console.log(`${key} ${value}`);
@@ -212,7 +212,7 @@ Salesuser.edit_sales_users = function (req, result) {
 
        var  query = staticquery + column.slice(0, -1) + " where id = " + req.id;
         console.log(query);
-        sql.query(query, function (err, res) {
+        sql.query(query,[new Date()], function (err, res) {
             if (err) {
                 console.log("error: ", err);
                 result(err, null);

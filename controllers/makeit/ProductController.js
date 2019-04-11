@@ -150,7 +150,9 @@ else{
 
 
  exports.update_a_product_by_makeit_userid = function(req, res) {
-  Product.update_a_product_by_makeit_userid(req.body, function(err, product) {
+
+    var items = req.body.items;
+  Product.update_a_product_by_makeit_userid(req.body,items, function(err, product) {
      if (err)
        res.send(err);
      res.json(product);

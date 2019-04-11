@@ -631,6 +631,17 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
 
 Makeituser.edit_makeit_users = function (req, result) {
 
+    var date;
+    date = new Date();
+    test = new Date();
+    console.log(test);
+    date = date.getUTCFullYear() + '-' +
+        ('00' + (date.getUTCMonth()+1)).slice(-2) + '-' +
+        ('00' + date.getUTCDate()).slice(-2) + ' ' + 
+        ('00' + date.getUTCHours()).slice(-2) + ':' + 
+        ('00' + date.getUTCMinutes()).slice(-2) + ':' + 
+        ('00' + date.getUTCSeconds()).slice(-2);
+
     if (req.email || req.password || req.phoneno) {
 
         let sucobj = true;
@@ -642,7 +653,7 @@ Makeituser.edit_makeit_users = function (req, result) {
 
         result(null, resobj);
     } else {  
-        staticquery = "UPDATE MakeitUser SET ";
+        staticquery = "UPDATE MakeitUser SET updated_at = ?,";
         var column = '';
         for (const [key, value] of Object.entries(req)) {
             //  console.log(`${key} ${value}`); 
@@ -654,8 +665,10 @@ Makeituser.edit_makeit_users = function (req, result) {
         }
 
       var  query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
+
+      console.log(query);
     
-        sql.query(query, function (err, res) {
+        sql.query(query,[new Date()], function (err, res) {
             if (err) {
                 console.log("error: ", err);
                 result(err, null);

@@ -1,6 +1,6 @@
 'user strict';
 var sql = require('../db.js');
-
+var QueryAnswer = require('../../model/common/queryanswerModel');
 //Task object constructor
 var QueryQuestions = function(queryquestions){
     this.question=queryquestions.question;
@@ -34,14 +34,33 @@ QueryQuestions.createquestions = function createquestions(req, result) {
 
 QueryQuestions.read_a_question_id = function read_a_question_id(req, result) {
         console.log(req);
-        console.log('test');
-        
+         //var count = []; 
         sql.query("Select * from Query_questions where userid = '"+req.userid+"' and type = '"+req.type+"' order by qid desc", function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
                     result(err, null);
                 }
                 else{
+
+                    for (let i = 0; i < res.length; i++) {
+                        
+                        sql.query("Select COUNT(*) as count from Query_answers where userid = '"+res[i].userid+"' and user_read = 0 and qid = '"+res[i].qid+"' group by user_read", function (err, res1) {             
+                            if(err) {
+                                console.log("error: ", err);
+                                result(err, null);
+                            }
+                            else{
+                                
+                                res[i].count = res1[0];
+                             
+    
+                                
+                            }
+                        }); 
+                         
+                    }
+
+                       
                     let sucobj=true;
                     let resobj = {
                         sucobj:sucobj,  

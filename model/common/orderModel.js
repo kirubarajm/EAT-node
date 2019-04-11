@@ -238,6 +238,9 @@ Order.get_all_orders = function get_all_orders(req,result) {
 
 Order.order_assign = function (req, result) {
      
+
+
+
     sql.query("Select online_status From MoveitUser where userid= '"+req.moveit_user_id+"' ", function (err, res1) {
 
         if (err) {
@@ -249,7 +252,7 @@ Order.order_assign = function (req, result) {
                  var  online_status = res1[0].online_status
                 
                 if(online_status == 1 || !online_status){
-                    sql.query("UPDATE Orders SET moveit_user_id = ? WHERE orderid = ?", [req.moveit_user_id,req.orderid], function (err, res) {
+                    sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?", [req.moveit_user_id,new Date(),req.orderid], function (err, res) {
         
                         if(err) {
                             console.log("error: ", err);
@@ -411,7 +414,27 @@ Order.orderviewbymoveituser = function(orderid, result){
 
 
 Order.order_pickup_status_by_moveituser =  function order_pickup_status_by_moveituser(req,kitchenqualitylist,  result) {
-     
+    var date;
+    date = new Date();
+    date = date.getUTCFullYear() + '-' +
+        ('00' + (date.getUTCMonth()+1)).slice(-2) + '-' +
+        ('00' + date.getUTCDate()).slice(-2) + ' ' + 
+        ('00' + date.getUTCHours()).slice(-2) + ':' + 
+        ('00' + date.getUTCMinutes()).slice(-2) + ':' + 
+        ('00' + date.getUTCSeconds()).slice(-2);
+
+
+    var twentyMinutesLater = new Date();
+    twentyMinutesLater.setMinutes(twentyMinutesLater.getMinutes() + 20);
+
+    twentyMinutesLater = twentyMinutesLater.getUTCFullYear() + '-' +
+    ('00' + (twentyMinutesLater.getUTCMonth()+1)).slice(-2) + '-' +
+    ('00' + twentyMinutesLater.getUTCDate()).slice(-2) + ' ' + 
+    ('00' + twentyMinutesLater.getUTCHours()).slice(-2) + ':' + 
+    ('00' + twentyMinutesLater.getUTCMinutes()).slice(-2) + ':' + 
+    ('00' + twentyMinutesLater.getUTCSeconds()).slice(-2);
+
+
         sql.query("Select * from Orders where orderid = ?",[req.orderid], function (err, res1) {
 
             if (err) {
@@ -426,7 +449,6 @@ Order.order_pickup_status_by_moveituser =  function order_pickup_status_by_movei
                    qualitylist.makeit_userid = req.makeit_userid;
                    qualitylist.moveit_userid = req.moveit_userid;
                    
-        
                       MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck(qualitylist, function (err, res2) {
                         if (err)
                         result.send(err);
@@ -434,24 +456,23 @@ Order.order_pickup_status_by_moveituser =  function order_pickup_status_by_movei
                       });
                 }
             
-            
                   if(res1[0].moveit_user_id === req.moveit_userid ){
 
-                    sql.query("UPDATE Orders SET orderstatus = ?  WHERE orderid = ? and moveit_user_id =?", [req.orderstatus, req.orderid, req.moveit_user_id], function (err, res2) {
+                   //var query = "UPDATE Orders SET orderstatus = '"+req.orderstatus+"' ,moveit_reached_time = '"+new Date()+"',moveit_expected_delivered_time = '"+twentyMinutesLater+"' WHERE orderid = '"+req.orderid+"' and moveit_user_id ='"+req.moveit_userid+"'";
+                  // console.log(query);
+                    sql.query("UPDATE Orders SET orderstatus = ? ,moveit_reached_time = ?,moveit_expected_delivered_time = ? WHERE orderid = ? and moveit_user_id =?" ,[req.orderstatus,new Date(),twentyMinutesLater,req.orderid,req.moveit_userid] ,function (err, res2) {
                         if(err) {
                             console.log("error: ", err);
                             result(null, err);
                         }
                         else{
-                          
-                         
+                        
                           let sucobj=true;
                           let message = "Order Pickedup successfully";
                           let resobj = {  
                           success: sucobj,
                           message:message,
                           }; 
-              
                          result(null, resobj);
                         }   
                     });
@@ -461,10 +482,8 @@ Order.order_pickup_status_by_moveituser =  function order_pickup_status_by_movei
                     let message = "Following order is not assigned to you!";
                     let resobj = {  
                     success: sucobj,
-                    message:message,
-                    
+                    message:message, 
                     }; 
-        
                    result(null, resobj);
                   }
 
@@ -744,7 +763,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
   Order.orderlistbymoveituserid =  async function(moveit_user_id, result){
        
     try {
-        const rows = await query("Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id ="+moveit_user_id+" order by ors.orderid desc");
+        const rows = await query("Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id ="+moveit_user_id+"  order by  ors.order_assigned_time desc");
 
         if (rows.length > 0) {
             console.log("Fetching No of Store Id", rows.length)

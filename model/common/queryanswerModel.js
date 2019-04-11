@@ -8,7 +8,7 @@ var QueryAnswer = function(queryanswer){
     this.type=queryanswer.type;
     this.adminid=queryanswer.adminid;
     this.userid=queryanswer.userid || 0;
-    this.user_read=queryanswer.user_read;
+    this.user_read=queryanswer.user_read || 0 ;
     this.admin_read=queryanswer.admin_read || 1;
     this.created_at = new Date();
 };
@@ -44,7 +44,13 @@ QueryAnswer.read_a_replies_id = function read_a_replies_id(aid, result) {
                     result(err, null);
                 }
                 else{
-                    result(null, res);
+                    let sucobj=true;
+                    let resobj = {  
+                    success: sucobj,
+                    result:res
+                    }; 
+    
+             result(null, resobj);
               
                 }
             });   
@@ -176,6 +182,21 @@ QueryAnswer.read_a_answer_count = function read_a_answer_count(req, result) {
                     result:res
                      }; 
          result(null, resobj);
+            }
+        });   
+};
+
+
+QueryAnswer.read_a_answer_count_by_qid = function read_a_answer_count_by_qid(req, result) {
+
+    sql.query("Select COUNT(*) as count from Query_answers where userid = '"+req.userid+"' and user_read = 0 and qid = '"+req.qid+"' group by user_read", function (err, res) {             
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+    
+         result(null, res);
             }
         });   
 };

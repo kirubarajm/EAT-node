@@ -324,23 +324,38 @@ Product.quantitydecrease = function(orderlist, result){
 
 
 
-Product.update_a_product_by_makeit_userid = function(req, result){
+Product.update_a_product_by_makeit_userid = function(req,items, result){
 
-
-    var staticquery = "UPDATE Product SET ";
+  console.log(req);
+    var staticquery = "UPDATE Product SET updated_at = ?,";
     var column = '';
+
     for (const [key, value] of Object.entries(req)) {
         console.log(`${key} ${value}`);
 
-        if (key !== 'productid') {
+        if (key !== 'productid'  &&  key !== 'items') {
             // var value = `=${value}`;
             column = column + key + "='" + value + "',";
         }
     }
 
+    for(var i = 0; i < items.length; i++){
+                     
+      var product_item = items[i];
+  
+      product_item.productid = req.productid;
+
+      Productitem.updateProductitems(product_item, function (err, result) {
+        if (err)
+            res.send(err);
+       // res.json(result);
+    });
+  }
+
+
    var  query = staticquery + column.slice(0, -1)  + " where productid = " + req.productid;
-    console.log(query);
-    sql.query(query, function (err, res) {
+    
+    sql.query(query, [new Date()], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -371,7 +386,7 @@ Product.productview_by_productid = function productview_by_productid(req,result)
           }
           else{
 
-            sql.query("select mi.menuitemid,mi.menuitem_name from Productitem pi join Menuitem mi on mi.Menuitemid = pi.productitemid where pi.productid = "+req.productid+"", function (err, res1) {
+            sql.query("select pi.quantity,mi.price,mi.menuitemid,mi.menuitem_name from Productitem pi join Menuitem mi on mi.Menuitemid = pi.itemid where pi.productid = "+req.productid+"", function (err, res1) {
 
               if(err) {
                   console.log("error: ", err);
@@ -379,7 +394,6 @@ Product.productview_by_productid = function productview_by_productid(req,result)
               }else{
                       
                     for (let i = 0; i < res1.length; i++) {
-                      console.log('test');
 
                       items.push(res1[i]);
                       

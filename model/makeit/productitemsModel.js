@@ -21,4 +21,18 @@ Productitem.createProductitems = function createProductitems(product_item, res) 
 
 };
 
+
+
+Productitem.updateProductitems = function updateProductitems(product_item, res) {
+    console.log(product_item);
+
+    sql.query("update Productitem set quantity = ?, updated_at= ? where productid = ? and itemid = ?",[ product_item.quantity,new Date(),product_item.productid,product_item.itemid ], function (err, result) {
+        if (err) {
+            console.log("error: ", err);
+            res(null, err);
+        }
+
+    });
+
+};
 module.exports = Productitem;
