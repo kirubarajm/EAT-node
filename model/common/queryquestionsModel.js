@@ -32,10 +32,20 @@ QueryQuestions.createquestions = function createquestions(req, result) {
             });           
 };
 
-QueryQuestions.read_a_question_id = function read_a_question_id(req, result) {
-        console.log(req);
-         //var count = []; 
-        sql.query("Select * from Query_questions where userid = '"+req.userid+"' and type = '"+req.type+"' order by qid desc", function (err, res) {             
+QueryQuestions.read_a_question_id =  function read_a_question_id(req, result) {
+     
+          
+        var query = "Select * from Query_questions where type = '"+req.type+"'"
+
+         if (req.type && req.userid) {    
+            query = query +" and userid = '"+req.userid+"'"
+         }
+         query = query + "order by qid desc";
+
+         console.log(query);
+         
+        sql.query(query,  function (err, res) {  
+    
                 if(err) {
                     console.log("error: ", err);
                     result(err, null);
@@ -43,21 +53,9 @@ QueryQuestions.read_a_question_id = function read_a_question_id(req, result) {
                 else{
 
                     for (let i = 0; i < res.length; i++) {
-                        
-                        sql.query("Select COUNT(*) as count from Query_answers where userid = '"+res[i].userid+"' and user_read = 0 and qid = '"+res[i].qid+"' group by user_read", function (err, res1) {             
-                            if(err) {
-                                console.log("error: ", err);
-                                result(err, null);
-                            }
-                            else{
-                                
-                                res[i].count = res1[0];
                              
-    
-                                
-                            }
-                        }); 
-                         
+
+                      //res[i].count = count;
                     }
 
                        
@@ -68,7 +66,21 @@ QueryQuestions.read_a_question_id = function read_a_question_id(req, result) {
                          }; 
              result(null, resobj);
                 }
-            });   
+            
+          
+            }); 
+          
+        //               async function  getunreadcount(userid,qid){
+
+        //                let count = await sql.query("Select COUNT(*) as count from Query_answers where userid = '"+userid+"' and user_read = 0 and qid = '"+qid+"' group by user_read");
+                        
+        //               // count = await res1;
+        //                 console.log(count)
+        //                  return count;
+        //              }
+        // } catch (error) {
+        //     var errorCode = 402;
+        // }
 };
 
 

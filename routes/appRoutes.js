@@ -407,6 +407,15 @@ module.exports = function (app) {
     app.route('/admin/cartdetails')
     .post(makeituser.read_a_cartdetails);
 
+    app.route('/admin/querylist')
+   .post(queryquestion.read_a_question);
+
+   app.route('/admin/queryreplies/:aid')
+   .get(queryanswer.read_a_replies);
+
+   app.route('/admin/queryanswer')
+   .post(queryanswer.create_a_answer);
+
 
 
   // Orders API
@@ -533,11 +542,17 @@ module.exports = function (app) {
   app.route('/eat/cartdetails')
     .post(makeituser.read_a_cartdetails);
 
-  app.route('/eat/sort')
+  app.route('/eat/dishfilter')
     .post(eatuser.eat_dish_sort);
 
+  app.route('/eat/makeitfilter')
+    .post(eatuser.eat_kitchen_sort);
 
+  app.route('/eat/fav')
+    .post(fav.create_a_fav)
 
+  app.route('/eat/fav/:id')
+    .delete(fav.delete_a_fav);
 
   //query common  
 

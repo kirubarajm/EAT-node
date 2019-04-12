@@ -38,7 +38,7 @@ QueryAnswer.createanswer = function createanswer(req, result) {
 QueryAnswer.read_a_replies_id = function read_a_replies_id(aid, result) {
 
     
-        sql.query("Select * from Query_answers where qid = ? order by aid desc", aid, function (err, res) {             
+        sql.query("Select * from Query_answers where qid = ? order by aid asc", aid, function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
                     result(err, null);

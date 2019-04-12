@@ -4,23 +4,30 @@ var sql = require('../db.js');
 //Task object constructor
 var Fav = function(fav){
     this.eatuserid = fav.eatuserid;
-    this.productid=fav.productid;
+    this.productid=fav.productid || 0;
     this.created_at = new Date();
-    this.makeit_userid = fav.makeit_userid;
+    this.makeit_userid = fav.makeit_userid || 0;
 };
 
 
 Fav.createFav = function createFav(newFav, result) {    
         sql.query("INSERT INTO Fav set ?", newFav, function (err, res) {
                 
-                if(err) {
-                    console.log("error: ", err);
-                    result(err, null);
-                }
-                else{
-                    console.log(res.insertId);
-                    result(null, res.insertId);
-                }
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+                 let sucobj='true';
+                 let message = 'Fav created successfully';
+                let resobj = {  
+                success: sucobj,
+                message:message,
+
+                };
+                result(null, resobj);
+          
+            }
             });           
 };
 
@@ -65,16 +72,23 @@ Fav.updateById = function(id, user, result){
 };
 
 Fav.remove = function(id, result){
-     sql.query("DELETE FROM Fav WHERE favid = ?", [id], function (err, res) {
 
+     sql.query("DELETE FROM Fav WHERE favid = ?", [id], function (err, res) {
                 if(err) {
-                    console.log("error: ", err);
-                    result(null, err);
-                }
-                else{
-               
-                 result(null, res);
-                }
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+                 let sucobj='true';
+                 let message = 'Fav removed successfully';
+                let resobj = {  
+                success: sucobj,
+                message:message,
+
+                };
+                result(null, resobj);
+          
+            }
             }); 
 };
 
