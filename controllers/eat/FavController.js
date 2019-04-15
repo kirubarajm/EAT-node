@@ -59,10 +59,32 @@ exports.update_a_fav = function(req, res) {
 
 
 exports.delete_a_fav = function(req, res) {
+
+  console.log(req.params.id);
+  if(!req.params.id){
+    res.status(400).send({ error:true, message: 'Please provide fav id' });
+}
+else{
  Fav.remove( req.params.id, function(err, fav) {
     if (err)
       res.send(err);
     res.json({ message: 'Fav successfully deleted' });
   });
+}
 };
 
+exports.read_a_fav_dishlist = function(req, res) {
+  Fav.read_a_dishlist_byeatuserid(req.params.id, function(err, fav) {
+    if (err)
+      res.send(err);
+    res.json(fav);
+  });
+};
+
+exports.read_a_fav_kitchenlist = function(req, res) {
+  Fav.read_a_fav_kitchenlist_byeatuserid(req.params.id, function(err, fav) {
+    if (err)
+      res.send(err);
+    res.json(fav);
+  });
+};

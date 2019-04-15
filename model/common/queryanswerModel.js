@@ -14,10 +14,11 @@ var QueryAnswer = function(queryanswer){
 };
 
 
-QueryAnswer.createanswer = function createanswer(req, result) {    
+QueryAnswer.createanswer = function createanswer(req, result) {   
+    
+    console.log(req);
         sql.query("INSERT INTO Query_answers set ?", req, function (err, res) {
-                
-                 
+                         
             if(err) {
                 console.log("error: ", err);
                 result(err, null);

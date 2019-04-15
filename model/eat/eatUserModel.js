@@ -290,9 +290,8 @@ Eatuser.get_eat_makeit_product_list = function(req,result) {
     console.log(req);
 
    // sql.query("Select MakeitUser.*,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser  HAVING distance!= '' ORDER BY distance", function (err, res) {
-
-        sql.query("Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cusinename',cu.cusinename)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid join Cusine cu on cu.cusineid=pt.cusine left join Fav fa on fa.makeit_userid = mk.userid and pt.productid =fa.productid where mk.userid ="+req.makeit_userid+" and pt.active_status = 1 ", function (err, res) {
-
+    var query = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cusinename',cu.cusinename,'isfav',IF(fa.favid,1,0),'favid',fa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid join Cusine cu on cu.cusineid=pt.cusine left join Fav fa on fa.makeit_userid = mk.userid and pt.productid =fa.productid where mk.userid ="+req.makeit_userid+" and pt.active_status = 1";
+        sql.query(query, function (err, res) {
 
         if(err) {
             console.log("error: ", err);
@@ -300,7 +299,9 @@ Eatuser.get_eat_makeit_product_list = function(req,result) {
         }
         else{
 
-
+            console.log(res[0].productlist );
+            if (res[0].makeituserid !== null && res[0].productlist !== null)  {
+                
             for (let i = 0; i < res.length; i++) {
                    
                 if (res[i].productlist) {
@@ -312,8 +313,7 @@ Eatuser.get_eat_makeit_product_list = function(req,result) {
                     
                     res[i].eta =   Math.round(eta) +" mins" ;
 
-                }
-               
+                }  
                
              }
            let sucobj=true;
@@ -323,8 +323,20 @@ Eatuser.get_eat_makeit_product_list = function(req,result) {
             }; 
 
          result(null, resobj);
-      
+        }else{
+
+            let sucobj=true;
+            let message = "There is no product available!"
+            let resobj = {  
+            success: sucobj,
+            message: message
+            }; 
+
+         result(null, resobj);
+
         }
+            }
+       // }
         });   
 };
 
@@ -362,18 +374,18 @@ Eatuser.get_eat_dish_list_sort = function(req,result) {
     // var query = "Select mu.userid as makeit_userid,mu.name as makeit_username,mu.img as makeit_image, pt.product_name, pt.productid,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Fav fa on fa.productid = pt.productid and fa.eatuserid = '"+req.eatuserid+"'";
 
     if (req.eatuserid) {
-        var query = "Select distinct pt.productid,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img as makeit_image, pt.product_name,pt.vegtype,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cusinename,ly.localityname,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid join Cusine cu on cu.cusineid=pt.cusine left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid = pt.productid and pt.active_status = 1 and fa.eatuserid = '"+req.eatuserid+"'";
+        var query = "Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img as makeit_image, pt.product_name,pt.vegtype,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cusinename,ly.localityname,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid join Cusine cu on cu.cusineid=pt.cusine left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid = pt.productid  and fa.eatuserid = '"+req.eatuserid+"'";
     }else{
-         query = "Select distinct pt.productid,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img as makeit_image, pt.product_name,pt.vegtype,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cusinename,ly.localityname,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid join Cusine cu on cu.cusineid=pt.cusine left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid = pt.productid and pt.active_status = 1 ";
+         query = "Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img as makeit_image, pt.product_name,pt.vegtype,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cusinename,ly.localityname,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid join Cusine cu on cu.cusineid=pt.cusine left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid = pt.productid and pt.active_status = 1 ";
     }
    
         if (req.search && req.filterlist != 0) {
-            query = query +" where pt.product_name like '%"+req.search+"%' and" +filterquery;
+            query = query +" where  pt.active_status = 1 and pt.product_name like '%"+req.search+"%' and" +filterquery;
         }else if(filterlist && !req.search){
-            query = query +"where "+ filterquery;
+            query = query +"where  pt.active_status = 1 and"+ filterquery ;
             
         }else if(req.search && !req.filterlist){
-            query = query +" where pt.product_name like '%"+req.search+"%'";
+            query = query +" where pt.active_status = 1 and pt.product_name like '%"+req.search+"%'";
         }
 
 
@@ -422,32 +434,51 @@ Eatuser.get_eat_kitchen_list_sort = function(req,result) {
     
     req.eatuserid =  req.eatuserid || 0;
     var filterquery = '';
-
-    const filterlist = req.filter;
-    if (filterlist) {
+    var cusinequery = '';
+    const regionlist = req.region;
+    const cusinelist = req.cusine;
+    if (regionlist) {
         
-            for (let i = 0; i < filterlist.length; i++) {
+            for (let i = 0; i < regionlist.length; i++) {
                 
-                  filterquery = filterquery + " mk.region like '%"+filterlist[i].region+"%' or";
+                  filterquery = filterquery + " mk.region like '%"+regionlist[i].regionid+"%' or";
             }
     }
-    
-    filterquery = filterquery.slice(0, -2)
+
+    if (cusinelist) {
+        
+        for (let i = 0; i < cusinelist.length; i++) {
+            
+              cusinequery = cusinequery + " cm.cusineid like '%"+cusinelist[i].cusineid+"%' or";
+        }
+}
+
+    if (regionlist && !cusinelist) {
+        filterquery =   filterquery.slice(0, -2);
+    }else if(!regionlist && cusinelist)  {
+        filterquery =  cusinequery.slice(0, -2);
+    }else if(regionlist && cusinelist)  {
+        filterquery = filterquery.slice(0, -2)+"and"+ cusinequery.slice(0, -2);
+    }
+
+   
+
+   // console.log(filterquery);
     
     if (req.eatuserid) {
-        var query = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '"+req.eatuserid+"'";
+        var query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '"+req.eatuserid+"' left outer join Cusine_makeit cm on cm.makeit_userid = mk.userid left outer join Cusine cu on cu.cusineid=cm.cusineid ";
     }else{
-         query = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid  ";
+         query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk  left outer join Cusine_makeit cm on cm.makeit_userid = mk.userid left outer join Cusine cu on cu.cusineid=cm.cusineid  ";
     }
 
 
    
-        if (req.search && req.filter) {
+        if (req.search && req.region) {
             query = query +" where mk.name like '%"+req.search+"%' and" +filterquery;
-        }else if(filterlist && !req.search){
+        }else if(req.region && !req.search){
             query = query +"where "+ filterquery;
             
-        }else if(req.search && !req.filter){
+        }else if(req.search && !req.region){
             query = query +" where  mk.name like '%"+req.search+"%'";
         }
 
@@ -463,7 +494,7 @@ Eatuser.get_eat_kitchen_list_sort = function(req,result) {
         }
         
 
-    console.log(query);
+    //console.log(query);
     sql.query(query, function (err, res) {
 
         if(err) {

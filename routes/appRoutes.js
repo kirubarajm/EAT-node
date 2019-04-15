@@ -23,6 +23,8 @@ module.exports = function (app) {
   var ordersitem = require('../controllers/common/OrderitemController');
   var queryquestion = require('../controllers/common/QueryquestionController');
   var queryanswer = require('../controllers/common/QueryanswerController');
+  var region = require('../controllers/common/RegionController');
+  var cusine = require('../controllers/common/CusineController');
 
   // todoList Routes
   app.route('/tasks')
@@ -554,6 +556,12 @@ module.exports = function (app) {
   app.route('/eat/fav/:id')
     .delete(fav.delete_a_fav);
 
+  app.route('/eat/fav/dishlist/:id')
+    .get(fav.read_a_fav_dishlist);
+
+    app.route('/eat/fav/kitchenlist/:id')
+    .get(fav.read_a_fav_kitchenlist)
+
   //query common  
 
  app.route('/query')
@@ -584,5 +592,12 @@ app.route('/repliesread')
   // .post(ordersitem.createOrderitemsonline);
 
   // Masters
+
+  app.route('/masters/regionlist')
+  .get(region.list_all_region);
+
+  app.route('/masters/cusinelist')
+  .get(cusine.list_all_Cusine);
+
 };
 
