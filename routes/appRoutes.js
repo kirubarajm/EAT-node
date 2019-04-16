@@ -421,7 +421,7 @@ module.exports = function (app) {
 
 
   // Orders API
-  app.route('/orders/ordercreate')
+   app.route('/orders/ordercreate')
     .post(orders.eatuser_order_create)
 
 
@@ -559,10 +559,18 @@ module.exports = function (app) {
   app.route('/eat/fav/dishlist/:id')
     .get(fav.read_a_fav_dishlist);
 
-    app.route('/eat/fav/kitchenlist/:id')
+  app.route('/eat/fav/kitchenlist/:id')
     .get(fav.read_a_fav_kitchenlist)
 
-  //query common  
+  app.route('/eat/liveorders/:userid')
+    .get(orders.live_order_list_byeatuser);
+
+  app.route('/eat/proceedtopay')
+    .post(orders.read_a_proceed_to_pay);
+
+  
+  
+    //query common  
 
  app.route('/query')
     .post(queryquestion.create_a_question);
@@ -583,7 +591,6 @@ app.route('/repliesread')
 .put(queryanswer.update_read_answer);
 
 
-  //query questions
 
 
 

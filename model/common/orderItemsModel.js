@@ -6,21 +6,23 @@ var Product = require('../../model/makeit/productModel.js');
 var Orderitems = function (orderitems) {
     this.productid = orderitems.productid;
     this.quantity = orderitems.quantity;
-    this.gst = orderitems.gst;
+    this.gst = orderitems.gst || 0;
     this.created_at = new Date();
-    this.price = orderitems.price;
+    this.price = orderitems.price || 0;
     this.orderid = orderitems.orderid;
 
 };
 
 Orderitems.createOrderitems = function createOrderitems(order_item, res) {
+
+    console.log(order_item);
     
     sql.query("INSERT INTO OrderItem set ?", order_item, function (err, result) {
         if (err) {
             console.log("error: ", err);
             res(null, err);
         } else {
-           
+            console.log('test');
             var OrderItemid = result.insertId
 
                 sql.query("update Product set quantity= quantity-? WHERE productid = ?", [order_item.quantity,order_item.productid], function (err, res1) {

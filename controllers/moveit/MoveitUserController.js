@@ -24,10 +24,12 @@ exports.create_a_user = function (req, res) {
   // newdocument.legal_document = req.body.legal_document;
 
   //handles null error 
-  if (!new_user.name || !new_user.phoneno) {
-
-    res.status(400).send({ error: true, message: 'Please provide name/phoneno' });
-
+  if (!new_user.name ) {
+    res.status(400).send({ error: true, message: 'Please provide name ' });
+  }else if(!new_user.phoneno){
+    res.status(400).send({ error: true, message: 'Please provide phoneno' });
+  }else if(!new_user.password){
+    res.status(400).send({ error: true, message: 'Please provide password' });
   }
   else {
     Moveituser.createUser(new_user, function (err, user) {

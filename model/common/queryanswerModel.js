@@ -25,7 +25,7 @@ QueryAnswer.createanswer = function createanswer(req, result) {
             }
             else{
                 let sucobj=true;
-                let message = "replyed successfully";
+                let message = "replied successfully";
                 let resobj = {  
                 success: sucobj,
                 message:message
@@ -171,7 +171,7 @@ QueryAnswer.getAllFaqbyid = function getAllFaqByid(id,result) {
 
 QueryAnswer.read_a_answer_count = function read_a_answer_count(req, result) {
 
-    sql.query("Select COUNT(*) as count from Query_answers where userid = '"+req.userid+"' and user_read = 0 group by user_read", function (err, res) {             
+    sql.query("Select COUNT(*) as count from Query_answers where userid = '"+req.userid+"' and user_read = 0  and type = 0 group by user_read", function (err, res) {             
             if(err) {
                 console.log("error: ", err);
                 result(err, null);

@@ -16,11 +16,13 @@ exports.list_all_eatuser = function(req, res) {
 exports.create_a_eatuser = function(req, res) {
   var new_user = new Eatuser(req.body);
   //handles null error 
-   if(!new_user.name || !new_user.phoneno){
-
-            res.status(400).send({ error:true, message: 'Please provide name/phoneno' });
-
-    }
+  if (!new_user.name ) {
+    res.status(400).send({ error: true, message: 'Please provide name ' });
+  }else if(!new_user.phoneno){
+    res.status(400).send({ error: true, message: 'Please provide phoneno' });
+  }else if(!new_user.password){
+    res.status(400).send({ error: true, message: 'Please provide password' });
+  }
   else{
   Eatuser.createUser(new_user, function(err, user) {
     if (err)

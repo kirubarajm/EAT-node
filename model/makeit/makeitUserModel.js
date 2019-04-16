@@ -559,7 +559,7 @@ Makeituser.update_makeit_followup_status = function (makeitfollowupstatus, resul
 
 
 
-Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(req, cartitems, result) {
+Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(req, orderitems, result) {
  
   const gst = constant.gst ;
   const delivery_charge = constant.deliverycharge;
@@ -569,9 +569,9 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
   
   var calculationdetails = {}
 
-    for (let i = 0; i < cartitems.length; i++) {
+    for (let i = 0; i < orderitems.length; i++) {
 
-        var query2 = " Select * From Product where productid  = '" + cartitems[i].productid + "' ";
+        var query2 = " Select * From Product where productid  = '" + orderitems[i].productid + "' ";
 
         sql.query(query2, function (err, res) {
 
@@ -580,13 +580,13 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
                 result(err, null);
             }
             //Product amount calculation
-            amount = res[0].price * cartitems[i].quantity;
+            amount = res[0].price * orderitems[i].quantity;
             //Product total amount calculation
             totalamount =  +totalamount +  +amount ;
 
             res[0].amount = amount;
 
-            res[0].cartquantity = cartitems[i].quantity
+            res[0].cartquantity = orderitems[i].quantity
             
             productdetails.push(res[0]);
          
@@ -611,11 +611,12 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
             calculationdetails.totalamount = totalamount;
             calculationdetails.delivery_charge = delivery_charge;
 
+            console.log();
             res1[0].amountdetails = calculationdetails;
             res1[0].item = productdetails;
           
-            //res1.push(calculationdetails);
-           // res1.push(productdetails);
+        //     res1.push(calculationdetails);
+        //    res1.push(productdetails);
             let sucobj = true;
             let resobj = {
                 success: sucobj,

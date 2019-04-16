@@ -13,7 +13,7 @@ exports.list_all_product = function (req, res) {
 };
 
 
-exports.eatuser_order_create = function (req, res) {
+exports.eatuser_order_create = function (req, res) { 
   var new_Order = new Order(req.body);
   var order_item = req.body.orderitems;
   //console.log(order_item);
@@ -266,3 +266,22 @@ exports.online_order_place_conformation = function (req, res) {
 };
 
 
+exports.live_order_list_byeatuser = function(req, res) {
+  Order.live_order_list_byeatuserid(req.params,function(err, user) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', user);
+    res.send(user);
+  });
+};
+
+
+exports.read_a_proceed_to_pay = function (req, res) {
+  var orderitems = req.body.orderitems
+  Order.read_a_proceed_to_pay(req.body, orderitems, function (err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+};

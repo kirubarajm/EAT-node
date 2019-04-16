@@ -5,6 +5,7 @@ var Orderitem = require('../../model/common/orderItemsModel.js');
 var MoveitRatingForMakeit = require('../../model/moveit/moveitRatingForMakeitModel');
 var Orderlock = require('../../model/common/lockorderModel');
 var master = require('../master');
+var constant = require('../constant.js');
 
 
 
@@ -68,7 +69,7 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
 
     }
 
-        function ordercreate(){
+     function ordercreate(){
 
      sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
 
@@ -78,9 +79,7 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
         }else{
 
         var orderid = res1.insertId
-        // console.log(orderItems);
-        //lockorder(orderid,responce);
-    
+
         for (var i = 0; i < orderItems.length; i++) {
             var orderitem = new Orderitem(orderItems[i]);
             orderitem.orderid = orderid;
@@ -100,13 +99,11 @@ Order.createOrder = function createOrder(newOrder, orderItems, res) {
                 message:mesobj,
                 orderid: orderid
                 }; 
-        res(null, resobj);
+              res(null, resobj);
 
-            }
-    });
-
-    }
-    
+              }
+             });
+             }  
 };
 
 
@@ -238,9 +235,6 @@ Order.get_all_orders = function get_all_orders(req,result) {
 
 Order.order_assign = function (req, result) {
      
-
-
-
     sql.query("Select online_status From MoveitUser where userid= '"+req.moveit_user_id+"' ", function (err, res1) {
 
         if (err) {
@@ -264,30 +258,23 @@ Order.order_assign = function (req, result) {
                             let message = "Order Assign Sucessfully";
                             let resobj = {  
                               success: sucobj,
-                              message:message,
-                             
-                              }; 
-                  
+                              message:message,                             
+                              };                   
                            result(null, resobj);
                         }
                     });
         }else{
-
                     let sucobj=true;
                     let message = "Move it user is offline";
                     let resobj = {  
                       success: sucobj,
-                      message:message,
-                     
-                      }; 
-          
+                      message:message,                     
+                      };           
                    result(null, resobj);
         }
         }
     });
-        
-
-    
+            
 };
 
 
@@ -295,7 +282,6 @@ Order.getUnassignorders = function getUnassignorders(result) {
 
    /// Select * from Orders as ors left join User as us on ors.userid=us .userid where ors.moveit_status = '0';
    // sql.query("Select * from Orders where moveit_status = '0' ", function (err, res) {
-
         sql.query("Select * from Orders as ors left join User as us on ors.userid=us.userid where ors.moveit_user_id = 0", function (err, res) {
 
         if(err) {
@@ -396,8 +382,7 @@ Order.orderviewbymoveituser = function(orderid, result){
                         result(null, err);
                     }
                     else{
-                      
-                     
+                                           
                       let sucobj=true;
                       let resobj = {  
                       success: sucobj,
@@ -406,9 +391,7 @@ Order.orderviewbymoveituser = function(orderid, result){
           
                      result(null, resobj);
                     }   
-                });
-            
-         
+                });         
     };
 
 
@@ -433,7 +416,6 @@ Order.order_pickup_status_by_moveituser =  function order_pickup_status_by_movei
     ('00' + twentyMinutesLater.getUTCHours()).slice(-2) + ':' + 
     ('00' + twentyMinutesLater.getUTCMinutes()).slice(-2) + ':' + 
     ('00' + twentyMinutesLater.getUTCSeconds()).slice(-2);
-
 
         sql.query("Select * from Orders where orderid = ?",[req.orderid], function (err, res1) {
 
@@ -486,11 +468,8 @@ Order.order_pickup_status_by_moveituser =  function order_pickup_status_by_movei
                     }; 
                    result(null, resobj);
                   }
-
             }
-        });
-
-     
+        }); 
     };
     
 
@@ -499,8 +478,6 @@ Order.order_pickup_status_by_moveituser =  function order_pickup_status_by_movei
 
 Order.order_delivery_status_by_moveituser = function (req,  result) {
     
-        console.log('test');
-
         sql.query("Select * from Orders where orderid = ? and moveit_user_id = ?",[req.orderid, req.moveit_user_id], function (err, res1) {
 
             if (err) {
@@ -509,7 +486,6 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
             }
             else {
                 
-                    // check the payment status - 1 is paid
                 if(res1.length > 0)
                 {
                   if(res1[0].payment_status === 1){
@@ -564,17 +540,12 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
         });     
     };
     
-
-
-
-
-    
+  
     Order.moveit_kitchen_reached_status = function (req,  result) {
      
         var kitchenreachtime = new Date();
         var twentyMinutesLater = new Date();
         twentyMinutesLater.setMinutes(twentyMinutesLater.getMinutes() + 20);
-
 
      sql.query("Select * from Orders where orderid = ?",[req.orderid], function (err, res1) {
 
@@ -619,10 +590,8 @@ Order.order_delivery_status_by_moveituser = function (req,  result) {
     
                result(null, resobj);
               }
-
         }
     });
-
  
 };
 
@@ -953,7 +922,6 @@ Order.eatcreateOrder = async function eatcreateOrder(newOrder, orderItems, resul
   
   const  productquantity = [];
   
-
     for (let i = 0; i < orderItems.length; i++) {
         sql.query("Select productid,quantity,product_name From Product where productid = '"+orderItems[i].productid+"' and quantity > '"+orderItems[i].quantity+"'", function (err, res) {             
             if(err) {
@@ -985,18 +953,13 @@ Order.eatcreateOrder = async function eatcreateOrder(newOrder, orderItems, resul
                         }else if(newOrder.payment_type === 1){
 
                             ordercreateonline();
-                        }
-                     
-                        
-                        
+                        }                                           
                     }
-                }
-
-                
+                }                
             }
-        }); 
-        
+        });      
     }
+
 
         function ordercreatecashondelivery(){
     
@@ -1004,15 +967,16 @@ Order.eatcreateOrder = async function eatcreateOrder(newOrder, orderItems, resul
     
             if (err) {
                 console.log("error: ", err);
-                res(null, err);
+                res1(null, err);
             }else{
     
             var orderid = res1.insertId
         
             for (var i = 0; i < orderItems.length; i++) {
+                console.log('order items');
                 var orderitem = new Orderitem(orderItems[i]);
                 orderitem.orderid = orderid;
-    
+                
                 Orderitem.createOrderitems(orderitem, function (err, orderitemresponce) {
                     if (err)
                     result.send(err);
@@ -1036,18 +1000,16 @@ Order.eatcreateOrder = async function eatcreateOrder(newOrder, orderItems, resul
         }
         
         function ordercreateonline(){
-                console.log('test');
+              
             sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
        
                if (err) {
                    console.log("error: ", err);
-                   res(null, err);
+                   res1(null, err);
                }else{
        
                var orderid = res1.insertId
 
-               
-           
                for (var i = 0; i < orderItems.length; i++) {
                    var orderitemlock = new Orderlock(orderItems[i]);
                    orderitemlock.orderid = orderid;
@@ -1089,6 +1051,7 @@ Order.eatcreateOrder = async function eatcreateOrder(newOrder, orderItems, resul
 Order.online_order_place_conformation = function(order_place, result){
 
     if (order_place.payment_status == 1) {
+
         var query = "update Orders set payment_status = '"+order_place.payment_status+"' WHERE orderid = '"+order_place.orderid+"' ";
         let message = "Your order placed  successfully";
         var orderdetailsquery = "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" + order_place.orderid +"'";
@@ -1126,8 +1089,7 @@ Order.online_order_place_conformation = function(order_place, result){
                             if (res2[i].moveitdetail) {
                              res2[i].moveitdetail = JSON.parse(res2[i].moveitdetail)  
                             }
-             
-                           
+                                        
                             if (res2[i].items) {
                              var items =  JSON.parse(res2[i].items);
                              res2[i].items=items.item;
@@ -1147,8 +1109,6 @@ Order.online_order_place_conformation = function(order_place, result){
              
                   }
               }); 
-    
-
     }else{
 
         var query = "update Orders set payment_status = '"+order_place.payment_status+"' WHERE orderid = '"+order_place.orderid+"' ";
@@ -1161,9 +1121,262 @@ Order.online_order_place_conformation = function(order_place, result){
           }; 
          result(null, resobj);   
     }
+};  
 
-    };  
 
+
+Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, result){
+     
+             sql.query("Select ors.orderid,ors.orderstatus,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid where ors.userid ='" + req.userid +"' and ors.orderstatus < 6 and ors.lock_status = 0", function (err, res) {
+       
+              if(err) {
+                  console.log("error: ", err);
+                  result(null, err);
+              }
+              else{
+                
+               
+                for (let i = 0; i < res.length; i++) {
+                    
+                    res[i].distance = res[i].distance.toFixed(2);
+                        //15min Food Preparation time , 3min 1 km
+                        eta = 15 + (3 * res[i].distance) ;
+                        
+                        res[i].eta =   Math.round(eta) +" mins" ;
+                }
+                 
+     
+                  let sucobj=true;
+                     let resobj = {  
+                     success: sucobj,
+                     result: res
+                     }; 
+     
+                  result(null, resobj);
+              }   
+          });
+     
+     };
+     
+
+Order.read_a_proceed_to_pay = function read_a_proceed_to_pay(req, orderitems, result) {
+
+    const  productquantity = [];
+    sql.query("select * from Orders where orderstatus < 6 and lock_status = 0 and userid= ? ",req.userid,function (err, res) {             
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+                
+            if (res.length == 0) {
+
+                    for (let i = 0; i < orderitems.length; i++) {
+
+                    sql.query("Select productid,quantity,product_name From Product where productid = '"+orderitems[i].productid+"'", function (err, res1) {             
+                        if(err) {
+                            console.log("error: ", err);
+                            result(err, null);
+                        }
+                        else{
+                        
+                            if (res1[0].quantity <=orderitems[i].quantity ) {
+
+                                orderitems[i].availablity = false;
+                                let sucobj=true;
+                                let mesobj = ""+ res1[0].product_name + " is not available";
+                                let resobj = {  
+                                success: sucobj,
+                                message:mesobj,
+                                orderitems:orderitems
+                                }; 
+                                result(null, resobj);
+                            }else{
+            
+                                orderitems[i].availablity = true;
+                                orderitems[i].productquantity = productquantity.push(res1);
+
+            
+                                if (productquantity.length >= orderitems.length) {
+            
+                                    if (req.payment_type === 0) {
+                                        //ordercreatecashondelivery();
+                                       console.log('cash on delivery');
+                                    }else if(req.payment_type === 1){
+                                        console.log('cash on online');
+                                       // ordercreateonline();
+                                    }                                           
+                                }
+                            }                
+                        }
+                    });      
+                }
+            }else{
+
+                let sucobj=true;
+                let mesobj = "Already you have one order, So please try once delivered exiting order";
+                let resobj = {  
+                success: sucobj,
+                message:mesobj,
+                orderitems:orderitems
+                }; 
+                result(null, resobj);
+            }
+        }
+    });  
+
+        const gst = constant.gst ;
+        const delivery_charge = constant.deliverycharge;
+        const productdetails = [];
+        var totalamount = '';
+        var amount = '';
+        
+        var calculationdetails = {}
+        
+
+          for (let i = 0; i < orderitems.length; i++) {
+
+            console.log('test' +orderitems[i].productid);
+
+              var query2 = " Select * From Product where productid  = '" + orderitems[i].productid + "' ";
+      
+              sql.query(query2, function (err, res) {
+      
+                  if (err) {
+                      console.log("error: ", err);
+                      result(err, null);
+                  }
+                  //Product amount calculation
+                  amount = res[0].price * orderitems[i].quantity;
+                  //Product total amount calculation
+                  totalamount =  +totalamount +  +amount ;
+      
+                  res[0].amount = amount;
+      
+                  res[0].cartquantity = orderitems[i].quantity
+                  
+                  productdetails.push(res[0]);
+                  console.log(productdetails);
+                  let sucobj = true;
+                  let resobj = {
+                      success: sucobj,
+                      result: productdetails
+                  };
+      
+                  result(null, resobj);
+               });
+          }
+      
+        //console.log(productdetails);
+             
+        //   var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid =" + req.makeit_userid + "";
+      
+        //   sql.query(query1, function (err, res2) {
+        //       if (err) {
+        //           console.log("error: ", err);
+        //           result(err, null);
+        //       }
+        //       else {
+      
+        //           const gstcharge = (totalamount/100)*gst;
+        //           const grandtotal = +gstcharge +  +totalamount+  + delivery_charge; 
+            
+        //           calculationdetails.grandtotal = grandtotal;
+        //           calculationdetails.gstcharge = gstcharge;
+        //           calculationdetails.totalamount = totalamount;
+        //           calculationdetails.delivery_charge = delivery_charge;
+      
+        //           res2[0].amountdetails = calculationdetails;
+        //           res2[0].item = productdetails;
+                
+                
+             // }
+        //   });
+
+
+
+        function ordercreatecashondelivery(){
+    
+            sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
+       
+               if (err) {
+                   console.log("error: ", err);
+                   res1(null, err);
+               }else{
+       
+               var orderid = res1.insertId
+           
+               for (var i = 0; i < orderItems.length; i++) {
+                   console.log('order items');
+                   var orderitem = new Orderitem(orderItems[i]);
+                   orderitem.orderid = orderid;
+                   
+                   Orderitem.createOrderitems(orderitem, function (err, orderitemresponce) {
+                       if (err)
+                       result.send(err);
+                           
+                   });
+                   
+               }
+              
+                     let sucobj=true;
+                     let mesobj = "Order Created successfully";
+                     let resobj = {  
+                       success: sucobj,
+                       message:mesobj,
+                       orderid: orderid
+                       }; 
+                       result(null, resobj);
+       
+                   }
+           });
+       
+           }
+           
+           function ordercreateonline(){
+                 
+               sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
+          
+                  if (err) {
+                      console.log("error: ", err);
+                      res1(null, err);
+                  }else{
+          
+                  var orderid = res1.insertId
+   
+                  for (var i = 0; i < orderItems.length; i++) {
+                      var orderitemlock = new Orderlock(orderItems[i]);
+                      orderitemlock.orderid = orderid;
+   
+                        var orderitem = new Orderitem(orderItems[i]);
+                        orderitem.orderid = orderid;
+       
+                        Orderitem.createOrderitems(orderitem, function (err, orderitemresponce) {
+                       if (err)
+                       result.send(err);
+                           
+                   });
+               
+                       Orderlock.lockOrderitems(orderitemlock, function (err, orderitemresponce) {
+                          if (err)
+                          result.send(err);
+                              
+                      });
+                      
+                     }
+       
+                        let sucobj=true;
+                        let resobj = {  
+                          success: sucobj,
+                          orderid: orderid
+                          }; 
+                          result(null, resobj);
+          
+                      }
+              });
+          
+              }
+      };
 
 
 

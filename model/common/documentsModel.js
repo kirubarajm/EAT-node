@@ -230,7 +230,7 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
             else{
                 //console.log(res.insertId);                    
                 let sucobj='true';
-                let message = 'Doucment uploaded successfully';
+                let message = 'Document uploaded successfully';
                 let resobj = {  
                 success: sucobj,
                 message:message,
@@ -288,7 +288,7 @@ Documents.remove_document = function(req, result){
                 else{
                                   
                     let sucobj='true';
-                    let message = 'Doucment deleted successfully';
+                    let message = 'Document deleted successfully';
                     let resobj = {  
                     success: sucobj,
                     message:message,
@@ -329,7 +329,7 @@ Documents.newmoveitdocumentupload = function newmoveitdocumentupload(newDocument
             else{
                 //console.log(res.insertId);                    
                 let sucobj='true';
-                let message = 'Moveit Doucment uploaded successfully';
+                let message = 'Document uploaded successfully';
                 let resobj = {  
                 success: sucobj,
                 message:message,
@@ -374,7 +374,7 @@ Documents.newmoveitdocumentupload = function newmoveitdocumentupload(newDocument
             else{
                 //console.log(res.insertId);                    
                 let sucobj='true';
-                let message = 'Sales Doucment uploaded successfully';
+                let message = 'Document uploaded successfully';
                 let resobj = {  
                 success: sucobj,
                 message:message,

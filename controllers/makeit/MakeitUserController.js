@@ -18,8 +18,12 @@ exports.list_all_user = function (req, res) {
 exports.create_a_user = function (req, res) {
   var new_user = new Makeituser(req.body);
   //handles null error 
-  if (!new_user.name || !new_user.phoneno) {
-    res.status(400).send({ error: true, message: 'Please provide name/phoneno' });
+  if (!new_user.name ) {
+    res.status(400).send({ error: true, message: 'Please provide name ' });
+  }else if(!new_user.phoneno){
+    res.status(400).send({ error: true, message: 'Please provide phoneno' });
+  }else if(!new_user.password){
+    res.status(400).send({ error: true, message: 'Please provide password' });
   }
   else {
     Makeituser.createUser(new_user, function (err, user) {
@@ -215,8 +219,8 @@ exports.update_makeit_users = function (req, res) {
 
 
 exports.read_a_cartdetails = function (req, res) {
-  var cartitems = req.body.cartitems
-  Makeituser.read_a_cartdetails_makeitid(req.body, cartitems, function (err, user) {
+  var orderitems = req.body.orderitems
+  Makeituser.read_a_cartdetails_makeitid(req.body, orderitems, function (err, user) {
     if (err)
       res.send(err);
     res.json(user);

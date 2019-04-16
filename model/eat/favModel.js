@@ -137,6 +137,8 @@ Fav.read_a_dishlist_byeatuserid = function read_a_dishlist_byeatuserid(userId,re
 
 
 Fav.read_a_fav_kitchenlist_byeatuserid = function read_a_fav_kitchenlist_byeatuserid(userId,result) {
+
+    
     sql.query("Select mu.userid as makeituserid,mu.name as makeitusername,mu.brandname as makeitbrandname,mu.rating rating,mu.region,mu.costfortwo,mu.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav from MakeitUser mu left join Fav fa on fa.makeit_userid=mu.userid where mu.verified_status = 1 and fa.productid= 0 and fa.eatuserid   = ? ", userId, function (err, res) {
 
         if(err) {
