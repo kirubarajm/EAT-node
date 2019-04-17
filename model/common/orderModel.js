@@ -6,6 +6,8 @@ var MoveitRatingForMakeit = require('../../model/moveit/moveitRatingForMakeitMod
 var Orderlock = require('../../model/common/lockorderModel');
 var master = require('../master');
 var constant = require('../constant.js');
+var Makeituser = require('../../model/makeit/makeitUserModel.js');
+var constant = require('../constant.js');
 
 
 
@@ -967,7 +969,7 @@ Order.eatcreateOrder = async function eatcreateOrder(newOrder, orderItems, resul
     
             if (err) {
                 console.log("error: ", err);
-                res1(null, err);
+                result(null, err);
             }else{
     
             var orderid = res1.insertId
@@ -1159,27 +1161,24 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
      };
      
 
-Order.read_a_proceed_to_pay = function read_a_proceed_to_pay(req, orderitems, result) {
+Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderitems, result) {
+    
+    try {
+        
+            var newOrder = [];
+            const  productquantity = [];
+            const delivery_charge = constant.deliverycharge;
 
-    const  productquantity = [];
-    sql.query("select * from Orders where orderstatus < 6 and lock_status = 0 and userid= ? ",req.userid,function (err, res) {             
-        if(err) {
-            console.log("error: ", err);
-            result(err, null);
-        }
-        else{
-                
+            const res = await query("select * from Orders where orderstatus < 6 and lock_status = 0 and userid= '"+req.userid+"'");
+
+    
             if (res.length == 0) {
 
                     for (let i = 0; i < orderitems.length; i++) {
 
-                    sql.query("Select productid,quantity,product_name From Product where productid = '"+orderitems[i].productid+"'", function (err, res1) {             
-                        if(err) {
-                            console.log("error: ", err);
-                            result(err, null);
-                        }
-                        else{
-                        
+
+                            const res1 = await query("Select productid,quantity,product_name,price From Product where productid = '"+orderitems[i].productid+"'");
+                           
                             if (res1[0].quantity <=orderitems[i].quantity ) {
 
                                 orderitems[i].availablity = false;
@@ -1194,23 +1193,14 @@ Order.read_a_proceed_to_pay = function read_a_proceed_to_pay(req, orderitems, re
                             }else{
             
                                 orderitems[i].availablity = true;
+                                orderitems[i].price =  res1[0].price * orderitems[i].quantity; 
                                 orderitems[i].productquantity = productquantity.push(res1);
 
-            
-                                if (productquantity.length >= orderitems.length) {
-            
-                                    if (req.payment_type === 0) {
-                                        //ordercreatecashondelivery();
-                                       console.log('cash on delivery');
-                                    }else if(req.payment_type === 1){
-                                        console.log('cash on online');
-                                       // ordercreateonline();
-                                    }                                           
-                                }
+                                
                             }                
-                        }
-                    });      
-                }
+                     
+                }              
+
             }else{
 
                 let sucobj=true;
@@ -1222,103 +1212,71 @@ Order.read_a_proceed_to_pay = function read_a_proceed_to_pay(req, orderitems, re
                 }; 
                 result(null, resobj);
             }
-        }
-    });  
+  
 
-        const gst = constant.gst ;
-        const delivery_charge = constant.deliverycharge;
-        const productdetails = [];
-        var totalamount = '';
-        var amount = '';
+    const res2 = await query("Select * from Address where address_type = '"+req.address_type+"' and userid = '"+req.userid+"'");
+     
+    req.cus_address = res2[0].address
+    req.locality = res2[0].locality
+    req.lat = res2[0].lat
+    req.lon = res2[0].lon
+   
         
-        var calculationdetails = {}
-        
 
-          for (let i = 0; i < orderitems.length; i++) {
-
-            console.log('test' +orderitems[i].productid);
-
-              var query2 = " Select * From Product where productid  = '" + orderitems[i].productid + "' ";
-      
-              sql.query(query2, function (err, res) {
-      
-                  if (err) {
-                      console.log("error: ", err);
-                      result(err, null);
-                  }
-                  //Product amount calculation
-                  amount = res[0].price * orderitems[i].quantity;
-                  //Product total amount calculation
-                  totalamount =  +totalamount +  +amount ;
-      
-                  res[0].amount = amount;
-      
-                  res[0].cartquantity = orderitems[i].quantity
-                  
-                  productdetails.push(res[0]);
-                  console.log(productdetails);
-                  let sucobj = true;
-                  let resobj = {
-                      success: sucobj,
-                      result: productdetails
-                  };
-      
-                  result(null, resobj);
-               });
-          }
-      
-        //console.log(productdetails);
-             
-        //   var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid =" + req.makeit_userid + "";
-      
-        //   sql.query(query1, function (err, res2) {
-        //       if (err) {
-        //           console.log("error: ", err);
-        //           result(err, null);
-        //       }
-        //       else {
-      
-        //           const gstcharge = (totalamount/100)*gst;
-        //           const grandtotal = +gstcharge +  +totalamount+  + delivery_charge; 
-            
-        //           calculationdetails.grandtotal = grandtotal;
-        //           calculationdetails.gstcharge = gstcharge;
-        //           calculationdetails.totalamount = totalamount;
-        //           calculationdetails.delivery_charge = delivery_charge;
-      
-        //           res2[0].amountdetails = calculationdetails;
-        //           res2[0].item = productdetails;
-                
-                
-             // }
-        //   });
-
-
-
-        function ordercreatecashondelivery(){
     
-            sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
+    Makeituser.read_a_cartdetails_makeitid(req,orderitems, async function (err, res3) {
+        if (err){
+        result(err, null);
+        }else{
+               
+         var amountdata = res3.result[0].amountdetails; 
+         console.log(amountdata.gstcharge);                  
+        req.gst = amountdata.gstcharge;
+        req.price = amountdata.grandtotal;
+       
+        if (req.payment_type === 0) {
+       
+            // console.log(orderitems);
+             console.log(req);
+              ordercreatecashondelivery(req,orderitems);
+               console.log('cash on delivery');
+            }else if(req.payment_type === 1){
+                console.log('cash on online');
+                ordercreateonline(req,orderitems);
+            } 
+
+        }
+          
+    });
+    
+
+   
+    
+        function ordercreatecashondelivery(){
+           
+            var new_Order = new Order(req);
+                // new_Order.locality = 'guindy';
+                 new_Order.delivery_charge = delivery_charge; 
+            sql.query("INSERT INTO Orders set ?", new_Order, function (err, res1) {
        
                if (err) {
                    console.log("error: ", err);
-                   res1(null, err);
+                   result(null, err);
                }else{
        
                var orderid = res1.insertId
            
-               for (var i = 0; i < orderItems.length; i++) {
-                   console.log('order items');
-                   var orderitem = new Orderitem(orderItems[i]);
+               for (var i = 0; i < orderitems.length; i++) {
+                   var orderitem = new Orderitem(orderitems[i]);
                    orderitem.orderid = orderid;
                    
-                   Orderitem.createOrderitems(orderitem, function (err, orderitemresponce) {
+                   Orderitem.createOrderitems(orderitem, function (err, res2) {
                        if (err)
                        result.send(err);
-                           
-                   });
-                   
-               }
-              
+                      console.log(res2);
+
+                   });   
+               }   
                      let sucobj=true;
                      let mesobj = "Order Created successfully";
                      let resobj = {  
@@ -1330,10 +1288,9 @@ Order.read_a_proceed_to_pay = function read_a_proceed_to_pay(req, orderitems, re
        
                    }
            });
-       
-           }
+         }
            
-           function ordercreateonline(){
+            function ordercreateonline(){
                  
                sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
           
@@ -1344,11 +1301,11 @@ Order.read_a_proceed_to_pay = function read_a_proceed_to_pay(req, orderitems, re
           
                   var orderid = res1.insertId
    
-                  for (var i = 0; i < orderItems.length; i++) {
-                      var orderitemlock = new Orderlock(orderItems[i]);
+                  for (var i = 0; i < orderitems.length; i++) {
+                      var orderitemlock = new Orderlock(orderitems[i]);
                       orderitemlock.orderid = orderid;
    
-                        var orderitem = new Orderitem(orderItems[i]);
+                        var orderitem = new Orderitem(orderitems[i]);
                         orderitem.orderid = orderid;
        
                         Orderitem.createOrderitems(orderitem, function (err, orderitemresponce) {
@@ -1375,10 +1332,35 @@ Order.read_a_proceed_to_pay = function read_a_proceed_to_pay(req, orderitems, re
                       }
               });
           
-              }
-      };
+         }
 
+        function cartdetails(req,orderitems) {  
+                Makeituser.read_a_cartdetails_makeitid(req,orderitems,function (err, res2) {
+                  if (err){
+                  result(err, null);
+                  }else{
+                 // result(null,res2);
+                     
+                  var amountdata = res2.result[0].amountdetails;                   
+                  var itemdata = res2.result[0].item;
+                 
+                  req.delivery_charge = amountdata.delivery_charge;
+                  req.gst = amountdata.gstcharge;
+                  req.price = amountdata.grandtotal;
+                //  responce(null,res2)
+                  }
+                    
+              });
+         }
+        } catch (error) {
+        
+                
+        var errorCode = 402;
 
+        result(null, errorCode)
+        }
 
+ };
+    
 
 module.exports = Order;

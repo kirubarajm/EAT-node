@@ -30,9 +30,9 @@ var salesfollowupstatus = [{
 var OrderStatus = [{
     "OrderStatusid":0,"OrderStatus":"orderput",
     "OrderStatusid":1,"OrderStatus":"orderAccept",
-    "OrderStatusid":2,"OrderStatus":"orderPrepare",
-    "OrderStatusid":3,"OrderStatus":"orderPacked",
-    "OrderStatusid":4,"OrderStatus":"kitchen reached",
+    "OrderStatusid":2,"OrderStatus":"orderPreparing",
+    "OrderStatusid":3,"OrderStatus":"orderPrepared",//orderPacked
+   // "OrderStatusid":4,"OrderStatus":"kitchen reached",
     "OrderStatusid":5,"OrderStatus":"orderPickedup",
     "OrderStatusid":6,"OrderStatus":"orderDelivered"
 }];

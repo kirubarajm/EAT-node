@@ -11,9 +11,7 @@ var Fav = function(fav){
 
 
 Fav.createFav = function createFav(newFav, result) {  
-    
-    
-    
+     
         sql.query("INSERT INTO Fav set ?", newFav, function (err, res) {
                 
             if(err) {
@@ -26,6 +24,7 @@ Fav.createFav = function createFav(newFav, result) {
                 let resobj = {  
                 success: sucobj,
                 message:message,
+                favid:res.insertId
 
                 };
                 result(null, resobj);

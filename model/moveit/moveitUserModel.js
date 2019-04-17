@@ -208,7 +208,7 @@ Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req, result) {
 
     console.log(req.vacant);
     if (req.vacant !== 'all') {
-        query = query + " where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6) ";
+        query = query + " where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 ) and online_status = 1";
     }
 
     if (req.vacant !== 'all' && req.search) {
@@ -217,7 +217,7 @@ Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req, result) {
         query = query + " where name LIKE  '%" + req.search + "%'";
     }
 
-
+    console.log(query);
     sql.query(query, function (err, res) {
 
         if (err) {

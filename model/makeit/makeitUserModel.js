@@ -559,8 +559,8 @@ Makeituser.update_makeit_followup_status = function (makeitfollowupstatus, resul
 
 
 
-Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(req, orderitems, result) {
- 
+Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(req,orderitems, result) {
+// console.log(req);
   const gst = constant.gst ;
   const delivery_charge = constant.deliverycharge;
   const productdetails = [];
@@ -594,7 +594,7 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
     }
 
        
-    var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid =" + req.makeit_userid + "";
+    var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid ="+req.makeit_userid+"";
 
     sql.query(query1, function (err, res1) {
         if (err) {
@@ -602,7 +602,9 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
             result(err, null);
         }
         else {
-
+            if (res1.length !== 0) {
+                
+            
             const gstcharge = (totalamount/100)*gst;
             const grandtotal = +gstcharge +  +totalamount+  + delivery_charge; 
       
@@ -624,6 +626,17 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
             };
 
             result(null, resobj);
+        }else{
+            let sucobj = true;
+            message = "There is no data available!, Kindly check the Makeituser id";
+            let resobj = {
+                success: sucobj,
+                message: message,
+            };
+
+            result(null, resobj);
+
+        }
         }
     });
 };
