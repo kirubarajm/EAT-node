@@ -586,10 +586,12 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
                 orderitems[i].availablity = false;
                 let sucobj=true;
+                let status = false;
                 let mesobj = ""+ res[0].product_name + " is not available";
                 orderitems[i].quantityavailablity = res[0].quantity;
                 let resobj = {  
                 success: sucobj,
+                status:status,
                 message:mesobj,
                 orderitems:orderitems,
                
@@ -674,17 +676,21 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         //     res1.push(calculationdetails);
         //    res1.push(productdetails);
             let sucobj = true;
+            let status = true;
             let resobj = {
                 success: sucobj,
+                status :status,
                 result: res1,
             };
 
             result(null, resobj);
         }else{
             let sucobj = true;
+            let status = false;
             message = "There is no data available!, Kindly check the Makeituser id";
             let resobj = {
                 success: sucobj,
+                status :status,
                 message: message,
             };
 

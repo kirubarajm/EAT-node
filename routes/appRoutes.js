@@ -568,6 +568,9 @@ module.exports = function (app) {
   app.route('/eat/proceedtopay')
     .post(orders.read_a_proceed_to_pay);
 
+    app.route('/eat/referral/:userid')
+    .get(eatuser.eat_user_referral);
+
   
   
     //query common  

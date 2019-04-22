@@ -135,3 +135,14 @@ exports.eat_kitchen_sort = function(req, res) {
     res.send(user);
   });
 }
+
+
+exports.eat_user_referral = function(req, res) {
+  Eatuser.eat_user_referral_code(req.params,function(err, user) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', user);
+    res.send(user);
+  });
+}
