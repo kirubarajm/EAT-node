@@ -278,7 +278,7 @@ exports.live_order_list_byeatuser = function(req, res) {
 
 
 exports.read_a_proceed_to_pay = function (req, res) {
-  var orderitems = req.body.orderitems
+  var orderitems = req.body.orderitems;
   Order.read_a_proceed_to_pay(req.body, orderitems, function (err, user) {
     if (err)
       res.send(err);

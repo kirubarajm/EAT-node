@@ -40,7 +40,7 @@ var Order = function (order) {
     this.price = order.price;
     this.payment_status = order.payment_status;
     this.cus_address = order.cus_address;
-    this.lock_status = order.lock_status;
+    this.lock_status = order.lock_status || 0;
 };
 
 
@@ -1129,7 +1129,7 @@ Order.online_order_place_conformation = function(order_place, result){
 
 Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, result){
      
-             sql.query("Select ors.orderid,ors.orderstatus,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid where ors.userid ='" + req.userid +"' and ors.orderstatus < 6 and ors.lock_status = 0", function (err, res) {
+             sql.query("Select ors.orderid,ors.orderstatus,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid where ors.userid ='" + req.userid +"' and ors.orderstatus < 6 and ors.lock_status = 0 ", function (err, res) {
        
               if(err) {
                   console.log("error: ", err);
@@ -1171,9 +1171,10 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
 
             const res = await query("select * from Orders where orderstatus < 6 and lock_status = 0 and userid= '"+req.userid+"'");
 
-    
-            if (res.length == 0) {
+            console.log(res);
 
+            if (res.length == 0) {
+                    console.log('test');
                     for (let i = 0; i < orderitems.length; i++) {
 
 
@@ -1201,29 +1202,16 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
                      
                 }              
 
-            }else{
-
-                let sucobj=true;
-                let mesobj = "Already you have one order, So please try once delivered exiting order";
-                let resobj = {  
-                success: sucobj,
-                message:mesobj,
-                orderitems:orderitems
-                }; 
-                result(null, resobj);
-            }
-  
+            
 
     const res2 = await query("Select * from Address where address_type = '"+req.address_type+"' and userid = '"+req.userid+"'");
      
     req.cus_address = res2[0].address
     req.locality = res2[0].locality
-    req.lat = res2[0].lat
-    req.lon = res2[0].lon
-   
-        
-
+    req.cus_lat = res2[0].lat
+    req.cus_lon = res2[0].lon
     
+     
     Makeituser.read_a_cartdetails_makeitid(req,orderitems, async function (err, res3) {
         if (err){
         result(err, null);
@@ -1237,7 +1225,7 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
         if (req.payment_type === 0) {
        
             // console.log(orderitems);
-             console.log(req);
+            // console.log(req);
               ordercreatecashondelivery(req,orderitems);
                console.log('cash on delivery');
             }else if(req.payment_type === 1){
@@ -1296,7 +1284,7 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
           
                   if (err) {
                       console.log("error: ", err);
-                      res1(null, err);
+                      result(null, err);
                   }else{
           
                   var orderid = res1.insertId
@@ -1352,6 +1340,20 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
                     
               });
          }
+
+
+        }else{
+
+            let sucobj=true;
+            let mesobj = "Already you have one order, So please try once delivered exiting order";
+            let resobj = {  
+            success: sucobj,
+            message:mesobj,
+            orderitems:orderitems
+            }; 
+            result(null, resobj);
+        }
+
         } catch (error) {
         
                 

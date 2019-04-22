@@ -559,8 +559,10 @@ Makeituser.update_makeit_followup_status = function (makeitfollowupstatus, resul
 
 
 
-Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(req,orderitems, result) {
-// console.log(req);
+Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid(req,orderitems, result) {
+ 
+ try {
+     
   const gst = constant.gst ;
   const delivery_charge = constant.deliverycharge;
   const productdetails = [];
@@ -579,7 +581,23 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
                 console.log("error: ", err);
                 result(err, null);
             }
+
+            if (res[0].quantity <= orderitems[i].quantity ) {
+
+                orderitems[i].availablity = false;
+                let sucobj=true;
+                let mesobj = ""+ res[0].product_name + " is not available";
+                orderitems[i].quantityavailablity = res[0].quantity;
+                let resobj = {  
+                success: sucobj,
+                message:mesobj,
+                orderitems:orderitems,
+               
+                }; 
+                result(null, resobj);
+            }else{
             //Product amount calculation
+          //  console.log('test');
             amount = res[0].price * orderitems[i].quantity;
             //Product total amount calculation
             totalamount =  +totalamount +  +amount ;
@@ -589,12 +607,48 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
             res[0].cartquantity = orderitems[i].quantity
             
             productdetails.push(res[0]);
-         
+
+            }    
          });
     }
 
+//     for (let i = 0; i < orderitems.length; i++) {
+
+
+//         const res1 = await query("Select productid,quantity,product_name,price From Product where productid = '"+orderitems[i].productid+"'");
        
-    var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid ="+req.makeit_userid+"";
+//         if (res1[0].quantity <=orderitems[i].quantity ) {
+
+//             orderitems[i].availablity = false;
+//             let sucobj=true;
+//             let mesobj = ""+ res1[0].product_name + " is not available";
+//             let resobj = {  
+//             success: sucobj,
+//             message:mesobj,
+//             orderitems:orderitems
+//             }; 
+//             result(null, resobj);
+//         }else{
+
+//             // orderitems[i].availablity = true;
+//             // orderitems[i].price =  res1[0].price * orderitems[i].quantity; 
+//             // orderitems[i].productquantity = productquantity.push(res1);
+//             amount = res1[0].price * orderitems[i].quantity;
+//             //Product total amount calculation
+//             totalamount =  +totalamount +  +amount ;
+
+//             res1[0].amount = amount;
+
+//             res1[0].cartquantity = orderitems[i].quantity
+            
+//             productdetails.push(res[0]);
+            
+//         }                
+ 
+// }              
+
+
+    var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid ="+req.makeit_user_id+" ";
 
     sql.query(query1, function (err, res1) {
         if (err) {
@@ -639,6 +693,11 @@ Makeituser.read_a_cartdetails_makeitid = function read_a_cartdetails_makeitid(re
         }
         }
     });
+} catch (error) {
+    var errorCode = 402;
+
+    result(null, errorCode)
+}
 };
 
 
