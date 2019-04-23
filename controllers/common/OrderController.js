@@ -19,13 +19,13 @@ exports.eatuser_order_create = function (req, res) {
   //console.log(order_item);
   //console.log(new_Order);
   //handles null error 
-  if (!new_Order.userid || !new_Order.price || !new_Order.makeit_user_id || !new_Order.delivery_charge) {
+  if (!new_Order.userid  || !new_Order.makeit_user_id ) {
 
-    res.status(400).send({ error: true, message: 'Please provide userid/price/makeit_user_id/delivery_charge' });
+    res.status(400).send({ error: true, message: 'Please provide userid/makeit_user_id' });
 
   }
   else {
-    Order.createOrder(new_Order, order_item, function (err, result) {
+    Order.createOrder(req.body, order_item, function (err, result) {
       if (err)
         res.send(err);
       res.json(result);
@@ -105,6 +105,7 @@ exports.order_list_eatuser = function(req, res) {
 
 exports.order_assign = function (req, res) {
 
+  console.log(req.body);
   Order.order_assign(req.body, function (err, result) {
     if (err)
       res.send(err);

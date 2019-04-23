@@ -421,6 +421,9 @@ module.exports = function (app) {
    app.route('/admin/orderpickupstatus')
    .put(orders.order_pickup_status);
 
+   app.route('/admin/qualitychecklist')
+   .post(moveituser.moveit_quality_checklist);
+
 
 
   // Orders API
@@ -529,8 +532,11 @@ module.exports = function (app) {
 
   app.route('/eat/address/:userid')
     .get(eatuseraddress.read_a_user_address)
-    .put(eatuseraddress.update_a_user_address)
+   // .put(eatuseraddress.update_a_user_address)
     .delete(eatuseraddress.delete_a_user_address);
+
+    app.route('/eat/address/')
+    .put(eatuseraddress.update_a_user_address);
 
   app.route('/eat/addressdelete')
     .put(eatuseraddress.update_delete_status);

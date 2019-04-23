@@ -44,71 +44,226 @@ var Order = function (order) {
 };
 
 
-Order.createOrder = function createOrder(newOrder, orderItems, res) {
+// Order.createOrder = function createOrder(newOrder, orderItems, res) {
 
 
-    if (newOrder.payment_type == 0) {
-            ordercreate();
+//     if (newOrder.payment_type == 0) {
+//             ordercreate();
 
-    }else if(newOrder.payment_type == 1){
+//     }else if(newOrder.payment_type == 1){
 
-        ordercreate();
-    }
+//         ordercreate();
+//     }
 
-    function quantitycheck(responce){
+//     function quantitycheck(responce){
 
-        sql.query("Select * From  Product  productid = ? ",orderItems.productid, function (err, res) {             
-            if(err) {
-                console.log("error: ", err);
-                result(err, null);
-            }
-            else{
-                responce(null, res);
+//         sql.query("Select * From  Product  productid = ? ",orderItems.productid, function (err, res) {             
+//             if(err) {
+//                 console.log("error: ", err);
+//                 result(err, null);
+//             }
+//             else{
+//                 responce(null, res);
           
-            }
-        });   
+//             }
+//         });   
 
 
-    }
+//     }
 
-     function ordercreate(){
+//      function ordercreate(){
 
-     sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
+//      sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
 
-        if (err) {
-            console.log("error: ", err);
-            res(null, err);
+//         if (err) {
+//             console.log("error: ", err);
+//             res(null, err);
+//         }else{
+
+//         var orderid = res1.insertId
+
+//         for (var i = 0; i < orderItems.length; i++) {
+//             var orderitem = new Orderitem(orderItems[i]);
+//             orderitem.orderid = orderid;
+
+//             Orderitem.createOrderitems(orderitem, function (err, result) {
+//                 if (err)
+//                     res.send(err);
+//                 // res.json(result);
+//             });
+
+//         }
+        
+//               let sucobj=true;
+//               let mesobj = "Order Created successfully";
+//               let resobj = {  
+//                 success: sucobj,
+//                 message:mesobj,
+//                 orderid: orderid
+//                 }; 
+//               res(null, resobj);
+
+//               }
+//              });
+//              }  
+// };
+
+Order.createOrder = async  function createOrder(req,orderitems, result) {
+    console.log(req);
+    try {
+            var tempmessage = '';
+            var newOrder = [];
+            const  productquantity = [];
+            const delivery_charge = constant.deliverycharge;
+
+            const res = await query("select * from Orders where orderstatus < 6 and lock_status = 0 and userid= '"+req.userid+"'");
+
+            if (res.length == 0) {
+                      
+                 Makeituser.read_a_cartdetails_makeitid(req,orderitems, async function (err, res3) {
+                    if (err){
+                    result(err, null);
+                    }else{
+                    console.log(res3.status);
+                    if (res3.status != true) {
+                            result(null, res3);
+                    }else{
+                    var amountdata = res3.result[0].amountdetails;                 
+                    req.gst = amountdata.gstcharge;
+                    req.price = amountdata.grandtotal;   
+                   
+                    const res2 = await query("Select * from Address where aid = '"+req.aid+"' and userid = '"+req.userid+"'");
+                    console.log(res2);
+                   req.cus_address = res2[0].address
+                   req.locality = res2[0].locality
+                   req.cus_lat = res2[0].lat
+                   req.cus_lon = res2[0].lon
+
+
+                    if (req.payment_type === 0) {
+                          ordercreatecashondelivery(req,orderitems);
+                           console.log('cash on delivery');
+                        }else if(req.payment_type === 1){
+                            console.log('cash on online');
+                            ordercreateonline(req,orderitems);
+                        } 
+                }
+                }   
+                });
+    
+        function ordercreatecashondelivery(){
+            console.log("ordercreatecashondelivery: ");
+            var new_Order = new Order(req);
+                // new_Order.locality = 'guindy';
+                 new_Order.delivery_charge = delivery_charge; 
+            sql.query("INSERT INTO Orders set ?", new_Order, function (err, res1) {
+       
+               if (err) {
+                   console.log("error: ", err);
+                   result(null, err);
+               }else{
+       
+               var orderid = res1.insertId
+           
+               for (var i = 0; i < orderitems.length; i++) {
+                   var orderitem = new Orderitem(orderitems[i]);
+                   orderitem.orderid = orderid;
+                   
+                   Orderitem.createOrderitems(orderitem, function (err, res2) {
+                       if (err)
+                       result.send(err);
+                    //  console.log(res2);
+
+                   });   
+               }   
+                     let sucobj=true;
+                     let status = true;
+                     let mesobj = "Order Created successfully";
+                     let resobj = {  
+                       success: sucobj,
+                       status:status,
+                       message:mesobj,
+                       orderid: orderid
+                       }; 
+                       result(null, resobj);
+       
+                   }
+           });
+         }
+           
+            function ordercreateonline(){
+                 
+               sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
+          
+                  if (err) {
+                      console.log("error: ", err);
+                      result(null, err);
+                  }else{
+          
+                  var orderid = res1.insertId
+   
+                  for (var i = 0; i < orderitems.length; i++) {
+                      var orderitemlock = new Orderlock(orderitems[i]);
+                      orderitemlock.orderid = orderid;
+   
+                        var orderitem = new Orderitem(orderitems[i]);
+                        orderitem.orderid = orderid;
+       
+                        Orderitem.createOrderitems(orderitem, function (err, orderitemresponce) {
+                       if (err)
+                       result.send(err);
+                           
+                   });
+               
+                       Orderlock.lockOrderitems(orderitemlock, function (err, orderitemresponce) {
+                          if (err)
+                          result.send(err);
+                              
+                      });
+                      
+                     }
+       
+                        let sucobj=true;
+                        let resobj = {  
+                          success: sucobj,
+                          orderid: orderid
+                          }; 
+                          result(null, resobj);
+          
+                      }
+              });
+          
+         }
+
+
         }else{
 
-        var orderid = res1.insertId
-
-        for (var i = 0; i < orderItems.length; i++) {
-            var orderitem = new Orderitem(orderItems[i]);
-            orderitem.orderid = orderid;
-
-            Orderitem.createOrderitems(orderitem, function (err, result) {
-                if (err)
-                    res.send(err);
-                // res.json(result);
-            });
-
+            let sucobj=true;
+            let status = false;
+            let mesobj = "Already you have one order, So please try once delivered exiting order";
+            let resobj = {  
+            success: sucobj,
+            status:status,
+            message:mesobj
+            }; 
+            result(null, resobj);
         }
+
+        } catch (error) {
         
-              let sucobj=true;
-              let mesobj = "Order Created successfully";
-              let resobj = {  
-                success: sucobj,
-                message:mesobj,
-                orderid: orderid
-                }; 
-              res(null, resobj);
+                
+        var errorCode = 402;
+        let sucobj=true;
+        let status = false;
+        let resobj = {  
+            success: sucobj,
+            status:status,
+            errorCode:errorCode
+            }; 
+            result(null, resobj);
+        }
 
-              }
-             });
-             }  
-};
-
-
+ };
 
 
 Order.getOrderById = function getOrderById(orderid, result) {
@@ -235,7 +390,7 @@ Order.get_all_orders = function get_all_orders(req,result) {
 
 
 
-Order.order_assign = function (req, result) {
+Order.order_assign = function order_assign (req, result) {
      
     sql.query("Select online_status From MoveitUser where userid= '"+req.moveit_user_id+"' ", function (err, res1) {
 
@@ -244,11 +399,11 @@ Order.order_assign = function (req, result) {
             result(null, err);
         }
         else {
-                    
+                console.log(res1);
                  var  online_status = res1[0].online_status
                 
-                if(online_status == 1 || !online_status){
-                    sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?", [req.moveit_user_id,new Date(),req.orderid], function (err, res) {
+                if(online_status == 1){
+                    sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?", [req.moveit_user_id,new Date(),req.orderid], function (err, res2) {
         
                         if(err) {
                             console.log("error: ", err);

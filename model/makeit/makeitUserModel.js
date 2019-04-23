@@ -4,6 +4,8 @@ var constant = require('../constant.js');
 const util = require('util');
 const query = util.promisify(sql.query).bind(sql);
 
+var Cusinemakeit = require('../../model/makeit/cusinemakeitModel');
+
 
 //Task object constructor
 var Makeituser = function (makeituser) {
@@ -578,7 +580,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     const res1 = await query("Select * From Product where productid = '"+orderitems[i].productid+"'");
     //console.log(res1);
    
-    if (res1[0].quantity <=orderitems[i].quantity ) {
+    if (res1[0].quantity < orderitems[i].quantity ) {
         res1[0].availablity = false;
         tempmessage = tempmessage + res1[0].product_name + ",";
         isAvaliableItem=false;
@@ -652,18 +654,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
 
 
-Makeituser.edit_makeit_users = function (req, result) {
+Makeituser.edit_makeit_users = function (req,cuisineid, result) {
 
-    var date;
-    date = new Date();
-    test = new Date();
-    console.log(test);
-    date = date.getUTCFullYear() + '-' +
-        ('00' + (date.getUTCMonth()+1)).slice(-2) + '-' +
-        ('00' + date.getUTCDate()).slice(-2) + ' ' + 
-        ('00' + date.getUTCHours()).slice(-2) + ':' + 
-        ('00' + date.getUTCMinutes()).slice(-2) + ':' + 
-        ('00' + date.getUTCSeconds()).slice(-2);
+   var temp = 0;
+   var cuisinelist = {};  
 
     if (req.email || req.password || req.phoneno) {
 
@@ -681,7 +675,7 @@ Makeituser.edit_makeit_users = function (req, result) {
         for (const [key, value] of Object.entries(req)) {
             //  console.log(`${key} ${value}`); 
 
-            if (key !== 'userid') {
+            if (key !== 'userid' && key !== 'cuisineid') {
                 // var value = `=${value}`;
                 column = column + key + "='" + value + "',";
             }
@@ -697,15 +691,27 @@ Makeituser.edit_makeit_users = function (req, result) {
                 result(err, null);
             }
             else {
-
-                let sucobj = true;
-                let message = "Updated successfully"
-                let resobj = {
-                    success: sucobj,
-                    message: message
-                };
-
-                result(null, resobj);
+                        
+                cuisinelist.cusineid =  cuisineid.toString();
+                cuisinelist.makeit_userid = req.userid;
+              //  console.log(cuisinelist);
+   
+                    Cusinemakeit.createCusinemakeit(cuisinelist, function (err, res2) {
+                        if (err)
+                        result.send(err);
+                       console.log(res2);
+                       
+                    });   
+                
+                    let sucobj = true;
+                    let message = "Updated successfully"
+                    let resobj = {
+                        success: sucobj,
+                        message: message
+                    };
+    
+                    result(null, resobj);
+               
             }
 
         });

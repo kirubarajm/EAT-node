@@ -459,7 +459,7 @@ Eatuser.get_eat_kitchen_list_sort = function(req,result) {
     }else if(!regionlist && cusinelist)  {
         filterquery =  cusinequery.slice(0, -2);
     }else if(regionlist && cusinelist)  {
-        filterquery = filterquery.slice(0, -2)+"and"+ cusinequery.slice(0, -2);
+        filterquery = filterquery.slice(0, -2)+"or"+ cusinequery.slice(0, -2);
     }
 
    
@@ -467,20 +467,20 @@ Eatuser.get_eat_kitchen_list_sort = function(req,result) {
    // console.log(filterquery);
     
     if (req.eatuserid) {
-        var query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '"+req.eatuserid+"' left outer join Cusine_makeit cm on cm.makeit_userid = mk.userid left outer join Cusine cu on cu.cusineid=cm.cusineid ";
+        var query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid  left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '"+req.eatuserid+"' left outer join Cusine_makeit cm on cm.makeit_userid = mk.userid left outer join Cusine cu on cu.cusineid=cm.cusineid ";
     }else{
-         query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk  left outer join Cusine_makeit cm on cm.makeit_userid = mk.userid left outer join Cusine cu on cu.cusineid=cm.cusineid  ";
+         query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left outer join Cusine_makeit cm on cm.makeit_userid = mk.userid left outer join Cusine cu on cu.cusineid=cm.cusineid  ";
     }
 
 
    
         if (req.search && req.region) {
-            query = query +" where mk.name like '%"+req.search+"%' and" +filterquery;
+            query = query +" where pt.quantity != 0 and mk.name like '%"+req.search+"%' or" +filterquery;
         }else if(req.region && !req.search){
             query = query +"where "+ filterquery;
             
         }else if(req.search && !req.region){
-            query = query +" where  mk.name like '%"+req.search+"%'";
+            query = query +" where  pt.quantity != 0 and mk.name like '%"+req.search+"%'";
         }
 
 
@@ -495,7 +495,7 @@ Eatuser.get_eat_kitchen_list_sort = function(req,result) {
         }
         
 
-    //console.log(query);
+    console.log(query);
     sql.query(query, function (err, res) {
 
         if(err) {
