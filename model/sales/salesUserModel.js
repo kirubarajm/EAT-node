@@ -36,7 +36,7 @@ Salesuser.createUser = function createUser(newUser, result) {
                     else {
                         console.log(res.insertId);
                         let sucobj = true;
-                        let message = "Registration Sucessfully";
+                        let message = "Registration Successfully";
                         let resobj = {
                             success: sucobj,
                             message: message

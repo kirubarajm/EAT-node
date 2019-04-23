@@ -862,8 +862,10 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
             
 
              let sucobj=true;
+             let status = true;
                 let resobj = {  
                 success: sucobj,
+                status :status,
                 result: res
                 }; 
 
@@ -1168,86 +1170,74 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
 Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderitems, result) {
     
     try {
-        
+            var tempmessage = '';
             var newOrder = [];
             const  productquantity = [];
             const delivery_charge = constant.deliverycharge;
 
             const res = await query("select * from Orders where orderstatus < 6 and lock_status = 0 and userid= '"+req.userid+"'");
 
-            console.log(res);
+         //   
 
             if (res.length == 0) {
-                    console.log('test');
-                    for (let i = 0; i < orderitems.length; i++) {
+                  
+                //     for (let i = 0; i < orderitems.length; i++) {
 
+                //             const res1 = await query("Select productid,quantity,product_name,price From Product where productid = '"+orderitems[i].productid+"'");
+                //            // console.log(res1);
+                //             if (res1[0].quantity <=orderitems[i].quantity ) {
 
-                            const res1 = await query("Select productid,quantity,product_name,price From Product where productid = '"+orderitems[i].productid+"'");
-                           
-                            if (res1[0].quantity <=orderitems[i].quantity ) {
+                //                 orderitems[i].availablity = false;
+                //                 orderitems[i].availablequantity = res1[0].quantity;
+                //                 tempmessage = tempmessage + res1[0].product_name + ",";
 
-                                orderitems[i].availablity = false;
-                                let sucobj=true;
-                                let status = false;
-                                let mesobj = ""+ res1[0].product_name + " is not available";
-                                let resobj = {  
-                                success: sucobj,
-                                message:mesobj,
-                                status:status,
-                                orderitems:orderitems
-                                }; 
-                                result(null, resobj);
-                            }else{
+                               
+                //             }else{
             
-                                orderitems[i].availablity = true;
-                                orderitems[i].price =  res1[0].price * orderitems[i].quantity; 
-                                orderitems[i].productquantity = productquantity.push(res1);
+                //                 orderitems[i].availablity = true;
+                //                 orderitems[i].price =  res1[0].price * orderitems[i].quantity; 
+                //                 orderitems[i].availablequantity = res1[0].quantity;
 
-                                
-                            }                
-                     
-                }              
-
-            
-
-    const res2 = await query("Select * from Address where address_type = '"+req.address_type+"' and userid = '"+req.userid+"'");
-     
-    req.cus_address = res2[0].address
-    req.locality = res2[0].locality
-    req.cus_lat = res2[0].lat
-    req.cus_lon = res2[0].lon
-    
-     
-    Makeituser.read_a_cartdetails_makeitid(req,orderitems, async function (err, res3) {
-        if (err){
-        result(err, null);
-        }else{
-               
-         var amountdata = res3.result[0].amountdetails; 
-         console.log(amountdata.gstcharge);                  
-        req.gst = amountdata.gstcharge;
-        req.price = amountdata.grandtotal;
-       
-        if (req.payment_type === 0) {
-       
-            // console.log(orderitems);
-            // console.log(req);
-              ordercreatecashondelivery(req,orderitems);
-               console.log('cash on delivery');
-            }else if(req.payment_type === 1){
-                console.log('cash on online');
-                ordercreateonline(req,orderitems);
-            } 
-
-        }
-          
-    });
-    
-
+                //                // orderitems[i].availablequantity = productquantity.push(res1);
    
+                //             }                
+                     
+                // }              
+
+
+                 Makeituser.read_a_cartdetails_makeitid(req,orderitems, async function (err, res3) {
+                    if (err){
+                    result(err, null);
+                    }else{
+                    console.log(res3.status);
+                    if (res3.status != true) {
+                            result(null, res3);
+                    }else{
+                    var amountdata = res3.result[0].amountdetails;                 
+                    req.gst = amountdata.gstcharge;
+                    req.price = amountdata.grandtotal;   
+                   
+                    const res2 = await query("Select * from Address where aid = '"+req.aid+"' and userid = '"+req.userid+"'");
+                    console.log(res2);
+                   req.cus_address = res2[0].address
+                   req.locality = res2[0].locality
+                   req.cus_lat = res2[0].lat
+                   req.cus_lon = res2[0].lon
+
+
+                    if (req.payment_type === 0) {
+                          ordercreatecashondelivery(req,orderitems);
+                           console.log('cash on delivery');
+                        }else if(req.payment_type === 1){
+                            console.log('cash on online');
+                            ordercreateonline(req,orderitems);
+                        } 
+                }
+                }   
+                });
     
         function ordercreatecashondelivery(){
-           
+            console.log("ordercreatecashondelivery: ");
             var new_Order = new Order(req);
                 // new_Order.locality = 'guindy';
                  new_Order.delivery_charge = delivery_charge; 
@@ -1267,7 +1257,7 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
                    Orderitem.createOrderitems(orderitem, function (err, res2) {
                        if (err)
                        result.send(err);
-                      console.log(res2);
+                    //  console.log(res2);
 
                    });   
                }   
@@ -1330,25 +1320,6 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
           
          }
 
-        function cartdetails(req,orderitems) {  
-                Makeituser.read_a_cartdetails_makeitid(req,orderitems,function (err, res2) {
-                  if (err){
-                  result(err, null);
-                  }else{
-                 // result(null,res2);
-                     
-                  var amountdata = res2.result[0].amountdetails;                   
-                  var itemdata = res2.result[0].item;
-                 
-                  req.delivery_charge = amountdata.delivery_charge;
-                  req.gst = amountdata.gstcharge;
-                  req.price = amountdata.grandtotal;
-                //  responce(null,res2)
-                  }
-                    
-              });
-         }
-
 
         }else{
 
@@ -1358,8 +1329,7 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
             let resobj = {  
             success: sucobj,
             status:status,
-            message:mesobj,
-            orderitems:orderitems
+            message:mesobj
             }; 
             result(null, resobj);
         }
@@ -1368,8 +1338,14 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
         
                 
         var errorCode = 402;
-
-        result(null, errorCode)
+        let sucobj=true;
+        let status = false;
+        let resobj = {  
+            success: sucobj,
+            status:status,
+            errorCode:errorCode
+            }; 
+            result(null, resobj);
         }
 
  };

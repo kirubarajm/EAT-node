@@ -41,7 +41,7 @@ exports.read_a_user_address = function(req, res) {
 
 
 exports.update_a_user_address = function(req, res) {
-    EatuserAddress.updateById(req.body, new Eatuser(req.body), function(err, user) {
+    EatuserAddress.updateById(req.body, function(err, user) {
     if (err)
       res.send(err);
     res.json(user);

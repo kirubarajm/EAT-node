@@ -1,7 +1,8 @@
 'user strict';
 var sql = require('../db.js');
 var constant = require('../constant.js');
-
+const util = require('util');
+const query = util.promisify(sql.query).bind(sql);
 
 
 //Task object constructor
@@ -58,7 +59,7 @@ Makeituser.createUser = function createUser(newUser, result) {
                             }
                             else {
                                 let sucobj = true;
-                                let message = "Registration Sucessfully";
+                                let message = "Registration Successfully";
                                 let resobj = {
                                     success: sucobj,
                                     message: message,
@@ -561,95 +562,36 @@ Makeituser.update_makeit_followup_status = function (makeitfollowupstatus, resul
 
 Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid(req,orderitems, result) {
  
- try {
-     
+ //try {
+  var tempmessage = '';   
   const gst = constant.gst ;
   const delivery_charge = constant.deliverycharge;
   const productdetails = [];
-  var totalamount = '';
-  var amount = '';
+  var totalamount = 0;
+  var amount = 0;
+  var isAvaliableItem=true;
   
   var calculationdetails = {}
 
-    for (let i = 0; i < orderitems.length; i++) {
+  for (let i = 0; i < orderitems.length; i++) {
 
-        var query2 = " Select * From Product where productid  = '" + orderitems[i].productid + "' ";
-
-        sql.query(query2, function (err, res) {
-
-            if (err) {
-                console.log("error: ", err);
-                result(err, null);
-            }
-
-            if (res[0].quantity <= orderitems[i].quantity ) {
-
-                orderitems[i].availablity = false;
-                let sucobj=true;
-                let status = false;
-                let mesobj = ""+ res[0].product_name + " is not available";
-                orderitems[i].quantityavailablity = res[0].quantity;
-                let resobj = {  
-                success: sucobj,
-                status:status,
-                message:mesobj,
-                orderitems:orderitems,
-               
-                }; 
-                result(null, resobj);
-            }else{
-            //Product amount calculation
-          //  console.log('test');
-            amount = res[0].price * orderitems[i].quantity;
-            //Product total amount calculation
-            totalamount =  +totalamount +  +amount ;
-
-            res[0].amount = amount;
-
-            res[0].cartquantity = orderitems[i].quantity
-            
-            productdetails.push(res[0]);
-
-            }    
-         });
+    const res1 = await query("Select * From Product where productid = '"+orderitems[i].productid+"'");
+    //console.log(res1);
+   
+    if (res1[0].quantity <=orderitems[i].quantity ) {
+        res1[0].availablity = false;
+        tempmessage = tempmessage + res1[0].product_name + ",";
+        isAvaliableItem=false;
+    }else{
+        res1[0].availablity = true;
     }
-
-//     for (let i = 0; i < orderitems.length; i++) {
-
-
-//         const res1 = await query("Select productid,quantity,product_name,price From Product where productid = '"+orderitems[i].productid+"'");
-       
-//         if (res1[0].quantity <=orderitems[i].quantity ) {
-
-//             orderitems[i].availablity = false;
-//             let sucobj=true;
-//             let mesobj = ""+ res1[0].product_name + " is not available";
-//             let resobj = {  
-//             success: sucobj,
-//             message:mesobj,
-//             orderitems:orderitems
-//             }; 
-//             result(null, resobj);
-//         }else{
-
-//             // orderitems[i].availablity = true;
-//             // orderitems[i].price =  res1[0].price * orderitems[i].quantity; 
-//             // orderitems[i].productquantity = productquantity.push(res1);
-//             amount = res1[0].price * orderitems[i].quantity;
-//             //Product total amount calculation
-//             totalamount =  +totalamount +  +amount ;
-
-//             res1[0].amount = amount;
-
-//             res1[0].cartquantity = orderitems[i].quantity
-            
-//             productdetails.push(res[0]);
-            
-//         }                
- 
-// }              
-
-
+    amount=res1[0].price * orderitems[i].quantity;
+    res1[0].amount =  amount;
+    res1[0].cartquantity  = orderitems[i].quantity;
+    totalamount = (totalamount) + (amount) ;
+    productdetails.push(res1);                
+}
+   
     var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid ="+req.makeit_user_id+" ";
 
     sql.query(query1, function (err, res1) {
@@ -659,8 +601,6 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         }
         else {
             if (res1.length !== 0) {
-                
-            
             const gstcharge = (totalamount/100)*gst;
             const grandtotal = +gstcharge +  +totalamount+  + delivery_charge; 
       
@@ -668,21 +608,14 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             calculationdetails.gstcharge = gstcharge;
             calculationdetails.totalamount = totalamount;
             calculationdetails.delivery_charge = delivery_charge;
-
-            console.log();
             res1[0].amountdetails = calculationdetails;
             res1[0].item = productdetails;
-          
-        //     res1.push(calculationdetails);
-        //    res1.push(productdetails);
-            let sucobj = true;
-            let status = true;
             let resobj = {
-                success: sucobj,
-                status :status,
-                result: res1,
+                success: true,
+                status :isAvaliableItem,
             };
-
+            if(!isAvaliableItem) resobj.message = tempmessage.slice(0,-1) + ' is not avaliable'
+            resobj.result=res1,
             result(null, resobj);
         }else{
             let sucobj = true;
@@ -699,11 +632,21 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         }
         }
     });
-} catch (error) {
-    var errorCode = 402;
+// } catch (error) {
+//     var errorCode = 402;
+//     let sucobj = true;
+//     let status = false;
+//     message = error;//"There is no data available!, Kindly check the Makeituser id";
+//     let resobj = {
+//         success: sucobj,
+//         status :status,
+//         errorCode :errorCode,
+//         message: message,
+//     };
 
-    result(null, errorCode)
-}
+  
+//     result(null, resobj)
+// }
 };
 
 

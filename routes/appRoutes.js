@@ -418,6 +418,9 @@ module.exports = function (app) {
    app.route('/admin/queryanswer')
    .post(queryanswer.create_a_answer);
 
+   app.route('/admin/orderpickupstatus')
+   .put(orders.order_pickup_status);
+
 
 
   // Orders API

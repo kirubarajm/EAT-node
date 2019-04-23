@@ -32,7 +32,8 @@ EatuserAddress.createUserAddress = function createUserAddress(new_address, resul
               let mesobj = "EatUser Address Created successfully";
               let resobj = {  
                 success: sucobj,
-                message:mesobj
+                message:mesobj,
+                aid: res.insertId
                 }; 
           
              result(null, resobj);
@@ -62,7 +63,7 @@ EatuserAddress.getaddressById = function getaddressById(userId, result) {
 };
 
 EatuserAddress.getAllAddress = function getAllAddress(result) {
-        sql.query("Select * from User", function (err, res) {
+        sql.query("Select * from Address", function (err, res) {
 
                 if(err) {
                     console.log("error: ", err);
@@ -77,22 +78,42 @@ EatuserAddress.getAllAddress = function getAllAddress(result) {
 };
 
 EatuserAddress.updateById = function(req, result){
-  sql.query("UPDATE User SET delete_status = ? WHERE userid = ?", [req.delete_status], function (err, res) {
-         if(err) {
-      console.log("error: ", err);
-      result(err, null);
-         }
-          else{
-            let sucobj=true;
-            let resobj = {  
-           success: sucobj,
-          result: res
-      }; 
 
-   result(null, resobj);
 
-  }
-}); 
+
+  staticquery = "UPDATE Address SET updated_at = ?,";
+        var column = '';
+        for (const [key, value] of Object.entries(req)) {
+            //  console.log(`${key} ${value}`); 
+
+            if (key !== 'userid') {
+                // var value = `=${value}`;
+                column = column + key + "='" + value + "',";
+            }
+        }
+
+      var  query = staticquery + column.slice(0, -1) + " where aid = " + req.aid;
+
+      console.log(query);
+    
+        sql.query(query,[new Date()], function (err, res) {
+            if (err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else {
+
+                let sucobj = true;
+                let message = "Updated successfully"
+                let resobj = {
+                    success: sucobj,
+                    message: message
+                };
+
+                result(null, resobj);
+            }
+
+        });
 };
 
 EatuserAddress.remove = function(id, result){
