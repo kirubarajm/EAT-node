@@ -589,9 +589,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     res1[0].amount =  amount;
     res1[0].cartquantity  = orderitems[i].quantity;
     totalamount = (totalamount) + (amount) ;
-    productdetails.push(res1);                
+    console.log(res1);
+    productdetails.push(res1[0]);                
 }
-   
+   console.log(productdetails);
     var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid ="+req.makeit_user_id+" ";
 
     sql.query(query1, function (err, res1) {
