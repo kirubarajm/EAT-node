@@ -146,3 +146,55 @@ exports.eat_user_referral = function(req, res) {
     res.send(user);
   });
 }
+
+
+exports.eatuser_login = function(req, res) {
+  var new_user = new Eatuser(req.body);
+  //handles null error 
+  if(!new_user.phoneno){
+    res.status(400).send({ error: true, message: 'Please provide phoneno' });
+  }
+  else{
+  Eatuser.eatuser_login(new_user, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+}
+};
+
+exports.eatuser_otpverification = function(req, res) {
+  
+  //var new_user = new Eatuser(req.body);
+  //handles null error 
+  if(!req.body.oid){
+    res.status(400).send({ error: true, message: 'Please provide oid' });
+  }else if(!req.body.phoneno){
+    res.status(400).send({ error: true, message: 'Please provide phone_number' });
+  }
+  else{
+  Eatuser.eatuser_otpverification(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+}
+};
+
+
+
+exports.edit_eat_users = function(req, res) {
+  
+  if(!req.body.name){
+    res.status(400).send({ error: true, message: 'Please provide name' });
+  }else if(!req.body.gender){
+    res.status(400).send({ error: true, message: 'Please provide phone_number' });
+  }
+  else{
+  Eatuser.edit_eat_users(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+}
+};

@@ -3,6 +3,7 @@ const express = require('express'),
   bodyParser = require('body-parser');
   port = process.env.PORT || 3000;
   var cors = require('cors');
+  const fs = require('fs');
 
 app.listen(port);
 const fileUpload = require('express-fileupload');

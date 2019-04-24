@@ -37,8 +37,8 @@ Cusinemakeit.createCusinemakeit = function createCusinemakeit(cuisine, result) {
 
             }else{
                 console.log('test1');
-                console.log(cuisine);
-                sql.query("Update Cusine_makeit set cusineid = '"+cuisine.cusineid+"',makeit_userid = '"+cuisine.makeit_userid+"'",function (err, res2) {
+                console.log(cuisine.created_at);
+                sql.query("Update Cusine_makeit set cusineid = '"+cuisine.cusineid+"',updated_at = '"+cuisine.created_at+"' where makeit_userid = '"+cuisine.makeit_userid+"'",function (err, res2) {
                     if (err) {
                         console.log("error: ", err);
                         result(null, err);

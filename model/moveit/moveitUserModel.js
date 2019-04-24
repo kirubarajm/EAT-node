@@ -26,6 +26,7 @@ var Moveituser = function (moveituser) {
     this.photo = moveituser.photo;
     this.legal_document = moveituser.legal_document;
     this.branch = moveituser.branch;
+    this.address = moveituser.address;
 };
 
 Moveituser.createUser = function createUser(newUser, result) {

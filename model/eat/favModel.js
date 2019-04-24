@@ -20,7 +20,7 @@ Fav.createFav = function createFav(newFav, result) {
             }
             else{
                  let sucobj='true';
-                 let message = 'Fav created successfully';
+                 let message = 'Favourite created successfully';
                 let resobj = {  
                 success: sucobj,
                 message:message,
@@ -83,7 +83,7 @@ Fav.remove = function(id, result){
             }
             else{
                  let sucobj='true';
-                 let message = 'Fav removed successfully';
+                 let message = 'Favourite removed successfully';
                 let resobj = {  
                 success: sucobj,
                 message:message,

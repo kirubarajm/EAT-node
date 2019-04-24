@@ -124,7 +124,7 @@ Order.createOrder = async  function createOrder(req,orderitems, result) {
                     if (err){
                     result(err, null);
                     }else{
-                    console.log(res3.status);
+                   // console.log(res3.status);
                     if (res3.status != true) {
                             result(null, res3);
                     }else{
@@ -133,7 +133,7 @@ Order.createOrder = async  function createOrder(req,orderitems, result) {
                     req.price = amountdata.grandtotal;   
                    
                     const res2 = await query("Select * from Address where aid = '"+req.aid+"' and userid = '"+req.userid+"'");
-                    console.log(res2);
+                   // console.log(res2);
                    req.cus_address = res2[0].address
                    req.locality = res2[0].locality
                    req.cus_lat = res2[0].lat
@@ -155,6 +155,7 @@ Order.createOrder = async  function createOrder(req,orderitems, result) {
             console.log("ordercreatecashondelivery: ");
             var new_Order = new Order(req);
                 // new_Order.locality = 'guindy';
+                 //new_Order.orderstatus = 6;
                  new_Order.delivery_charge = delivery_charge; 
             sql.query("INSERT INTO Orders set ?", new_Order, function (err, res1) {
        

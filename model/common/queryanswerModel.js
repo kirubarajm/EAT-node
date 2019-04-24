@@ -1,5 +1,11 @@
 'user strict';
 var sql = require('../db.js');
+var masters = require('../master.js');
+var constant = require('../constant.js');
+const fs = require('fs');
+
+
+
 
 //Task object constructor
 var QueryAnswer = function(queryanswer){
@@ -201,5 +207,22 @@ QueryAnswer.read_a_answer_count_by_qid = function read_a_answer_count_by_qid(req
             }
         });   
 };
+
+
+
+QueryAnswer.read_a_masters = function read_a_masters(req, result) {
+
+
+      var  masterlist = [];
+        console.log(masters[0]);
+        let resobj = {
+           // success:success,
+
+            result:masters
+             }; 
+ result(null, resobj);
+                 
+};
+
 
 module.exports= QueryAnswer;

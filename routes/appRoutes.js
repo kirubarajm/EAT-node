@@ -25,6 +25,7 @@ module.exports = function (app) {
   var queryanswer = require('../controllers/common/QueryanswerController');
   var region = require('../controllers/common/RegionController');
   var cusine = require('../controllers/common/CusineController');
+  var master = require('../controllers/common/MastersController');
 
   // todoList Routes
   app.route('/tasks')
@@ -577,8 +578,17 @@ module.exports = function (app) {
   app.route('/eat/proceedtopay')
     .post(orders.read_a_proceed_to_pay);
 
-    app.route('/eat/referral/:userid')
+  app.route('/eat/referral/:userid')
     .get(eatuser.eat_user_referral);
+
+  app.route('/eat/login')
+    .post(eatuser.eatuser_login);
+  
+  app.route('/eat/otpverification')
+    .post(eatuser.eatuser_otpverification);
+
+  app.route('/eat/edit')
+    .put(eatuser.edit_eat_users);
 
   
   
@@ -600,7 +610,10 @@ app.route('/queryreplies/:aid')
    .get(queryanswer.read_a_replies)
 
 app.route('/repliesread')
-.put(queryanswer.update_read_answer);
+  .put(queryanswer.update_read_answer);
+
+app.route('/masters')
+  .get(master.read_a_masters);
 
 
 

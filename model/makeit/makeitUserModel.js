@@ -20,7 +20,7 @@ var Makeituser = function (makeituser) {
     this.lat = makeituser.lat;
     this.lon = makeituser.lon;
     this.password = makeituser.password;
-    this.brandname = makeituser.brandname;
+    this.brandname = makeituser.brandname || '';
     this.created_at = new Date();
     this.bank_name = makeituser.bank_name;
     this.ifsc = makeituser.ifsc;
@@ -31,6 +31,7 @@ var Makeituser = function (makeituser) {
     this.rating = makeituser.rating;
     this.region = makeituser.region;
     this.costfortwo = makeituser.costfortwo;
+    this.branch_name = makeituser.branch_name;
 };
 
 Makeituser.createUser = function createUser(newUser, result) {
@@ -655,7 +656,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
 
 Makeituser.edit_makeit_users = function (req,cuisineid, result) {
-
+   console.log(req);
    var temp = 0;
    var cuisinelist = {};  
 
@@ -675,9 +676,11 @@ Makeituser.edit_makeit_users = function (req,cuisineid, result) {
         for (const [key, value] of Object.entries(req)) {
             //  console.log(`${key} ${value}`); 
 
-            if (key !== 'userid' && key !== 'cuisineid') {
+            if (key !== 'userid' && key !== 'cuisineid' && key !=="rating") {
                 // var value = `=${value}`;
                 column = column + key + "='" + value + "',";
+            }else if(key ==="rating"){
+                column = column + key + "= " + value + ",";
             }
         }
 
@@ -695,7 +698,7 @@ Makeituser.edit_makeit_users = function (req,cuisineid, result) {
                 cuisinelist.cusineid =  cuisineid.toString();
                 cuisinelist.makeit_userid = req.userid;
               //  console.log(cuisinelist);
-   
+                    cuisinelist    = new Cusinemakeit(cuisinelist); 
                     Cusinemakeit.createCusinemakeit(cuisinelist, function (err, res2) {
                         if (err)
                         result.send(err);

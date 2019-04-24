@@ -1,11 +1,12 @@
 'user strict';
 
 
-const calculate = {
+const calculate = [{
     gst     : 12.5,
     deliverycharge : 35,
-    applink :'https://play.google.com/store/apps/details?id=com.tovo.eat'
-}
+    applink :'https://play.google.com/store/apps/details?id=com.tovo.eat',
+    
+}]
 
 
 

@@ -11,7 +11,9 @@ var Eatuser = function(eatuser){
     this.locality = eatuser.locality;
     this.password = eatuser.password;
     this.created_at = new Date();
-    this.virtualkey= eatuser.virtualkey;
+    this.virtualkey= eatuser.virtualkey || 0;
+    this.otp_status = eatuser.otp_status || '';
+    this.gender = eatuser.gender || '';
 };
 
 
@@ -549,4 +551,227 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
            });   
    };
 
+
+ Eatuser.eatuser_login = function eatuser_login(newUser, result) { 
+     
+    var otp = 0;
+    var passwordstatus = false;
+    var otpstatus  = false;
+    var genderstatus = false;
+
+    sql.query("Select * from User where phoneno = '"+newUser.phoneno+"'" , function (err, res) {             
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+            
+            if(res.length == 0){
+
+        sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,12345)", function (err, res) {
+                
+            if(err) {
+                console.log("error: ", err);
+                result(null, err);
+            }
+            else{
+              let sucobj=true;
+            console.log( res.insertId);          
+              let resobj = {  
+                success: sucobj,
+                passwordstatus:passwordstatus,
+                otpstatus:otpstatus,
+                genderstatus:genderstatus,
+                oid: res.insertId
+                }; 
+          
+             result(null, resobj);
+            }
+    });  
+}else{
+                
+                console.log(res[0]);
+              
+              if (res[0].password !== '' && res[0].password !== null) { 
+                passwordstatus = true;
+                otpstatus = true;
+                genderstatus = true;
+                 
+              }
+              
+              if (res[0].gender !== '' && res[0].gender !== null && res[0].name !== '' && res[0].name !== null){
+                genderstatus = true;
+                otpstatus = true;
+                
+              }else {
+                
+              }
+
+            let sucobj=true;
+               let resobj = {  
+               success: sucobj,
+               status:true,
+               passwordstatus:passwordstatus,
+               otpstatus:otpstatus,
+               genderstatus:genderstatus,
+        
+               }; 
+
+            result(null, resobj);
+
+}
+
+}
+});  
+    
+};
+
+
+
+
+Eatuser.eatuser_otpverification = function eatuser_otpverification(req, result) { 
+   
+    var otp = 0;
+    var passwordstatus = false;
+    var otpstatus = false;
+    var genderstatus = false;
+
+    sql.query("Select * from Otp where oid = '"+req.oid+"'" , function (err, res) {             
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+            
+            if(res[0].otp == req.otp){
+               
+
+            sql.query("Select * from User where phoneno = '"+req.phoneno+"'" , function (err, res1) {             
+                if(err) {
+                    console.log("error: ", err);
+                    result(err, null);
+                }
+                else{
+        
+                    if(res1.length == 0){
+          
+                        var new_user = new Eatuser(req);
+                        new_user.otp_status = 1;
+
+
+                    sql.query("INSERT INTO User set ?", new_user, function (err, res2) {
+                        
+                     if(err) {
+                        console.log("error: ", err);
+                        result(null, err);
+                    }
+                    else{
+                     
+                     
+                      let resobj = {  
+                        success: true,
+                        message:mesobj,
+                        passwordstatus:passwordstatus,
+                        otpstatus:otpstatus,
+                        genderstatus:genderstatus,
+                        userid: res2.insertId 
+                        }; 
+                  
+                     result(null, resobj);
+                    }
+                    });  
+                     }else{
+        
+                   
+                      //let message = "Following user already Exist!, Please check it Phone number" ;
+                      if (res1[0].password !== '' && res1[0].password !== null) { 
+                        passwordstatus = true;
+                        otpstatus = true;
+                        genderstatus = true;
+                         
+                      }
+                      
+                      if (res1[0].gender !== '' && res1[0].gender !== null && res1[0].name !== '' && res1[0].name !== null){
+                        genderstatus = true;
+                        otpstatus = true;
+                        
+                      }else {
+                        
+                      }
+        
+                    
+                       let resobj = {  
+                       success: true,
+                       status:true,
+                       passwordstatus:passwordstatus,
+                       otpstatus:otpstatus,
+                       genderstatus:genderstatus,
+                       userid:res1[0].userid
+                
+                       }; 
+        
+                    result(null, resobj);
+        
+        }
+        
+        }
+        });  
+}else{
+                
+                console.log(res[0]);
+              let message = "OTP is not valid!, Try once again";
+              let sucobj=true;
+               let resobj = {  
+               success: sucobj,
+               message:message
+               }; 
+
+            result(null, resobj);
+
+}
+
+}
+});     
+};
+
+
+
+
+Eatuser.edit_eat_users = function (req, result) {
+
+        var staticquery = "UPDATE User SET updated_at = ?, ";
+        var column = '';
+        for (const [key, value] of Object.entries(req)) {
+            console.log(`${key} ${value}`);
+
+            if (key !== 'userid') {
+                // var value = `=${value}`;
+                column = column + key + "='" + value + "',";
+            }
+
+
+        }
+
+       var  query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
+        console.log(query);
+        sql.query(query,[new Date()], function (err, res) {
+            if (err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else {
+
+                let sucobj = true;
+                let message = "Updated successfully"
+                let resobj = {
+                    success: sucobj,
+                    message: message
+                };
+
+                result(null, resobj);
+            }
+
+        });
+    
+};
 module.exports= Eatuser;
