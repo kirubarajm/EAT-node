@@ -31,16 +31,16 @@ exports.create_a_address = function(req, res) {
 };
 
 
-// exports.read_a_user_address = function(req, res) {
-//     EatuserAddress.getaddressById(req.params.userid, function(err, user) {
-//     if (err)
-//       res.send(err);
-//     res.json(user);
-//   });
-// };
+exports.read_a_user_address_userid = function(req, res) {
+    EatuserAddress.getaddressById(req.params.userid, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+};
 
-exports.read_a_user_address = function(req, res) {
-  EatuserAddress.getaddressByaid(req.params.userid, function(err, user) {
+exports.read_a_user_address_aid = function(req, res) {
+  EatuserAddress.getaddressByaid(req.params.aid, function(err, user) {
   if (err)
     res.send(err);
   res.json(user);

@@ -93,7 +93,7 @@ Cusine.getRegionByType = function getRegionByType(id, result) {
 
 Cusine.getAllcusine = function getAllcusine(result) {
 
-        sql.query("Select cusineid,cusinename from Cusine", function (err, res) {
+        sql.query("Select cuisineid,cuisinename from Cuisine", function (err, res) {
 
                 if(err) {
                     console.log("error: ", err);

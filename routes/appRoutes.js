@@ -509,11 +509,11 @@ module.exports = function (app) {
 
   // Eat
 
-  app.route('/eat/dishlist')
-    .post(eatuser.eat_dish_list);
+  // app.route('/eat/dishlist')
+  //   .post(eatuser.eat_dish_list);
 
-  app.route('/eat/kitchenlist')
-    .post(eatuser.eat_makeit_list);
+  // app.route('/eat/kitchenlist')
+  //   .post(eatuser.eat_makeit_list);
 
   app.route('/eat/products')
     .post(eatuser.eat_makeit_product_list);
@@ -532,9 +532,12 @@ module.exports = function (app) {
     .post(eatuseraddress.create_a_address);
 
   app.route('/eat/address/:userid')
-    .get(eatuseraddress.read_a_user_address)
+    .get(eatuseraddress.read_a_user_address_userid)
    // .put(eatuseraddress.update_a_user_address)
     .delete(eatuseraddress.delete_a_user_address);
+
+    app.route('/eat/addresslist/:aid')
+    .get(eatuseraddress.read_a_user_address_aid);
 
     app.route('/eat/address/')
     .put(eatuseraddress.update_a_user_address);
@@ -554,10 +557,10 @@ module.exports = function (app) {
   app.route('/eat/cartdetails')
     .post(makeituser.read_a_cartdetails);
 
-  app.route('/eat/dishfilter')
+  app.route('/eat/dishlist')
     .post(eatuser.eat_dish_sort);
 
-  app.route('/eat/makeitfilter')
+  app.route('/eat/kitchenlist')
     .post(eatuser.eat_kitchen_sort);
 
   app.route('/eat/fav')
@@ -628,7 +631,7 @@ app.route('/masters')
   app.route('/masters/regionlist')
   .get(region.list_all_region);
 
-  app.route('/masters/cusinelist')
+  app.route('/masters/cuisinelist')
   .get(cusine.list_all_Cusine);
 
 };

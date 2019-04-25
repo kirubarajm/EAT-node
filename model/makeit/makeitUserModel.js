@@ -454,7 +454,7 @@ Makeituser.get_admin_list_all_makeitusers = function (req, result) {
     req.virtualkey = "" + req.virtualkey
     //    rsearch = req.search || ''
 
-    var query = "select * from MakeitUser";
+    var query = "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img, mk.region, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating,JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename) as cuisines from MakeitUser mk left join Cuisine_makeit cm on cm.makeit_userid=mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid";
 
     var searchquery = "name LIKE  '%" + req.search + "%'";
 
@@ -501,7 +501,7 @@ Makeituser.get_admin_list_all_makeitusers = function (req, result) {
     //     query = query+" where " +searchquery
     // }
 
-
+    //console.log(query);
     sql.query(query, function (err, res) {
 
 
@@ -510,7 +510,16 @@ Makeituser.get_admin_list_all_makeitusers = function (req, result) {
             result(null, err);
         }
         else {
-            console.log('Product : ', res);
+
+            for (let i = 0; i < res.length; i++) {
+                
+               if (res[i].cuisines) {
+                res[i].cuisines = JSON.parse(res[i].cuisines)
+               }
+             
+              
+            }
+          
             let sucobj = true;
             let resobj = {
                 success: sucobj,
@@ -564,11 +573,11 @@ Makeituser.update_makeit_followup_status = function (makeitfollowupstatus, resul
 
 
 Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid(req,orderitems, result) {
- 
+
  //try {
   var tempmessage = '';   
-  const gst = constant.gst ;
-  const delivery_charge = constant.deliverycharge;
+  var gst = constant.gst ;
+  var delivery_charge = constant.deliverycharge;
   const productdetails = [];
   var totalamount = 0;
   var amount = 0;
@@ -655,10 +664,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
 
 
-Makeituser.edit_makeit_users = function (req,cuisineid, result) {
-   console.log(req);
+Makeituser.edit_makeit_users = function (req,cuisines, result) {
+  
    var temp = 0;
-   var cuisinelist = {};  
+ 
 
     if (req.email || req.password || req.phoneno) {
 
@@ -676,7 +685,7 @@ Makeituser.edit_makeit_users = function (req,cuisineid, result) {
         for (const [key, value] of Object.entries(req)) {
             //  console.log(`${key} ${value}`); 
 
-            if (key !== 'userid' && key !== 'cuisineid' && key !=="rating") {
+            if (key !== 'userid' && key !== 'cuisines' && key !=="rating") {
                 // var value = `=${value}`;
                 column = column + key + "='" + value + "',";
             }else if(key ==="rating"){
@@ -695,16 +704,21 @@ Makeituser.edit_makeit_users = function (req,cuisineid, result) {
             }
             else {
                         
-                cuisinelist.cusineid =  cuisineid.toString();
-                cuisinelist.makeit_userid = req.userid;
-              //  console.log(cuisinelist);
-                    cuisinelist    = new Cusinemakeit(cuisinelist); 
-                    Cusinemakeit.createCusinemakeit(cuisinelist, function (err, res2) {
-                        if (err)
-                        result.send(err);
-                       console.log(res2);
+               
+
+                    for (let i = 0; i < cuisines.length; i++) {
                        
-                    });   
+                       var new_cuisine = new Cusinemakeit(cuisines[i]);
+                       new_cuisine.makeit_userid = req.userid;
+                        Cusinemakeit.createCusinemakeit(new_cuisine, function (err, res2) {
+                            if (err)
+                            result.send(err);
+                           console.log(res2);
+                           
+                        });
+                    }
+                    
+                      
                 
                     let sucobj = true;
                     let message = "Updated successfully"

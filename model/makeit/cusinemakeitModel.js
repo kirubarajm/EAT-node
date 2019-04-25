@@ -4,23 +4,27 @@ var sql = require('../db.js');
 
 //Task object constructor
 var Cusinemakeit = function (cusinemakeit) {
-    this.cusineid = cusinemakeit.cusineid;
+    this.cuisineid = cusinemakeit.cuisineid;
     this.makeit_userid = cusinemakeit.makeit_userid;
     this.created_at = new Date();
 };
 
 Cusinemakeit.createCusinemakeit = function createCusinemakeit(cuisine, result) {
 
-  //  console.log(cuisine);
-    sql.query("select * from Cusine_makeit where makeit_userid = ?", cuisine.makeit_userid, function (err, res) {
+    query = "select * from Cuisine_makeit where cuisineid = '"+cuisine.cuisineid+"' and makeit_userid = '"+cuisine.makeit_userid+"'";
+
+   // console.log(query);
+    sql.query(query, function (err, res) {
         if (err) {
             console.log("error: ", err);
-            res(null, err);
+            result(null, err);
         }else{
-            console.log(res.length);
+            console.log(res);
+            
             if (res.length === 0 ) {
-                console.log('test');
-                sql.query("INSERT INTO Cusine_makeit set ?", cuisine, function (err, res1) {
+               // console.log('insert');
+               // 
+                sql.query("INSERT INTO Cuisine_makeit set ?", cuisine, function (err, res1) {
                     if (err) {
                         console.log("error: ", err);
                         result(null, err);
@@ -36,13 +40,15 @@ Cusinemakeit.createCusinemakeit = function createCusinemakeit(cuisine, result) {
                 });
 
             }else{
-                console.log('test1');
-                console.log(cuisine.created_at);
-                sql.query("Update Cusine_makeit set cusineid = '"+cuisine.cusineid+"',updated_at = '"+cuisine.created_at+"' where makeit_userid = '"+cuisine.makeit_userid+"'",function (err, res2) {
-                    if (err) {
-                        console.log("error: ", err);
-                        result(null, err);
-                    }
+                // console.log('update');
+                //      var  updatequery = "Update Cuisine_makeit set updated_at = ?, cuisineid = '"+cuisine.cuisineid+"' where makeit_userid = '"+cuisine.makeit_userid+"' and cuisineid = '"+cuisine.cusineid+"'"
+                //    // console.log(updatequery);
+
+                //      sql.query(updatequery,[new Date()],function (err, res2) {
+                //     if (err) {
+                //         console.log("error: ", err);
+                //         result(null, err);
+                //     }
                     let sucobj = true;
                     let message = "Updated successfully"
                     let resobj = {
@@ -51,16 +57,13 @@ Cusinemakeit.createCusinemakeit = function createCusinemakeit(cuisine, result) {
                     };
     
                     result(null, resobj);
-                });
+               // });
 
             }
 
         }
 
     });
-
-
-    
 
 };
 

@@ -21,20 +21,20 @@ const master = [
 
    { 'cuisinelist': [
         {
-            "cusineid": 1,
-            "cusinename": "Continental"
+            "cuisineid": 1,
+            "cuisinename": "Continental"
         },
         {
-            "cusineid": 2,
-            "cusinename": "South Indian"
+            "cuisineid": 2,
+            "cuisinename": "South Indian"
         },
         {
-            "cusineid": 3,
-            "cusinename": "North Indian"
+            "cuisineid": 3,
+            "cuisinename": "North Indian"
         },
         {
-            "cusineid": 4,
-            "cusinename": "Itallian"
+            "cuisineid": 4,
+            "cuisinename": "Itallian"
         }
     ]},
 

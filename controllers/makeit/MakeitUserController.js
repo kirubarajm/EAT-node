@@ -230,13 +230,13 @@ exports.read_a_cartdetails = function (req, res) {
 
 exports.edit_makeit_user_byid = function (req, res) {
 
-  var cuisineid = req.body.cuisineid;
+  var cuisines = req.body.cuisines;
   if (!req.body.userid) {
     res.status(400).send({ error: true, message: 'Please provide makeit userid' });
   }
   else {
 
-    Makeituser.edit_makeit_users(req.body,cuisineid, function (err, user) {
+    Makeituser.edit_makeit_users(req.body,cuisines, function (err, user) {
       if (err)
         res.send(err);
       res.json(user);
