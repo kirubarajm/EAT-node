@@ -97,13 +97,24 @@ Makeituser.getUserById = function getUserById(userId, result) {
 
 
     //var query1 = "select mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey from MakeitUser as mu join Documents_Sales as ds on mu.userid = ds.makeit_userid join Documents as st on ds.docid = st.docid where mu.userid = '"+userId+"'";
-    var query1 = "Select * from MakeitUser where userid = '" + userId + "'";
+    //var query1 = "Select * from MakeitUser where userid = '" + userId + "'";
+
+    var query1 = "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img, mk.region, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where userid = '" + userId + "'";
     sql.query(query1, function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
         }
         else {
+              
+            for (let i = 0; i < res.length; i++) {
+                
+                if (res[i].cuisines) {
+                 res[i].cuisines = JSON.parse(res[i].cuisines)
+                }
+
+            }
+                
 
             sql.query("select st.url,st.docid,st.type from Documents_Sales as ds join Documents as st on ds.docid = st.docid where ds.makeit_userid = '" + userId + "'", function (err, images) {
 
@@ -131,8 +142,10 @@ Makeituser.getUserById = function getUserById(userId, result) {
 
 
 Makeituser.getAllUser = function getAllUser(result) {
-    sql.query("Select * from MakeitUser", function (err, res) {
+  //  sql.query("Select * from MakeitUser", function (err, res) {
 
+      var query = "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img, mk.region, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating,JSON_OBJECT('cuisines', JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename))) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid";
+        sql.query(query, function (err, res) {
         // sql.query("select concat('[',GROUP_CONCAT(CONCAT('{"url :"', st.url,'"}')),']') url ,mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey  from MakeitUser as mu join Documents_Sales as ds on mu.userid = ds.makeit_userid join Documents as st on ds.docid = st.docid where mu.userid = 1 group by mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey ", function (err, res) {
         //  sql.query("SELECT JSON_OBJECT('Orderid', ci.orderid,'Item', JSON_ARRAYAGG(JSON_OBJECT('Quantity', ci.quantity,'Productid', ci.productid))) AS ordata FROM Orders co JOIN OrderItem ci ON ci.orderid = co.orderid GROUP BY co.orderid", function (err, res) {
         if (err) {
@@ -140,12 +153,13 @@ Makeituser.getAllUser = function getAllUser(result) {
             result(null, err);
         }
         else {
-            // res=  JSON.stringify(res);
-            // for (let i = 0; i < res.length; i++) {
-
-            //     res[i]=  JSON.parse(res[i].ordata);
-
-            // }
+            
+            for (let i = 0; i < res.length; i++) {
+                
+                if (res[i].cuisines) {
+                 res[i].cuisines = JSON.parse(res[i].cuisines)
+                }
+            }
 
 
             let sucobj = true;
@@ -454,8 +468,8 @@ Makeituser.get_admin_list_all_makeitusers = function (req, result) {
     req.virtualkey = "" + req.virtualkey
     //    rsearch = req.search || ''
 
-    var query = "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img, mk.region, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating,JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename) as cuisines from MakeitUser mk left join Cuisine_makeit cm on cm.makeit_userid=mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid";
-
+  //  var query = "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img, mk.region, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating,JSON_OBJECT('cuisines', JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename))) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid";
+  var query = "select * from MakeitUser";
     var searchquery = "name LIKE  '%" + req.search + "%'";
 
     if (req.appointment_status !== 'all' && req.virtualkey !== 'all' && !req.search) {
@@ -501,7 +515,7 @@ Makeituser.get_admin_list_all_makeitusers = function (req, result) {
     //     query = query+" where " +searchquery
     // }
 
-    //console.log(query);
+    console.log(query);
     sql.query(query, function (err, res) {
 
 
@@ -511,14 +525,14 @@ Makeituser.get_admin_list_all_makeitusers = function (req, result) {
         }
         else {
 
-            for (let i = 0; i < res.length; i++) {
+            // for (let i = 0; i < res.length; i++) {
                 
-               if (res[i].cuisines) {
-                res[i].cuisines = JSON.parse(res[i].cuisines)
-               }
+            //    if (res[i].cuisines) {
+            //     res[i].cuisines = JSON.parse(res[i].cuisines)
+            //    }
              
               
-            }
+            // }
           
             let sucobj = true;
             let resobj = {
@@ -666,8 +680,14 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
 Makeituser.edit_makeit_users = function (req,cuisines, result) {
   
-   var temp = 0;
- 
+   var makeit_temp = 0;
+   var cuisines_temp = 0;
+   var remove_temp = 0;
+
+    var removecuisines = req.removecuisines || [];
+
+    cuisinesstatus  = false;
+    removecuisinesstatus = false;
 
     if (req.email || req.password || req.phoneno) {
 
@@ -684,13 +704,15 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
         var column = '';
         for (const [key, value] of Object.entries(req)) {
             //  console.log(`${key} ${value}`); 
-
-            if (key !== 'userid' && key !== 'cuisines' && key !=="rating") {
+           
+            if (key !== 'userid' && key !== 'cuisines' && key !=="rating" && key !=="removecuisines") {
                 // var value = `=${value}`;
                 column = column + key + "='" + value + "',";
             }else if(key ==="rating"){
                 column = column + key + "= " + value + ",";
             }
+            
+            
         }
 
       var  query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
@@ -703,23 +725,56 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
                 result(err, null);
             }
             else {
-                        
-               
+
+                if (cuisines.length !== 0) {  
+
+                    cuisinesstatus  = true;
 
                     for (let i = 0; i < cuisines.length; i++) {
-                       
+                      
                        var new_cuisine = new Cusinemakeit(cuisines[i]);
                        new_cuisine.makeit_userid = req.userid;
                         Cusinemakeit.createCusinemakeit(new_cuisine, function (err, res2) {
-                            if (err)
-                            result.send(err);
+                            if (err) {
+                                console.log("error: ", err);
+                                result(err, null);
+                            }else{
+                                cuisines_temp++;
+                            }
+                            
                            console.log(res2);
                            
                         });
                     }
+                }
+
+
+            if (removecuisines.length !== 0) {                       
                     
-                      
-                
+                       removecuisinesstatus = true;
+
+                    for (let i = 0; i < removecuisines.length; i++) {
+                        
+                        var new_cid = removecuisines[i].cid; 
+                                   
+                         Cusinemakeit.remove(new_cid, function (err, res3) {
+                            if (err) {
+                                console.log("error: ", err);
+                                result(err, null);
+                            }else{
+                                remove_temp++;
+                               
+                            }
+                            console.log(res3);
+                            
+                         });
+                     }
+                   }
+
+                    console.log(remove_temp);
+                    console.log(cuisines_temp);
+                    
+
                     let sucobj = true;
                     let message = "Updated successfully"
                     let resobj = {

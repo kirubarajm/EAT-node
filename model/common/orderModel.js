@@ -132,7 +132,7 @@ Order.createOrder = async  function createOrder(req,orderitems, result) {
                     req.gst = amountdata.gstcharge;
                     req.price = amountdata.grandtotal;   
                    
-                    const res2 = await query("Select * from Address where aid = '"+req.aid+"' and userid = '"+req.userid+"'");
+                    const res2 = await query("Select * from Address where aid = '"+req.aid+"'");
                    // console.log(res2);
                    req.cus_address = res2[0].address
                    req.locality = res2[0].locality
@@ -141,22 +141,25 @@ Order.createOrder = async  function createOrder(req,orderitems, result) {
 
 
                     if (req.payment_type === 0) {
-                          ordercreatecashondelivery(req,orderitems);
+                          ordercreatecashondelivery(req,res3.result[0].item);
                            console.log('cash on delivery');
                         }else if(req.payment_type === 1){
                             console.log('cash on online');
-                            ordercreateonline(req,orderitems);
+                            ordercreatecashondelivery(req,res3.result[0].item);
                         } 
                 }
                 }   
                 });
     
-        function ordercreatecashondelivery(){
+        function ordercreatecashondelivery(req,orderitems){
             console.log("ordercreatecashondelivery: ");
             var new_Order = new Order(req);
                 // new_Order.locality = 'guindy';
                  //new_Order.orderstatus = 6;
                  new_Order.delivery_charge = delivery_charge; 
+
+                 console.log(new_Order);
+                 console.log(orderitems);
             sql.query("INSERT INTO Orders set ?", new_Order, function (err, res1) {
        
                if (err) {
@@ -167,10 +170,16 @@ Order.createOrder = async  function createOrder(req,orderitems, result) {
                var orderid = res1.insertId
            
                for (var i = 0; i < orderitems.length; i++) {
-                   var orderitem = new Orderitem(orderitems[i]);
+                   console.log(orderitems[i].productid);
+                   var orderitem = {};
                    orderitem.orderid = orderid;
+                   orderitem.productid = orderitems[i].productid;
+                   orderitem.quantity = orderitems[i].cartquantity;
+                   orderitem.price = orderitems[i].price;
+                   var items = new Orderitem(orderitem);
                    
-                   Orderitem.createOrderitems(orderitem, function (err, res2) {
+
+                   Orderitem.createOrderitems(items, function (err, res2) {
                        if (err)
                        result.send(err);
                     //  console.log(res2);
@@ -1381,18 +1390,18 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
                    req.cus_lon = res2[0].lon
 
 
-                    if (req.payment_type === 0) {
-                          ordercreatecashondelivery(req,orderitems);
-                           console.log('cash on delivery');
-                        }else if(req.payment_type === 1){
-                            console.log('cash on online');
-                            ordercreateonline(req,orderitems);
-                        } 
+                   if (req.payment_type === 0) {
+                    ordercreatecashondelivery(req,res3.result[0].item);
+                     console.log('cash on delivery');
+                  }else if(req.payment_type === 1){
+                      console.log('cash on online');
+                      ordercreatecashondelivery(req,res3.result[0].item);
+                  } 
                 }
                 }   
                 });
     
-        function ordercreatecashondelivery(){
+        function ordercreatecashondelivery(req,orderitems){
             console.log("ordercreatecashondelivery: ");
             var new_Order = new Order(req);
                 // new_Order.locality = 'guindy';
@@ -1407,16 +1416,22 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
                var orderid = res1.insertId
            
                for (var i = 0; i < orderitems.length; i++) {
-                   var orderitem = new Orderitem(orderitems[i]);
-                   orderitem.orderid = orderid;
-                   
-                   Orderitem.createOrderitems(orderitem, function (err, res2) {
-                       if (err)
-                       result.send(err);
-                    //  console.log(res2);
+                console.log(orderitems[i].productid);
+                var orderitem = {};
+                orderitem.orderid = orderid;
+                orderitem.productid = orderitems[i].productid;
+                orderitem.quantity = orderitems[i].cartquantity;
+                orderitem.price = orderitems[i].price;
+                var items = new Orderitem(orderitem);
+                
 
-                   });   
-               }   
+                Orderitem.createOrderitems(items, function (err, res2) {
+                    if (err)
+                    result.send(err);
+                 //  console.log(res2);
+
+                });   
+            }     
                      let sucobj=true;
                      let status = true;
                      let mesobj = "Order Created successfully";

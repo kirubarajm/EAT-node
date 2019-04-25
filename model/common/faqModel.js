@@ -14,16 +14,26 @@ var Faq = function(faq){
 Faq.createFaq = function createFaq(newFaq, result) {    
         sql.query("INSERT INTO Faq set ?", newFaq, function (err, res) {
                 
-                if(err) {
-                    console.log("error: ", err);
-                    result(err, null);
-                }
-                else{
-                    console.log(res.insertId);
-                    result(null, res.insertId);
-                }
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+               let sucobj=true;
+               let message = "Faq created succesfully";
+                let resobj = {  
+                success: sucobj,
+                message:message,
+                faqid: res.insertId
+                }; 
+    
+             result(null, resobj);
+          
+            }
+                
             });           
 };
+
 
 Faq.getFaqById = function getFaqById(userId, result) {
         sql.query("Select * from Faq where faqid = ? ", userId, function (err, res) {             

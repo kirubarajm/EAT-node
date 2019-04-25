@@ -19,7 +19,7 @@ Cusinemakeit.createCusinemakeit = function createCusinemakeit(cuisine, result) {
             console.log("error: ", err);
             result(null, err);
         }else{
-            console.log(res);
+           // console.log(res);
             
             if (res.length === 0 ) {
                // console.log('insert');
@@ -68,6 +68,34 @@ Cusinemakeit.createCusinemakeit = function createCusinemakeit(cuisine, result) {
 };
 
 
+
+
+Cusinemakeit.updateById = function (cid, result) {
+    sql.query("UPDATE Cuisine_makeit SET task = ? WHERE userid = ?", [task.task, id], function (err, res) {
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else {
+            result(null, res);
+        }
+    });
+};
+
+Cusinemakeit.remove = function (cid, result) {
+  
+    sql.query("DELETE FROM Cuisine_makeit WHERE cid = ?", [cid], function (err, res) {
+
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else {
+
+            result(null, res);
+        }
+    });
+};
 
 
 module.exports = Cusinemakeit;

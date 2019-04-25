@@ -71,3 +71,11 @@ exports.update_delete_status = function(req, res) {
   res.json(user);
 });
 };
+
+exports.get_a_admin_address = function(req, res) {
+  EatuserAddress.getaddressByadmin(req.params, function(err, user) {
+  if (err)
+    res.send(err);
+  res.json(user);
+});
+};

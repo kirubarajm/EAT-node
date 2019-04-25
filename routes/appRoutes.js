@@ -425,6 +425,18 @@ module.exports = function (app) {
    app.route('/admin/qualitychecklist')
    .post(moveituser.moveit_quality_checklist);
 
+   app.route('/admin/addresslist')
+   .get(eatuseraddress.get_a_admin_address);
+
+   app.route('/admin/faq')
+    .get(faq.list_all_faq)
+    .post(faq.create_a_faq);
+
+  app.route('/admin/faq/:id')
+    .get(faq.read_a_faq)
+    .put(faq.update_a_faq)
+    .delete(faq.delete_a_faq);
+
 
 
   // Orders API

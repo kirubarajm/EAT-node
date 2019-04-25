@@ -171,4 +171,25 @@ EatuserAddress.update_delete_status = function(req, result){
         }
         });   
 };
+
+
+EatuserAddress.getaddressByadmin = function getaddressByadmin(req, result) {
+    sql.query("Select * from Address where userid = 0", function (err, res) {             
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+           let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            result: res
+            }; 
+
+         result(null, resobj);
+      
+        }
+        });   
+};
+
 module.exports = EatuserAddress;
