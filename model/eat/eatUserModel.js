@@ -358,7 +358,7 @@ Eatuser.get_eat_dish_list_sort = function(req,result) {
     var cuisinequery = '';
 
     var regionlist = [];   
-    var cuisinecuisinelist = [];
+    var cuisinelist = [];
 
     if (req.regionlist !== undefined || !req.regionlist !== null) {
         regionlist = req.regionlist;
@@ -406,6 +406,9 @@ Eatuser.get_eat_dish_list_sort = function(req,result) {
     
     //cusinequery = cusinequery.slice(0,-2)
     console.log(filterquery);
+    console.log(cuisinelist);
+    console.log(regionlist);
+    console.log(req.search);
     // var query = "Select mu.userid as makeit_userid,mu.name as makeit_username,mu.img as makeit_image, pt.product_name, pt.productid,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,  ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Fav fa on fa.productid = pt.productid and fa.eatuserid = '"+req.eatuserid+"'";
 
     if (req.eatuserid) {
@@ -416,64 +419,89 @@ Eatuser.get_eat_dish_list_sort = function(req,result) {
    
        
 
-        if(req.search && filterquery === '' ){
+        if(req.search !== undefined && regionlist === undefined && cuisinelist === undefined ){
 
             console.log('search');
             query = query +" where pt.product_name like '%"+req.search+"%'";
 
-        } else if(!req.search && filterquery !== '' ){
+        } else if(req.search === undefined && regionlist !== undefined && cuisinelist === undefined ){
 
-            console.log('regionlist and cusinelist');
+            console.log('regionlist');
             if (req.eatuserid) {
                 query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and" + filterquery;
                 }else{
                 query = query +" where (pt.active_status = 1 and pt.quantity != 0) and " +filterquery;
                 }
 
-        }else if(req.search && filterquery ){
+        } else if(req.search === undefined && regionlist === undefined && cuisinelist !== undefined ){
 
-            console.log('regionlist and cusinelist');
+            console.log('cuisinelist');
+            if (req.eatuserid) {
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and (" + filterquery;
+                }else{
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0) and (" + filterquery;
+                }
+
+        }else if(req.search !== undefined && regionlist !== undefined && cuisinelist === undefined ){
+
+            console.log('search and filterquery');
+            if (req.eatuserid) {
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and (pt.product_name like '%"+req.search+"%') and" +filterquery ;
+                }else{
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0) and (pt.product_name like '%"+req.search+"%') and " + filterquery;
+                }
+
+        }else if(req.search !== undefined && regionlist === undefined && cuisinelist !== undefined ){
+
+            console.log('search and cuisinelist');
             if (req.eatuserid) {
                 query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and (pt.product_name like '%"+req.search+"%' and" +filterquery ;
                 }else{
                 query = query +" where (pt.active_status = 1 and pt.quantity != 0) and (pt.product_name like '%"+req.search+"%' and " + filterquery;
                 }
 
+        }else if(req.search  !== undefined && regionlist !== undefined && cuisinelist !== undefined ){
+
+            console.log('search and regionlist and cuisinelist');
+            if (req.eatuserid) {
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and (pt.product_name like '%"+req.search+"%' and" +filterquery ;
+                }else{
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0) and (pt.product_name like '%"+req.search+"%' and " + filterquery;
+                }
+
+        }else if(req.search  === undefined && regionlist !== undefined && cuisinelist !== undefined ){
+
+            console.log('cuisinelist and regionlist');
+            if (req.eatuserid) {
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and (" + filterquery;
+                }else{
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0) and (" +filterquery;
+                }
+
         }
         
-        // else if (req.search && regionlist !== undefined) {
+   
+       if (req.sortid == 1){ 
 
-        //     console.log('search and filter and cusine');
-        //     if (req.eatuserid) {
-        //     query = query +" where pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"' and pt.product_name like '%"+req.search+"%' and" +filterquery;
-        //     }else{
-        //     query = query +" where pt.active_status = 1 and pt.quantity != 0 and pt.product_name like '%"+req.search+"%' and " +filterquery;
-        //     }
+            query = query +" ORDER BY distance";
 
-            
-        // }else if(regionlist && !req.search){
+       }else if (req.sortid == 2){ 
 
-        //     console.log('filter and cusine');
+            query = query +" ORDER BY distance";
 
-        //     query = query +"where pt.active_status = 1 and pt.quantity != 0 and"+ filterquery ;
-            
-        // }else if(req.search && !req.regionlist){
+       }else if (req.sortid == 3) {
 
-        //     console.log('search');
+            query = query + " ORDER BY pt.price ASC";
 
-        //     query = query +" where pt.product_name like '%"+req.search+"%'";
-        // }
+        }else if (req.sortid == 4) {
 
+            query = query + " ORDER BY pt.price DESC";
 
-
-
-        if (req.price == 'low to high') {
-           var query = query + " ORDER BY pt.price ASC";
-        } else if (req.price == 'high to low') {
-             query = query + "  ORDER BY pt.price DESC";
         }else{
-             query = query +" ORDER BY distance";
+            query = query +" ORDER BY distance";
         }
+
+        
         
 
     console.log(query);
@@ -508,34 +536,89 @@ Eatuser.get_eat_dish_list_sort = function(req,result) {
 
 Eatuser.get_eat_kitchen_list_sort = function(req,result) {
     
-    req.eatuserid =  req.eatuserid || 0;
+
     var filterquery = '';
     var cuisinequery = '';
-    const regionlist = req.regionlist;
-    const cuisinelist = req.cuisinelist;
+
+    var regionlist = [];   
+    var cuisinelist = [];
+
+    if (req.regionlist !== undefined || !req.regionlist !== null) {
+        regionlist = req.regionlist;
+    }
+    
+    if (req.cuisinelist !== undefined || req.cuisinelist !== null) {
+        cuisinelist = req.cuisinelist;
+    }
+    
+ 
     if (regionlist) {
         
             for (let i = 0; i < regionlist.length; i++) {
                 
-                  filterquery = filterquery + " mk.region like '%"+regionlist[i].regionid+"%' or";
+                  filterquery = filterquery + " mk.region = '"+regionlist[i].regionid+"' or";
             }
     }
 
-    if (cuisinelist) {
-        
-        for (let i = 0; i < cuisinelist.length; i++) {
-            
-              cuisinequery = cuisinequery + " cm.cusineid like '%"+cuisinelist[i].cuisineid+"%' or";
-        }
-}
 
-    if (regionlist && !cuisinelist) {
-        filterquery =   filterquery.slice(0, -2);
-    }else if(!regionlist && cuisinelist)  {
-        filterquery =  cusinequery.slice(0, -2);
-    }else if(regionlist && cuisinelist)  {
-        filterquery = filterquery.slice(0, -2)+"or"+ cuisinequery.slice(0, -2);
+    if (cuisinelist) {
+
+        for (let i = 0; i < cuisinelist.length; i++) {
+                
+            cuisinequery = cuisinequery + " cm.cuisineid = '"+cuisinelist[i].cuisine+"' or";
+      }
     }
+    
+
+    if(regionlist !== undefined && cuisinelist !== undefined) {
+        
+        filterquery = cuisinequery.slice(0, -2)+")"+"and" +"("+ filterquery.slice(0, -2) +")"
+        console.log(filterquery);
+
+    }else if (regionlist !== undefined && cuisinelist == undefined) {
+        
+        filterquery =  "("+filterquery.slice(0, -2)+")"
+
+    }else if (regionlist == undefined && cuisinelist !== undefined) {
+        
+        filterquery =  cuisinequery.slice(0, -2)+")"
+    }
+
+
+
+
+
+
+//     req.eatuserid =  req.eatuserid || 0;
+//     var filterquery = '';
+//     var cuisinequery = '';
+//     const regionlist = req.regionlist;
+//     const cuisinelist = req.cuisinelist;
+
+
+//     if (regionlist) {
+        
+//             for (let i = 0; i < regionlist.length; i++) {
+                
+//                   filterquery = filterquery + " mk.region like '%"+regionlist[i].regionid+"%' or";
+//             }
+//     }
+
+//     if (cuisinelist) {
+        
+//         for (let i = 0; i < cuisinelist.length; i++) {
+            
+//               cuisinequery = cuisinequery + " cm.cusineid like '%"+cuisinelist[i].cuisineid+"%' or";
+//         }
+// }
+
+//     if (regionlist && !cuisinelist) {
+//         filterquery =   filterquery.slice(0, -2);
+//     }else if(!regionlist && cuisinelist)  {
+//         filterquery =  cusinequery.slice(0, -2);
+//     }else if(regionlist && cuisinelist)  {
+//         filterquery = filterquery.slice(0, -2)+"or"+ cuisinequery.slice(0, -2);
+//     }
 
    
 
@@ -544,31 +627,120 @@ Eatuser.get_eat_kitchen_list_sort = function(req,result) {
     if (req.eatuserid) {
         var query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid  left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '"+req.eatuserid+"' left outer join Cuisine_makeit cm on cm.makeit_userid = mk.userid left outer join Cuisine cu on cu.cuisineid=cm.cuisineid ";
     }else{
-         query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left outer join Cuisine_makeit cm on cm.makeit_userid = mk.userid left outer join Cuisine cu on cu.cuisineid=cm.cuisineid  ";
+            query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left outer join Cuisine_makeit cm on cm.makeit_userid = mk.userid left outer join Cuisine cu on cu.cuisineid=cm.cuisineid  ";
     }
 
 
    
-        if (req.search && req.region) {
-            query = query +" where pt.quantity != 0 and mk.name like '%"+req.search+"%' or" +filterquery;
-        }else if(req.region && !req.search){
-            query = query +"where "+ filterquery;
+        // if (req.search && req.region) {
+        //     query = query +" where pt.quantity != 0 and mk.name like '%"+req.search+"%' or" +filterquery;
+        // }else if(req.region && !req.search){
+        //     query = query +"where "+ filterquery;
             
-        }else if(req.search && !req.region){
-            query = query +" where  pt.quantity != 0 and mk.name like '%"+req.search+"%'";
-        }
+        // }else if(req.search && !req.region){
+        //     query = query +" where  pt.quantity != 0 and mk.name like '%"+req.search+"%'";
+        // }
 
 
-
-
-        if (req.price == 'low to high') {
-           var query = query + " ORDER BY  mk.costfortwo ASC";
-        } else if (req.price == 'high to low') {
-             query = query + "  ORDER BY  mk.costfortwo DESC";
-        }else{
-             query = query +" ORDER BY distance";
-        }
         
+        if(req.search !== undefined && regionlist === undefined && cuisinelist === undefined ){
+
+            console.log('search');
+            query = query +" where mk.name like '%"+req.search+"%'";
+
+        } else if(req.search === undefined && regionlist !== undefined && cuisinelist === undefined ){
+
+            console.log('regionlist');
+            if (req.eatuserid) {
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and" + filterquery;
+                }else{
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0) and " +filterquery;
+                }
+
+        } else if(req.search === undefined && regionlist === undefined && cuisinelist !== undefined ){
+
+            console.log('cuisinelist');
+            if (req.eatuserid) {
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and (" + filterquery;
+                }else{
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0) and (" + filterquery;
+                }
+
+        }else if(req.search !== undefined && regionlist !== undefined && cuisinelist === undefined ){
+
+            console.log('search and filterquery');
+            if (req.eatuserid) {
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and (mk.name like '%"+req.search+"%') and" +filterquery ;
+                }else{
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0) and (mk.name like '%"+req.search+"%') and " + filterquery;
+                }
+
+        }else if(req.search !== undefined && regionlist === undefined && cuisinelist !== undefined ){
+
+            console.log('search and cuisinelist');
+            if (req.eatuserid) {
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and (mk.name like '%"+req.search+"%' and" +filterquery ;
+                }else{
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0) and (mk.name like '%"+req.search+"%' and " + filterquery;
+                }
+
+        }else if(req.search  !== undefined && regionlist !== undefined && cuisinelist !== undefined ){
+
+            console.log('search and regionlist and cuisinelist');
+            if (req.eatuserid) {
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and (mk.name like '%"+req.search+"%' and" +filterquery ;
+                }else{
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0) and (mk.name like '%"+req.search+"%' and " + filterquery;
+                }
+
+        }else if(req.search  === undefined && regionlist !== undefined && cuisinelist !== undefined ){
+
+            console.log('cuisinelist and regionlist');
+            if (req.eatuserid) {
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0 OR fa.eatuserid = '"+req.eatuserid+"') and (" + filterquery;
+                }else{
+                query = query +" where (pt.active_status = 1 and pt.quantity != 0) and (" +filterquery;
+                }
+
+        }
+
+        // if (req.price == 'low to high') {
+
+        //    var query = query + " ORDER BY  mk.costfortwo ASC";
+
+        // } else if (req.price == 'high to low') {
+
+        //      query = query + "  ORDER BY  mk.costfortwo DESC";
+
+        // }else{
+        //      query = query +" ORDER BY distance";
+        // }
+        
+
+        if (req.sortid == 1){ 
+
+            query = query +" ORDER BY distance";
+
+       }else if (req.sortid == 2){ 
+
+            query = query +" ORDER BY distance";
+
+   }   else if (req.sortid == 3) {
+
+            query = query + " ORDER BY mk.costfortwo ASC";
+
+        }else if (req.sortid == 4) {
+
+            query = query + " ORDER BY mk.costfortwo DESC";
+
+        }else{
+            query = query +" ORDER BY distance";
+        }
+
+
+
+
+
 
     console.log(query);
     sql.query(query, function (err, res) {
@@ -687,6 +859,7 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
                passwordstatus:passwordstatus,
                otpstatus:otpstatus,
                genderstatus:genderstatus,
+               userid : res[0].userid
         
                }; 
 
