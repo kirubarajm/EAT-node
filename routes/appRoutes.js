@@ -437,7 +437,8 @@ module.exports = function (app) {
     .put(faq.update_a_faq)
     .delete(faq.delete_a_faq);
 
-
+  app.route('/admin/faqs/:id')
+    .get(faq.list_all_faqbytype);
 
   // Orders API
    app.route('/orders/ordercreate')
