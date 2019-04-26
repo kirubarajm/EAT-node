@@ -116,6 +116,12 @@ exports.eat_makeit_product_list = function(req, res) {
 
 
 exports.eat_dish_sort = function(req, res) {
+ 
+  if(!req.body.lat){
+    res.status(400).send({ error: true, message: 'Please provide lat' });
+  }else if(!req.body.lon){
+    res.status(400).send({ error: true, message: 'Please provide lan' });
+  }else{
   Eatuser.get_eat_dish_list_sort(req.body,function(err, user) {
     console.log('controller')
     if (err)
@@ -124,9 +130,15 @@ exports.eat_dish_sort = function(req, res) {
     res.send(user);
   });
 }
+}
 
 
 exports.eat_kitchen_sort = function(req, res) {
+  if(!req.body.lat){
+    res.status(400).send({ error: true, message: 'Please provide lat' });
+  }else if(!req.body.lon){
+    res.status(400).send({ error: true, message: 'Please provide lan' });
+  }else{
   Eatuser.get_eat_kitchen_list_sort(req.body,function(err, user) {
     console.log('controller')
     if (err)
@@ -134,6 +146,7 @@ exports.eat_kitchen_sort = function(req, res) {
       console.log('res', user);
     res.send(user);
   });
+}
 }
 
 
@@ -197,4 +210,13 @@ exports.edit_eat_users = function(req, res) {
     res.json(user);
   });
 }
+};
+
+exports.checklogin = function (req, res) {
+  var new_user = new Eatuser(req.body);
+  Eatuser.checkLogin(new_user, function (err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
 };

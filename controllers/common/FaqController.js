@@ -57,9 +57,9 @@ exports.update_a_faq = function(req, res) {
 
 exports.delete_a_faq = function(req, res) {
  Faq.remove( req.params.id, function(err, faq) {
-    if (err)
-      res.send(err);
-    res.json({ message: 'Faq successfully deleted' });
+  if (err)
+  res.send(err);
+ res.json(faq);
   });
 };
 

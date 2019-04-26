@@ -26,6 +26,7 @@ module.exports = function (app) {
   var region = require('../controllers/common/RegionController');
   var cusine = require('../controllers/common/CusineController');
   var master = require('../controllers/common/MastersController');
+  var feedback = require('../controllers/common/EatfeedbackController');
 
   // todoList Routes
   app.route('/tasks')
@@ -407,28 +408,28 @@ module.exports = function (app) {
   app.route('/admin/menuitem/edit')
     .put(menuitem.update_a_menuitem);
 
-    app.route('/admin/cartdetails')
+  app.route('/admin/cartdetails')
     .post(makeituser.read_a_cartdetails);
 
-    app.route('/admin/querylist')
+  app.route('/admin/querylist')
    .post(queryquestion.read_a_question);
 
-   app.route('/admin/queryreplies/:aid')
+  app.route('/admin/queryreplies/:aid')
    .get(queryanswer.read_a_replies);
 
-   app.route('/admin/queryanswer')
+  app.route('/admin/queryanswer')
    .post(queryanswer.create_a_answer);
 
    app.route('/admin/orderpickupstatus')
    .put(orders.order_pickup_status);
 
-   app.route('/admin/qualitychecklist')
+  app.route('/admin/qualitychecklist')
    .post(moveituser.moveit_quality_checklist);
 
-   app.route('/admin/addresslist')
+  app.route('/admin/addresslist')
    .get(eatuseraddress.get_a_admin_address);
 
-   app.route('/admin/faq')
+  app.route('/admin/faq')
     .get(faq.list_all_faq)
     .post(faq.create_a_faq);
 
@@ -439,6 +440,16 @@ module.exports = function (app) {
 
   app.route('/admin/faqs/:id')
     .get(faq.list_all_faqbytype);
+
+  app.route('/admin/feedback')
+    .get(feedback.list_all_feedback)
+
+
+
+
+
+
+
 
   // Orders API
    app.route('/orders/ordercreate')
@@ -606,6 +617,13 @@ module.exports = function (app) {
   app.route('/eat/edit')
     .put(eatuser.edit_eat_users);
 
+  app.route('/eat/feedback')
+    .get(feedback.list_all_feedback)
+    .post(feedback.create_a_feedback);
+
+    app.route('/eat/checklogin')
+    .post(eatuser.checklogin)
+
   
   
     //query common  
@@ -630,6 +648,7 @@ app.route('/repliesread')
 
 app.route('/masters')
   .get(master.read_a_masters);
+
 
 
 

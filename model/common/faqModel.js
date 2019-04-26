@@ -56,7 +56,7 @@ Faq.getFaqByType = function getFaqById(id, result) {
                     result(err, null);
                 }
                 else{
-                     let sucobj='true';
+                     let sucobj=true;
                     let resobj = {  
                     success: sucobj,
                     result: res 
@@ -77,7 +77,7 @@ Faq.getAllFaq = function getAllFaq(result) {
                 else{
                   console.log('Faq : ', res);  
 
-                  let sucobj='true';
+                  let sucobj=true;
                     let resobj = {  
                     success: sucobj,
                     result: res 
@@ -102,14 +102,20 @@ Faq.updateById = function(id, user, result){
 Faq.remove = function(id, result){
      sql.query("DELETE FROM Faq WHERE faqid = ?", [id], function (err, res) {
 
-                if(err) {
-                    console.log("error: ", err);
-                    result(null, err);
-                }
-                else{
-               
-                 result(null, res);
-                }
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          console.log('Faq : ', res);  
+
+          let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            message: 'Faq successfully deleted',
+            };
+            result(null, resobj);
+        }
             }); 
 };
 
