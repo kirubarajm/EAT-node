@@ -8,6 +8,7 @@ var master = require('../master');
 var constant = require('../constant.js');
 var Makeituser = require('../../model/makeit/makeitUserModel.js');
 var constant = require('../constant.js');
+var moment = require('moment');
 
 
 
@@ -17,7 +18,7 @@ const query = util.promisify(sql.query).bind(sql);
 //Task object constructor
 var Order = function (order) {
     this.userid = order.userid;
-    this.ordertime = new Date();
+    this.ordertime = moment().format('YYYY-MM-DD HH:mm:ss');
     this.locality = order.locality;
     this.delivery_charge = order.delivery_charge;
     this.ordertype = order.ordertype||0;
@@ -36,7 +37,7 @@ var Order = function (order) {
     this.moveit_remarks_order = order.moveit_remarks_order;
     this.makeit_expected_preparing_time = order.makeit_expected_preparing_time;
     this.makeit_actual_preparing_time = order.makeit_actual_preparing_time;
-    this.created_at = new Date();
+    this.created_at = moment().format('YYYY-MM-DD HH:mm:ss');
     this.price = order.price;
     this.payment_status = order.payment_status;
     this.cus_address = order.cus_address;
@@ -109,7 +110,7 @@ var Order = function (order) {
 // };
 
 Order.createOrder = async  function createOrder(req,orderitems, result) {
-    console.log(req);
+   // console.log(req);
     try {
             var tempmessage = '';
             var newOrder = [];
@@ -138,7 +139,6 @@ Order.createOrder = async  function createOrder(req,orderitems, result) {
                    req.locality = res2[0].locality
                    req.cus_lat = res2[0].lat
                    req.cus_lon = res2[0].lon
-
 
                     if (req.payment_type === 0) {
                           ordercreatecashondelivery(req,res3.result[0].item);
@@ -449,7 +449,7 @@ Order.getUnassignorders = function getUnassignorders(result) {
 
    /// Select * from Orders as ors left join User as us on ors.userid=us .userid where ors.moveit_status = '0';
    // sql.query("Select * from Orders where moveit_status = '0' ", function (err, res) {
-        sql.query("Select * from Orders as ors left join User as us on ors.userid=us.userid where ors.moveit_user_id = 0", function (err, res) {
+        sql.query("Select * from Orders as ors left join User as us on ors.userid=us.userid where ors.moveit_user_id = 0 and ors.orderstatus < 2", function (err, res) {
 
         if(err) {
             console.log("error: ", err);
@@ -899,7 +899,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
   Order.orderlistbymoveituserid =  async function(moveit_user_id, result){
        
     try {
-        const rows = await query("Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id ="+moveit_user_id+"  order by  ors.order_assigned_time desc");
+        const rows = await query("Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id ="+moveit_user_id+" and   DATE(ors.ordertime) = CURDATE() order by  ors.order_assigned_time desc");
 
         if (rows.length > 0) {
             console.log("Fetching No of Store Id", rows.length)

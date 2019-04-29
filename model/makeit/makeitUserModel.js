@@ -628,7 +628,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         }
         else {
             if (res1.length !== 0) {
-            const gstcharge = (totalamount/100)*gst;
+            var gstcharge = (totalamount/100)*gst;
+
+            gstcharge = Math.round(gstcharge);
+
             const grandtotal = +gstcharge +  +totalamount+  + delivery_charge; 
       
             calculationdetails.grandtotal = grandtotal;

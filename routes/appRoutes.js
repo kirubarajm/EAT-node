@@ -624,6 +624,8 @@ module.exports = function (app) {
     app.route('/eat/checklogin')
     .post(eatuser.checklogin)
 
+    app.route('/eat/postregistration')
+    .put(eatuser.eat_user_post_registration);
   
   
     //query common  

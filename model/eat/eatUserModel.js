@@ -330,6 +330,9 @@ if (req.eatuserid) {
                     //15min Food Preparation time , 3min 1 km
                     eta = 15 + (3 * res[i].distance) ;
                     
+                    if(eta > 60){
+                        eta = 60;
+                    }
                     res[i].eta =   Math.round(eta) +" mins" ;
 
                 }  
@@ -525,6 +528,9 @@ Eatuser.get_eat_dish_list_sort = function(req,result) {
                     
                     eta = 15 + (3 * res[i].distance) ;
                     //15min Food Preparation time , 3min 1 km
+                    if(eta > 60){
+                        eta = 60;
+                    }
                     res[i].eta =   Math.round(eta) +" mins" ;  
                 }
 
@@ -702,11 +708,9 @@ Eatuser.get_eat_kitchen_list_sort = function(req,result) {
                    var eta = 15 + (3 * res[i].distance) ;
                     //15min Food Preparation time , 3min 1 km
                     
-                    // if (eta > 60) {
-                        
-                    //     timeConvert (eta);
-                    // }
-                    // console.log(eta);
+                    if(eta > 60){
+                        eta = 60;
+                    }
                     res[i].eta =   Math.round(eta) +" mins" ;  
                
 
@@ -753,12 +757,14 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
            }
            else{
                
-            res[0].applink = applink;
+            res[0].applink = "https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3D"+res[0].referalcode+"%26utm_campaign%3Dreferral";
+
+           // https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3Deat001%26utm_campaign%3Dreferral
            // console.log("TEST: ",  referralcode);
               
-              let sucobj=true;
+          
                let resobj = {  
-               success: sucobj,
+               success: true,
                result: res
                }; 
    
@@ -783,23 +789,25 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
         }
         else{
             
-            if(res.length == 0){
+            console.log(res);
+            if(res.length === 0){
+            
+                console.log('validate password');
 
-        sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,12345)", function (err, res) {
+           sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,12345)", function (err, res1) {
                 
             if(err) {
                 console.log("error: ", err);
                 result(null, err);
             }
             else{
-              let sucobj=true;
-            console.log( res.insertId);          
+           
               let resobj = {  
-                success: sucobj,
+                success: true,
                 passwordstatus:passwordstatus,
                 otpstatus:otpstatus,
                 genderstatus:genderstatus,
-                oid: res.insertId
+                oid: res1.insertId
                 }; 
           
              result(null, resobj);
@@ -807,7 +815,7 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
     });  
 }else{
                 
-                console.log(res[0]);
+                console.log(res);
               
               if (res[0].password !== '' && res[0].password !== null) { 
                 passwordstatus = true;
@@ -818,25 +826,57 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
               
               if (res[0].gender !== '' && res[0].gender !== null && res[0].name !== '' && res[0].name !== null){
                 genderstatus = true;
-                otpstatus = true;
-                
-              }else {
+               // otpstatus = true;
                 
               }
 
-            let sucobj=true;
-               let resobj = {  
-               success: sucobj,
-               status:true,
-               passwordstatus:passwordstatus,
-               otpstatus:otpstatus,
-               genderstatus:genderstatus,
-               userid : res[0].userid
+              if (passwordstatus === false) {
+                  
+                sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,12345)", function (err, res1) {
+                
+                    if(err) {
+                        console.log("error: ", err);
+                        result(null, err);
+                    }
+                    else{
+                      let sucobj=true;
         
-               }; 
+                      if(res){
+                      if (res[0].gender !== '' && res[0].gender !== null && res[0].name !== '' && res[0].name !== null){
+                        genderstatus = true;
+                        //otpstatus = true;  
+                      }
+                    }
+        
+                      let resobj = {  
+                        success: sucobj,
+                        passwordstatus:passwordstatus,
+                        otpstatus:otpstatus,
+                        genderstatus:genderstatus,
+                        userid : res[0].userid,
+                        oid: res1.insertId
+                        }; 
+                  
+                     result(null, resobj);
+                    }
+            });  
+              }else{
 
-            result(null, resobj);
+                
+            let sucobj=true;
+            let resobj = {  
+            success: sucobj,
+            status:true,
+            passwordstatus:passwordstatus,
+            otpstatus:otpstatus,
+            genderstatus:genderstatus,
+            userid : res[0].userid
+     
+            }; 
 
+         result(null, resobj);
+              }
+        
 }
 
 }
@@ -960,6 +1000,7 @@ Eatuser.edit_eat_users = function (req, result) {
 
         var staticquery = "UPDATE User SET updated_at = ?, ";
         var column = '';
+        req.referalcode = 'EATWELL' + req.userid
         for (const [key, value] of Object.entries(req)) {
             console.log(`${key} ${value}`);
 
@@ -970,6 +1011,8 @@ Eatuser.edit_eat_users = function (req, result) {
 
 
         }
+
+        
 
        var  query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
         console.log(query);
@@ -1022,4 +1065,46 @@ Eatuser.checkLogin = function checkLogin(req, result) {
     });
 };
 
+
+
+Eatuser.eat_user_post_registration = function (req, result) {
+
+    var staticquery = "UPDATE User SET updated_at = ?, ";
+    var column = '';
+    
+    for (const [key, value] of Object.entries(req)) {
+        console.log(`${key} ${value}`);
+
+        if (key !== 'userid') {
+            // var value = `=${value}`;
+            column = column + key + "='" + value + "',";
+        }
+
+
+    }
+
+    
+
+   var  query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
+    console.log(query);
+    sql.query(query,[new Date()], function (err, res) {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else {
+
+            let sucobj = true;
+            let message = "Post registration updated successfully"
+            let resobj = {
+                success: sucobj,
+                message: message
+            };
+
+            result(null, resobj);
+        }
+
+    });
+
+};
 module.exports= Eatuser;

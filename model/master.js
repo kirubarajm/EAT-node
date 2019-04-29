@@ -253,7 +253,24 @@ const master = [
     {"addresstypeid":3,"description" :'sales'},
     {"addresstypeid":4,"description" :'eat'},
 
-]}
+]},
+
+{ 'gender' : [
+    {
+        "genderid": 1,
+        "gendername": "Male"
+    },
+    {
+        "genderid": 2,
+        "gendername": "Female"
+    },
+    {
+        "genderid": 3,
+        "gendername": "Others"
+    }
+] },
+
+
 
 ]
 module.exports = master;

@@ -6,6 +6,7 @@ const authentication = {
     user     : 'eattovo',
     password : 'eattv2020',
     database : 'eattovo',
+    timezone  : 'IST'
 }
 
 module.exports = authentication;

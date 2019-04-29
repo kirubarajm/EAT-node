@@ -295,6 +295,7 @@ Product.update_quantity_product_byid = function update_quantity_product_byid (re
              }else{  
               let sucobj=true;
               let message = "Quantity added and product moved to live successfully";
+              if(req.active_status===0) message="Product removed from live successfully";
               let resobj = {  
                 success: sucobj,
                 message:message,

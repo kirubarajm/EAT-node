@@ -12,6 +12,24 @@ var Fav = function(fav){
 
 Fav.createFav = function createFav(newFav, result) {  
      
+    if (newFav.makeit_userid !== null && newFav.eatuserid !== null) {
+        
+        var query = "Select * from Fav where eatuserid = '"+newFav.eatuserid+"' and makeit_userid = '"+newFav.makeit_userid+"'";
+
+    }else if(newFav.productid !== null && newFav.eatuserid !== null){
+
+        query = "Select * from Fav where eatuserid = '"+newFav.eatuserid+"' and makeit_userid = '"+newFav.productid+"'";
+    }
+     
+    sql.query(query , function (err, res) {             
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+           
+            if(res[0] === undefined){
+
         sql.query("INSERT INTO Fav set ?", newFav, function (err, res) {
                 
             if(err) {
@@ -30,7 +48,18 @@ Fav.createFav = function createFav(newFav, result) {
                 result(null, resobj);
           
             }
-            });           
+            });
+        }else{
+            let sucobj='true';
+            let message = 'Already added the Favourite';
+           let resobj = {  
+           success: sucobj,
+           message:message,
+           };
+           result(null, resobj);
+        }
+        } 
+        });                  
 };
 
 Fav.getFavById = function getFavById(userId, result) {
@@ -82,7 +111,7 @@ Fav.remove = function(id, result){
                 result(err, null);
             }
             else{
-                 let sucobj='true';
+                 let sucobj=true;
                  let message = 'Favourite removed successfully';
                 let resobj = {  
                 success: sucobj,

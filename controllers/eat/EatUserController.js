@@ -220,3 +220,19 @@ exports.checklogin = function (req, res) {
     res.json(user);
   });
 };
+
+exports.eat_user_post_registration = function(req, res) {
+  
+  if(!req.body.email){
+    res.status(400).send({ error: true, message: 'Please provide name' });
+  }else if(!req.body.password){
+    res.status(400).send({ error: true, message: 'Please provide phone_number' });
+  }
+  else{
+  Eatuser.eat_user_post_registration(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+}
+};

@@ -28,7 +28,7 @@ exports.create_a_fav = function(req, res) {
   console.log(new_fav);
   //handles null error 
    if(!new_fav.eatuserid){
-            res.status(400).send({ error:true, message: 'Please provide name' });
+            res.status(400).send({ error:true, message: 'Please provide eatuserid' });
     }
   else{
   Fav.createFav(new_fav, function(err, fav) {
@@ -66,9 +66,9 @@ exports.delete_a_fav = function(req, res) {
 }
 else{
  Fav.remove( req.params.id, function(err, fav) {
-    if (err)
-      res.send(err);
-    res.json({ message: 'Fav successfully deleted' });
+  if (err)
+  res.send(err);
+  res.json(fav);
   });
 }
 };
