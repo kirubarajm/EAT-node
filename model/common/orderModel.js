@@ -7,6 +7,7 @@ var Orderlock = require('../../model/common/lockorderModel');
 var master = require('../master');
 var constant = require('../constant.js');
 var Makeituser = require('../../model/makeit/makeitUserModel.js');
+var FCM = require('../../FcmSendNotification.js');
 var constant = require('../constant.js');
 var moment = require('moment');
 
@@ -402,7 +403,8 @@ Order.get_all_orders = function get_all_orders(req,result) {
 
 Order.order_assign = function order_assign (req, result) {
      
-    sql.query("Select online_status From MoveitUser where userid= '"+req.moveit_user_id+"' ", function (err, res1) {
+    console.log("moveit_user_id-->"+req.moveit_user_id);
+    sql.query("Select online_status,pushid_android,pushid_ios From MoveitUser where userid= '"+req.moveit_user_id+"' ", function (err, res1) {
 
         if (err) {
             console.log("error: ", err);
@@ -420,6 +422,12 @@ Order.order_assign = function order_assign (req, result) {
                             result(null, err);
                         }
                         else{
+                            var  pushid_android = res1[0].pushid_android
+                            var  pushid_ios = res1[0].pushid_ios
+                            var  push_title='Order assign'
+                            var  push_message= "Hi Order assigned.Order id #"+req.orderid
+                            
+                            if(pushid_android) FCM.sendSingleNotification(pushid_android,push_title,push_message);
                             
                             let sucobj=true;
                             let message = "Order Assign Sucessfully";

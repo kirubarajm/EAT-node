@@ -34,15 +34,17 @@ QueryQuestions.createquestions = function createquestions(req, result) {
 
 QueryQuestions.read_a_question_id =  function read_a_question_id(req, result) {
      
-          
-        var query = "Select * from Query_questions where type = '"+req.type+"'"
+        var query ="SELECT qqs.* ,SUM(CASE WHEN qa.user_read = 0 THEN 1 ELSE 0 END) AS un_read_count FROM Query_questions AS qqs LEFT JOIN Query_answers AS qa ON (qqs.qid = qa.qid)";
+        if (req.type) {
+            query=query+"WHERE qqs.type='"+req.type+"'"
+        }
+        if(req.userid){
+            query=query+" and qqs.userid='"+req.userid+"'"
+        }
 
-         if (req.type && req.userid) {    
-            query = query +" and userid = '"+req.userid+"'"
-         }
-         query = query + "order by qid desc";
+        query=query+"GROUP BY qqs.qid ORDER BY qa.created_at desc"
 
-         console.log(query);
+        console.log(query);
          
         sql.query(query,  function (err, res) {  
     
@@ -51,14 +53,6 @@ QueryQuestions.read_a_question_id =  function read_a_question_id(req, result) {
                     result(err, null);
                 }
                 else{
-
-                    for (let i = 0; i < res.length; i++) {
-                             
-
-                      //res[i].count = count;
-                    }
-
-                       
                     let sucobj=true;
                     let resobj = {
                         sucobj:sucobj,  
