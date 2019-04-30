@@ -6,7 +6,7 @@ var Eatfeedback = function(eatfeedback){
     this.rating = eatfeedback.rating;
     this.content= eatfeedback.content;
     this.userid = eatfeedback.userid;
-    this.created_at = new Date();
+   // this.created_at = new Date();
 };
 
 
@@ -67,7 +67,7 @@ Eatfeedback.getfeedbackByType = function getfeedbackById(id, result) {
 };
 
 Eatfeedback.getAllfeedback = function getAllfeedback(result) {
-        sql.query("Select * from Eat_Feedback", function (err, res) {
+        sql.query("Select ef.fid,ef.rating,ef.content,ef.userid,ef.created_at,us.name,us.userid,us.phoneno from Eat_Feedback ef join User us on ef.userid=us.userid ", function (err, res) {
 
                 if(err) {
                     console.log("error: ", err);

@@ -89,7 +89,7 @@ Orderitems.createOrderitemsonline = function createOrderitemsonline(order_item, 
 
 
 Orderitems.getOrderById = function getOrderById(orderid, result) {
-    sql.query("Select * from Orders where orderid = ? ", orderid, function (err, res) {
+    sql.query("Select * from OrderItem where orderid = ? ", orderid, function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -102,7 +102,7 @@ Orderitems.getOrderById = function getOrderById(orderid, result) {
 };
 
 Orderitems.getAllOrder = function getAllOrder(result) {
-    sql.query("Select * from Orders", function (err, res) {
+    sql.query("Select * from OrderItem", function (err, res) {
 
         if (err) {
             console.log("error: ", err);
@@ -118,7 +118,7 @@ Orderitems.getAllOrder = function getAllOrder(result) {
 
 Orderitems.updateById = function (id, user, result) {
     console.log('test');
-    sql.query("UPDATE Orders SET moveit_user_id = ? WHERE orderid = ?", [id, id], function (err, res) {
+    sql.query("UPDATE OrderItem SET moveit_user_id = ? WHERE orderid = ?", [id, id], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(null, err);
@@ -130,7 +130,7 @@ Orderitems.updateById = function (id, user, result) {
 };
 
 Orderitems.remove = function (id, result) {
-    sql.query("DELETE FROM Orders WHERE orderid = ?", [id], function (err, res) {
+    sql.query("DELETE FROM OrderItem WHERE orderid = ?", [id], function (err, res) {
 
         if (err) {
             console.log("error: ", err);

@@ -209,7 +209,7 @@ Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req, result) {
 
     console.log(req.vacant);
     if (req.vacant !== 'all') {
-        query = query + " where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 ) and online_status = 1";
+        query = query + " where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1 ";
     }
 
     if (req.vacant !== 'all' && req.search) {

@@ -27,6 +27,7 @@ module.exports = function (app) {
   var cusine = require('../controllers/common/CusineController');
   var master = require('../controllers/common/MastersController');
   var feedback = require('../controllers/common/EatfeedbackController');
+  var orderrating = require('../controllers/common/OrderratingController');
 
   // todoList Routes
   app.route('/tasks')
@@ -621,11 +622,20 @@ module.exports = function (app) {
     .get(feedback.list_all_feedback)
     .post(feedback.create_a_feedback);
 
-    app.route('/eat/checklogin')
+  app.route('/eat/checklogin')
     .post(eatuser.checklogin)
 
-    app.route('/eat/postregistration')
+  app.route('/eat/postregistration')
     .put(eatuser.eat_user_post_registration);
+
+  app.route('/eat/forgot')
+    .post(eatuser.eat_user_forgot_password);
+
+  app.route('/eat/password')
+    .put(eatuser.eat_user_forgot_password_update);
+
+    app.route('/eat/rating')
+    .post(orderrating.createorderrating);
   
   
     //query common  
@@ -662,10 +672,10 @@ app.route('/masters')
 
   // Masters
 
-  app.route('/masters/regionlist')
+app.route('/masters/regionlist')
   .get(region.list_all_region);
 
-  app.route('/masters/cuisinelist')
+app.route('/masters/cuisinelist')
   .get(cusine.list_all_Cusine);
 
 };

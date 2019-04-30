@@ -1,6 +1,8 @@
 'user strict';
 var sql = require('../db.js');
 var constant = require('../constant.js');
+var request = require('request');
+var https = require("https");
 
 //Task object constructor
 var Eatuser = function(eatuser){
@@ -14,6 +16,7 @@ var Eatuser = function(eatuser){
     this.virtualkey= eatuser.virtualkey || 0;
     this.otp_status = eatuser.otp_status || '';
     this.gender = eatuser.gender || '';
+    this.hometownid = eatuser.hometownid;
 };
 
 
@@ -72,10 +75,6 @@ Eatuser.createUser = function createUser(newUser, result) {
 }
 });  
             
-
-
-
-
 
 };
 
@@ -781,7 +780,23 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
     var passwordstatus = false;
     var otpstatus  = false;
     var genderstatus = false;
+    var otpurl = "https://bulksmsapi.vispl.in/?username=beatresopt1&password=beatresopt1@121&messageType=text&mobile='"+newUser.phoneno+"'&senderId=EATOTP&message=This is a test message";
+    
+  // var otpurl = "https://www.google.com/";
+   console.log(otpurl)
+    
+    request({    
+        url:otpurl,
+        method: 'POST'
+    }, function(error, response, body){
+        if(error) {
+            console.log('erroe--->'+error);
+        } else {
+            console.log(response.statusCode, body);
+        }
+    });
 
+    
     sql.query("Select * from User where phoneno = '"+newUser.phoneno+"'" , function (err, res) {             
         if(err) {
             console.log("error: ", err);
@@ -793,6 +808,8 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
             if(res.length === 0){
             
                 console.log('validate password');
+            
+             
 
            sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,12345)", function (err, res1) {
                 
@@ -801,7 +818,9 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
                 result(null, err);
             }
             else{
-           
+               
+
+
               let resobj = {  
                 success: true,
                 passwordstatus:passwordstatus,
@@ -980,8 +999,10 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req, result) 
                 console.log('OTP FAILED');
               let message = "OTP is not valid!, Try once again";
               let sucobj=true;
+              
                let resobj = {  
                success: sucobj,
+               success: false,
                message:message
                }; 
 
@@ -1095,7 +1116,7 @@ Eatuser.eat_user_post_registration = function (req, result) {
         else {
 
             let sucobj = true;
-            let message = "Post registration updated successfully"
+            let message = "Updated successfully"
             let resobj = {
                 success: sucobj,
                 message: message
@@ -1105,6 +1126,52 @@ Eatuser.eat_user_post_registration = function (req, result) {
         }
 
     });
+
+};
+
+
+
+Eatuser.eat_user_forgot_password_byuserid = function eat_user_forgot_password_byuserid(newUser, result) { 
+     
+           sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,12345)", function (err, res) {
+                
+            if(err) {
+                console.log("error: ", err);
+                result(null, err);
+            }
+            else{
+           
+              let resobj = {  
+                success: true,
+                oid: res.insertId
+                }; 
+          
+             result(null, resobj);
+            }
+    });  
+    
+};
+
+
+
+Eatuser.eat_user_forgot_password_update = function eat_user_forgot_password_update(newUser, result) { 
+     
+    sql.query("UPDATE User SET password = '"+newUser.password+"'  where userid = password = '"+newUser.userid+"'", function (err, res1) {
+         
+     if(err) {
+         console.log("error: ", err);
+         result(null, err);
+     }
+     else{
+    
+       let resobj = {  
+         success: true,
+         message: "Password Updated successfully"
+         }; 
+   
+      result(null, resobj);
+     }
+});  
 
 };
 module.exports= Eatuser;

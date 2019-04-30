@@ -224,12 +224,45 @@ exports.checklogin = function (req, res) {
 exports.eat_user_post_registration = function(req, res) {
   
   if(!req.body.email){
-    res.status(400).send({ error: true, message: 'Please provide name' });
+    res.status(400).send({ error: true, message: 'Please provide email' });
   }else if(!req.body.password){
-    res.status(400).send({ error: true, message: 'Please provide phone_number' });
+    res.status(400).send({ error: true, message: 'Please provide password' });
   }
   else{
   Eatuser.eat_user_post_registration(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+}
+};
+
+
+exports.eat_user_forgot_password = function(req, res) {
+  
+  if(!req.body.phoneno){
+    res.status(400).send({ error: true, message: 'Please provide phoneno' });
+  }
+  else{
+  Eatuser.eat_user_forgot_password_byuserid(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+}
+};
+
+
+
+exports.eat_user_forgot_password_update = function(req, res) {
+  
+  if(!req.body.password){
+    res.status(400).send({ error: true, message: 'Please provide password' });
+  }else if(!req.body.userid){
+    res.status(400).send({ error: true, message: 'Please provide userid' });
+  }
+  else{
+  Eatuser.eat_user_forgot_password_update(req.body, function(err, user) {
     if (err)
       res.send(err);
     res.json(user);
