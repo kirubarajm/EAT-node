@@ -634,10 +634,11 @@ module.exports = function (app) {
   app.route('/eat/password')
     .put(eatuser.eat_user_forgot_password_update);
 
-    app.route('/eat/rating')
+  app.route('/eat/rating')
     .post(orderrating.createorderrating);
   
-  
+  app.route('/eat/pushid/add')
+    .put(eatuser.add_a_pushid);
     //query common  
 
  app.route('/query')

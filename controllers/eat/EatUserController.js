@@ -269,3 +269,14 @@ exports.eat_user_forgot_password_update = function(req, res) {
   });
 }
 };
+
+
+exports.add_a_pushid = function(req, res) {
+  
+  Eatuser.update_pushid(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+
+};

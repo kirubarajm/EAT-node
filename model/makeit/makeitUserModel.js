@@ -619,7 +619,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     productdetails.push(res1[0]);                
 }
    console.log(productdetails);
-    var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimg,fa.favid from MakeitUser mk  left join Fav fa on fa.makeit_userid = mk.userid where mk.userid ="+req.makeit_user_id+" ";
+    var query1 = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.region,re.regionname,ly.localityname,mk.img as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid left join Region re on re.regionid = mk.region left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid ="+req.makeit_user_id+" ";
 
     sql.query(query1, function (err, res1) {
         if (err) {
@@ -627,6 +627,15 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             result(err, null);
         }
         else {
+
+            for (let i = 0; i < res1.length; i++) {
+                
+                if (res1[i].cuisines) {
+                 res1[i].cuisines = JSON.parse(res1[i].cuisines)
+                }
+
+            }
+
             if (res1.length !== 0) {
             var gstcharge = (totalamount/100)*gst;
 

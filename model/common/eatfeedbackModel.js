@@ -19,7 +19,7 @@ Eatfeedback.createfeedback= function createfeedback(newfeedback, result) {
             }
             else{
                let sucobj=true;
-               let message = "Feedback created succesfully";
+               let message = "Feedback has been submitted successfully";
                 let resobj = {  
                 success: sucobj,
                 message:message,

@@ -34,6 +34,7 @@ Orderrating.createOrderrating = function createOrderrating(Order_rating, result)
 
               let resobj = {  
                 success: sucobj,
+                status : true,
                 message:mesobj,
                 orid: res.insertId
                 }; 
@@ -48,6 +49,7 @@ Orderrating.createOrderrating = function createOrderrating(Order_rating, result)
 
     let resobj = {  
       success: sucobj,
+      status : false,
       message:mesobj,
       result: res
       }; 

@@ -1308,7 +1308,7 @@ Order.online_order_place_conformation = function(order_place, result){
 
 Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, result){
      
-             sql.query("Select ors.orderid,ors.orderstatus,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid where ors.userid ='" + req.userid +"' and ors.orderstatus < 6 and ors.lock_status = 0 ", function (err, res) {
+             sql.query("Select ors.orderid,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" + req.userid +"' and ors.orderstatus < 6 and ors.lock_status = 0 ", function (err, res) {
        
               if(err) {
                   console.log("error: ", err);
@@ -1324,6 +1324,11 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
                         eta = 15 + (3 * res[i].distance) ;
                         
                         res[i].eta =   Math.round(eta) +" mins" ;
+
+                        if (res[i].items) {
+                            var items =  JSON.parse(res[i].items);
+                            res[i].items=items.item;
+                           }
                 }
                  
      

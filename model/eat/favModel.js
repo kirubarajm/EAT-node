@@ -12,15 +12,22 @@ var Fav = function(fav){
 
 Fav.createFav = function createFav(newFav, result) {  
      
-    if (newFav.makeit_userid !== null && newFav.eatuserid !== null) {
+    var makeit_userid = null;
+    var productid = null;
+    console.log(newFav);
+
+
+
+    if (newFav.makeit_userid && newFav.eatuserid) {
         
         var query = "Select * from Fav where eatuserid = '"+newFav.eatuserid+"' and makeit_userid = '"+newFav.makeit_userid+"'";
 
-    }else if(newFav.productid !== null && newFav.eatuserid !== null){
+    }else if(newFav.productid && newFav.eatuserid){
 
-        query = "Select * from Fav where eatuserid = '"+newFav.eatuserid+"' and makeit_userid = '"+newFav.productid+"'";
+        query = "Select * from Fav where eatuserid = '"+newFav.eatuserid+"' and productid = '"+newFav.productid+"'";
     }
      
+    console.log(query);
     sql.query(query , function (err, res) {             
         if(err) {
             console.log("error: ", err);
@@ -28,6 +35,7 @@ Fav.createFav = function createFav(newFav, result) {
         }
         else{
            
+            console.log(res[0]);
             if(res[0] === undefined){
 
         sql.query("INSERT INTO Fav set ?", newFav, function (err, res) {
@@ -142,7 +150,12 @@ Fav.getAllFavByEatUser = function getAllFavByEatUser(userId,result) {
 
 
 Fav.read_a_dishlist_byeatuserid = function read_a_dishlist_byeatuserid(userId,result) {
-    sql.query("Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img as makeit_image, pt.product_name,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid join Cuisine cu on cu.cuisineid=pt.cusine  join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid=pt.productid where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = ? ", userId, function (err, res) {
+
+    var query = "Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img as makeit_image, pt.product_name,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid=pt.cusine  left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid=pt.productid where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = '"+userId+"' ";
+   
+    console.log(query);
+
+    sql.query(query, function (err, res) {
 
         if(err) {
             console.log("error: ", err);
