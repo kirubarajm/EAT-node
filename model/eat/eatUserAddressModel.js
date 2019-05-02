@@ -14,6 +14,7 @@ var EatuserAddress = function(eatuseraddress){
     this.landmark = eatuseraddress.landmark;
     this.created_at = new Date();
     this.address_type = eatuseraddress.address_type;
+    this.delete_status = eatuseraddress.delete_status || 0;
   
 };
 
@@ -44,7 +45,7 @@ EatuserAddress.createUserAddress = function createUserAddress(new_address, resul
 
 
 EatuserAddress.getaddressById = function getaddressById(userId, result) {
-        sql.query("Select * from Address where userid = ? ", userId, function (err, res) {             
+        sql.query("Select * from Address where userid = ? and delete_status = 0", userId, function (err, res) {             
             if(err) {
                 console.log("error: ", err);
                 result(err, null);
@@ -132,7 +133,7 @@ EatuserAddress.remove = function(id, result){
 
 
 EatuserAddress.update_delete_status = function(req, result){
-    sql.query("UPDATE Address SET delete_status = ? WHERE userid = ?", [req.delete_status,req.userid], function (err, res) {
+    sql.query("UPDATE Address SET delete_status = 1 WHERE aid = ?", [req.aid], function (err, res) {
            if(err) {
         console.log("error: ", err);
         result(err, null);

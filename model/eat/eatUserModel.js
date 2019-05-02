@@ -2,7 +2,7 @@
 var sql = require('../db.js');
 var constant = require('../constant.js');
 var request = require('request');
-var https = require("https");
+
 
 //Task object constructor
 var Eatuser = function(eatuser){
@@ -302,10 +302,10 @@ Eatuser.get_eat_makeit_product_list = function(req,result) {
 
 
 if (req.eatuserid) {
-    var query = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(fa.favid,1,0),'favid',fa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid join Cuisine cu on cu.cuisineid=pt.cusine left join Fav fa on fa.makeit_userid = mk.userid and pt.productid =fa.productid and fa.eatuserid = '"+req.eatuserid+"' where mk.userid ="+req.makeit_userid+" and pt.active_status = 1";
+    var query = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,re.regionname,mk.costfortwo,mk.img as makeitimg,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(fa.favid,1,0),'favid',fa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid join Cuisine cu on cu.cuisineid=pt.cusine join Region re on re.regionid = mk.region left join Fav fa on fa.makeit_userid = mk.userid and pt.productid =fa.productid and fa.eatuserid = '"+req.eatuserid+"' where mk.userid ="+req.makeit_userid+" and pt.active_status = 1";
    
    } else{
-    var query = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(fa.favid,1,0),'favid',fa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid join Cuisine cu on cu.cuisineid=pt.cusine left join Fav fa on fa.makeit_userid = mk.userid and pt.productid =fa.productid where mk.userid ="+req.makeit_userid+" and pt.active_status = 1";
+    var query = "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,re.regionname,mk.costfortwo,mk.img as makeitimg,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(fa.favid,1,0),'favid',fa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid join Cuisine cu on cu.cuisineid=pt.cusine join Region re on re.regionid = mk.region left join Fav fa on fa.makeit_userid = mk.userid and pt.productid =fa.productid where mk.userid ="+req.makeit_userid+" and pt.active_status = 1";
    
    }
    console.log(query);
@@ -776,25 +776,18 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
 
  Eatuser.eatuser_login = function eatuser_login(newUser, result) { 
      
-    var otp = 0;
+    var OTP = Math.floor(Math.random() * 90000) + 10000;
+   
     var passwordstatus = false;
     var otpstatus  = false;
     var genderstatus = false;
-    var otpurl = "https://bulksmsapi.vispl.in/?username=beatresopt1&password=beatresopt1@121&messageType=text&mobile='"+newUser.phoneno+"'&senderId=EATOTP&message=This is a test message";
+    var otpurl = "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile="+newUser.phoneno+"&senderId=EATHOM&message=Your EAT App OTP is "+OTP+". Note: Please DO NOT SHARE this OTP with anyone."
+  
     
   // var otpurl = "https://www.google.com/";
    console.log(otpurl)
     
-    request({    
-        url:otpurl,
-        method: 'POST'
-    }, function(error, response, body){
-        if(error) {
-            console.log('erroe--->'+error);
-        } else {
-            console.log(response.statusCode, body);
-        }
-    });
+    
 
     
     sql.query("Select * from User where phoneno = '"+newUser.phoneno+"'" , function (err, res) {             
@@ -809,9 +802,20 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
             
                 console.log('validate password');
             
-             
+                request({ 
+                    method: 'GET',  
+                    rejectUnauthorized: false, 
+                    url:otpurl
+                  
+                }, function(error, response, body){
+                    if(error) {
+                        console.log('error--->'+error);
+                    } else {
+                        console.log(response.statusCode, body);
+                    }
+                });
 
-           sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,12345)", function (err, res1) {
+           sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res1) {
                 
             if(err) {
                 console.log("error: ", err);
@@ -851,7 +855,21 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
 
               if (passwordstatus === false) {
                   
-                sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,12345)", function (err, res1) {
+
+                request({ 
+                    method: 'GET',  
+                    rejectUnauthorized: false, 
+                    url:otpurl
+                  
+                }, function(error, response, body){
+                    if(error) {
+                        console.log('error--->'+error);
+                    } else {
+                        console.log(response.statusCode, body);
+                    }
+                });
+
+                sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res1) {
                 
                     if(err) {
                         console.log("error: ", err);
@@ -1002,7 +1020,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req, result) 
               
                let resobj = {  
                success: sucobj,
-               success: false,
+               status: false,
                message:message
                }; 
 
@@ -1075,9 +1093,10 @@ Eatuser.checkLogin = function checkLogin(req, result) {
         }
         else {
 
-            let sucobj = (res.length == 1) ? 'true' : 'false';
+            let status = (res.length == 1) ? true : false;
             let resobj = {
-                success: sucobj,
+                success: true,
+                status : status,
                 result: res
             };
             console.log("result: ---", res.length);
@@ -1156,7 +1175,7 @@ Eatuser.eat_user_forgot_password_byuserid = function eat_user_forgot_password_by
 
 Eatuser.eat_user_forgot_password_update = function eat_user_forgot_password_update(newUser, result) { 
      
-    sql.query("UPDATE User SET password = '"+newUser.password+"'  where userid = password = '"+newUser.userid+"'", function (err, res1) {
+    sql.query("UPDATE User SET password = '"+newUser.password+"'  where userid = '"+newUser.userid+"'", function (err, res1) {
          
      if(err) {
          console.log("error: ", err);

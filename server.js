@@ -5,7 +5,7 @@ const express = require('express'),
   port = process.env.PORT || 3000;
   var cors = require('cors');
   const fs = require('fs');
-//   var VERSIONS = {'Pre-Production': '/v0', 'Version 1': '/v1'};
+ 
 
 //   for (var k in VERSIONS) {
 //     app.use(VERSIONS[k], require('./routes' + VERSIONS[k]));
