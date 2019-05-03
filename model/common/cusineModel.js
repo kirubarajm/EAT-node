@@ -2,13 +2,13 @@
 var sql = require('../db.js');
 
 //Task object constructor
-var Cusine = function(cusine){
-    this.regionname=cusine.cusinename;
-    this.created_at = new Date();
+var Cuisine = function(ciusine){
+    this.regionname=cusine.cuisinename;
+   // this.created_at = new Date();
 };
 
 
-Cusine.createRegion = function createRegion(req, result) { 
+Cuisine.createCuisine = function createCuisine(req, result) { 
 
         sql.query("INSERT INTO Cusine  set ?", req, function (err, res) {
                 
@@ -18,7 +18,7 @@ Cusine.createRegion = function createRegion(req, result) {
                 }
                 else{
                     let sucobj=true;
-                    let message = "Region created successfully";
+                    let message = "Cusine created successfully";
                     let resobj = {  
                     success: sucobj,
                     message:message
@@ -29,7 +29,7 @@ Cusine.createRegion = function createRegion(req, result) {
             });           
 };
 
-Cusine.read_a_question_id =  function read_a_question_id(req, result) {
+Cuisine.read_a_Cusine_id =  function read_a_Cusine_id(req, result) {
      
           
         var query = "Select * from Cusine where type = '"+req.type+"'"
@@ -49,12 +49,7 @@ Cusine.read_a_question_id =  function read_a_question_id(req, result) {
                 }
                 else{
 
-                    for (let i = 0; i < res.length; i++) {
-                             
-
-                      //res[i].count = count;
-                    }
-
+                   
                        
                     let sucobj=true;
                     let resobj = {
@@ -71,7 +66,7 @@ Cusine.read_a_question_id =  function read_a_question_id(req, result) {
 };
 
 
-Cusine.getRegionByType = function getRegionByType(id, result) {
+Cuisine.getCusineByType = function getCusineByType(id, result) {
         sql.query("Select * from Cusine where type = ? ", id, function (err, res) {             
                 if(err) {
                     console.log("error: ", err);
@@ -91,7 +86,7 @@ Cusine.getRegionByType = function getRegionByType(id, result) {
 
 
 
-Cusine.getAllcusine = function getAllcusine(result) {
+Cuisine.getAllcuisine = function getAllcuisine(result) {
 
         sql.query("Select cuisineid,cuisinename from Cuisine", function (err, res) {
 
@@ -111,7 +106,7 @@ Cusine.getAllcusine = function getAllcusine(result) {
             });   
 };
 
-Cusine.updateById = function(id, user, result){
+Cuisine.updateById = function(id, user, result){
   sql.query("UPDATE Cusine SET task = ? WHERE faqid = ?", [task.task, id], function (err, res) {
           if(err) {
               console.log("error: ", err);
@@ -123,7 +118,7 @@ Cusine.updateById = function(id, user, result){
             }); 
 };
 
-Cusine.remove = function(id, result){
+Cuisine.remove = function(id, result){
      sql.query("DELETE FROM Cusine WHERE faqid = ?", [id], function (err, res) {
 
                 if(err) {
@@ -142,4 +137,4 @@ Cusine.remove = function(id, result){
 
 
 
-module.exports= Cusine;
+module.exports= Cuisine;

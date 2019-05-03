@@ -8,8 +8,8 @@ var Menuitem = function(menuitem){
     this.active_status=menuitem.active_status || 1;
     this.vegtype=menuitem.vegtype;
     this.price=menuitem.price;
-    this.created_at = new Date();
-    this.price = menuitem.price;
+  //  this.created_at = new Date();
+   // this.price = menuitem.price;
 };
 
 /*

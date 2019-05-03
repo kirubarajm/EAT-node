@@ -9,7 +9,7 @@ var Allocation = function(allocation){
     this.assign_date=allocation.assign_date;
     this.assignedby=allocation.assignedby;
     this.status=allocation.status;
-    this.created_at = new Date();
+   // this.created_at = new Date();
     this.booking_date_time = allocation.booking_date_time;
 };
 

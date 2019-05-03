@@ -8,7 +8,7 @@ var Question = function(question){
     this.question=question.question;
     this.status=question.status;
     this.answer=question.answer;
-    this.created_at = new Date();
+   // this.created_at = new Date();
 };
 
 

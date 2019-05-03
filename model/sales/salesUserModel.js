@@ -11,7 +11,7 @@ var Salesuser = function (salesuser) {
     this.referalcode = salesuser.referalcode;
     this.localityid = salesuser.localityid;
     this.password = salesuser.password;
-    this.created_at = new Date();
+  //  this.created_at = new Date();
     this.id_proof = salesuser.id_proof;
     this.add_proof = salesuser.add_proof;
     this.birth_cer = salesuser.birth_cer;
@@ -197,7 +197,7 @@ Salesuser.edit_sales_users = function (req, result) {
         result(null, resobj);
     } else {
 
-        var staticquery = "UPDATE Sales_QA_employees SET updated_at = ?, ";
+        var staticquery = "UPDATE Sales_QA_employees SET  ";
         var column = '';
         for (const [key, value] of Object.entries(req)) {
             console.log(`${key} ${value}`);
@@ -211,8 +211,8 @@ Salesuser.edit_sales_users = function (req, result) {
         }
 
        var  query = staticquery + column.slice(0, -1) + " where id = " + req.id;
-        console.log(query);
-        sql.query(query,[new Date()], function (err, res) {
+       
+        sql.query(query, function (err, res) {
             if (err) {
                 console.log("error: ", err);
                 result(err, null);

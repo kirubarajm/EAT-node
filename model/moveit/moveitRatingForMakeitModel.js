@@ -9,7 +9,7 @@ var MoveitRatingForMakeit = function (moveitratingformakeit) {
     this.orderid = moveitratingformakeit.orderid;
     this.rating = moveitratingformakeit.rating;
     this.enabled = moveitratingformakeit.enabled;
-    this.created_at = new Date();    
+  //  this.created_at = new Date();    
 };
 
 
