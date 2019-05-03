@@ -679,5 +679,7 @@ app.route('/masters/regionlist')
 app.route('/masters/cuisinelist')
   .get(cusine.list_all_Cusine);
 
+  app.route('/procedure')
+  .get(region.pro_call);
 };
 

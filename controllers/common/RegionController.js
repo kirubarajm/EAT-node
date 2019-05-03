@@ -64,3 +64,11 @@ exports.delete_a_Region = function(req, res) {
   });
 };
 
+exports.pro_call = function(req, res) {
+  Region.procall( req, function(err, faq) {
+  if (err)
+    res.send(err);
+  res.json(faq);
+});
+};
+

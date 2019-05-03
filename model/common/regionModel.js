@@ -111,6 +111,26 @@ Region.getAllregion = function getAllregion(result) {
             });   
 };
 
+Region.procall= function procall(req,result) {
+
+    sql.query("CALL `eattovo`.`eatusers`()", function (err, res) {
+
+            if(err) {
+                console.log("error: ", err);
+                result(null, err);
+            }
+            else{
+                let sucobj='true';
+                let resobj = {  
+                success: sucobj,
+                result: res 
+                };
+                console.log("resobj: ", resobj);
+                result(null, resobj);
+            }
+        });   
+};
+
 Region.updateById = function(id, user, result){
   sql.query("UPDATE Region SET task = ? WHERE faqid = ?", [task.task, id], function (err, res) {
           if(err) {
