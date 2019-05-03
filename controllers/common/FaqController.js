@@ -38,7 +38,7 @@ exports.create_a_faq = function(req, res) {
 
 
 exports.read_a_faq = function(req, res) {
-  Faq.getFaqById(req.params.typeid, function(err, faq) {
+  Faq.getFaqById(req.params.id, function(err, faq) {
     if (err)
       res.send(err);
     res.json(faq);

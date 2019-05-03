@@ -1139,6 +1139,7 @@ Eatuser.eat_user_post_registration = function (req, result) {
             let message = "Updated successfully"
             let resobj = {
                 success: sucobj,
+                status:true,
                 message: message
             };
 

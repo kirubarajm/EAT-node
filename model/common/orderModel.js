@@ -1308,7 +1308,35 @@ Order.online_order_place_conformation = function(order_place, result){
 
 Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, result){
      
-             sql.query("Select ors.orderid,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" + req.userid +"' and ors.orderstatus < 6 and ors.lock_status = 0 ", function (err, res) {
+
+    sql.query("select * from Orders where userid ='"+req.userid+"' and orderstatus < 6 and lock_status = 0 ", function (err, res) {
+       
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          
+
+            if (res.length === 0) {
+
+                let sucobj=true;
+                let message = "Active order not found!";
+                     let resobj = {  
+                     success: sucobj,
+                     status : false,
+                     message : message,
+                     result: res
+                     }; 
+     
+                  result(null, resobj);
+
+                
+            }else{
+
+
+
+             sql.query("Select ors.orderid,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='"+req.userid+"' and ors.orderstatus < 6 and ors.lock_status = 0 ", function (err, res1) {
        
               if(err) {
                   console.log("error: ", err);
@@ -1316,18 +1344,18 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
               }
               else{
                 
-               
-                for (let i = 0; i < res.length; i++) {
+              
+                for (let i = 0; i < res1.length; i++) {
                     
-                    res[i].distance = res[i].distance.toFixed(2);
+                    res1[i].distance = res1[i].distance.toFixed(2);
                         //15min Food Preparation time , 3min 1 km
-                        eta = 15 + (3 * res[i].distance) ;
+                        eta = 15 + (3 * res1[i].distance) ;
                         
-                        res[i].eta =   Math.round(eta) +" mins" ;
+                        res1[i].eta =   Math.round(eta) +" mins" ;
 
-                        if (res[i].items) {
-                            var items =  JSON.parse(res[i].items);
-                            res[i].items=items.item;
+                        if (res1[i].items) {
+                            var items =  JSON.parse(res1[i].items);
+                            res1[i].items=items.item;
                            }
                 }
                  
@@ -1335,13 +1363,16 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
                   let sucobj=true;
                      let resobj = {  
                      success: sucobj,
-                     result: res
+                     status : true,
+                     result: res1
                      }; 
      
                   result(null, resobj);
               }   
           });
-     
+        }
+        }
+    });
      };
      
 
@@ -1359,28 +1390,7 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
 
             if (res.length == 0) {
                   
-                //     for (let i = 0; i < orderitems.length; i++) {
-
-                //             const res1 = await query("Select productid,quantity,product_name,price From Product where productid = '"+orderitems[i].productid+"'");
-                //            // console.log(res1);
-                //             if (res1[0].quantity <=orderitems[i].quantity ) {
-
-                //                 orderitems[i].availablity = false;
-                //                 orderitems[i].availablequantity = res1[0].quantity;
-                //                 tempmessage = tempmessage + res1[0].product_name + ",";
-
-                               
-                //             }else{
-            
-                //                 orderitems[i].availablity = true;
-                //                 orderitems[i].price =  res1[0].price * orderitems[i].quantity; 
-                //                 orderitems[i].availablequantity = res1[0].quantity;
-
-                //                // orderitems[i].availablequantity = productquantity.push(res1);
-   
-                //             }                
-                     
-                // }              
+               
 
 
                  Makeituser.read_a_cartdetails_makeitid(req,orderitems, async function (err, res3) {
