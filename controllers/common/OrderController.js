@@ -21,12 +21,13 @@ exports.eatuser_order_create = function (req, res) {
   //console.log(order_item);
   //console.log(new_Order);
   //handles null error 
-  if (!new_Order.userid  || !new_Order.makeit_user_id ) {
-
-    res.status(400).send({ error: true, message: 'Please provide userid/makeit_user_id' });
-
-  }
-  else {
+  if (!req.body.aid) {
+    res.status(400).send({ error: true, status: false, message: 'Please provide Address Id' });
+  }else if (!req.body.userid) {
+    res.status(400).send({ error: true, status: false, message: 'Please provide userid' });
+  }else if (!req.body.makeit_user_id) {
+    res.status(400).send({ error: true, status: false, message: 'Please provide makeit_user_id' });
+  } else {
     Order.createOrder(req.body, order_item, function (err, result) {
       if (err)
         res.send(err);
@@ -282,9 +283,18 @@ exports.live_order_list_byeatuser = function(req, res) {
 
 exports.read_a_proceed_to_pay = function (req, res) {
   var orderitems = req.body.orderitems;
+  if (!req.body.aid) {
+    res.status(400).send({ error: true, status: false, message: 'Please provide Address Id' });
+  }else if (!req.body.userid) {
+    res.status(400).send({ error: true, status: false, message: 'Please provide userid' });
+  }else if (!req.body.makeit_user_id) {
+    res.status(400).send({ error: true, status: false, message: 'Please provide makeit_user_id' });
+  } else {
+  
   Order.read_a_proceed_to_pay(req.body, orderitems, function (err, user) {
     if (err)
       res.send(err);
     res.json(user);
   });
+  }
 };

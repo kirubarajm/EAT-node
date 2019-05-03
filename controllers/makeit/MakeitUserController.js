@@ -220,11 +220,16 @@ exports.update_makeit_users = function (req, res) {
 
 exports.read_a_cartdetails = function (req, res) {
   var orderitems = req.body.orderitems;
+  if (!req.body.makeit_user_id) {
+    res.status(400).send({ error: true,status:false, message: 'Please provide makeit_user_id' });
+  }
+  else {
   Makeituser.read_a_cartdetails_makeitid(req.body, orderitems, function (err, user) {
     if (err)
       res.send(err);
     res.json(user);
   });
+}
 };
 
 
@@ -235,7 +240,6 @@ exports.edit_makeit_user_byid = function (req, res) {
     res.status(400).send({ error: true, message: 'Please provide makeit userid' });
   }
   else {
-
     Makeituser.edit_makeit_users(req.body,cuisines, function (err, user) {
       if (err)
         res.send(err);
