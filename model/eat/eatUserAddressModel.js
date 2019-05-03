@@ -12,7 +12,7 @@ var EatuserAddress = function(eatuseraddress){
     this.lat = eatuseraddress.lat;
     this.lon = eatuseraddress.lon;
     this.landmark = eatuseraddress.landmark;
-    this.created_at = new Date();
+  //  this.created_at = new Date();
     this.address_type = eatuseraddress.address_type;
     this.delete_status = eatuseraddress.delete_status || 0;
   

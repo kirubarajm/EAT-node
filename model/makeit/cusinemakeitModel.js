@@ -6,7 +6,7 @@ var sql = require('../db.js');
 var Cusinemakeit = function (cusinemakeit) {
     this.cuisineid = cusinemakeit.cuisineid;
     this.makeit_userid = cusinemakeit.makeit_userid;
-    this.created_at = new Date();
+  //  this.created_at = new Date();
 };
 
 Cusinemakeit.createCusinemakeit = function createCusinemakeit(cuisine, result) {

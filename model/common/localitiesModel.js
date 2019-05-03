@@ -6,7 +6,7 @@ var Localities = function(locality){
     this.localityname = locality.localityname;
     this.lat_range=locality.lat_range;
     this.long_range=locality.long_range;
-    this.created_at = new Date();
+    //this.created_at = new Date();
 };
 
 Localities.createLocality = function createLocality(newUser, result) {    

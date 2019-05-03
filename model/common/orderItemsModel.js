@@ -7,7 +7,7 @@ var Orderitems = function (orderitems) {
     this.productid = orderitems.productid;
     this.quantity = orderitems.quantity;
     this.gst = orderitems.gst || 0;
-    this.created_at = new Date();
+   // this.created_at = new Date();
     this.price = orderitems.price || 0;
     this.orderid = orderitems.orderid;
 

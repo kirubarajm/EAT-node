@@ -6,7 +6,7 @@ var Makeitrating = function (makeitrating) {
     this.makeit_userid = makeitrating.makeit_userid;
     this.rating = makeitrating.rating;
     this.sales_emp_id = makeitrating.sales_emp_id;
-    this.created_at = new Date();    
+    //this.created_at = new Date();    
 };
 
 

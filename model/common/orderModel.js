@@ -19,7 +19,7 @@ const query = util.promisify(sql.query).bind(sql);
 //Task object constructor
 var Order = function (order) {
     this.userid = order.userid;
-    this.ordertime = moment().format('YYYY-MM-DD HH:mm:ss');
+   // this.ordertime = moment().format('YYYY-MM-DD HH:mm:ss');
     this.locality = order.locality;
     this.delivery_charge = order.delivery_charge;
     this.ordertype = order.ordertype||0;
@@ -38,7 +38,7 @@ var Order = function (order) {
     this.moveit_remarks_order = order.moveit_remarks_order;
     this.makeit_expected_preparing_time = order.makeit_expected_preparing_time;
     this.makeit_actual_preparing_time = order.makeit_actual_preparing_time;
-    this.created_at = moment().format('YYYY-MM-DD HH:mm:ss');
+   // this.created_at = moment().format('YYYY-MM-DD HH:mm:ss');
     this.price = order.price;
     this.payment_status = order.payment_status;
     this.cus_address = order.cus_address;
@@ -996,8 +996,31 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
 
 
  Order.orderviewbyeatuser = function(req, result){
+    sql.query("select * from Orders where orderid =" + req.orderid +" ", function (err, res) {
+       
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          
+
+            if (res.length === 0) {
+
+                let sucobj=true;
+                let message = "Order not found!";
+                     let resobj = {  
+                     success: sucobj,
+                     status : false,
+                     message : message,
+                     result: res
+                     }; 
      
-    console.log(req);
+                  result(null, resobj);
+
+                
+            }else{
+    
     // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
         sql.query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid =" + req.orderid +" ", function (err, res) {
   
@@ -1045,13 +1068,38 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
              result(null, resobj);
          }   
      });
- 
-
+    }
+    }
+});
 };
 
 
 Order.orderlistbyeatuser = function(req, result){
      
+    sql.query("select * from Orders where userid ='"+req.userid+"' and orderstatus = 6", function (err, res) {
+       
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          
+
+            if (res.length === 0) {
+
+                let sucobj=true;
+                let message = "Active order not found!";
+                     let resobj = {  
+                     success: sucobj,
+                     status : false,
+                     message : message,
+                     result: res
+                     }; 
+     
+                  result(null, resobj);
+
+                
+            }else{
    // ,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items
     // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
         sql.query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" + req.userid +"'", function (err, res) {
@@ -1088,13 +1136,16 @@ Order.orderlistbyeatuser = function(req, result){
              let sucobj=true;
                 let resobj = {  
                 success: sucobj,
+                status : true,
                 result: res
                 }; 
 
              result(null, resobj);
          }   
      });
-
+         }
+}
+});
 };
 
 

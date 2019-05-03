@@ -4,7 +4,7 @@ var sql = require('../db.js');
 //Task object constructor
 var Region = function(region){
     this.regionname=region.regionname;
-    this.created_at = new Date();
+   // this.created_at = new Date();
 };
 
 

@@ -21,10 +21,11 @@ var Product = function(product){
     this.friday=product.friday || 0;
     this.saturday=product.saturday || 0;
     this.sunday=product.sunday || 0;
-    this.created_at = new Date();
+    this.delete_status=product.delete_status || 0;
+  //  this.created_at = new Date();
     this.quantity = product.quantity ||0;
     this.cusine = product.cusine;
-    this.updated_at = new Date()
+  //  this.updated_at = new Date()
 
 };
 
@@ -328,7 +329,7 @@ Product.quantitydecrease = function(orderlist, result){
 Product.update_a_product_by_makeit_userid = function(req,items, result){
 
   console.log(req);
-    var staticquery = "UPDATE Product SET updated_at = ?,";
+    var staticquery = "UPDATE Product SET ";
     var column = '';
 
     for (const [key, value] of Object.entries(req)) {
@@ -356,7 +357,7 @@ Product.update_a_product_by_makeit_userid = function(req,items, result){
 
    var  query = staticquery + column.slice(0, -1)  + " where productid = " + req.productid;
     
-    sql.query(query, [new Date()], function (err, res) {
+    sql.query(query, function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -415,6 +416,60 @@ Product.productview_by_productid = function productview_by_productid(req,result)
            
           }
       });   
+};
+
+
+Product.update_delete_status =  function(id, result){
+ 
+  
+  sql.query(" select * from Product where productid = "+id+"", function (err, res) {
+    if(err) {
+        console.log("error: ", err);
+        result(null, err);
+    }
+    else{
+      console.log(res[0].active_status);
+
+          if (res[0].active_status == 0) {
+            console.log('test1');
+            sql.query("UPDATE Product SET delete_status = 1 WHERE productid = "+id+"",  function (err, res1) {
+              if(err) {
+                  console.log("error: ", err);
+                    result(null, err);
+                 }
+               else{   
+               
+                sql.query("UPDATE Productitem SET delete_status = 1 WHERE productid = "+id+"", function (err, res2) {
+                  if(err) {
+                      console.log("error: ", err);
+                        result(null, err);
+                     }
+                }); 
+                    let sucobj=true;
+                    let resobj = {  
+                      success: sucobj,
+                      status:true,
+                      message: "Product Delete successfully",
+                      }; 
+        
+                   result(null, resobj);
+                    }
+                }); 
+          } else if(res[0].active_status == 1){
+            console.log('test');
+                    let sucobj=true;
+                    let resobj = {  
+                      success: sucobj,
+                      status:false,
+                      message: "Product is live now, You can't delete",
+                      }; 
+        
+                   result(null, resobj);
+          }
+
+
+          }
+  });      
 };
 
 module.exports= Product;

@@ -443,7 +443,12 @@ module.exports = function (app) {
     .get(faq.list_all_faqbytype);
 
   app.route('/admin/feedback')
-    .get(feedback.list_all_feedback)
+    .get(feedback.list_all_feedback);
+
+  app.route('/admin/productdelete')
+    .put(product.delete_status_product)
+
+
 
 
 
@@ -583,10 +588,10 @@ module.exports = function (app) {
     .post(makeituser.read_a_cartdetails);
 
   app.route('/eat/dishlist')
-    .post(eatuser.eat_dish_sort);
+    .post(eatuser.eat_dish_sort_filter);
 
   app.route('/eat/kitchenlist')
-    .post(eatuser.eat_kitchen_sort);
+    .post(eatuser.eat_kitchen_sort_filter);
 
   app.route('/eat/fav')
     .post(fav.create_a_fav)
@@ -677,7 +682,7 @@ app.route('/masters/regionlist')
   .get(region.list_all_region);
 
 app.route('/masters/cuisinelist')
-  .get(cusine.list_all_Cusine);
+  .get(cusine.list_all_Cuisine);
 
   app.route('/procedure')
   .get(region.pro_call);

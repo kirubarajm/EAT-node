@@ -59,10 +59,10 @@ exports.update_a_product = function(req, res) {
 
 
 exports.delete_a_product = function(req, res) {
- Product.remove( req.params.id, function(err, product) {
+ Product.update_delete_status( req.params.id, function(err, product) {
     if (err)
       res.send(err);
-    res.json({ message: 'Product successfully deleted' });
+    res.json(product);
   });
 };
 
@@ -170,3 +170,14 @@ else{
     res.send(product);
   });
 };
+
+
+exports.delete_status_product = function(req, res) {
+var  product = req.body.product;
+  Product.update_delete_status( product, function(err, product) {
+     if (err)
+     res.send(err);
+     res.json(product);
+   });
+ };
+ 

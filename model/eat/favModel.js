@@ -5,7 +5,7 @@ var sql = require('../db.js');
 var Fav = function(fav){
     this.eatuserid = fav.eatuserid;
     this.productid=fav.productid || 0;
-    this.created_at = new Date();
+    //this.created_at = new Date();
     this.makeit_userid = fav.makeit_userid || 0;
 };
 
@@ -151,9 +151,9 @@ Fav.getAllFavByEatUser = function getAllFavByEatUser(userId,result) {
 
 Fav.read_a_dishlist_byeatuserid = function read_a_dishlist_byeatuserid(userId,result) {
 
-    var query = "Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img as makeit_image, pt.product_name,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid=pt.cusine  left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid=pt.productid where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = '"+userId+"' ";
+    var query = "Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img as makeit_image,mu.region,re.regionname, pt.product_name,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid=pt.cusine  left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid=pt.productid left join Region re on re.regionid = mu.region where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = '"+userId+"' ";
    
-    console.log(query);
+  //  console.log(query);
 
     sql.query(query, function (err, res) {
 
@@ -162,7 +162,7 @@ Fav.read_a_dishlist_byeatuserid = function read_a_dishlist_byeatuserid(userId,re
             result(err, null);
         }
         else{
-             let sucobj='true';
+             let sucobj='true'; 
             let resobj = {  
             success: sucobj,
             result:res   
@@ -179,8 +179,11 @@ Fav.read_a_dishlist_byeatuserid = function read_a_dishlist_byeatuserid(userId,re
 
 Fav.read_a_fav_kitchenlist_byeatuserid = function read_a_fav_kitchenlist_byeatuserid(userId,result) {
 
+    var query = "Select mu.userid as makeituserid,mu.name as makeitusername,mu.brandname as makeitbrandname,re.regionname,ly.localityname,mu.rating,mu.region,mu.costfortwo,mu.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mu left join Fav fa on fa.makeit_userid=mu.userid left join Cuisine_makeit cm on cm.makeit_userid = mu.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mu.localityid=ly.localityid left join Region re on re.regionid = mu.region where mu.verified_status = 1 and fa.productid= 0 and fa.eatuserid   = ? ";
     
-    sql.query("Select mu.userid as makeituserid,mu.name as makeitusername,mu.brandname as makeitbrandname,mu.rating rating,mu.region,mu.costfortwo,mu.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav from MakeitUser mu left join Fav fa on fa.makeit_userid=mu.userid where mu.verified_status = 1 and fa.productid= 0 and fa.eatuserid   = ? ", userId, function (err, res) {
+    //console.log(query);
+    
+    sql.query(query, userId, function (err, res) {
 
         if(err) {
             console.log("error: ", err);
@@ -188,6 +191,15 @@ Fav.read_a_fav_kitchenlist_byeatuserid = function read_a_fav_kitchenlist_byeatus
         }
         else{
             
+            for (let i = 0; i < res.length; i++) {
+                    
+                 
+             if (res[i].cuisines) {
+                 res[i].cuisines = JSON.parse(res[i].cuisines)
+                }
+
+
+             }
              let sucobj='true';
             let resobj = {  
             success: sucobj,

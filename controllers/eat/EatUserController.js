@@ -115,14 +115,14 @@ exports.eat_makeit_product_list = function(req, res) {
 };
 
 
-exports.eat_dish_sort = function(req, res) {
+exports.eat_dish_sort_filter = function(req, res) {
  
   if(!req.body.lat){
     res.status(400).send({ error: true, message: 'Please provide lat' });
   }else if(!req.body.lon){
     res.status(400).send({ error: true, message: 'Please provide lan' });
   }else{
-  Eatuser.get_eat_dish_list_sort(req.body,function(err, user) {
+  Eatuser.get_eat_dish_list_sort_filter(req.body,function(err, user) {
     console.log('controller')
     if (err)
       res.send(err);
@@ -133,13 +133,13 @@ exports.eat_dish_sort = function(req, res) {
 }
 
 
-exports.eat_kitchen_sort = function(req, res) {
+exports.eat_kitchen_sort_filter = function(req, res) {
   if(!req.body.lat){
     res.status(400).send({ error: true, message: 'Please provide lat' });
   }else if(!req.body.lon){
     res.status(400).send({ error: true, message: 'Please provide lan' });
   }else{
-  Eatuser.get_eat_kitchen_list_sort(req.body,function(err, user) {
+  Eatuser.get_eat_kitchen_list_sort_filter(req.body,function(err, user) {
     console.log('controller')
     if (err)
       res.send(err);

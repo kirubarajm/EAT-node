@@ -16,7 +16,7 @@ var QueryAnswer = function(queryanswer){
     this.userid=queryanswer.userid || 0;
     this.user_read=queryanswer.user_read || 0 ;
     this.admin_read=queryanswer.admin_read || 1;
-    this.created_at = new Date();
+  //  this.created_at = new Date();
 };
 
 
@@ -34,6 +34,7 @@ QueryAnswer.createanswer = function createanswer(req, result) {
                 let message = "replied successfully";
                 let resobj = {  
                 success: sucobj,
+                status : true,
                 message:message
                 }; 
 

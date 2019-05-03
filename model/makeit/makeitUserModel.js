@@ -21,7 +21,7 @@ var Makeituser = function (makeituser) {
     this.lon = makeituser.lon;
     this.password = makeituser.password;
     this.brandname = makeituser.brandname || '';
-    this.created_at = new Date();
+  //  this.created_at = new Date();
     this.bank_name = makeituser.bank_name;
     this.ifsc = makeituser.ifsc;
     this.bank_holder_name = makeituser.bank_holder_name;
@@ -714,7 +714,7 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
 
         result(null, resobj);
     } else {  
-        staticquery = "UPDATE MakeitUser SET updated_at = ?,";
+        staticquery = "UPDATE MakeitUser SET ";
         var column = '';
         for (const [key, value] of Object.entries(req)) {
             //  console.log(`${key} ${value}`); 
@@ -731,9 +731,9 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
 
       var  query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
 
-      console.log(query);
+     // console.log(query);
     
-        sql.query(query,[new Date()], function (err, res) {
+        sql.query(query, function (err, res) {
             if (err) {
                 console.log("error: ", err);
                 result(err, null);
@@ -756,7 +756,7 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
                                 cuisines_temp++;
                             }
                             
-                           console.log(res2);
+                           
                            
                         });
                     }
@@ -779,20 +779,20 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
                                 remove_temp++;
                                
                             }
-                            console.log(res3);
+                          
                             
                          });
                      }
                    }
 
-                    console.log(remove_temp);
-                    console.log(cuisines_temp);
+                  
                     
 
                     let sucobj = true;
                     let message = "Updated successfully"
                     let resobj = {
                         success: sucobj,
+                        status : true,
                         message: message
                     };
     

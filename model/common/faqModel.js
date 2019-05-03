@@ -7,7 +7,7 @@ var Faq = function(faq){
     this.question=faq.question;
     this.answer=faq.answer;
     this.type=faq.type;
-    this.created_at = new Date();
+   // this.created_at = new Date();
 };
 
 

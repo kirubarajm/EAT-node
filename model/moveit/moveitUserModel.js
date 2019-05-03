@@ -15,7 +15,7 @@ var Moveituser = function (moveituser) {
     this.referalcode = moveituser.referalcode;
     this.localityid = moveituser.localityid;
     this.password = moveituser.password;
-    this.created_at = new Date();
+  //  this.created_at = new Date();
     this.bank_name = moveituser.bank_name;
     this.ifsc = moveituser.ifsc;
     this.bank_holder_name = moveituser.bank_holder_name;
@@ -306,7 +306,7 @@ Moveituser.edit_moveit_user = function (req, result) {
         result(null, resobj);
     } else {
 
-         var staticquery = "UPDATE MoveitUser SET updated_at = ?,";
+         var staticquery = "UPDATE MoveitUser SET ";
          var column = '';
         for (const [key, value] of Object.entries(req)) {
             //  console.log(`${key} ${value}`); 
@@ -319,8 +319,8 @@ Moveituser.edit_moveit_user = function (req, result) {
 
         }
        var query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
-        console.log(query);
-        sql.query(query,[new Date()], function (err, res) {
+        //console.log(query);
+        sql.query(query, function (err, res) {
             if (err) {
                 console.log("error: ", err);
                 result(err, null);
@@ -329,6 +329,7 @@ Moveituser.edit_moveit_user = function (req, result) {
                 let message = "Updated successfully"
                 let resobj = {
                     success: sucobj,
+                    status : true,
                     message: message
                 };
 

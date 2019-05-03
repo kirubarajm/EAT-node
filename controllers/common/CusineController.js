@@ -1,9 +1,9 @@
 'use strict';
 
-var Cusine = require('../../model/common/cusineModel');
+var Cuisine = require('../../model/common/cusineModel');
 
-exports.list_all_Cusine = function(req, res) {
-    Cusine.getAllcusine(function(err, faq) {
+exports.list_all_Cuisine = function(req, res) {
+  Cuisine.getAllcuisine(function(err, faq) {
     console.log('controller')
     if (err)
       res.send(err);
@@ -13,8 +13,8 @@ exports.list_all_Cusine = function(req, res) {
 };
 
 
-exports.getRegionByType = function(req, res) {
-    Cusine.getRegionByType(req.params.id, function(err, faq) {
+exports.getCuisineByType = function(req, res) {
+  Cuisine.getCuisineByType(req.params.id, function(err, faq) {
     if (err)
       res.send(err);
     res.json(faq);
@@ -23,12 +23,12 @@ exports.getRegionByType = function(req, res) {
 
 
 
-exports.create_a_Region = function(req, res) {
-  var new_ques = new Cusine(req.body);
+exports.create_a_Cuisine = function(req, res) {
+  var new_ques = new Cuisine(req.body);
   console.log(new_ques);
   //handles null error 
   
-  Cusine.createquestions(new_ques, function(err, result) {
+  Cuisine.createCuisine(new_ques, function(err, result) {
     if (err)
       res.send(err);
     res.json(result);
@@ -37,9 +37,9 @@ exports.create_a_Region = function(req, res) {
 };
 
 
-exports.read_a_question = function(req, res) {
+exports.read_a_Cuisine = function(req, res) {
 
-    Cusine.read_a_question_id(req.body, function(err, result) {
+  Cuisine.read_a_Cusine_id(req.body, function(err, result) {
     if (err)
       res.send(err);
     res.json(result);
@@ -47,8 +47,8 @@ exports.read_a_question = function(req, res) {
 };
 
 
-exports.update_a_Region = function(req, res) {
-    Cusine.updateById(req.params.id, new Faq(req.body), function(err, faq) {
+exports.update_a_Cuisine = function(req, res) {
+  Cuisine.updateById(req.params.id, new Faq(req.body), function(err, faq) {
     if (err)
       res.send(err);
     res.json(faq);
@@ -56,11 +56,11 @@ exports.update_a_Region = function(req, res) {
 };
 
 
-exports.delete_a_Region = function(req, res) {
-    Cusine.remove( req.params.id, function(err, faq) {
+exports.delete_a_Cuisine = function(req, res) {
+  Cuisine.remove( req.params.id, function(err, Cuisine) {
     if (err)
       res.send(err);
-    res.json({ message: 'Faq successfully deleted' });
+    res.json(Cuisine);
   });
 };
 

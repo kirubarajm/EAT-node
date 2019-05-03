@@ -9,7 +9,7 @@ var Documentmoveit = function (documentmoveit) {
     this.vech_rcbook = documentmoveit.vech_rcbook;
     this.photo = documentmoveit.photo;
     this.legal_document = documentmoveit.legal_document;
-    this.created_at = new Date();
+    //this.created_at = new Date();
 };
 
 
