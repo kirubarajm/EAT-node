@@ -1074,7 +1074,8 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
 };
 
 
-Order.orderlistbyeatuser = function(req, result){
+Order.orderlistbyeatuser = async function(req, result){
+    var orderitem = [];
      
     sql.query("select * from Orders where userid ='"+req.userid+"' and orderstatus = 6", function (err, res) {
        
@@ -1102,8 +1103,13 @@ Order.orderlistbyeatuser = function(req, result){
             }else{
    // ,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items
     // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
-        sql.query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" + req.userid +"'", function (err, res) {
+    //    sql.query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" + req.userid +"'", function (err, res) {
   
+            var query = "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" + req.userid +"' and ors.orderstatus = 6 group by ors.orderid ";
+         
+            console.log(query);
+            sql.query(query, async function (err, res1) {
+     
          if(err) {
              console.log("error: ", err);
              result(null, err);
@@ -1111,33 +1117,38 @@ Order.orderlistbyeatuser = function(req, result){
          else{
            
           
-            for (let i = 0; i < res.length; i++) {
-                   
-               if (res[i].userdetail) {
-                res[i].userdetail = JSON.parse(res[i].userdetail)
-               }
-              
-               if (res[i].makeitdetail) {
-                res[i].makeitdetail = JSON.parse(res[i].makeitdetail)
-               }
-               if (res[i].moveitdetail) {
-                res[i].moveitdetail = JSON.parse(res[i].moveitdetail)  
-               }
+            for (let i = 0; i < res1.length; i++) {
+                
+             
+                if (res1[i].userdetail) {
+                    res1[i].userdetail = JSON.parse(res1[i].userdetail)
+                   }
+                  
+                   if (res1[i].makeitdetail) {
+                    res1[i].makeitdetail = JSON.parse(res1[i].makeitdetail)
+                   }
+                   if (res1[i].moveitdetail) {
+                    res1[i].moveitdetail = JSON.parse(res1[i].moveitdetail)  
+                   }
+            
+                     if (res1[i].items) {
+                     var items =  JSON.parse(res1[i].items);
+                    res1[i].items=items;
 
-              
-               if (res[i].items) {
-                var items =  JSON.parse(res[i].items);
-                res[i].items=items.item;
                }
               
+            
             }
             
+        
+
+
 
              let sucobj=true;
                 let resobj = {  
                 success: sucobj,
                 status : true,
-                result: res
+                result: res1
                 }; 
 
              result(null, resobj);
@@ -1385,8 +1396,6 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
                 
             }else{
 
-
-
              sql.query("Select ors.orderid,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='"+req.userid+"' and ors.orderstatus < 6 and ors.lock_status = 0 ", function (err, res1) {
        
               if(err) {
@@ -1396,7 +1405,7 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
               else{
                 
               
-                for (let i = 0; i < res1.length; i++) {
+                for (let i = 0; i < res2.length; i++) {
                     
                     res1[i].distance = res1[i].distance.toFixed(2);
                         //15min Food Preparation time , 3min 1 km
@@ -1441,8 +1450,6 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
 
             if (res.length == 0) {
                   
-               
-
 
                  Makeituser.read_a_cartdetails_makeitid(req,orderitems, async function (err, res3) {
                     if (err){

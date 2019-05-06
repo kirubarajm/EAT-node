@@ -448,6 +448,11 @@ module.exports = function (app) {
   app.route('/admin/productdelete')
     .put(product.delete_status_product)
 
+    app.route('/admin/product/:id')
+    .get(product.read_a_product)
+    .put(product.update_a_product)
+    .delete(product.delete_a_product);
+
 
 
 
