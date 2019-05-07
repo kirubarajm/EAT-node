@@ -24,7 +24,7 @@ var Product = function(product){
     this.delete_status=product.delete_status || 0;
   //  this.created_at = new Date();
     this.quantity = product.quantity ||0;
-    this.cusine = product.cusine;
+    this.cusine = product.cusine || 1;
   //  this.updated_at = new Date()
 
 };

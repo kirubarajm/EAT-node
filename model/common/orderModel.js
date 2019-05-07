@@ -1232,6 +1232,7 @@ Order.eatcreateOrder = async function eatcreateOrder(newOrder, orderItems, resul
                   let mesobj = "Order Created successfully";
                   let resobj = {  
                     success: sucobj,
+                    status:true,
                     message:mesobj,
                     orderid: orderid
                     }; 
@@ -1255,7 +1256,7 @@ Order.eatcreateOrder = async function eatcreateOrder(newOrder, orderItems, resul
 
                for (var i = 0; i < orderItems.length; i++) {
                    var orderitemlock = new Orderlock(orderItems[i]);
-                   orderitemlock.orderid = orderid;
+                    orderitemlock.orderid = orderid;
 
                      var orderitem = new Orderitem(orderItems[i]);
                      orderitem.orderid = orderid;
@@ -1476,7 +1477,7 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
                      console.log('cash on delivery');
                   }else if(req.payment_type === 1){
                       console.log('cash on online');
-                      ordercreatecashondelivery(req,res3.result[0].item);
+                      ordercreateonline(req,res3.result[0].item);
                   } 
                 }
                 }   
@@ -1504,8 +1505,8 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
                 orderitem.quantity = orderitems[i].cartquantity;
                 orderitem.price = orderitems[i].price;
                 var items = new Orderitem(orderitem);
-                
 
+                
                 Orderitem.createOrderitems(items, function (err, res2) {
                     if (err)
                     result.send(err);
@@ -1528,9 +1529,13 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
            });
          }
            
-            function ordercreateonline(){
+            function ordercreateonline(req,orderitems){
                  
-               sql.query("INSERT INTO Orders set ?", newOrder, function (err, res1) {
+                var new_Order = new Order(req);
+                // new_Order.locality = 'guindy';
+                console.log(new_Order);
+                 new_Order.delivery_charge = delivery_charge;
+               sql.query("INSERT INTO Orders set ?", new_Order, function (err, res1) {
           
                   if (err) {
                       console.log("error: ", err);
@@ -1540,29 +1545,33 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
                   var orderid = res1.insertId
    
                   for (var i = 0; i < orderitems.length; i++) {
-                      var orderitemlock = new Orderlock(orderitems[i]);
-                      orderitemlock.orderid = orderid;
-   
-                        var orderitem = new Orderitem(orderitems[i]);
-                        orderitem.orderid = orderid;
-       
-                        Orderitem.createOrderitems(orderitem, function (err, orderitemresponce) {
-                       if (err)
-                       result.send(err);
-                           
-                   });
+                            var orderitem = {};
+                            orderitem.orderid = orderid;
+                            orderitem.productid = orderitems[i].productid;
+                            orderitem.quantity = orderitems[i].cartquantity;
+                            orderitem.price = orderitems[i].price;
+                            var items = new Orderitem(orderitem);
+
+                            // var orderitemlock = new Orderlock(orderitem[i],orderid);
+                            // //orderitemlock.orderid = orderid;
+
+                            // console.log('items' + items);
+                
+                        Orderitem.createOrderitems(items, function (err, orderitemresponce) {
+                        if (err)
+                        result.send(err);    
+                        });
                
-                       Orderlock.lockOrderitems(orderitemlock, function (err, orderitemresponce) {
-                          if (err)
-                          result.send(err);
-                              
-                      });
-                      
-                     }
+                    //    Orderlock.lockOrderitems(orderitemlock, function (err, orderlockresponce) {
+                    //       if (err)
+                    //       result.send(err);         
+                    //    });
+                       }
        
                         let sucobj=true;
                         let resobj = {  
                           success: sucobj,
+                          status:true,
                           orderid: orderid
                           }; 
                           result(null, resobj);

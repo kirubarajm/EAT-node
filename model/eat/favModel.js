@@ -151,7 +151,32 @@ Fav.getAllFavByEatUser = function getAllFavByEatUser(userId,result) {
 
 Fav.read_a_dishlist_byeatuserid = function read_a_dishlist_byeatuserid(userId,result) {
 
-    var query = "Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img as makeit_image,mu.region,re.regionname, pt.product_name,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid=pt.cusine  left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid=pt.productid left join Region re on re.regionid = mu.region where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = '"+userId+"' ";
+    sql.query("select * from Fav where eatuserid ='"+userId+"' and productid != 0", function (err, res) {
+       
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          
+
+            if (res.length === 0) {
+
+                let sucobj=true;
+                let message = "Favourite  kitchen  not found!";
+                     let resobj = {  
+                     success: sucobj,
+                     status : false,
+                     message : message,
+                     result: res
+                     }; 
+     
+                  result(null, resobj);
+
+                
+            }else{
+
+    var query = "Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img as makeit_image,mu.region,re.regionname, pt.product_name,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid=pt.cusine  left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid=pt.productid left join Region re on re.regionid = mu.region where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = '"+userId+"'  group by productid";
    
   //  console.log(query);
 
@@ -173,15 +198,43 @@ Fav.read_a_dishlist_byeatuserid = function read_a_dishlist_byeatuserid(userId,re
         }
 
         });   
+    }
+}
+});   
 };
 
 
 
 Fav.read_a_fav_kitchenlist_byeatuserid = function read_a_fav_kitchenlist_byeatuserid(userId,result) {
 
-    var query = "Select mu.userid as makeituserid,mu.name as makeitusername,mu.brandname as makeitbrandname,re.regionname,ly.localityname,mu.rating,mu.region,mu.costfortwo,mu.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mu left join Fav fa on fa.makeit_userid=mu.userid left join Cuisine_makeit cm on cm.makeit_userid = mu.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mu.localityid=ly.localityid left join Region re on re.regionid = mu.region where mu.verified_status = 1 and fa.productid= 0 and fa.eatuserid   = ? ";
+    sql.query("select * from Fav where eatuserid ='"+userId+"' and makeit_userid != 0", function (err, res) {
+       
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+          
+
+            if (res.length === 0) {
+
+                let sucobj=true;
+                let message = "Favourite  kitchen  not found!";
+                     let resobj = {  
+                     success: sucobj,
+                     status : false,
+                     message : message,
+                     result: res
+                     }; 
+     
+                  result(null, resobj);
+
+                
+            }else{
+
+    var query = "Select mu.userid as makeituserid,mu.name as makeitusername,mu.brandname as makeitbrandname,re.regionname,ly.localityname,mu.rating,mu.region,mu.costfortwo,mu.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mu left join Fav fa on fa.makeit_userid=mu.userid left join Cuisine_makeit cm on cm.makeit_userid = mu.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mu.localityid=ly.localityid left join Region re on re.regionid = mu.region where mu.verified_status = 1 and fa.productid= 0 and fa.eatuserid   = ?  group by mu.userid";
     
-    //console.log(query);
+    console.log(query);
     
     sql.query(query, userId, function (err, res) {
 
@@ -203,6 +256,7 @@ Fav.read_a_fav_kitchenlist_byeatuserid = function read_a_fav_kitchenlist_byeatus
              let sucobj='true';
             let resobj = {  
             success: sucobj,
+            status : true,
             result:res   
 
             };
@@ -211,6 +265,10 @@ Fav.read_a_fav_kitchenlist_byeatuserid = function read_a_fav_kitchenlist_byeatus
         }
 
         });   
+         }
+        }
+    });   
+
 };
 
 
