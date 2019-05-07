@@ -3,6 +3,7 @@ var sql = require('../db.js');
 var constant = require('../constant.js');
 const util = require('util');
 const query = util.promisify(sql.query).bind(sql);
+var request = require('request');
 
 var Cusinemakeit = require('../../model/makeit/cusinemakeitModel');
 
@@ -34,28 +35,39 @@ var Makeituser = function (makeituser) {
     this.branch_name = makeituser.branch_name;
 };
 
-Makeituser.createUser = function createUser(newUser, result) {
+Makeituser.createUser = function createUser(newUser,otpdetails, result) {
 
+    console.log(otpdetails);
     if (newUser.appointment_status == null)
         newUser.appointment_status = 0;
 
+        sql.query("Select * from Otp where oid = '"+otpdetails.oid+"'" , function (err, res1) {             
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+                
+                console.log(res1[0].otp);
+                if(res1[0].otp == otpdetails.otp){
 
-    sql.query("Select * from MakeitUser where phoneno = '" + newUser.phoneno + "' OR email= '" + newUser.email + "' ", function (err, res) {
+    sql.query("Select * from MakeitUser where phoneno = '" + newUser.phoneno + "' OR email= '" + newUser.email + "' ", function (err, res2) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
         }
         else {
 
-            if (res.length == 0) {
-                sql.query("INSERT INTO MakeitUser set ?", newUser, function (err, res1) {
+            if (res2.length == 0) {
+
+                sql.query("INSERT INTO MakeitUser set ?", newUser, function (err, res3) {
 
                     if (err) {
                         console.log("error: ", err);
                         result(err, null);
                     } else {
 
-                        sql.query("Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ", res1.insertId, function (err, res) {
+                        sql.query("Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ", res1.insertId, function (err, res4) {
                             if (err) {
                                 console.log("error: ", err);
                                 result(err, null);
@@ -65,8 +77,9 @@ Makeituser.createUser = function createUser(newUser, result) {
                                 let message = "Registration Successfully";
                                 let resobj = {
                                     success: sucobj,
+                                    status: true,
                                     message: message,
-                                    result: res
+                                    result: res4
                                 };
 
                                 result(null, resobj);
@@ -81,6 +94,7 @@ Makeituser.createUser = function createUser(newUser, result) {
                 let message = "Following user already Exist! Please check it mobile number / email";
                 let resobj = {
                     success: sucobj,
+                    status: false,
                     message: message
                 };
 
@@ -90,6 +104,22 @@ Makeituser.createUser = function createUser(newUser, result) {
 
         }
     });
+
+     }else{
+
+        let message = "OTP is not valid!, Try once again";
+        let sucobj=true;
+        
+         let resobj = {  
+         success: sucobj,
+         status: false,
+         message:message
+         }; 
+
+      result(null, resobj);
+     }
+    }
+});
 };
 
 
@@ -732,13 +762,15 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
       var  query = staticquery + column.slice(0, -1) + " where userid = " + req.userid;
 
      // console.log(query);
-    
+        
         sql.query(query, function (err, res) {
             if (err) {
                 console.log("error: ", err);
                 result(err, null);
             }
             else {
+
+                if (cuisines !== undefined) {  
 
                 if (cuisines.length !== 0) {  
 
@@ -762,7 +794,7 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
                     }
                 }
 
-
+                }
             if (removecuisines.length !== 0) {                       
                     
                        removecuisinesstatus = true;
@@ -805,6 +837,167 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
 };
 
 
+
+Makeituser.makeituser_user_referral_code = function makeituser_user_referral_code(req,result) {
+   
+    var applink = constant.applink;
+    console.log(req);
+       sql.query("select referalcode from MakeitUser where userid = '"+req.userid+"'" , function (err, res) {
+   
+           if(err) {
+               console.log("error: ", err);
+               result(err, null);
+           }
+           else{
+               
+            console.log(res[0]);
+            if (res[0] === undefined) {
+                
+                let message = "User is not available";
+               let resobj = {  
+                success: true,
+                status:false,
+                message:message,
+                result: res
+                }; 
+    
+             result(null, resobj);
+            }else{
+            res[0].applink = "https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3D"+res[0].referalcode+"%26utm_campaign%3Dreferral";
+
+           // https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3Deat001%26utm_campaign%3Dreferral
+           // console.log("TEST: ",  referralcode);
+              
+          
+               let resobj = {  
+               success: true,
+               status:true,
+               result: res
+               }; 
+   
+            result(null, resobj);
+         
+           }
+        }
+           });   
+   };
+
+
+
+   Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(newUser, result) { 
+     
+
+    var OTP = Math.floor(Math.random() * 90000) + 10000;
+
+    var otpurl = "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile="+newUser.phoneno+"&senderId=EATHOM&message=Your EAT App OTP is "+OTP+". Note: Please DO NOT SHARE this OTP with anyone."
+  
+    
+    request({ 
+        method: 'GET',  
+        rejectUnauthorized: false, 
+        url:otpurl
+      
+    }, function(error, response, body){
+        if(error) {
+            console.log('error--->'+error);
+        } else {
+            console.log(response.statusCode, body);
+        }
+    });
+        
+
+           sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
+                
+            if(err) {
+                console.log("error: ", err);
+                result(null, err);
+            }
+            else{
+           
+              let resobj = {  
+                success: true,
+                oid: res.insertId
+                }; 
+          
+             result(null, resobj);
+            }
+    });  
+    
+};
+
+
+Makeituser.makeit_user_otpverification = function makeit_user_otpverification(req, result) { 
+   
+    var otp = 0;
+    var passwordstatus = false;
+    var otpstatus = false;
+    var genderstatus = false;
+
+    sql.query("Select * from Otp where oid = '"+req.oid+"'" , function (err, res) {             
+        if(err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else{
+            
+            if(res[0].otp == req.otp){
+               
+                console.log('OTP VALID');
+                let message = "OTP verified successfully";
+                let sucobj=true;
+                
+                 let resobj = {  
+                 success: sucobj,
+                 status: true,
+                 message:message
+                 }; 
+  
+              result(null, resobj);
+         
+}else{
+                
+                console.log(res[0]);
+                console.log('OTP FAILED');
+              let message = "OTP is not valid!, Try once again";
+              let sucobj=true;
+              
+               let resobj = {  
+               success: sucobj,
+               status: false,
+               message:message
+               }; 
+
+            result(null, resobj);
+
+}
+
+}
+});     
+};
+
+
+
+Makeituser.makeit_user_forgot_password_update = function makeit_user_forgot_password_update(newUser, result) { 
+     
+    sql.query("UPDATE MakeitUser SET password = '"+newUser.password+"'  where userid = '"+newUser.userid+"'", function (err, res1) {
+         
+     if(err) {
+         console.log("error: ", err);
+         result(null, err);
+     }
+     else{
+    
+       let resobj = {  
+         success: true,
+         status : true,
+         message: "Password Updated successfully"
+         }; 
+   
+      result(null, resobj);
+     }
+});  
+
+};
 
 
 module.exports = Makeituser;

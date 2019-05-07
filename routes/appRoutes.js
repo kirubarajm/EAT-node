@@ -282,6 +282,24 @@ module.exports = function (app) {
   app.route('/makeit/menuitems/:makeit_userid')
     .get(menuitem.read_a_menuitem_byid);
 
+  app.route('/makeit/edit')
+    .put(makeituser.edit_makeit_user_byid);
+
+  app.route('/makeit/referral/:userid')
+    .get(makeituser.make_user_referral);
+  app.route('/makeit/otp')
+    .post(makeituser.makeit_user_send_otp);
+  
+  app.route('/makeit/otpverification')
+    .post(makeituser.makeit_otp_verification);
+
+  app.route('/makeit/password')
+    .put(makeituser.makeit_user_forgot_password_update);
+
+
+
+
+
 
   /*Admin Api*/
   app.route('/admin/eatuser/add')

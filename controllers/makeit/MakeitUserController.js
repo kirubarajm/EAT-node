@@ -17,6 +17,10 @@ exports.list_all_user = function (req, res) {
 
 exports.create_a_user = function (req, res) {
   var new_user = new Makeituser(req.body);
+  var otpdetails = {};
+   otpdetails.oid = req.body.oid;
+   otpdetails.otp = req.body.otp;
+  var new_user = new Makeituser(req.body);
   //handles null error 
   if (!new_user.name ) {
     res.status(400).send({ error: true, message: 'Please provide name ' });
@@ -26,7 +30,7 @@ exports.create_a_user = function (req, res) {
     res.status(400).send({ error: true, message: 'Please provide password' });
   }
   else {
-    Makeituser.createUser(new_user, function (err, user) {
+    Makeituser.createUser(new_user,otpdetails, function (err, user) {
       if (err)
         res.send(err);
       res.json(user);
@@ -246,4 +250,68 @@ exports.edit_makeit_user_byid = function (req, res) {
       res.json(user);
     });
   }
+};
+
+
+
+exports.make_user_referral = function(req, res) {
+  Makeituser.makeituser_user_referral_code(req.params,function(err, user) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', user);
+    res.send(user);
+  });
+}
+
+
+
+
+exports.makeit_user_send_otp = function(req, res) {
+  
+  if(!req.body.phoneno){
+    res.status(400).send({ error: true, message: 'Please provide phoneno' });
+  }
+  else{
+    Makeituser.makeit_user_send_otp_byphone(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+}
+};
+
+
+
+exports.makeit_otp_verification = function(req, res) {
+  
+  if(!req.body.oid){
+    res.status(400).send({ error: true, message: 'Please provide oid' });
+  }else if(!req.body.phoneno){
+    res.status(400).send({ error: true, message: 'Please provide phone_number' });
+  }
+  else{
+    Makeituser.makeit_user_otpverification(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+}
+};
+
+
+exports.makeit_user_forgot_password_update = function(req, res) {
+  
+  if(!req.body.password){
+    res.status(400).send({ error: true, message: 'Please provide password' });
+  }else if(!req.body.userid){
+    res.status(400).send({ error: true, message: 'Please provide userid' });
+  }
+  else{
+    Makeituser.makeit_user_forgot_password_update(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+}
 };

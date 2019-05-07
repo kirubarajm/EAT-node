@@ -1405,7 +1405,7 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
               else{
                 
               
-                for (let i = 0; i < res2.length; i++) {
+                for (let i = 0; i < res1.length; i++) {
                     
                     res1[i].distance = res1[i].distance.toFixed(2);
                         //15min Food Preparation time , 3min 1 km
