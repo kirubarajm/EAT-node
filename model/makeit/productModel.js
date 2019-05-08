@@ -388,13 +388,13 @@ Product.productview_by_productid = function productview_by_productid(req,result)
           }
           else{
 
-            sql.query("select pi.quantity,mi.price,mi.menuitemid,mi.menuitem_name from Productitem pi join Menuitem mi on mi.Menuitemid = pi.itemid where pi.productid = "+req.productid+"", function (err, res1) {
+            sql.query("select pi.quantity,mi.price,mi.menuitemid,mi.menuitem_name,mi.vegtype from Productitem pi join Menuitem mi on mi.Menuitemid = pi.itemid where pi.productid = "+req.productid+"", function (err, res1) {
 
               if(err) {
                   console.log("error: ", err);
                   result(null, err);
               }else{
-                      
+                    //console.log(res1[0]);
                     for (let i = 0; i < res1.length; i++) {
 
                       items.push(res1[i]);
