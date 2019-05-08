@@ -215,7 +215,6 @@ Fav.read_a_fav_kitchenlist_byeatuserid = function read_a_fav_kitchenlist_byeatus
         }
         else{
           
-
             if (res.length === 0) {
 
                 let sucobj=true;

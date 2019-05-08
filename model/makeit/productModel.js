@@ -239,13 +239,13 @@ Product.productitemlist = function productitemlist(req,result) {
 Product.admin_list_all_product = function admin_list_all_product(req,result) {
 
 
-    var query = "Select * from Product where makeit_userid = '"+req.makeit_userid+"'"
+    var query = "Select * from Product where makeit_userid = '"+req.makeit_userid+"' and delete_status !=1 and active_status = 1"
 
     if(req.search){
       query = query+" and (product_name LIKE  '%"+req.search+"%')";
    }
       
-   
+   console.log(query);
         sql.query(query, function (err, res) {
 
           if(err) {

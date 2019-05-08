@@ -17,11 +17,11 @@ exports.create_a_eatuser = function(req, res) {
   var new_user = new Eatuser(req.body);
   //handles null error 
   if (!new_user.name ) {
-    res.status(400).send({ error: true, message: 'Please provide name ' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide name ' });
   }else if(!new_user.phoneno){
-    res.status(400).send({ error: true, message: 'Please provide phoneno' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide phoneno' });
   }else if(!new_user.password){
-    res.status(400).send({ error: true, message: 'Please provide password' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide password' });
   }
   else{
   Eatuser.createUser(new_user, function(err, user) {
@@ -118,9 +118,9 @@ exports.eat_makeit_product_list = function(req, res) {
 exports.eat_dish_sort_filter = function(req, res) {
  
   if(!req.body.lat){
-    res.status(400).send({ error: true, message: 'Please provide lat' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide lat' });
   }else if(!req.body.lon){
-    res.status(400).send({ error: true, message: 'Please provide lan' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide lan' });
   }else{
   Eatuser.get_eat_dish_list_sort_filter(req.body,function(err, user) {
     console.log('controller')
@@ -135,9 +135,9 @@ exports.eat_dish_sort_filter = function(req, res) {
 
 exports.eat_kitchen_sort_filter = function(req, res) {
   if(!req.body.lat){
-    res.status(400).send({ error: true, message: 'Please provide lat' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide lat' });
   }else if(!req.body.lon){
-    res.status(400).send({ error: true, message: 'Please provide lan' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide lan' });
   }else{
   Eatuser.get_eat_kitchen_list_sort_filter(req.body,function(err, user) {
     console.log('controller')
@@ -165,7 +165,7 @@ exports.eatuser_login = function(req, res) {
   var new_user = new Eatuser(req.body);
   //handles null error 
   if(!new_user.phoneno){
-    res.status(400).send({ error: true, message: 'Please provide phoneno' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide phoneno' });
   }
   else{
   Eatuser.eatuser_login(new_user, function(err, user) {
@@ -181,9 +181,9 @@ exports.eatuser_otpverification = function(req, res) {
   //var new_user = new Eatuser(req.body);
   //handles null error 
   if(!req.body.oid){
-    res.status(400).send({ error: true, message: 'Please provide oid' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide oid' });
   }else if(!req.body.phoneno){
-    res.status(400).send({ error: true, message: 'Please provide phone_number' });
+    res.status(400).send({ error: true,status:false,message: 'Please provide phone_number' });
   }
   else{
   Eatuser.eatuser_otpverification(req.body, function(err, user) {
@@ -199,9 +199,9 @@ exports.eatuser_otpverification = function(req, res) {
 exports.edit_eat_users = function(req, res) {
   
   if(!req.body.name){
-    res.status(400).send({ error: true, message: 'Please provide name' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide name' });
   }else if(!req.body.gender){
-    res.status(400).send({ error: true, message: 'Please provide phone_number' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide phone_number' });
   }
   else{
   Eatuser.edit_eat_users(req.body, function(err, user) {
@@ -224,9 +224,9 @@ exports.checklogin = function (req, res) {
 exports.eat_user_post_registration = function(req, res) {
   
   if(!req.body.email){
-    res.status(400).send({ error: true, message: 'Please provide email' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide email' });
   }else if(!req.body.password){
-    res.status(400).send({ error: true, message: 'Please provide password' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide password' });
   }
   else{
   Eatuser.eat_user_post_registration(req.body, function(err, user) {
@@ -241,7 +241,7 @@ exports.eat_user_post_registration = function(req, res) {
 exports.eat_user_forgot_password = function(req, res) {
   
   if(!req.body.phoneno){
-    res.status(400).send({ error: true, message: 'Please provide phoneno' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide phoneno' });
   }
   else{
   Eatuser.eat_user_forgot_password_byuserid(req.body, function(err, user) {
@@ -257,9 +257,9 @@ exports.eat_user_forgot_password = function(req, res) {
 exports.eat_user_forgot_password_update = function(req, res) {
   
   if(!req.body.password){
-    res.status(400).send({ error: true, message: 'Please provide password' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide password' });
   }else if(!req.body.userid){
-    res.status(400).send({ error: true, message: 'Please provide userid' });
+    res.status(400).send({ error: true,status:false, message: 'Please provide userid' });
   }
   else{
   Eatuser.eat_user_forgot_password_update(req.body, function(err, user) {

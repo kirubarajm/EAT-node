@@ -788,8 +788,6 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
                                 cuisines_temp++;
                             }
                             
-                           
-                           
                         });
                     }
                 }
@@ -810,15 +808,10 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
                             }else{
                                 remove_temp++;
                                
-                            }
-                          
-                            
+                            }                         
                          });
                      }
                    }
-
-                  
-                    
 
                     let sucobj = true;
                     let message = "Updated successfully"
