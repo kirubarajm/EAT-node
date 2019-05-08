@@ -37,19 +37,19 @@ var Makeituser = function (makeituser) {
 
 Makeituser.createUser = function createUser(newUser,otpdetails, result) {
 
-    console.log(otpdetails);
-    if (newUser.appointment_status == null)
-        newUser.appointment_status = 0;
+    // console.log(otpdetails);
+    // if (newUser.appointment_status == null)
+    //     newUser.appointment_status = 0;
 
-        sql.query("Select * from Otp where oid = '"+otpdetails.oid+"'" , function (err, res1) {             
-            if(err) {
-                console.log("error: ", err);
-                result(err, null);
-            }
-            else{
+    //     sql.query("Select * from Otp where oid = '"+otpdetails.oid+"'" , function (err, res1) {             
+    //         if(err) {
+    //             console.log("error: ", err);
+    //             result(err, null);
+    //         }
+    //         else{
                 
-                console.log(res1[0].otp);
-                if(res1[0].otp == otpdetails.otp){
+    //             console.log(res1[0].otp);
+    //             if(res1[0].otp == otpdetails.otp){
 
     sql.query("Select * from MakeitUser where phoneno = '" + newUser.phoneno + "' OR email= '" + newUser.email + "' ", function (err, res2) {
         if (err) {
@@ -67,7 +67,7 @@ Makeituser.createUser = function createUser(newUser,otpdetails, result) {
                         result(err, null);
                     } else {
 
-                        sql.query("Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ", res1.insertId, function (err, res4) {
+                        sql.query("Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ", res3.insertId, function (err, res4) {
                             if (err) {
                                 console.log("error: ", err);
                                 result(err, null);
@@ -105,21 +105,21 @@ Makeituser.createUser = function createUser(newUser,otpdetails, result) {
         }
     });
 
-     }else{
+//      }else{
 
-        let message = "OTP is not valid!, Try once again";
-        let sucobj=true;
+//         let message = "OTP is not valid!, Try once again";
+//         let sucobj=true;
         
-         let resobj = {  
-         success: sucobj,
-         status: false,
-         message:message
-         }; 
+//          let resobj = {  
+//          success: sucobj,
+//          status: false,
+//          message:message
+//          }; 
 
-      result(null, resobj);
-     }
-    }
-});
+//       result(null, resobj);
+//      }
+//     }
+// });
 };
 
 

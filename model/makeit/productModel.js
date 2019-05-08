@@ -164,7 +164,7 @@ Product.remove = function(id, result){
 
 
 Product.getAllliveProduct = function getAllliveProduct(liveproductid,result) {
-  sql.query("Select * from Product where active_status = '1' and makeit_userid = "+liveproductid.makeit_userid+"", function (err, res) {
+  sql.query("Select * from Product where active_status = '1' and delete_status !=1 and makeit_userid = "+liveproductid.makeit_userid+"", function (err, res) {
 
           if(err) {
               console.log("error: ", err);
@@ -239,7 +239,7 @@ Product.productitemlist = function productitemlist(req,result) {
 Product.admin_list_all_product = function admin_list_all_product(req,result) {
 
 
-    var query = "Select * from Product where makeit_userid = '"+req.makeit_userid+"' and delete_status !=1 and active_status = 1"
+    var query = "Select * from Product where makeit_userid = '"+req.makeit_userid+"' and delete_status !=1"
 
     if(req.search){
       query = query+" and (product_name LIKE  '%"+req.search+"%')";
