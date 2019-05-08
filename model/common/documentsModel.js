@@ -387,4 +387,48 @@ Documents.newmoveitdocumentupload = function newmoveitdocumentupload(newDocument
             
  };
 
+
+ Documents.newmakeitdocumentupload = function newmakeitdocumentupload(newDocument, result) {    
+
+    //console.log(newDocument.files.lic); // the uploaded file object
+     
+     if (Object.keys(newDocument.files).length == 0) {
+     return result.status(400).send('No files were uploaded.');
+     }
+ 
+     
+     var fileName = newDocument.files.lic;
+        var name = fileName.name;
+        
+        var name = Date.now() + '-' + name
+     
+          const params = {
+              Bucket: 'eattovo/upload/admin/makeit', // pass your bucket name
+              Key: name, // file will be saved as testBucket/contacts.csv
+              Body: fileName.data,
+              ContentType:'image/jpg',
+              ACL:'public-read'  
+          };
+      
+          s3.upload(params, (err, data) => {
+            if(err) {   
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+                //console.log(res.insertId);                    
+                let sucobj='true';
+                let message = 'Document uploaded successfully';
+                let resobj = {  
+                success: sucobj,
+                message:message,
+                data:data
+                };
+                result(null, resobj);
+            }
+        })
+          
+            
+ };
+
 module.exports=Documents;

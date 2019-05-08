@@ -17,10 +17,8 @@ exports.list_all_user = function (req, res) {
 
 exports.create_a_user = function (req, res) {
   var new_user = new Makeituser(req.body);
-  var otpdetails = {};
-   otpdetails.oid = req.body.oid;
-   otpdetails.otp = req.body.otp;
-  var new_user = new Makeituser(req.body);
+
+ 
   //handles null error 
   if (!new_user.name ) {
     res.status(400).send({ error: true, message: 'Please provide name ' });
@@ -30,7 +28,7 @@ exports.create_a_user = function (req, res) {
     res.status(400).send({ error: true, message: 'Please provide password' });
   }
   else {
-    Makeituser.createUser(new_user,otpdetails, function (err, user) {
+    Makeituser.createUser(new_user, function (err, user) {
       if (err)
         res.send(err);
       res.json(user);
@@ -315,3 +313,19 @@ exports.makeit_user_forgot_password_update = function(req, res) {
   });
 }
 };
+
+
+exports.makeit_user_forgot_send_otp_by_phone = function(req, res) {
+  
+  if(!req.body.phoneno){
+    res.status(400).send({ error: true, message: 'Please provide phoneno' });
+  }
+  else{
+    Makeituser.makeit_user_forgot_password_send_otp(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+}
+};
+

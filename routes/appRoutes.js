@@ -287,7 +287,8 @@ module.exports = function (app) {
 
   app.route('/makeit/referral/:userid')
     .get(makeituser.make_user_referral);
-  app.route('/makeit/otp')
+
+  app.route('/makeit/phoneotp')
     .post(makeituser.makeit_user_send_otp);
   
   app.route('/makeit/otpverification')
@@ -295,6 +296,9 @@ module.exports = function (app) {
 
   app.route('/makeit/password')
     .put(makeituser.makeit_user_forgot_password_update);
+
+    app.route('/makeit/forgot')
+    .post(makeituser.makeit_user_forgot_send_otp_by_phone);
 
 
 
@@ -381,6 +385,9 @@ module.exports = function (app) {
 
   app.route('/admin/moveit/documentupload')
     .post(documents.moveit_upload_a_documents);
+
+    app.route('/admin/makeit/documentupload')
+    .post(documents.makeit_upload_a_documents);
 
   app.route('/admin/moveit/documentstore')
     .post(moveitdocument.create_a_documents);
@@ -470,14 +477,6 @@ module.exports = function (app) {
     .get(product.read_a_product)
     .put(product.update_a_product)
     .delete(product.delete_a_product);
-
-
-
-
-
-
-
-
 
 
   // Orders API
@@ -691,13 +690,6 @@ app.route('/masters')
   .get(master.read_a_masters);
 
 
-
-
-
-
-
-  // app.route('/orderplace/')
-  // .post(ordersitem.createOrderitemsonline);
 
   // Masters
 
