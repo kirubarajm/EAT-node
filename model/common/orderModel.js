@@ -1380,7 +1380,6 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
         }
         else{
           
-
             if (res.length === 0) {
 
                 let sucobj=true;
@@ -1397,7 +1396,7 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
                 
             }else{
 
-             sql.query("Select ors.orderid,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='"+req.userid+"' and ors.orderstatus < 6 and ors.lock_status = 0 ", function (err, res1) {
+             sql.query("Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='"+req.userid+"' and ors.orderstatus < 6 and ors.lock_status = 0 ", function (err, res1) {
        
               if(err) {
                   console.log("error: ", err);
@@ -1405,8 +1404,17 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
               }
               else{
                 
-              
                 for (let i = 0; i < res1.length; i++) {
+
+                    console.log(res1[i].ordertime);
+                    var deliverytime = new Date(res1[i].ordertime);
+                    console.log(deliverytime);
+                   // d.setHours(d.getHours() + 5);
+                   deliverytime.setMinutes(deliverytime.getMinutes() + 15);
+    
+                    console.log(deliverytime);
+
+                    res1[i].deliverytime = deliverytime; 
                     
                     res1[i].distance = res1[i].distance.toFixed(2);
                         //15min Food Preparation time , 3min 1 km

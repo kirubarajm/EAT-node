@@ -280,16 +280,36 @@ Makeituser.checkLogin = function checkLogin(req, result) {
             result(resobj, null);
         }
         else {
+            if (res.length !== 0){ 
 
-            let sucobj = (res.length !== 0) ? 'true' : 'false';
-            let status = (res.length !== 0) ? true : false;
-            let resobj = {
-                success: sucobj,
-                status:status,
-                result: res
-            };
+                if (res[0].virtualkey === 0){ 
+                    let sucobj = (res.length !== 0) ? 'true' : 'false';
+                    let status = (res.length !== 0) ? true : false;
+                    let resobj = {
+                        success: sucobj,
+                        status:status,
+                        result: res
+                    };
             console.log("result: ---", res.length);
             result(null, resobj);
+        }else{
+            let resobj = { 
+                success: true, 
+                message : "Sorry your not a valid user!",
+                status : false
+                }; 
+          
+             result(null, resobj);
+        }
+        }else{
+            let resobj = { 
+                success: true, 
+                message : "Sorry your not a valid user!",
+                status : false
+                }; 
+          
+             result(null, resobj);
+        }
         }
     });
 };
@@ -915,28 +935,59 @@ Makeituser.makeituser_user_referral_code = function makeituser_user_referral_cod
         if(error) {
             console.log('error--->'+error);
         } else {
-            console.log(response.statusCode, body);
+            var responcecode = body.split("#");
+
+            if (responcecode[0] === '0') {
+            
+                sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
+    
+                    if(err) {
+                        console.log("error: ", err);
+                        result(null, err);
+                    }
+                    else{
+                                          
+                      let resobj = {  
+                        success: true,
+                        status:true,
+                        message:responcecode[1],
+                        oid: res.insertId                       
+                        }; 
+                  
+                     result(null, resobj);
+                    }
+            });  
+            }else{
+
+                let resobj = {  
+                    success: true,
+                    status: false,
+                    message:responcecode[1]
+                    }; 
+              
+                 result(null, resobj);
+            }
         }
     });
         
 
-           sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
+    //        sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
                 
-            if(err) {
-                console.log("error: ", err);
-                result(null, err);
-            }
-            else{
+    //         if(err) {
+    //             console.log("error: ", err);
+    //             result(null, err);
+    //         }
+    //         else{
            
-              let resobj = {  
-                success: true,
-                status:true,
-                oid: res.insertId
-                }; 
+    //           let resobj = {  
+    //             success: true,
+    //             status:true,
+    //             oid: res.insertId
+    //             }; 
           
-             result(null, resobj);
-            }
-    });  
+    //          result(null, resobj);
+    //         }
+    // });  
 
 } else {
 
@@ -1046,30 +1097,64 @@ Makeituser.makeit_user_forgot_password_send_otp = function makeit_user_forgot_pa
       
     }, function(error, response, body){
         if(error) {
-            console.log('error--->'+error);
+            console.log("error: ", err);
+            result(null, err);
         } else {
             console.log(response.statusCode, body);
+            var responcecode = body.split("#");
+
+            if (responcecode[0] === '0') {
+            
+                sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
+    
+                    if(err) {
+                        console.log("error: ", err);
+                        result(null, err);
+                    }
+                    else{
+                                          
+                      let resobj = {  
+                        success: true,
+                        status:true,
+                        message:responcecode[1],
+                        oid: res.insertId                       
+                        }; 
+                  
+                     result(null, resobj);
+                    }
+            });  
+            }else{
+
+                let resobj = {  
+                    success: true,
+                    status: false,
+                    message:responcecode[1]
+                    }; 
+              
+                 result(null, resobj);
+            }
         }
+        
     });
         
 
-           sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
+    //        sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
                 
-            if(err) {
-                console.log("error: ", err);
-                result(null, err);
-            }
-            else{
+    //         if(err) {
+    //             console.log("error: ", err);
+    //             result(null, err);
+    //         }
+    //         else{
            
-              let resobj = {  
-                success: true,
-                status:true,
-                oid: res.insertId
-                }; 
+    //           let resobj = {  
+    //             success: true,
+    //             status:true,
+    //             oid: res.insertId
+    //             }; 
           
-             result(null, resobj);
-            }
-    });  
+    //          result(null, resobj);
+    //         }
+    // });  
    
 };
 

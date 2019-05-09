@@ -47,8 +47,8 @@ module.exports = function (app) {
 
   app.route('/eatusers/:userid')
     .get(eatuser.read_a_user)
-    .put(eatuser.update_a_user)
-    .delete(eatuser.delete_a_user);
+    .put(eatuser.update_a_user);
+    //.delete(eatuser.delete_a_user);
 
 
 

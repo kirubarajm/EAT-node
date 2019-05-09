@@ -788,14 +788,12 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
     var passwordstatus = false;
     var otpstatus  = false;
     var genderstatus = false;
+    var otptemp = 0;
     var otpurl = "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile="+newUser.phoneno+"&senderId=EATHOM&message=Your EAT App OTP is "+OTP+". Note: Please DO NOT SHARE this OTP with anyone."
   
     
   // var otpurl = "https://www.google.com/";
-   console.log(otpurl)
-    
-    
-
+  
     
     sql.query("Select * from User where phoneno = '"+newUser.phoneno+"'" , function (err, res) {             
         if(err) {
@@ -816,33 +814,73 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
                   
                 }, function(error, response, body){
                     if(error) {
-                        console.log('error--->'+error);
+                        console.log("error: ", err);
+                        result(null, err);
                     } else {
                         console.log(response.statusCode, body);
+                        var responcecode = body.split("#");
+                        console.log(responcecode);
+
+                        if (responcecode[0] === '0') {
+                        
+                            sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res1) {
+                
+                                if(err) {
+                                    console.log("error: ", err);
+                                    result(null, err);
+                                }
+                                else{
+                                                      
+                                  let resobj = {  
+                                    success: true,
+                                    status:true,
+                                    message:responcecode[1],
+                                    passwordstatus:passwordstatus,
+                                    otpstatus:otpstatus,
+                                    genderstatus:genderstatus,
+                                    oid: res1.insertId
+                                    }; 
+                              
+                                 result(null, resobj);
+                                }
+                        });  
+                        }else{
+
+                            let resobj = {  
+                                success: true,
+                                status: false,
+                                message:responcecode[1],
+                                passwordstatus:passwordstatus,
+                                otpstatus:otpstatus,
+                                genderstatus:genderstatus
+                                }; 
+                          
+                             result(null, resobj);
+                        }
                     }
                 });
 
-           sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res1) {
+    //        sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res1) {
                 
-            if(err) {
-                console.log("error: ", err);
-                result(null, err);
-            }
-            else{
+    //         if(err) {
+    //             console.log("error: ", err);
+    //             result(null, err);
+    //         }
+    //         else{
                
 
 
-              let resobj = {  
-                success: true,
-                passwordstatus:passwordstatus,
-                otpstatus:otpstatus,
-                genderstatus:genderstatus,
-                oid: res1.insertId
-                }; 
+    //           let resobj = {  
+    //             success: true,
+    //             passwordstatus:passwordstatus,
+    //             otpstatus:otpstatus,
+    //             genderstatus:genderstatus,
+    //             oid: res1.insertId
+    //             }; 
           
-             result(null, resobj);
-            }
-    });  
+    //          result(null, resobj);
+    //         }
+    // });  
 }else{
                 
                 console.log(res);
@@ -850,19 +888,16 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
               if (res[0].password !== '' && res[0].password !== null) { 
                 passwordstatus = true;
                 otpstatus = true;
-                genderstatus = true;
-                 
+                genderstatus = true;                
               }
               
               if (res[0].gender !== '' && res[0].gender !== null && res[0].name !== '' && res[0].name !== null){
                 genderstatus = true;
-               // otpstatus = true;
-                
+               // otpstatus = true;  
               }
 
               if (passwordstatus === false) {
                   
-
                 request({ 
                     method: 'GET',  
                     rejectUnauthorized: false, 
@@ -870,42 +905,85 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
                   
                 }, function(error, response, body){
                     if(error) {
-                        console.log('error--->'+error);
+                        console.log("error: ", err);
+                        result(null, err);
                     } else {
                         console.log(response.statusCode, body);
+                        var responcecode = body.split("#");
+                        console.log(responcecode[0]);
+
+                        if (responcecode[0] === '0') {
+                        
+                            sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res1) {
+                
+                                if(err) {
+                                    console.log("error: ", err);
+                                    result(null, err);
+                                }
+                                else{
+                                                      
+                                  let resobj = {  
+                                    success: true,
+                                    status:true,
+                                    message:responcecode[1],
+                                    passwordstatus:passwordstatus,
+                                    otpstatus:otpstatus,
+                                    genderstatus:genderstatus,
+                                    oid: res1.insertId
+                                    }; 
+                              
+                                 result(null, resobj);
+                                }
+                        });  
+                        }else{
+
+                            let resobj = {  
+                                success: true,
+                                status:false,
+                                message:responcecode[1],
+                                passwordstatus:passwordstatus,
+                                otpstatus:otpstatus,
+                                genderstatus:genderstatus,
+                                userid : res[0].userid,
+                                oid: res1.insertId
+                                }; 
+                          
+                             result(null, resobj);
+                        }
                     }
                 });
 
-                sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res1) {
-                
-                    if(err) {
-                        console.log("error: ", err);
-                        result(null, err);
-                    }
-                    else{
-                      let sucobj=true;
-        
-                      if(res){
-                      if (res[0].gender !== '' && res[0].gender !== null && res[0].name !== '' && res[0].name !== null){
-                        genderstatus = true;
-                        //otpstatus = true;  
-                      }
-                    }
-        
-                      let resobj = {  
-                        success: sucobj,
-                        passwordstatus:passwordstatus,
-                        otpstatus:otpstatus,
-                        genderstatus:genderstatus,
-                        userid : res[0].userid,
-                        oid: res1.insertId
-                        }; 
-                  
-                     result(null, resobj);
-                    }
-            });  
-              }else{
+               
 
+            //     sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res1) {
+                
+            //         if(err) {
+            //             console.log("error: ", err);
+            //             result(null, err);
+            //         }
+            //         else{
+            //           let sucobj=true;
+        
+            //           if(res){
+            //           if (res[0].gender !== '' && res[0].gender !== null && res[0].name !== '' && res[0].name !== null){
+            //             genderstatus = true;
+            //             //otpstatus = true;  
+            //           }
+            //         }
+        
+            //           let resobj = {  
+            //             success: sucobj,
+            //             passwordstatus:passwordstatus,
+            //             otpstatus:otpstatus,
+            //             genderstatus:genderstatus,
+            //             userid : res[0].userid,
+            //             oid: res1.insertId
+            //             }; 
+                  
+            //          result(null, resobj);
+            //         }
+            // });  
+              }else{
                 
             let sucobj=true;
             let resobj = {  
@@ -919,8 +997,7 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
             }; 
 
          result(null, resobj);
-              }
-        
+     }      
 }
 
 }
@@ -968,8 +1045,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req, result) 
                         result(null, err);
                     }
                     else{
-                     
-                     
+                                         
                       let resobj = {  
                         success: true,
                        // message:mesobj,
@@ -983,8 +1059,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req, result) 
                     }
                     });  
                      }else{
-        
-                   
+                           
                       //let message = "Following user already Exist!, Please check it Phone number" ;
                       if (res1[0].password !== '' && res1[0].password !== null) { 
                         passwordstatus = true;
@@ -1000,8 +1075,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req, result) 
                       }else {
                         
                       }
-        
-                    
+                            
                        let resobj = {  
                        success: true,
                        status:true,
@@ -1085,9 +1159,10 @@ Eatuser.edit_eat_users = function (req, result) {
 
 
 
+
 Eatuser.checkLogin = function checkLogin(req, result) {
     var reqs = [req.phoneno, req.password];
-    sql.query("Select userid,name,email,phoneno,referalcode,Locality,gender from User where phoneno = ? and password = ?", reqs, function (err, res) {
+    sql.query("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey from User where phoneno = ? and password = ?", reqs, function (err, res) {
         if (err) {
             console.log("error: ", err);
 
@@ -1098,6 +1173,10 @@ Eatuser.checkLogin = function checkLogin(req, result) {
             result(resobj, null);
         }
         else {
+             
+            if (res.length !== 0){ 
+                 
+            if (res[0].virtualkey === 0){ 
 
             let status = (res.length == 1) ? true : false;
             let resobj = {
@@ -1107,6 +1186,26 @@ Eatuser.checkLogin = function checkLogin(req, result) {
             };
             console.log("result: ---", res.length);
             result(null, resobj);
+        }else{
+
+            let resobj = { 
+                success: true, 
+                message : "Sorry your not a valid user!",
+                status : false
+                }; 
+          
+             result(null, resobj);
+            }
+        }else{
+            
+            let resobj = { 
+                success: true, 
+                message : "Sorry your not a valid user!",
+                status : false
+                }; 
+          
+             result(null, resobj);
+        }
         }
     });
 };
@@ -1171,30 +1270,64 @@ Eatuser.eat_user_forgot_password_byuserid = function eat_user_forgot_password_by
       
     }, function(error, response, body){
         if(error) {
-            console.log('error--->'+error);
+            console.log("error: ", err);
+            result(null, err);
         } else {
             console.log(response.statusCode, body);
+            var responcecode = body.split("#");
+
+            if (responcecode[0] === '0') {
+            
+                sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
+    
+                    if(err) {
+                        console.log("error: ", err);
+                        result(null, err);
+                    }
+                    else{
+                                          
+                      let resobj = {  
+                        success: true,
+                        status:true,
+                        message:responcecode[1],
+                        oid: res.insertId                       
+                        }; 
+                  
+                     result(null, resobj);
+                    }
+            });  
+            }else{
+
+                let resobj = {  
+                    success: true,
+                    status: false,
+                    message:responcecode[1]
+                    }; 
+              
+                 result(null, resobj);
+            }
         }
+        
     });
         
 
-           sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
+    //        sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
                 
-            if(err) {
-                console.log("error: ", err);
-                result(null, err);
-            }
-            else{
+    //         if(err) {
+    //             console.log("error: ", err);
+    //             result(null, err);
+    //         }
+    //         else{
            
-              let resobj = {  
-                success: true,
-                status:true,
-                oid: res.insertId
-                }; 
+    //           let resobj = {  
+    //             success: true,
+    //             status:true,
+    //             oid: res.insertId
+    //             }; 
           
-             result(null, resobj);
-            }
-    });  
+    //          result(null, resobj);
+    //         }
+    // });  
     
 };
 
