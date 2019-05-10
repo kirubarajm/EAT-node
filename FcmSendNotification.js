@@ -43,8 +43,7 @@ exports.sendOrderNotificationAndroid = function(token,title,message){
             title: title, 
             message: message,
             page_id:'1',
-            app:'Move-it',
-            notification_type:1
+            notification_type:'1'
         }
     };
     

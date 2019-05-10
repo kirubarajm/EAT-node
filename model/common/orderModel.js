@@ -1588,7 +1588,22 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
               });
           
          }
-
+        //  function PushNotification(){
+        //     sql.query("SELECT * FROM User where userid = "+req.userid, function (err, user) {
+    
+        //         if (err) {
+        //             console.log("error: ", err);
+        //             result(null, err);
+        //         }else{
+        //             var  pushid_android = user.pushid_android;
+        //             var  pushid_ios = user.pushid_ios;
+        //             var  push_title='Order Accepted';
+        //             var  push_message= "Hi! your Order accepted. your Order id #"+req.orderid;
+                    
+        //             if(pushid_android) FCM.sendOrderNotificationAndroid(pushid_android,push_title,push_message);
+        //         }
+        //     });
+        // }
 
         }else{
 
