@@ -701,5 +701,14 @@ app.route('/masters/cuisinelist')
 
   app.route('/procedure')
   .get(region.pro_call);
+
+
+
+/// temp
+
+app.route('/foodlist')
+    .post(eatuser.eat_makeit_product_list);
+
+
 };
 

@@ -32,7 +32,11 @@ var Makeituser = function (makeituser) {
     this.rating = makeituser.rating;
     this.region = makeituser.region;
     this.costfortwo = makeituser.costfortwo;
-    this.branch_name = makeituser.branch_name;
+    this.landmark = makeituser.landmark;
+    this.locality = makeituser.locality;
+    this.flatno = makeituser.flatno;
+    this.pincode = makeituser.pincode;
+
 };
 
 Makeituser.createUser = function createUser(newUser, result) {
@@ -69,6 +73,7 @@ Makeituser.createUser = function createUser(newUser, result) {
                     } else {
 
                             var referalcode = 'MAKEITWELL' + res3.insertId;
+
                         sql.query("Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ", res3.insertId, function (err, res4) {
                             if (err) {
                                 console.log("error: ", err);
@@ -377,9 +382,6 @@ Makeituser.createAppointment = function createAppointment(req, result) {
             });
         }
     });
-
-
-
 };
 
 
@@ -971,23 +973,7 @@ Makeituser.makeituser_user_referral_code = function makeituser_user_referral_cod
     });
         
 
-    //        sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
-                
-    //         if(err) {
-    //             console.log("error: ", err);
-    //             result(null, err);
-    //         }
-    //         else{
-           
-    //           let resobj = {  
-    //             success: true,
-    //             status:true,
-    //             oid: res.insertId
-    //             }; 
-          
-    //          result(null, resobj);
-    //         }
-    // });  
+
 
 } else {
 
@@ -1022,21 +1008,47 @@ Makeituser.makeit_user_otpverification = function makeit_user_otpverification(re
             result(err, null);
         }
         else{
-            
+
+          //  console.log(res[0].otp);
             if(res[0].otp == req.otp){
                
-                console.log('OTP VALID');
-                let message = "OTP verified successfully";
-                let sucobj=true;
+
+                sql.query("Select * from MakeitUser where phoneno = '" + req.phoneno + "'", function (err, res1) {
+                    if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                    }
+                    else {
+                            console.log(res1.length);
+                        if (res1.length == 1) {
+
+                                console.log('OTP VALID');
+                                let message = "OTP verified successfully";
+                                let sucobj=true;
+                                
+                                let resobj = {  
+                                success: sucobj,
+                                status: true,
+                                message:message,
+                                userid:res1[0].userid
+                                }; 
                 
-                 let resobj = {  
-                 success: sucobj,
-                 status: true,
-                 message:message
-                 }; 
-  
-              result(null, resobj);
-         
+                                result(null, resobj);
+                                
+                            }else{
+                                let message = "OTP verified successfully";
+                                let sucobj=true;
+                                
+                                let resobj = {  
+                                success: sucobj,
+                                status: true,
+                                message:message
+                                }; 
+                
+                                result(null, resobj);
+                            }
+                        }
+            });  
 }else{
                 
                 console.log(res[0]);
@@ -1136,26 +1148,7 @@ Makeituser.makeit_user_forgot_password_send_otp = function makeit_user_forgot_pa
         }
         
     });
-        
-
-    //        sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
-                
-    //         if(err) {
-    //             console.log("error: ", err);
-    //             result(null, err);
-    //         }
-    //         else{
-           
-    //           let resobj = {  
-    //             success: true,
-    //             status:true,
-    //             oid: res.insertId
-    //             }; 
-          
-    //          result(null, resobj);
-    //         }
-    // });  
-   
+            
 };
 
 module.exports = Makeituser;

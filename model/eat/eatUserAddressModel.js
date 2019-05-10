@@ -22,24 +22,62 @@ var EatuserAddress = function(eatuseraddress){
 
 EatuserAddress.createUserAddress = function createUserAddress(new_address, result) {   
     
-        sql.query("INSERT INTO Address set ?", new_address, function (err, res) {
+    sql.query("Select * from Address where userid = '"+new_address.userid+"' and  address_type = '"+new_address.address_type+"'", function (err, res) {
                 
-            if(err) {
-                console.log("error: ", err);
-                result(null, err);
-            }
-            else{
-              let sucobj=true;
-              let mesobj = "EatUser Address Created successfully";
-              let resobj = {  
-                success: sucobj,
-                message:mesobj,
-                aid: res.insertId
-                }; 
-          
-             result(null, resobj);
-            }
-            });              
+        if(err) {
+            console.log("error: ", err);
+            result(null, err);
+        }
+        else{
+
+        if (res.length === 0) {
+            sql.query("INSERT INTO Address set ?", new_address, function (err, res) {
+                
+                if(err) {
+                    console.log("error: ", err);
+                    result(null, err);
+                }
+                else{
+                  let sucobj=true;
+                  let mesobj = "EatUser Address Created successfully";
+                  let resobj = {  
+                    success: sucobj,
+                    message:mesobj,
+                    aid: res.insertId
+                    }; 
+              
+                 result(null, resobj);
+                }
+                }); 
+                
+        }else{
+            
+            new_address.address_type = 3;
+            sql.query("INSERT INTO Address set ?", new_address, function (err, res) {
+                
+                if(err) {
+                    console.log("error: ", err);
+                    result(null, err);
+                }
+                else{
+                  let sucobj=true;
+                  let mesobj = "EatUser Address Created successfully";
+                  let resobj = {  
+                    success: sucobj,
+                    message:mesobj,
+                    aid: res.insertId
+                    }; 
+              
+                 result(null, resobj);
+                }
+                }); 
+                
+        }
+
+      
+            
+        }
+    });
 };
 
 
