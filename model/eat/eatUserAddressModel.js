@@ -14,8 +14,8 @@ var EatuserAddress = function(eatuseraddress){
     this.landmark = eatuseraddress.landmark;
   //  this.created_at = new Date();
     this.address_type = eatuseraddress.address_type;
-    this.delete_status = eatuseraddress.delete_status || 0;
-  
+    this.delete_status = eatuseraddress.delete_status || 0;  
+    this.address_default = eatuseraddress.address_default || 0;
 };
 
 
@@ -74,8 +74,6 @@ EatuserAddress.createUserAddress = function createUserAddress(new_address, resul
                 
         }
 
-      
-            
         }
     });
 };
@@ -178,7 +176,7 @@ EatuserAddress.update_delete_status = function(req, result){
            }
             else{
               let sucobj=true;
-              message = 'Address removed sucessfully';
+              message = 'Address removed successfully';
               let resobj = {  
              success: sucobj,
              message :message
@@ -230,5 +228,38 @@ EatuserAddress.getaddressByadmin = function getaddressByadmin(req, result) {
         }
         });   
 };
+
+
+
+
+EatuserAddress.eat_user_default_address_update_aid = function(req, result){
+    console.log(req);
+    sql.query("UPDATE Address SET address_default = 0 WHERE aid = '"+req.aid+"' and userid = '"+req.userid+"'", function (err, res) {
+           if(err) {
+        console.log("error: ", err);
+        result(err, null);
+           }
+            else{
+                sql.query("UPDATE Address SET address_default = 1 WHERE aid = '"+req.aid+"' and userid = '"+req.userid+"'", function (err, res) {
+                    if(err) {
+                 console.log("error: ", err);
+                 result(err, null);
+                    }
+                     else{
+                   
+                    let sucobj=true;
+                    message = 'Updated successfully';
+                    let resobj = {  
+                   success: sucobj,
+                   status:true,
+                   message :message
+              }; 
+        
+           result(null, resobj);
+      }
+     }); 
+    }
+  }); 
+  };
 
 module.exports = EatuserAddress;

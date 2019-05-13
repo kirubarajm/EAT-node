@@ -1045,17 +1045,49 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req, result) 
                         result(null, err);
                     }
                     else{
-                                         
-                      let resobj = {  
-                        success: true,
-                       // message:mesobj,
-                        passwordstatus:passwordstatus,
-                        otpstatus:true,
-                        genderstatus:genderstatus,
-                        userid: res2.insertId 
-                        }; 
+                          
+                        
+                                    sql.query("Select * from Address where userid = '"+res2.insertId+"' and address_default = 1", function (err, res3) {             
+                                        if(err) {
+                                            console.log("error: ", err);
+                                            result(err, null);
+                                        }
+                                        else{
+                                            console.log('test');
+                                            res2[0].aid = null;
+                                            res2[0].address_title =null;
+                                            res2[0].lat = null;
+                                            res2[0].lon =null
+
+
+                                            if (res3.length !== 0){ 
+                                                res2[0].aid=res3[0].aid; 
+                                                res2[0].address_title=res3[0].address_title; 
+                                                res2[0].lat=res3[0].lat; 
+                                                res2[0].lon=res3[0].lon; 
+
+                                            }
+                                        //  let status = (res.length == 1) ? true : false;
+                                            let resobj = {
+                                                success: true,
+                                                status : true,
+                                                result: res2
+                                            };
+                                            console.log("result: ---", res.length);
+                                            result(null, resobj);
+                                            
+                                        }
+                                });   
+                    //   let resobj = {  
+                    //     success: true,
+                    //    // message:mesobj,
+                    //     passwordstatus:passwordstatus,
+                    //     otpstatus:true,
+                    //     genderstatus:genderstatus,
+                    //     userid: res2.insertId 
+                    //     }; 
                   
-                     result(null, resobj);
+                    //  result(null, resobj);
                     }
                     });  
                      }else{
@@ -1075,18 +1107,51 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req, result) 
                       }else {
                         
                       }
-                            
-                       let resobj = {  
-                       success: true,
+                      sql.query("Select * from Address where userid = '"+res1[0].userid+"' and address_default = 1", function (err, res3) {             
+                        if(err) {
+                            console.log("error: ", err);
+                            result(err, null);
+                        }
+                        else{
+                            console.log('test');
+                            res1[0].aid = null;
+                            res1[0].address_title =null;
+                            res1[0].lat = null;
+                            res1[0].lon =null
+
+
+                            if (res3.length !== 0){ 
+                                res1[0].aid=res3[0].aid; 
+                                res1[0].address_title=res3[0].address_title; 
+                                res1[0].lat=res3[0].lat; 
+                                res1[0].lon=res3[0].lon; 
+
+                            }
+                        //  let status = (res.length == 1) ? true : false;
+                            let resobj = {
+                                success: true,
                        status:true,
                        passwordstatus:passwordstatus,
                        otpstatus:otpstatus,
                        genderstatus:genderstatus,
-                       userid:res1[0].userid
+                       userid:res1
+                            };
+                            console.log("result: ---", res.length);
+                            result(null, resobj);
+                            
+                        }
+                });       
+                    //    let resobj = {  
+                    //    success: true,
+                    //    status:true,
+                    //    passwordstatus:passwordstatus,
+                    //    otpstatus:otpstatus,
+                    //    genderstatus:genderstatus,
+                    //    userid:res1[0].userid
                 
-                       }; 
+                    //    }; 
         
-                    result(null, resobj);
+                    // result(null, resobj);
         
         }
         
@@ -1178,14 +1243,37 @@ Eatuser.checkLogin = function checkLogin(req, result) {
                  
             if (res[0].virtualkey === 0){ 
 
-            let status = (res.length == 1) ? true : false;
-            let resobj = {
-                success: true,
-                status : status,
-                result: res
-            };
-            console.log("result: ---", res.length);
-            result(null, resobj);
+                sql.query("Select * from Address where userid = '"+res[0].userid+"' and address_default = 1", function (err, res1) {             
+                    if(err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                    }
+                    else{
+                        res[0].aid = null;
+                        res[0].address_title =null;
+                        res[0].lat = null;
+                        res[0].lon =null
+
+
+                        if (res1.length !== 0){ 
+                            res[0].aid=res1[0].aid; 
+                            res[0].address_title=res1[0].address_title; 
+                            res[0].lat=res1[0].lat; 
+                            res[0].lon=res1[0].lon; 
+
+                        }
+                        let status = (res.length == 1) ? true : false;
+                        let resobj = {
+                            success: true,
+                            status : status,
+                            result: res
+                        };
+                        console.log("result: ---", res.length);
+                        result(null, resobj);
+                        
+                    }
+            });   
+           
         }else{
 
             let resobj = { 

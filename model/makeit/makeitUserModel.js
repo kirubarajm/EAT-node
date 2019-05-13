@@ -15,7 +15,7 @@ var Makeituser = function (makeituser) {
     this.phoneno = makeituser.phoneno;
     this.bank_account_no = makeituser.bank_account_no;
     this.verified_status = makeituser.verified_status || '0';
-    this.appointment_status = makeituser.appointment_status;
+    this.appointment_status = makeituser.appointment_status || 0;
     this.referalcode = makeituser.referalcode;
     this.localityid = makeituser.localityid;
     this.lat = makeituser.lat;
@@ -55,6 +55,7 @@ Makeituser.createUser = function createUser(newUser, result) {
                 
     //             console.log(res1[0].otp);
     //             if(res1[0].otp == otpdetails.otp){
+        console.log(newUser);
 
     sql.query("Select * from MakeitUser where phoneno = '" + newUser.phoneno + "' OR email= '" + newUser.email + "' ", function (err, res2) {
         if (err) {
@@ -331,7 +332,7 @@ Makeituser.update_makeit_users = function (id, user, result) {
         }
         else {
             //result(null, res);
-            returnResponse(200, true, "Payment Registration Sucessfully", res);
+            returnResponse(200, true, "Payment Registration Succdessfully", res);
         }
     });
 
@@ -368,7 +369,7 @@ Makeituser.createAppointment = function createAppointment(req, result) {
                     }
                     else {
                         let sucobj = true;
-                        let message = "Appointment Created Sucessfully";
+                        let message = "Appointment Created Successfully";
                         let resobj = {
                             success: sucobj,
                             message: message,
@@ -514,7 +515,7 @@ Makeituser.orderstatusbyorderid = function (id, result) {
         else {
 
             let sucobj = true;
-            let mesobj = "Status Update Sucessfully";
+            let mesobj = "Status Update Successfully";
             let resobj = {
                 success: sucobj,
                 message: mesobj,
@@ -597,8 +598,7 @@ Makeituser.get_admin_list_all_makeitusers = function (req, result) {
             //    if (res[i].cuisines) {
             //     res[i].cuisines = JSON.parse(res[i].cuisines)
             //    }
-             
-              
+                
             // }
           
             let sucobj = true;
@@ -850,6 +850,7 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
 
                     let sucobj = true;
                     let message = "Updated successfully"
+                    
                     let resobj = {
                         success: sucobj,
                         status : true,

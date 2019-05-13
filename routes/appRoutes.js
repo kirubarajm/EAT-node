@@ -478,6 +478,30 @@ module.exports = function (app) {
     .put(product.update_a_product)
     .delete(product.delete_a_product);
 
+    app.route('/admin/productapprove')
+    .put(product.approve_status_product)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Orders API
    app.route('/orders/ordercreate')
@@ -666,6 +690,9 @@ module.exports = function (app) {
   
   app.route('/eat/pushid/add')
     .put(eatuser.add_a_pushid);
+
+  app.route('/eat/defaultaddress')
+  .put(eatuseraddress.eat_user_default_address_update);
     //query common  
 
  app.route('/query')

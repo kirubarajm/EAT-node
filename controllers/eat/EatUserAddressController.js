@@ -79,3 +79,20 @@ exports.get_a_admin_address = function(req, res) {
   res.json(user);
 });
 };
+
+
+exports.eat_user_default_address_update = function(req, res) {
+  
+  if(!req.body.aid){
+    res.status(400).send({ error: true,status:false, message: 'Please provide password' });
+  }else if(!req.body.userid){
+    res.status(400).send({ error: true,status:false, message: 'Please provide userid' });
+  }
+  else{
+    EatuserAddress.eat_user_default_address_update_aid(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+}
+};

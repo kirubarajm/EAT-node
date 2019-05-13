@@ -25,6 +25,8 @@ var Product = function(product){
   //  this.created_at = new Date();
     this.quantity = product.quantity ||0;
     this.cusine = product.cusine || 1;
+    this.approved_status = product.approved_status || 0;
+  
   //  this.updated_at = new Date()
 
 };
@@ -67,10 +69,7 @@ Product.createProduct = function createProduct(newProduct,itemlist, result) {
                   result(null, resobj);
       
                  }  
-
-               
-                
-                
+ 
             });           
 };
 
@@ -95,7 +94,7 @@ Product.getProductById = function getProductById(userId, result) {
 };
 
 Product.getAllProduct = function getAllProduct(result) {
-        sql.query("Select * from Product", function (err, res) {
+        sql.query("Select * from Product where active_status=0", function (err, res) {
 
                 if(err) {
                     console.log("error: ", err);
@@ -115,7 +114,7 @@ Product.getAllProduct = function getAllProduct(result) {
 };
 
 Product.getAllVirutalProduct = function getAllVirutalProduct(result) {
-        sql.query("Select * from Product where active_status=0", function (err, res) {
+        sql.query("Select * from Product where active_status=0 and approved_status = 1", function (err, res) {
 
                 if(err) {
                     console.log("error: ", err);
@@ -249,7 +248,7 @@ Product.admin_list_all_product = function admin_list_all_product(req,result) {
         sql.query(query, function (err, res) {
 
           if(err) {
-            console.log("error: ", err);
+            console.log("error: ", err);  
             result(null, err);
         }
         else{
@@ -462,6 +461,84 @@ Product.update_delete_status =  function(id, result){
                       success: sucobj,
                       status:false,
                       message: "Product is live now, You can't delete",
+                      }; 
+        
+                   result(null, resobj);
+          }
+
+
+          }
+  });      
+};
+
+
+Product.approve_product_status =  function(req, result){
+
+  sql.query(" select * from Product where productid = "+req.productid+" ", function (err, res) {
+    if(err) {
+        console.log("error: ", err);
+        result(null, err);
+    }
+    else{
+      console.log(res[0].active_status);
+
+          if (res[0].active_status == 0) {
+
+            if (res[0].approved_status == 0 || res[0].approved_status == 3) {
+
+          
+            sql.query("UPDATE Product SET approved_status = "+req.approved_status+" WHERE productid = "+req.productid+"",  function (err, res1) {
+              if(err) {
+                  console.log("error: ", err);
+                    result(null, err);
+                 }
+               else{   
+               
+                  if (req.approved_status == 1) {
+                    message = "Product approved successfully"
+                  }else if(req.approved_status == 3){
+                    message = "Product not approved "
+                  }
+                    let sucobj=true;
+                    let resobj = {  
+                      success: sucobj,
+                      status:true,
+                      message:message,
+                      }; 
+        
+                   result(null, resobj);
+                    }
+                }); 
+
+              }else if(res[0].approved_status == 1){
+                console.log('test');
+                    let sucobj=true;
+                    let resobj = {  
+                      success: sucobj,
+                      status:false,
+                      message: "Product Already approved",
+                      }; 
+        
+                   result(null, resobj);
+
+              }else if(res[0].approved_status == 3){
+                console.log('test');
+                    let sucobj=true;
+                    let resobj = {  
+                      success: sucobj,
+                      status:false,
+                      message: "Product Already Un-approved",
+                      }; 
+        
+                   result(null, resobj);
+              }
+          } else if(res[0].active_status == 1){
+            console.log('test');
+                    let sucobj=true;
+                    let resobj = {  
+                      success: sucobj,
+                      status:false,
+                      message: "Product is live now",
                       }; 
         
                    result(null, resobj);
