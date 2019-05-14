@@ -914,7 +914,8 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
         }
         else {
            var res =  {
-                "result": "Order is not found!"
+                result: "Order is not found!",
+                status: false
             }
             result(null, res);
         }
@@ -931,6 +932,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result){
         let sucobj=true;
         let resobj = {  
           success: sucobj,
+          status:true,
           result: rows 
           }; 
 

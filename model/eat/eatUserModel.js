@@ -1040,53 +1040,71 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req, result) 
 
                     sql.query("INSERT INTO User set ?", new_user, function (err, res2) {
                         
-                     if(err) {
-                        console.log("error: ", err);
-                        result(null, err);
-                    }
-                    else{
-                                         
-                      let resobj = {  
-                        success: true,
-                       // message:mesobj,
-                        passwordstatus:passwordstatus,
-                        otpstatus:true,
-                        genderstatus:genderstatus,
-                        userid: res2.insertId 
-                        }; 
-                  
-                     result(null, resobj);
-                    }
-                    });  
-                     }else{
+                                        if(err) {
+                                            console.log("error: ", err);
+                                            result(null, err);
+                                        }
+                                        else{
+                                                                    
+                                        let resobj = {  
+                                            success: true,
+                                        // message:mesobj,
+                                            passwordstatus:passwordstatus,
+                                            otpstatus:true,
+                                            genderstatus:genderstatus,
+                                            userid: res2.insertId,
+                                            result:[]
+                                            }; 
+                                    
+                                        result(null, resobj);
+                                        }
+                                        });  
+                    }else{
                            
                       //let message = "Following user already Exist!, Please check it Phone number" ;
                       if (res1[0].password !== '' && res1[0].password !== null) { 
                         passwordstatus = true;
                         otpstatus = true;
                         genderstatus = true;
-                         
-                      }
+                        }
                       
-                      if (res1[0].gender !== '' && res1[0].gender !== null && res1[0].name !== '' && res1[0].name !== null){
-                        genderstatus = true;
-                        otpstatus = true;
-                        
-                      }else {
-                        
-                      }
-                            
-                       let resobj = {  
-                       success: true,
-                       status:true,
-                       passwordstatus:passwordstatus,
-                       otpstatus:otpstatus,
-                       genderstatus:genderstatus,
-                       userid:res1[0].userid
+                        if (res1[0].gender !== '' && res1[0].gender !== null && res1[0].name !== '' && res1[0].name !== null){
+                            genderstatus = true;
+                            otpstatus = true;                        
+                        }
+
+                    console.log(res1[0].userid);
+                      sql.query("Select * from Address where userid = '"+res1[0].userid+"' and address_default = 1", function (err, res3) {             
+                        if(err) {
+                            console.log("error: ", err);
+                            result(err, null);
+                        }
+                        else{
+                           
+                            responce = [];
+                           
+                            console.log(res3.length);
+                            if (res3.length !== 0){ 
+                                
+                                responce.push(res3[0]);
+
+                            }
+                    
+                            let resobj = {
+                                success: true,
+                                status:true,
+                                passwordstatus:passwordstatus,
+                                otpstatus:otpstatus,
+                                genderstatus:genderstatus,
+                                userid:res1[0].userid,
+                                result:responce
+                            };
                 
-                       }; 
-        
-                    result(null, resobj);
+                            result(null, resobj);
+                            
+                        }
+                });       
+                    
         
         }
         
@@ -1178,14 +1196,37 @@ Eatuser.checkLogin = function checkLogin(req, result) {
                  
             if (res[0].virtualkey === 0){ 
 
-            let status = (res.length == 1) ? true : false;
-            let resobj = {
-                success: true,
-                status : status,
-                result: res
-            };
-            console.log("result: ---", res.length);
-            result(null, resobj);
+                sql.query("Select * from Address where userid = '"+res[0].userid+"' and address_default = 1", function (err, res1) {             
+                    if(err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                    }
+                    else{
+                        res[0].aid = null;
+                        res[0].address_title =null;
+                        res[0].lat = null;
+                        res[0].lon =null
+
+
+                        if (res1.length !== 0){ 
+                            res[0].aid=res1[0].aid; 
+                            res[0].address_title=res1[0].address_title; 
+                            res[0].lat=res1[0].lat; 
+                            res[0].lon=res1[0].lon; 
+
+                        }
+                        let status = (res.length == 1) ? true : false;
+                        let resobj = {
+                            success: true,
+                            status : status,
+                            result: res
+                        };
+                        console.log("result: ---", res.length);
+                        result(null, resobj);
+                        
+                    }
+            });   
+           
         }else{
 
             let resobj = { 

@@ -297,8 +297,14 @@ module.exports = function (app) {
   app.route('/makeit/password')
     .put(makeituser.makeit_user_forgot_password_update);
 
-    app.route('/makeit/forgot')
+  app.route('/makeit/forgot')
     .post(makeituser.makeit_user_forgot_send_otp_by_phone);
+
+  app.route('/makeit/productupload')
+    .post(documents.makeit_product_upload_a_document);
+
+  app.route('/makeit/documentupload')
+    .post(documents.makeit_upload_a_documents);
 
 
 
@@ -477,6 +483,30 @@ module.exports = function (app) {
     .get(product.read_a_product)
     .put(product.update_a_product)
     .delete(product.delete_a_product);
+
+    app.route('/admin/productapprove')
+    .put(product.approve_status_product)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   // Orders API
@@ -666,6 +696,9 @@ module.exports = function (app) {
   
   app.route('/eat/pushid/add')
     .put(eatuser.add_a_pushid);
+
+  app.route('/eat/defaultaddress')
+  .put(eatuseraddress.eat_user_default_address_update);
     //query common  
 
  app.route('/query')

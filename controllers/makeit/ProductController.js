@@ -180,4 +180,13 @@ var  product = req.body.product;
      res.json(product);
    });
  };
+
+ exports.approve_status_product = function(req, res) {
+  
+    Product.approve_product_status( req.body, function(err, product) {
+       if (err)
+       res.send(err);
+       res.json(product);
+     });
+   };
  
