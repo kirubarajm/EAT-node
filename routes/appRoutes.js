@@ -25,6 +25,7 @@ module.exports = function (app) {
   var queryanswer = require('../controllers/common/QueryanswerController');
   var region = require('../controllers/common/RegionController');
   var cusine = require('../controllers/common/CusineController');
+  var cluster = require('../controllers/common/ClusterController');
   var master = require('../controllers/common/MastersController');
   var feedback = require('../controllers/common/EatfeedbackController');
   var orderrating = require('../controllers/common/OrderratingController');
@@ -731,6 +732,8 @@ app.route('/masters/regionlist')
 
 app.route('/masters/cuisinelist')
   .get(cusine.list_all_Cuisine);
+app.route('/masters/clusterlist')
+    .get(cluster.list_all_Cluster);
 
   app.route('/procedure')
   .get(region.pro_call);
@@ -741,6 +744,8 @@ app.route('/masters/cuisinelist')
 
 app.route('/foodlist')
     .post(eatuser.eat_makeit_product_list);
+
+
 
 
 };
