@@ -1040,118 +1040,71 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req, result) 
 
                     sql.query("INSERT INTO User set ?", new_user, function (err, res2) {
                         
-                     if(err) {
-                        console.log("error: ", err);
-                        result(null, err);
-                    }
-                    else{
-                          
-                        
-                                    sql.query("Select * from Address where userid = '"+res2.insertId+"' and address_default = 1", function (err, res3) {             
                                         if(err) {
                                             console.log("error: ", err);
-                                            result(err, null);
+                                            result(null, err);
                                         }
                                         else{
-                                            console.log('test');
-                                            res2[0].aid = null;
-                                            res2[0].address_title =null;
-                                            res2[0].lat = null;
-                                            res2[0].lon =null
-
-
-                                            if (res3.length !== 0){ 
-                                                res2[0].aid=res3[0].aid; 
-                                                res2[0].address_title=res3[0].address_title; 
-                                                res2[0].lat=res3[0].lat; 
-                                                res2[0].lon=res3[0].lon; 
-
-                                            }
-                                        //  let status = (res.length == 1) ? true : false;
-                                            let resobj = {
-                                                success: true,
-                                                status : true,
-                                                result: res2
-                                            };
-                                            console.log("result: ---", res.length);
-                                            result(null, resobj);
-                                            
+                                                                    
+                                        let resobj = {  
+                                            success: true,
+                                        // message:mesobj,
+                                            passwordstatus:passwordstatus,
+                                            otpstatus:true,
+                                            genderstatus:genderstatus,
+                                            userid: res2.insertId,
+                                            result:[]
+                                            }; 
+                                    
+                                        result(null, resobj);
                                         }
-                                });   
-                    //   let resobj = {  
-                    //     success: true,
-                    //    // message:mesobj,
-                    //     passwordstatus:passwordstatus,
-                    //     otpstatus:true,
-                    //     genderstatus:genderstatus,
-                    //     userid: res2.insertId 
-                    //     }; 
-                  
-                    //  result(null, resobj);
-                    }
-                    });  
-                     }else{
+                                        });  
+                    }else{
                            
                       //let message = "Following user already Exist!, Please check it Phone number" ;
                       if (res1[0].password !== '' && res1[0].password !== null) { 
                         passwordstatus = true;
                         otpstatus = true;
                         genderstatus = true;
-                         
-                      }
+                        }
                       
-                      if (res1[0].gender !== '' && res1[0].gender !== null && res1[0].name !== '' && res1[0].name !== null){
-                        genderstatus = true;
-                        otpstatus = true;
-                        
-                      }else {
-                        
-                      }
+                        if (res1[0].gender !== '' && res1[0].gender !== null && res1[0].name !== '' && res1[0].name !== null){
+                            genderstatus = true;
+                            otpstatus = true;                        
+                        }
+
+                    console.log(res1[0].userid);
                       sql.query("Select * from Address where userid = '"+res1[0].userid+"' and address_default = 1", function (err, res3) {             
                         if(err) {
                             console.log("error: ", err);
                             result(err, null);
                         }
                         else{
-                            console.log('test');
-                            res1[0].aid = null;
-                            res1[0].address_title =null;
-                            res1[0].lat = null;
-                            res1[0].lon =null
-
-
+                           
+                            responce = [];
+                           
+                            console.log(res3.length);
                             if (res3.length !== 0){ 
-                                res1[0].aid=res3[0].aid; 
-                                res1[0].address_title=res3[0].address_title; 
-                                res1[0].lat=res3[0].lat; 
-                                res1[0].lon=res3[0].lon; 
+                                
+                                responce.push(res3[0]);
 
                             }
-                        //  let status = (res.length == 1) ? true : false;
+                    
                             let resobj = {
                                 success: true,
-                       status:true,
-                       passwordstatus:passwordstatus,
-                       otpstatus:otpstatus,
-                       genderstatus:genderstatus,
-                       userid:res1
+                                status:true,
+                                passwordstatus:passwordstatus,
+                                otpstatus:otpstatus,
+                                genderstatus:genderstatus,
+                                userid:res1[0].userid,
+                                result:responce
                             };
-                            console.log("result: ---", res.length);
+                
                             result(null, resobj);
                             
                         }
                 });       
-                    //    let resobj = {  
-                    //    success: true,
-                    //    status:true,
-                    //    passwordstatus:passwordstatus,
-                    //    otpstatus:otpstatus,
-                    //    genderstatus:genderstatus,
-                    //    userid:res1[0].userid
-                
-                    //    }; 
-        
-                    // result(null, resobj);
+                    
         
         }
         

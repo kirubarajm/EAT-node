@@ -297,8 +297,14 @@ module.exports = function (app) {
   app.route('/makeit/password')
     .put(makeituser.makeit_user_forgot_password_update);
 
-    app.route('/makeit/forgot')
+  app.route('/makeit/forgot')
     .post(makeituser.makeit_user_forgot_send_otp_by_phone);
+
+  app.route('/makeit/productupload')
+    .post(documents.makeit_product_upload_a_document);
+
+  app.route('/makeit/documentupload')
+    .post(documents.makeit_upload_a_documents);
 
 
 
