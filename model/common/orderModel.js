@@ -1429,7 +1429,7 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
                             res1[i].items=items.item;
                            }
                 }
-                 
+                //FCM.sendSingleNotification('csXP3KaickY:APA91bGMhsUBtiwFfRb-qBqZY4dxCZSCVdf3aC9gqjMbKYzLqkfGAWsoJApi5YJNQ3DIM73eHqEnO48fYidD4Iba5smyhqzp5M0mXxKHjnZ-WoZHlBnNkbK8RyO5aXe_skxC8dPZcyDT','Order Post','Order Accepted');
      
                   let sucobj=true;
                      let resobj = {  
@@ -1520,10 +1520,8 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
                 Orderitem.createOrderitems(items, function (err, res2) {
                     if (err)
                     result.send(err);
-                 //  console.log(res2);
-
                 });   
-            }     
+            }     PushNotification(req.userid,orderid);
                      let sucobj=true;
                      let status = true;
                      let mesobj = "Order Created successfully";
@@ -1543,8 +1541,7 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
                  
                 var new_Order = new Order(req);
                 // new_Order.locality = 'guindy';
-                console.log(new_Order);
-                 new_Order.delivery_charge = delivery_charge;
+               new_Order.delivery_charge = delivery_charge;
                sql.query("INSERT INTO Orders set ?", new_Order, function (err, res1) {
           
                   if (err) {
@@ -1590,25 +1587,23 @@ Order.read_a_proceed_to_pay = async  function read_a_proceed_to_pay(req,orderite
               });
           
          }
-        //  function PushNotification(){
-        //     sql.query("SELECT * FROM User where userid = "+req.userid, function (err, user) {
+         function PushNotification(userid,orderid){
+            sql.query("SELECT * FROM User where userid = "+userid, function (err, user) {
     
-        //         if (err) {
-        //             console.log("error: ", err);
-        //             result(null, err);
-        //         }else{
-        //             var  pushid_android = user.pushid_android;
-        //             var  pushid_ios = user.pushid_ios;
-        //             var  push_title='Order Accepted';
-        //             var  push_message= "Hi! your Order accepted. your Order id #"+req.orderid;
-                    
-        //             if(pushid_android) FCM.sendOrderNotificationAndroid(pushid_android,push_title,push_message);
-        //         }
-        //     });
-        // }
+                if (err) {
+                    console.log("error: ", err);
+                    result(null, err);
+                }else{
+                    var  pushid_android = user[0].pushid_android;
+                    var  pushid_ios = user[0].pushid_ios;
+                    var  push_title='Order Accepted';
+                    var  push_message= "Hi! your Order accepted. your Order id #"+orderid;
+                    if(pushid_android) FCM.sendOrderNotificationAndroid(pushid_android,push_title,push_message);
+                }
+            });
+        }
 
         }else{
-
             let sucobj=true;
             let status = false;
             let mesobj = "Already you have one order, So please try once delivered exiting order";

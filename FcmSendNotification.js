@@ -17,7 +17,7 @@ exports.sendSingleNotification = function(token,title,message) {
             message: message,
             page_id:'1',
             app:'Move-it',
-            notification_type:1
+            notification_type:'1'
         }
     };
     
