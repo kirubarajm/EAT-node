@@ -73,3 +73,33 @@ exports.update_a_menuitem = function(req, res) {
      res.json(menuitem);
    });
  };
+
+
+ exports.admin_unapproval_approve_list = function(req, res) {
+  Menuitem.admin_list_all__unapproval_menuitem(req.body,function(err, product) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', product);
+    res.send(product);
+  });
+};
+
+exports.delete_status_menuitem = function(req, res) {
+
+  Menuitem.update_delete_status( req.params.itemid, function(err, product) {
+       if (err)
+       res.send(err);
+       res.json(product);
+     });
+   };
+
+   exports.approve_status_menuitem  = function(req, res) {
+    console.log(req);
+    Menuitem.approve_menuitem_status( req.body, function(err, product) {
+       if (err)
+       res.send(err);
+       res.json(product);
+     });
+   };
+ 

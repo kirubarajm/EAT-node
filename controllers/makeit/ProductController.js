@@ -182,7 +182,7 @@ var  product = req.body.product;
  };
 
  exports.approve_status_product = function(req, res) {
-  
+    console.log(req);
     Product.approve_product_status( req.body, function(err, product) {
        if (err)
        res.send(err);
@@ -190,3 +190,37 @@ var  product = req.body.product;
      });
    };
  
+
+   exports.edit_product_by_makeit_userid = function(req, res) {
+
+    var items = req.body.items;
+  Product.edit_product_by_makeit_userid(req.body,items, function(err, product) {
+     if (err)
+       res.send(err);
+     res.json(product);
+   });
+ };
+
+
+ exports.admin_unapproval_approve_list = function(req, res) {
+  Product.admin_list_all__unapproval_product(req.body,function(err, product) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', product);
+    res.send(product);
+  });
+};
+
+
+
+exports.list_all_product_makeit_userid = function(req, res) {
+
+  Product.getAllProductbymakeituserid(req.params,function(err, product) {
+    console.log('controller')
+    if (err)
+      res.send(err);
+      console.log('res', product);
+    res.send(product);
+  });
+};

@@ -6,7 +6,7 @@ var Productitem = require('../../model/makeit/productitemsModel.js');
 var Product = function(product){
     this.makeit_userid = product.makeit_userid;
     this.product_name=product.product_name;
-    this.active_status=product.active_status;
+    this.active_status=product.active_status || 0;
     this.vegtype=product.vegtype;
     this.image=product.image;
     this.preparetime=product.preparetime;
@@ -24,7 +24,7 @@ var Product = function(product){
     this.delete_status=product.delete_status || 0;
   //  this.created_at = new Date();
     this.quantity = product.quantity ||0;
-    this.cusine = product.cusine || 1;
+    this.cuisine = product.cuisine || 1;
     this.approved_status = product.approved_status || 0;
   
   //  this.updated_at = new Date()
@@ -94,7 +94,7 @@ Product.getProductById = function getProductById(userId, result) {
 };
 
 Product.getAllProduct = function getAllProduct(result) {
-        sql.query("Select * from Product where active_status=0", function (err, res) {
+        sql.query("Select * from Product where delete_status = 0 ", function (err, res) {
 
                 if(err) {
                     console.log("error: ", err);
@@ -114,7 +114,7 @@ Product.getAllProduct = function getAllProduct(result) {
 };
 
 Product.getAllVirutalProduct = function getAllVirutalProduct(result) {
-        sql.query("Select * from Product where active_status=0 and approved_status = 1", function (err, res) {
+        sql.query("Select * from Product where active_status=0 ", function (err, res) {
 
                 if(err) {
                     console.log("error: ", err);
@@ -238,13 +238,31 @@ Product.productitemlist = function productitemlist(req,result) {
 Product.admin_list_all_product = function admin_list_all_product(req,result) {
 
 
+  console.log(req);
+
     var query = "Select * from Product where makeit_userid = '"+req.makeit_userid+"' and delete_status !=1"
 
-    if(req.search){
-      query = query+" and (product_name LIKE  '%"+req.search+"%')";
+    console.log(req.approved_status);
+
+    if(req.search && req.approved_status ===undefined){
+
+      console.log("search ");  
+      query = query+" and product_name LIKE  '%"+req.search+"%'";
+
+     }else if(req.search === undefined && req.approved_status !==undefined){
+
+      console.log("approved_status "); 
+      query = query+" and approved_status = '"+req.approved_status+"'";
+
+    }else if(req.search !==undefined && req.approved_status !==undefined){
+
+      console.log("search and approved_status ");
+      query = query+" and approved_status = '"+req.approved_status+"' and product_name LIKE  '%"+req.search+"%'";
+
    }
       
    console.log(query);
+
         sql.query(query, function (err, res) {
 
           if(err) {
@@ -256,6 +274,7 @@ Product.admin_list_all_product = function admin_list_all_product(req,result) {
           let sucobj=true;
           let resobj = {  
             success: sucobj,
+            status:true,
             result: res 
             }; 
 
@@ -326,6 +345,15 @@ Product.quantitydecrease = function(orderlist, result){
 
 
 Product.update_a_product_by_makeit_userid = function(req,items, result){
+  sql.query(" select * from Product where productid = "+req.productid+"", function (err, res) {
+    if(err) {
+        console.log("error: ", err);
+        result(null, err);
+    }
+    else{
+      console.log(res[0].active_status);
+
+          if (res[0].active_status == 0) {
 
   console.log(req);
     var staticquery = "UPDATE Product SET ";
@@ -353,7 +381,6 @@ Product.update_a_product_by_makeit_userid = function(req,items, result){
     });
   }
 
-
    var  query = staticquery + column.slice(0, -1)  + " where productid = " + req.productid;
     
     sql.query(query, function (err, res) {
@@ -367,6 +394,7 @@ Product.update_a_product_by_makeit_userid = function(req,items, result){
             let message = " Product updated successfully"
             let resobj = {
                 success: sucobj,
+                status: true,
                 message: message
             };
 
@@ -375,7 +403,109 @@ Product.update_a_product_by_makeit_userid = function(req,items, result){
 
     });
 
+  } else if(res[0].active_status == 1){
+    console.log('product live');
+            let sucobj=true;
+            let resobj = {  
+              success: sucobj,
+              status:false,
+              message: "Sorry Product is live now, You can't edit",
+              }; 
+
+          result(null, resobj);
+  }
+
+
+  }
+});        
+
 };
+
+
+
+
+Product.edit_product_by_makeit_userid = function(req,items, result){
+
+  sql.query(" select * from Product where productid = "+req.productid+"", function (err, res) {
+    if(err) {
+        console.log("error: ", err);
+        result(null, err);
+    }
+    else{
+      console.log(res[0].active_status);
+
+          if (res[0].active_status == 0) {
+
+                    console.log(req);
+                      var staticquery = "UPDATE Product SET updated_at =?,";
+                      var column = '';
+
+                      for (const [key, value] of Object.entries(req)) {
+                          console.log(`${key} ${value}`);
+
+                          if (key !== 'productid'  &&  key !== 'items') {
+                              // var value = `=${value}`;
+                              column = column + key + "='" + value + "',";
+                          }
+                      }
+
+                      for(var i = 0; i < items.length; i++){
+                                      
+                        var product_item = items[i];
+                    
+                        product_item.productid = req.productid;
+                      
+
+                        Productitem.updateProductitems(product_item, function (err, result) {
+                          if (err)
+                              res.send(err);
+                        // res.json(result);
+                      });
+                    }
+
+                 
+
+                  var  query = staticquery + column.slice(0, -1)  + " ,approved_status = 3 where productid = " + req.productid;
+                  console.log(query);
+                    
+                    sql.query(query, new Date(), function (err, res1) {
+                        if (err) {
+                            console.log("error: ", err);
+                            result(err, null);
+                        }
+                        else {
+
+                            let sucobj = true;
+                            let message = " Product updated successfully"
+                            let resobj = {
+                                success: sucobj,
+                                status: true,
+                                message: message
+                            };
+
+                            result(null, resobj);
+                        }
+
+                    });
+
+                  } else if(res[0].active_status == 1){
+                    console.log('product live');
+                            let sucobj=true;
+                            let resobj = {  
+                              success: sucobj,
+                              status:false,
+                              message: "Sorry Product is live now, You can't edit",
+                              }; 
+
+                          result(null, resobj);
+                  }
+
+
+                  }
+});        
+
+};
+
 
 Product.productview_by_productid = function productview_by_productid(req,result) {
   const items = [];
@@ -427,10 +557,14 @@ Product.update_delete_status =  function(id, result){
         result(null, err);
     }
     else{
-      console.log(res[0].active_status);
+      
+      if (res.length !== 0) {
 
           if (res[0].active_status == 0) {
             console.log('test1');
+
+            if (res[0].delete_status !== 1) {
+
             sql.query("UPDATE Product SET delete_status = 1 WHERE productid = "+id+"",  function (err, res1) {
               if(err) {
                   console.log("error: ", err);
@@ -454,6 +588,18 @@ Product.update_delete_status =  function(id, result){
                    result(null, resobj);
                     }
                 }); 
+              }else{
+
+                let sucobj=true;
+                    let resobj = {  
+                      success: sucobj,
+                      status:false,
+                      message: "Product already deleted",
+                      }; 
+        
+                   result(null, resobj);
+
+              }
           } else if(res[0].active_status == 1){
             console.log('test');
                     let sucobj=true;
@@ -466,7 +612,16 @@ Product.update_delete_status =  function(id, result){
                    result(null, resobj);
           }
 
+        }else{
+          let sucobj=true;
+          let resobj = {  
+            success: sucobj,
+            status:false,
+            message: "Product is not available",
+            }; 
 
+         result(null, resobj);
+        }
           }
   });      
 };
@@ -480,25 +635,26 @@ Product.approve_product_status =  function(req, result){
         result(null, err);
     }
     else{
-      console.log(res[0].active_status);
+      
+      if (res.length !== 0) {
 
-          if (res[0].active_status == 0) {
+          if (res[0].active_status === 0) {
 
-            if (res[0].approved_status == 0 || res[0].approved_status == 3) {
-
+            if (res[0].approved_status === 0 || res[0].approved_status === 3) {
+              
+              var query = "UPDATE Product SET approved_time= ?,approved_status = "+req.approved_status+",approvedby=0 WHERE productid = "+req.productid+"";
           
-            sql.query("UPDATE Product SET approved_status = "+req.approved_status+" WHERE productid = "+req.productid+"",  function (err, res1) {
+              console.log(query);
+            sql.query(query,new Date(),function (err, res1) {
               if(err) {
                   console.log("error: ", err);
                     result(null, err);
                  }
                else{   
                
-                  if (req.approved_status == 1) {
+                
                     message = "Product approved successfully"
-                  }else if(req.approved_status == 3){
-                    message = "Product not approved "
-                  }
+                 
                     let sucobj=true;
                     let resobj = {  
                       success: sucobj,
@@ -516,18 +672,18 @@ Product.approve_product_status =  function(req, result){
                     let resobj = {  
                       success: sucobj,
                       status:false,
-                      message: "Product Already approved",
+                      message: "Product already approved",
                       }; 
         
                    result(null, resobj);
 
-              }else if(res[0].approved_status == 3){
+              }else if(res[0].approved_status == 2){
                 console.log('test');
                     let sucobj=true;
                     let resobj = {  
                       success: sucobj,
                       status:false,
-                      message: "Product Already Un-approved",
+                      message: "Product already rejected",
                       }; 
         
                    result(null, resobj);
@@ -544,9 +700,81 @@ Product.approve_product_status =  function(req, result){
                    result(null, resobj);
           }
 
+        }else{
+          let sucobj=true;
+          let resobj = {  
+            success: sucobj,
+            status:false,
+            message: "Product is not available",
+            }; 
 
+         result(null, resobj);
+        }
           }
+          
   });      
+};
+
+
+Product.admin_list_all__unapproval_product = function admin_list_all__unapproval_product(req,result) {
+
+
+    console.log(req);
+
+    var query = "Select * from Product where delete_status !=1 and active_status !=1 and approved_status !=1 and approved_status !=2 "
+
+    console.log(req.approved_status);
+
+    if(req.approved_status === 0){
+
+      query = query+" and approved_status = '"+req.approved_status+"' order by created_at desc";
+
+     }else if(req.approved_status ===3){
+      query = query+" and approved_status = '"+req.approved_status+"' order by updated_at desc";
+     }
+
+  
+
+   console.log(query);
+
+        sql.query(query, function (err, res) {
+
+          if(err) {
+            console.log("error: ", err);  
+            result(null, err);
+        }
+        else{
+          console.log('Product : ', res);  
+          let sucobj=true;
+          let resobj = {  
+            success: sucobj,
+            status:true,
+            result: res 
+            }; 
+
+         result(null, resobj);
+        }
+});   
+};
+
+Product.getAllProductbymakeituserid = function getAllProductbymakeituserid(req,result) {
+  sql.query("Select * from Product where delete_status = 0 and  makeit_userid = '"+req.makeit_userid+"' and approved_status !=2", function (err, res) {
+
+          if(err) {
+              console.log("error: ", err);
+              result(null, err);
+          }
+          else{
+            console.log('Product : ', res);  
+            let sucobj=true;
+            let resobj = {  
+              success: sucobj,
+              result: res 
+              }; 
+
+           result(null, resobj);
+          }
+      });   
 };
 
 module.exports= Product;

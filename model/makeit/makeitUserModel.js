@@ -534,10 +534,12 @@ Makeituser.get_admin_list_all_makeitusers = function (req, result) {
     req.appointment_status = "" + req.appointment_status
 
     req.virtualkey = "" + req.virtualkey
+
     //    rsearch = req.search || ''
 
   //  var query = "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img, mk.region, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating,JSON_OBJECT('cuisines', JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename))) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid";
-  var query = "select * from MakeitUser";
+  var query = "select * from MakeitUser ";
+
     var searchquery = "name LIKE  '%" + req.search + "%'";
 
     if (req.appointment_status !== 'all' && req.virtualkey !== 'all' && !req.search) {

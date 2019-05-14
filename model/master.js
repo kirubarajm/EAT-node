@@ -270,6 +270,20 @@ const master = [
     }
 ] },
 
+{ 'productapprovestatus' : [
+    {
+        "statusid": 0, "description": "new peoduct"
+    },
+    {
+        "statusid": 1,"description": "Product accept"
+    },
+    {
+        "statusid": 2,"description": "product reject"
+    },
+    {
+        "statusid": 3,"description": "product edit"
+    }
+] },
 
 
 ]
