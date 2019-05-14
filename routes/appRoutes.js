@@ -307,6 +307,26 @@ module.exports = function (app) {
   app.route('/makeit/documentupload')
     .post(documents.makeit_upload_a_documents);
 
+  app.route('/makeit/product/edit')
+    .put(product.edit_product_by_makeit_userid);
+  
+    app.route('/makeit/product/:id')
+    .get(product.read_a_product)
+    .put(product.update_a_product)
+    .delete(product.delete_a_product);
+
+    app.route('/makeit/productlist/:makeit_userid')
+    .get(product.list_all_product_makeit_userid)
+
+    app.route('/makeit/menuitem/unapprove')
+    .post(menuitem.admin_unapproval_approve_list);
+
+    app.route('/makeit/menuitem/edit')
+    .put(menuitem.update_a_menuitem);
+
+    app.route('/makeit/menuitem/:itemid')
+    .delete(menuitem.delete_status_menuitem);
+
 
 
 
@@ -485,8 +505,20 @@ module.exports = function (app) {
     .put(product.update_a_product)
     .delete(product.delete_a_product);
 
-    app.route('/admin/productapprove')
-    .put(product.approve_status_product)
+    app.route('/admin/approvestatus')
+    .put(product.approve_status_product);
+
+    app.route('/admin/product/unapprove')
+    .post(product.admin_unapproval_approve_list);
+
+    app.route('/admin/menuitem/unapprove')
+    .post(menuitem.admin_unapproval_approve_list);
+
+    app.route('/admin/menuitem/:itemid')
+    .delete(menuitem.delete_status_menuitem);
+
+    app.route('/admin/menuitem/approve')
+    .put(menuitem.approve_status_menuitem);
 
 
 
