@@ -186,29 +186,85 @@ Product.getAllliveProduct = function getAllliveProduct(liveproductid,result) {
 
 
 Product.moveliveproduct = function(req,result){
-  sql.query("UPDATE Product SET active_status = ? WHERE productid = ?",[req.active_status,req.productid], function (err, res) {
-       
-    if(err) {
-      console.log("error: ", err);
-      result(null, err);
-  }
-  else{
-    var mesobj = {};
-    let sucobj=true;
-     if(req.active_status == 1){
-           mesobj = "Product added to live successfully";
-          }else{
-          mesobj = "Product removed from live successfully";
-         }
-   // let mesobj = "Product added live successfully";
-    let resobj = {  
-      success: sucobj,
-      message:mesobj 
-      }; 
 
-   result(null, resobj);
-  }
-});   
+  if (req.active_status === 0) {
+
+    sql.query("UPDATE Product SET active_status = ? WHERE productid = ?",[req.active_status,req.productid], function (err, res) {
+       
+      if(err) {
+        console.log("error: ", err);
+        result(null, err);
+    }else{
+      var mesobj = {};
+      let sucobj=true;
+      mesobj = "Product removed from live successfully";
+        
+     // let mesobj = "Product added live successfully";
+      let resobj = {  
+        success: sucobj,
+        status:true,
+        message:mesobj 
+        }; 
+  
+     result(null, resobj);
+    }
+  });
+  }else{
+  sql.query(" select * from Product where productid = "+req.productid+"", function (err, res) {
+    if(err) {
+        console.log("error: ", err);
+        result(null, err);
+    }
+    else{
+
+          if (res[0].approved_status === 1 && res[0].approved_status === 0) {
+
+              sql.query("UPDATE Product SET active_status = ? WHERE productid = ?",[req.active_status,req.productid], function (err, res) {
+                  
+                if(err) {
+                  console.log("error: ", err);
+                  result(null, err);
+              }
+              else{
+                var mesobj = {};
+                let sucobj=true;
+                mesobj = "Product added to live successfully";
+                      
+              // let mesobj = "Product added live successfully";
+                let resobj = {  
+                  success: sucobj,
+                  status:true,
+                  message:mesobj 
+                  }; 
+
+              result(null, resobj);
+              }
+            }); 
+
+} else if(res[0].active_status == 1){
+  console.log('product live');
+          let sucobj=true;
+          let resobj = {  
+            success: sucobj,
+            status:false,
+            message: "Following Product already in live",
+            }; 
+
+        result(null, resobj);
+}else if(res[0].approved_status == 0){
+  console.log('product live');
+          let sucobj=true;
+          let resobj = {  
+            success: sucobj,
+            status:false,
+            message: "Sorry Product not yet approved, You can't move to live",
+            }; 
+
+        result(null, resobj);
+}
+}
+});  
+  }      
 };
 
 
@@ -285,6 +341,15 @@ Product.admin_list_all_product = function admin_list_all_product(req,result) {
 
 
 Product.update_quantity_byid = function update_quantity_byid (req, result){
+  
+  sql.query(" select * from Product where productid = "+req.productid+"", function (err, res) {
+    if(err) {
+        console.log("error: ", err);
+        result(null, err);
+    }
+    else{
+
+          if (res[0].approved_status === 1 && res[0].active_status === 0) {
 
   sql.query("UPDATE Product SET quantity = ? WHERE productid = ? and makeit_userid = ?", [req.quantity,req.productid, req.makeit_userid], function (err, res) {
           if(err) {
@@ -301,28 +366,127 @@ Product.update_quantity_byid = function update_quantity_byid (req, result){
             }
            
             }); 
+
+
+          } else if(res[0].active_status == 1){
+            console.log('product live');
+                    let sucobj=true;
+                    let resobj = {  
+                      success: sucobj,
+                      status:false,
+                      message: "Following Product already in live, You can't quantity increase",
+                      }; 
+          
+                  result(null, resobj);
+          }else if(res[0].approved_status == 0){
+            console.log('product live');
+                    let sucobj=true;
+                    let resobj = {  
+                      success: sucobj,
+                      status:false,
+                      message: "Sorry Product not yet approved, You can't quantity increase",
+                      }; 
+          
+                  result(null, resobj);
+          }
+          }
+          });  
 };
 
 
 
 Product.update_quantity_product_byid = function update_quantity_product_byid (req, result){
 
-  sql.query("UPDATE Product SET quantity = ?,active_status = ? WHERE productid = ? and makeit_userid = ?", [req.quantity,req.active_status,req.productid, req.makeit_userid], function (err, res) {
-          if(err) {
-              console.log("error: ", err);
+  if (req.active_status === 0) {
+
+    sql.query("UPDATE Product SET active_status = ? WHERE productid = ?",[req.active_status,req.productid], function (err, res) {
+       
+      if(err) {
+        console.log("error: ", err);
+        result(null, err);
+    }else{
+      var mesobj = {};
+      let sucobj=true;
+      mesobj = "Product removed from live successfully";
+        
+     // let mesobj = "Product added live successfully";
+      let resobj = {  
+        success: sucobj,
+        status:true,
+        message:mesobj 
+        }; 
+  
+     result(null, resobj);
+    }
+  });
+  }else{
+
+        sql.query(" select * from Product where productid = "+req.productid+"", function (err, res1) {
+            if(err) {
+                console.log("error: ", err);
                 result(null, err);
-             }else{  
-              let sucobj=true;
-              let message = "Quantity added and product moved to live successfully";
-              if(req.active_status===0) message="Product removed from live successfully";
-              let resobj = {  
-                success: sucobj,
-                message:message,
-                }; 
-             result(null, resobj);
             }
-           
-            }); 
+            else{
+
+                  console.log(res1[0].approved_status);
+                  console.log(res1[0].active_status);
+
+                  if(res1[0].approved_status === 1 && res1[0].active_status === '0') {
+
+                    console.log('product add quanity and move to live');
+
+                      sql.query("UPDATE Product SET quantity = ?,active_status = ? WHERE productid = ? and makeit_userid = ?", [req.quantity,req.active_status,req.productid, req.makeit_userid], function (err, res) {
+                              if(err) {
+                                  console.log("error: ", err);
+                                    result(null, err);
+                                }else{  
+                                  let sucobj=true;
+                                  let message = "Quantity added and product moved to live successfully";
+                                  let resobj = {  
+                                    success: sucobj,
+                                    message:message,
+                                    status:true
+                                    }; 
+                                result(null, resobj);
+                                }
+                              
+                                }); 
+
+                  }else if(res1[0].active_status === '1'){
+                    console.log('product live');
+                            let sucobj=true;
+                            let resobj = {  
+                              success: sucobj,
+                              status:false,
+                              message: "Following Product already in live",
+                              }; 
+                          result(null, resobj);
+                  }else if(res1[0].approved_status === 0){
+                    console.log('product  not approved');
+                            let sucobj=true;
+                            let resobj = {  
+                              success: sucobj,
+                              status:false,
+                              message: "Sorry Product not yet approved, You can't move to live",
+                              }; 
+                  
+                          result(null, resobj);
+                  }else {
+                    console.log('exit');
+                    console.log(res1[0].approved_status);
+                    console.log(res1[0].approved_status);
+                            let sucobj=true;
+                            let resobj = {  
+                              success: sucobj,
+                              status:false,
+                              message: "Sorry Product not yet approved, You can't move to live",
+                              }; 
+                  
+                          result(null, resobj);
+                  }
+                  }
+      });  
+ }
 };
 
 

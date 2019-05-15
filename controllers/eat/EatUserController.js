@@ -282,3 +282,14 @@ exports.add_a_pushid = function(req, res) {
 };
 
 
+exports.create_customerid_by_razorpay = function(req, res) {
+  
+  Eatuser.create_customerid_by_razorpay(req.body, function(err, user) {
+    if (err)
+      res.send(err);
+    res.json(user);
+  });
+
+};
+
+

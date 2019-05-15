@@ -203,7 +203,7 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
   
               if (res[0].approved_status == 0 || res[0].approved_status == 3) {
   
-                var query = "UPDATE Menuitem SET approved_time= ?,approved_status = "+req.approved_status+",approvedby=0  WHERE productid = "+req.menuitemid+"";
+                var query = "UPDATE Menuitem SET active_status = 1,approved_time= ?,approved_status = "+req.approved_status+",approvedby=0  WHERE productid = "+req.menuitemid+"";
               sql.query(query, new Date(), function (err, res1) {
                 if(err) {
                     console.log("error: ", err);
@@ -280,7 +280,7 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
 
     console.log(req);
 
-    var query = "Select * from Menuitem where  active_status !=1 and approved_status !=1 and approved_status !=2 "
+    var query = "Select * from Menuitem where  active_status = 0 and approved_status !=1 and approved_status !=2 "
 
     console.log(req.approved_status);
 

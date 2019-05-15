@@ -25,7 +25,6 @@ module.exports = function (app) {
   var queryanswer = require('../controllers/common/QueryanswerController');
   var region = require('../controllers/common/RegionController');
   var cusine = require('../controllers/common/CusineController');
-  var cluster = require('../controllers/common/ClusterController');
   var master = require('../controllers/common/MastersController');
   var feedback = require('../controllers/common/EatfeedbackController');
   var orderrating = require('../controllers/common/OrderratingController');
@@ -242,6 +241,8 @@ module.exports = function (app) {
   // app.route('/createorder')
   // .post(makeituser.createorder);
 
+
+
   // Makeit
 
   app.route('/makeit/orders')
@@ -307,27 +308,34 @@ module.exports = function (app) {
   app.route('/makeit/documentupload')
     .post(documents.makeit_upload_a_documents);
 
-  app.route('/makeit/product/edit')
+ app.route('/makeit/product/edit')
     .put(product.edit_product_by_makeit_userid);
   
-    app.route('/makeit/product/:id')
+app.route('/makeit/product/:id')
     .get(product.read_a_product)
     .put(product.update_a_product)
     .delete(product.delete_a_product);
 
-    app.route('/makeit/productlist/:makeit_userid')
+  app.route('/makeit/productlist/:makeit_userid')
     .get(product.list_all_product_makeit_userid)
 
-    app.route('/makeit/menuitem/unapprove')
+  app.route('/makeit/menuitem/unapprove')
     .post(menuitem.admin_unapproval_approve_list);
 
-    app.route('/makeit/menuitem/edit')
+  app.route('/makeit/menuitem/edit')
     .put(menuitem.update_a_menuitem);
 
-    app.route('/makeit/menuitem/:itemid')
+  app.route('/makeit/menuitem/:itemid')
     .delete(menuitem.delete_status_menuitem);
 
+  app.route('/makeit/menuitem/:itemid')
+    .delete(menuitem.delete_status_menuitem);
 
+  app.route('/makeit/earnings/:makeit_userid')
+    .get(makeituser.makeit_earnings);
+  
+  app.route('/makeit/dayearnings/:makeit_userid')
+    .get(makeituser.makeit_earnings_day);
 
 
 
@@ -732,6 +740,11 @@ module.exports = function (app) {
 
   app.route('/eat/defaultaddress')
   .put(eatuseraddress.eat_user_default_address_update);
+
+  app.route('/eat/payment/customerid')
+  .post(eatuser.create_customerid_by_razorpay);
+
+
     //query common  
 
  app.route('/query')
@@ -764,8 +777,6 @@ app.route('/masters/regionlist')
 
 app.route('/masters/cuisinelist')
   .get(cusine.list_all_Cuisine);
-app.route('/masters/clusterlist')
-    .get(cluster.list_all_Cluster);
 
   app.route('/procedure')
   .get(region.pro_call);
@@ -776,8 +787,6 @@ app.route('/masters/clusterlist')
 
 app.route('/foodlist')
     .post(eatuser.eat_makeit_product_list);
-
-
 
 
 };

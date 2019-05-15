@@ -1074,7 +1074,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req, result) 
                         }
 
                     console.log(res1[0].userid);
-                      sql.query("Select * from Address where userid = '"+res1[0].userid+"' and address_default = 1", function (err, res3) {             
+                      sql.query("Select * from Address where userid = '"+res1[0].userid+"' and address_default = 1 and delete_status=0", function (err, res3) {             
                         if(err) {
                             console.log("error: ", err);
                             result(err, null);
@@ -1196,7 +1196,7 @@ Eatuser.checkLogin = function checkLogin(req, result) {
                  
             if (res[0].virtualkey === 0){ 
 
-                sql.query("Select * from Address where userid = '"+res[0].userid+"' and address_default = 1", function (err, res1) {             
+                sql.query("Select * from Address where userid = '"+res[0].userid+"' and address_default = 1 and delete_status=0", function (err, res1) {             
                     if(err) {
                         console.log("error: ", err);
                         result(err, null);
@@ -1442,5 +1442,36 @@ if (staticquery.length === 0) {
     });
 }
 };
+
+
+Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(newUser, result) { 
+     
+
+    var razorpay = "https://api.razorpay.com/v1/customers"
+    var instance = new Razorpay({
+        key_id: 'rzp_test_3cduMl5T89iR9G',
+        key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+      })
+
+     
+
+    instance.customers.create({name, email, contact, notes})
+    request({ 
+        method: 'POST',  
+        rejectUnauthorized: false, 
+        url:razorpay
+      
+    }, function(error, response, body){
+        if(error) {
+            console.log("error: ", err);
+            result(null, err);
+        } else {
+            console.log(response.statusCode, body);
+            var responcecode = body.split("#");
+        }
+
+    });
+};
+
 
 module.exports= Eatuser;

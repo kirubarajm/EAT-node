@@ -329,3 +329,20 @@ exports.makeit_user_forgot_send_otp_by_phone = function(req, res) {
 }
 };
 
+exports.makeit_earnings = function (req, res) {
+  console.log(req.params);
+  Makeituser.sum_total_earnings_makeit(req.params.makeit_userid, function (err, result) {
+    if (err)
+      res.send(err);
+    res.json(result);
+  });
+};
+
+exports.makeit_earnings_day = function (req, res) {
+  console.log(req.params);
+  Makeituser.day_total_earnings_makeit(req.params.makeit_userid, function (err, result) {
+    if (err)
+      res.send(err);
+    res.json(result);
+  });
+};

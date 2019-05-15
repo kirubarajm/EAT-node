@@ -289,7 +289,7 @@ Makeituser.checkLogin = function checkLogin(req, result) {
             if (res.length !== 0){ 
 
                 if (res[0].virtualkey === 0){ 
-                    let sucobj = (res.length !== 0) ? 'true' : 'false';
+                    let sucobj = (res.length !== 0) ? true : false;
                     let status = (res.length !== 0) ? true : false;
                     let resobj = {
                         success: sucobj,
@@ -1150,8 +1150,77 @@ Makeituser.makeit_user_forgot_password_send_otp = function makeit_user_forgot_pa
             }
         }
         
-    });
+    }); 
             
 };
+
+Makeituser.sum_total_earnings_makeit = function (makeit_userid,result) {
+
+  
+    var query = "select SUM(price) as earnings from Orders where makeit_user_id = '"+makeit_userid+"' and orderstatus = 6 and payment_status = 1";
+
+    sql.query(query, function (err, res) {
+
+        if (err) {
+            console.log("error: ", err);
+            result(null, err);
+        }else {
+            var query = "select SUM(price) as earnings,ordertime from Orders where makeit_user_id = '"+makeit_userid+"' and orderstatus = 6 and payment_status = 1 GROUP BY date(ordertime)  order by ordertime desc";
+            sql.query(query, function (err, res1) {
+        
+                if (err) {
+                    console.log("error: ", err);
+                    result(null, err);
+                }
+                else {
+                    
+                    var query = "select SUM(price) AS weeklyearnings , CONCAT(ordertime, '-', ordertime + INTERVAL 7 DAY) AS week FROM Orders where makeit_user_id = '"+makeit_userid+"' and orderstatus = 6 and payment_status = 1 GROUP BY week(ordertime)ORDER BY week(ordertime) desc";
+                        sql.query(query, function (err, res2) {
+                    
+                            if (err) {
+                                console.log("error: ", err);
+                                result(null, err);
+                            }
+                            else {
+                                res[0].dayearnings=res1;
+                                res[0].weekearnings=res2;
+
+                                if (res[0].earnings === null){ 
+                                    let sucobj = true;
+                                    let message = "Sorry there is no orders found!";
+                                    let resobj = {
+                                        success: sucobj,
+                                        status:false,
+                                        message:message,
+                                        result: res
+                                    };
+                        
+                                    result(null, resobj);
+                                }else{
+                        
+                                    let sucobj = true;
+                                    let message = "Total earnings";
+                                    let resobj = {
+                                        success: sucobj,
+                                        status:true,
+                                        message:message,
+                                        result: res
+                                    };
+                        
+                                    result(null, resobj);
+                                }
+
+                }
+            });
+                   
+                }        
+            });
+        
+        }
+    });
+};
+
+
+
 
 module.exports = Makeituser;
