@@ -1446,7 +1446,6 @@ if (staticquery.length === 0) {
 
 Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(newUser, result) { 
      
-
     var razorpay = "https://api.razorpay.com/v1/customers"
     var instance = new Razorpay({
         key_id: 'rzp_test_3cduMl5T89iR9G',
@@ -1454,7 +1453,6 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(n
       })
 
      
-
     instance.customers.create({name, email, contact, notes})
     request({ 
         method: 'POST',  

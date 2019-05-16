@@ -431,7 +431,7 @@ Product.update_quantity_product_byid = function update_quantity_product_byid (re
                   console.log(res1[0].approved_status);
                   console.log(res1[0].active_status);
 
-                  if(res1[0].approved_status === 1 && res1[0].active_status === '0') {
+                  if(res1[0].approved_status === 1 && res1[0].active_status ===0) {
 
                     console.log('product add quanity and move to live');
 
@@ -452,7 +452,7 @@ Product.update_quantity_product_byid = function update_quantity_product_byid (re
                               
                                 }); 
 
-                  }else if(res1[0].active_status === '1'){
+                  }else if(res1[0].active_status === 1){
                     console.log('product live');
                             let sucobj=true;
                             let resobj = {  
@@ -663,11 +663,8 @@ Product.edit_product_by_makeit_userid = function(req,items, result){
 
                           result(null, resobj);
                   }
-
-
-                  }
+}
 });        
-
 };
 
 
@@ -704,9 +701,7 @@ Product.productview_by_productid = function productview_by_productid(req,result)
                    result(null, resobj);
               }
 
-            }); 
-       
-           
+            });    
           }
       });   
 };
@@ -842,7 +837,7 @@ Product.approve_product_status =  function(req, result){
                    result(null, resobj);
 
               }else if(res[0].approved_status == 2){
-                console.log('test');
+                console.log('Product already rejected');
                     let sucobj=true;
                     let resobj = {  
                       success: sucobj,
