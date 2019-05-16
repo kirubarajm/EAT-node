@@ -278,3 +278,27 @@ exports.create_customerid_by_razorpay = function(req, res) {
     res.json(user);
   });
 };
+
+exports.eat_region_list_sort_filter = function(req, res) {
+  if (!req.body.lat) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lat" });
+  } else if (!req.body.lon) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lan" });
+  }else if (!req.body.eatuserid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide eatuserid" });
+  }
+   else {
+    Eatuser.get_eat_region_makeit_list(req.body, function(err, region) {
+      console.log("controller");
+      if (err) res.send(err);
+      console.log("res", region);
+      res.send(region);
+    });
+  }
+};

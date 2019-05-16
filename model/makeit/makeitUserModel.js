@@ -30,32 +30,18 @@ var Makeituser = function (makeituser) {
     this.virtualkey = makeituser.virtualkey || 0;
     this.img = makeituser.img;
     this.rating = makeituser.rating;
-    this.region = makeituser.region;
+    this.regionid = makeituser.regionid;
     this.costfortwo = makeituser.costfortwo;
     this.landmark = makeituser.landmark;
     this.locality = makeituser.locality;
     this.flatno = makeituser.flatno;
     this.pincode = makeituser.pincode;
+    this.hometownid=makeituser.hometownid;
 
 };
 
 Makeituser.createUser = function createUser(newUser, result) {
 
-    //newUser.referalcode = 'MAKEWELL' + req.userid
-    // console.log(otpdetails);
-    // if (newUser.appointment_status == null)
-    //     newUser.appointment_status = 0;
-
-    //     sql.query("Select * from Otp where oid = '"+otpdetails.oid+"'" , function (err, res1) {             
-    //         if(err) {
-    //             console.log("error: ", err);
-    //             result(err, null);
-    //         }
-    //         else{
-                
-    //             console.log(res1[0].otp);
-    //             if(res1[0].otp == otpdetails.otp){
-        console.log(newUser);
 
     sql.query("Select * from MakeitUser where phoneno = '" + newUser.phoneno + "' OR email= '" + newUser.email + "' ", function (err, res2) {
         if (err) {
@@ -124,21 +110,7 @@ Makeituser.createUser = function createUser(newUser, result) {
         }
     });
 
-//      }else{
 
-//         let message = "OTP is not valid!, Try once again";
-//         let sucobj=true;
-        
-//          let resobj = {  
-//          success: sucobj,
-//          status: false,
-//          message:message
-//          }; 
-
-//       result(null, resobj);
-//      }
-//     }
-// });
 };
 
 
@@ -571,20 +543,6 @@ Makeituser.get_admin_list_all_makeitusers = function (req, result) {
     }
 
 
-
-    // if(req.appointment_status !== 'all'){
-    //      query = query+" WHERE appointment_status  = '"+req.appointment_status+"' ";
-    // }
-
-
-    // if(req.virtualid !== 'all' && req.search){
-    //     query = query+" and ("+searchquery+")"
-    // }else if(req.appointment_status !== 'all' && req.search){
-    //     query = query+" and ("+searchquery+")"
-    // }else if(req.search){
-    //     query = query+" where " +searchquery
-    // }
-
     console.log(query);
     sql.query(query, function (err, res) {
 
@@ -740,21 +698,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         }
         }
     });
-// } catch (error) {
-//     var errorCode = 402;
-//     let sucobj = true;
-//     let status = false;
-//     message = error;//"There is no data available!, Kindly check the Makeituser id";
-//     let resobj = {
-//         success: sucobj,
-//         status :status,
-//         errorCode :errorCode,
-//         message: message,
-//     };
 
-  
-//     result(null, resobj)
-// }
 };
 
 

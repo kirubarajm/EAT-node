@@ -643,6 +643,8 @@ module.exports = function(app) {
     .route("/eat/payment/customerid")
     .post(eatuser.create_customerid_by_razorpay);
 
+   app.route("/eat/region/kitchenlist").post(eatuser.eat_region_list_sort_filter);
+
   //query common
 
   app.route("/query").post(queryquestion.create_a_question);
