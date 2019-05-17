@@ -248,7 +248,7 @@ Eatuser.get_eat_dish_list = async function(req,result) {
 
 Eatuser.get_eat_makeit_list = function(req,result) {
     var cusinename = [];
-    sql.query("Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.region,mk.costfortwo,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '"+req.eatuserid+"' HAVING distance!= '' ORDER BY distance", function (err, res) {
+    sql.query("Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,mk.costfortwo,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '"+req.eatuserid+"' HAVING distance!= '' ORDER BY distance", function (err, res) {
 
         if(err) {
             console.log("error: ", err);
@@ -386,7 +386,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req,result) {
         
             for (let i = 0; i < regionlist.length; i++) {
                 
-                  filterquery = filterquery + " mu.region = '"+regionlist[i].region+"' or";
+                  filterquery = filterquery + " mu.regionid = '"+regionlist[i].region+"' or";
             }
     }
 
@@ -575,7 +575,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req,result) {
         
             for (let i = 0; i < regionlist.length; i++) {
                 
-                  filterquery = filterquery + " mk.region = '"+regionlist[i].region+"' or";
+                  filterquery = filterquery + " mk.regionid = '"+regionlist[i].region+"' or";
             }
     }
 
@@ -609,7 +609,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req,result) {
     if (req.eatuserid) {
         var query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '"+req.eatuserid+"' left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid ";
     }else{
-            query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img as makeitimg,ly.localityname,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mk.slat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid ";
+            query = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img as makeitimg,ly.localityname,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid ";
     }
 
 
