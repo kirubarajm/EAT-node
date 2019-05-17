@@ -155,7 +155,7 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
       });
 
       function ordercreatecashondelivery(req, orderitems) {
-        console.log("ordercreatecashondelivery: ");
+        console.log("ordercreatecashondelivery:");
         var new_Order = new Order(req);
         // new_Order.locality = 'guindy';
         //new_Order.orderstatus = 6;
@@ -1407,6 +1407,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
   result
 ) {
   try {
+    console.log("read_a_proceed_to_pay: ");
     var tempmessage = "";
     var newOrder = [];
     const productquantity = [];
@@ -1450,8 +1451,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
             req.cus_lon = res2[0].lon;
 
             if (req.payment_type === 0) {
-              ordercreatecashondelivery(req, res3.result[0].item);
               console.log("cash on delivery");
+              ordercreatecashondelivery(req, res3.result[0].item);
             } else if (req.payment_type === 1) {
               console.log("cash on online");
               ordercreateonline(req, res3.result[0].item);
@@ -1501,6 +1502,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
       }
 
       function ordercreateonline(req, orderitems) {
+        console.log("ordercreateonline: ");
         var new_Order = new Order(req);
         // new_Order.locality = 'guindy';
         new_Order.delivery_charge = delivery_charge;

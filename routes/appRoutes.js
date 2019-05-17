@@ -568,8 +568,7 @@ module.exports = function(app) {
 
   app.route("/eat/orders/:userid").get(orders.order_list_eatuser);
 
-  app
-    .route("/eat/address")
+  app.route("/eat/address")
     .get(eatuseraddress.list_all_address)
     .post(eatuseraddress.create_a_address);
 
