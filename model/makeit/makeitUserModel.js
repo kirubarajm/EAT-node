@@ -730,7 +730,7 @@ Makeituser.edit_makeit_users = function (req,cuisines, result) {
         for (const [key, value] of Object.entries(req)) {
             //  console.log(`${key} ${value}`); 
            
-            if (key !== 'userid' && key !== 'cuisines' && key !=="rating" && key !=="removecuisines") {
+            if (key !== 'userid' && key !== 'cuisines' && key !== 'region'  && key !=="rating" && key !=="removecuisines") {
                 // var value = `=${value}`;
                 column = column + key + "='" + value + "',";
             }else if(key ==="rating"){
