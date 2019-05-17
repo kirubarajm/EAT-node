@@ -298,7 +298,7 @@ exports.makeit_earnings = function(req, res) {
 
 exports.makeit_earnings_day = function(req, res) {
   console.log(req.params);
-  Makeituser.day_total_earnings_makeit(req.params.makeit_userid, function(
+  Makeituser.sum_total_earnings_makeit(req.params.makeit_userid, function(
     err,
     result
   ) {

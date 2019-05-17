@@ -1428,46 +1428,109 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(n
 
 
 
-Eatuser.get_eat_region_makeit_list = async function(req,result) {
+Eatuser.get_eat_region_makeit_list =  function get_eat_region_makeit_list (req,result) {
     
    
-        var query = "select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,re.regionname,ht.hometownname,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('"+req.lon+"') ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid =ht.regionid join User us on us.regionid=re.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid  where  us.userid = 63 and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid order by distance";
+        var regionquery = "select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.rating rating,re.regionname,ht.hometownname,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('"+req.lon+"') ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid =ht.regionid join User us on us.regionid=re.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid  where  us.userid = '"+req.eatuserid+"' and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid HAVING distance <=6 order by distance ASC limit 3";
     
-
-        sql.query(query, function (err, res) {
+        sql.query(regionquery, function (err, res) {
             if (err) {
                 console.log("error: ", err);
                 result(err, null);
             }
             else {
-    
-                for (let i = 0; i < res.length; i++) {
+           
+                        var getregionquery = "select lat,lon,regionid from  Region where regionid = (select regionid from User where userid= '"+req.eatuserid+"')";
                     
-                    var eta = 15 + (3 * res[i].distance) ;
-                     //15min Food Preparation time , 3min 1 km
-                     
-                    //  if(eta > 60){
-                    //      eta = 60;
-                    //  }
-                     res[i].eta =   Math.round(eta) +" mins" ;  
-                
- 
-                     
-                 if (res[i].cuisines) {
-                     res[i].cuisines = JSON.parse(res[i].cuisines)
-                    }
- 
- 
-                 }
+                        sql.query(getregionquery, function (err, res1) {
+                            if (err) {
+                                console.log("error: ", err);
+                                result(err, null);
+                            }
+                            else {
+                                   
+                                    var getregionlistquery = "select regionid,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(lat)) ) ) AS distance from Region where regionid != '"+res1[0].regionid+"' group by regionid  order by distance ASC";
+                    
+                                    sql.query(getregionlistquery, function (err, res2) {
+                                        if (err) {
+                                            console.log("error: ", err);
+                                            result(err, null);
+                                        }
+                                        else {
+                                            
+                                          //  res2.forEach(function(v){ delete v.distance});
 
-                let sucobj = true;
-                let resobj = {
-                    success: sucobj,
-                    status:true,
-                    result:res
-                };
+                                      
+
+                                            for (let i = 0; i < res2.length; i++) {
+
+                                                var nearbyregionquery = "select mk.userid as makeituserid,mk.name as makeitusername,mk.regionid,mk.brandname as makeitbrandname,mk.rating rating,re.regionname,ht.hometownname,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid =ht.regionid join User us on us.regionid=re.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid  where mk.regionid = '"+res2[i].regionid+"' and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid,distance HAVING distance <=6 order by distance ASC";
+                                               
+                                                
+                                                console.log('loop'+nearbyregionquery);
+                                                sql.query(nearbyregionquery, function (err, res3) {
+                                                    if (err) {
+                                                        console.log("error: ", err);
+                                                        result(err, null);
+                                                    }
+                                                    else {
     
-                result(null, resobj);
+                                                        console.log(res3);
+                                                        res.push(res3);
+                                                    }
+                                                });
+
+                                            }
+
+                                        //    var nearbyregionquery = "select mk.userid as makeituserid,mk.name as makeitusername,mk.regionid,mk.brandname as makeitbrandname,mk.rating rating,re.regionname,ht.hometownname,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid =ht.regionid join User us on us.regionid=re.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid  where mk.regionid IN ('"+res2+"') and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid,distance HAVING distance <=6 order by distance ASC";
+                    
+                                            // sql.query(nearbyregionquery, function (err, res3) {
+                                            //     if (err) {
+                                            //         console.log("error: ", err);
+                                            //         result(err, null);
+                                            //     }
+                                            //     else {
+
+                                            //         console.log(res3);
+                                            //         res.push(res3);
+
+                                                console.log('region and distance '+ res2[0]);
+                                                for (let i = 0; i < res.length; i++) {
+                    
+                                                    var eta = 15 + (3 * res[i].distance) ;
+                                                     res[i].eta =   Math.round(eta) +" mins" ;  
+                                              
+                                                 if (res[i].cuisines) {
+                                                     res[i].cuisines = JSON.parse(res[i].cuisines)
+                                                    }
+                                
+                                                 }
+                                
+                                                 res2 = res2.filter(function( obj ) {
+                                                    return obj.distance !== 'distance';
+                                                });
+                                                let sucobj = true;
+                                                let resobj = {
+                                                    success: sucobj,
+                                                    status:true,
+                                                    result:res
+                                                };
+                                    
+                                                result(null, resobj);
+
+                                        //     }
+            
+                                        // });
+                                        }
+            
+                                    });
+
+                            }
+
+                        });
+
+
+              
             }
     
         });

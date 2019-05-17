@@ -320,84 +320,75 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
 Menuitem.update_delete_status =  function(itemid, result){
  
  
-  sql.query(" select * from Productitem where itemid = "+itemid+"", function (err, res) {
+  sql.query(" select * from Productitem where itemid = "+itemid+" and delete_status = 1", function (err, res) {
     if(err) {
         console.log("error: ", err);
         result(null, err);
     }
     else{
 
-      if (res.length === 0) {
-
-  sql.query(" select * from Menuitem where menuitemid = "+itemid+" " , function (err, res) {
-    if(err) {
-        console.log("error: ", err);
-        result(null, err);
-    }
-    else{
-      
+        
       if (res.length !== 0) {
 
-          if (res[0].active_status == 0) {
-            console.log('test1');
+        sql.query(" select * from Menuitem where menuitemid = "+itemid+" " , function (err, res1) {
+          if(err) {
+              console.log("error: ", err);
+              result(null, err);
+          }
+          else{
+            
+            console.log(res1);
+            if (res1.length !== 0) {
 
-            if (res[0].delete_status !== 1) {
+                if (res1[0].active_status == 0) {
+                  console.log('test1');
 
-            sql.query("UPDATE Menuitem SET delete_status = 1 WHERE menuitemid = "+itemid+" ",  function (err, res1) {
-              if(err) {
-                  console.log("error: ", err);
-                    result(null, err);
-                 }
-               else{   
-               
-  
-                    let sucobj=true;
-                    let resobj = {  
-                      success: sucobj,
-                      status:true,
-                      message: "menuitem Delete successfully",
-                      }; 
+                
+
+                  sql.query("DELETE FROM Menuitem WHERE menuitemid = "+itemid+" ",  function (err, res2) {
+                    if(err) {
+                        console.log("error: ", err);
+                          result(null, err);
+                      }
+                    else{   
+                    
         
-                   result(null, resobj);
-                    }
-                }); 
+                          let sucobj=true;
+                          let resobj = {  
+                            success: sucobj,
+                            status:true,
+                            message: "menuitem Delete successfully",
+                            }; 
+              
+                        result(null, resobj);
+                          }
+                      }); 
+                    
+                } else if(res[0].active_status == 1){
+                  console.log('test');
+                          let sucobj=true;
+                          let resobj = {  
+                            success: sucobj,
+                            status:false,
+                            message: "menuitem is live now, You can't delete",
+                            }; 
+              
+                        result(null, resobj);
+                }
+
               }else{
-
                 let sucobj=true;
-                    let resobj = {  
-                      success: sucobj,
-                      status:false,
-                      message: "menuitem already deleted",
-                      }; 
-        
-                   result(null, resobj);
+                let resobj = {  
+                  success: sucobj,
+                  status:false,
+                  message: "menuitem is not available",
+                  }; 
 
+              result(null, resobj);
               }
-          } else if(res[0].active_status == 1){
-            console.log('test');
-                    let sucobj=true;
-                    let resobj = {  
-                      success: sucobj,
-                      status:false,
-                      message: "menuitem is live now, You can't delete",
-                      }; 
+                }
+        }); 
         
-                   result(null, resobj);
-          }
-
-        }else{
-          let sucobj=true;
-          let resobj = {  
-            success: sucobj,
-            status:false,
-            message: "menuitem is not available",
-            }; 
-
-         result(null, resobj);
-        }
-          }
-  }); 
-  
 }else{
 
   let sucobj = true;
