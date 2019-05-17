@@ -316,7 +316,7 @@ module.exports = function(app) {
 
   app.route("/makeit/menuitem/:itemid").delete(menuitem.delete_status_menuitem);
 
-  app.route("/makeit/menuitem/:itemid").delete(menuitem.delete_status_menuitem);
+  //app.route("/makeit/menuitem/:itemid").delete(menuitem.delete_status_menuitem);
 
   app.route("/makeit/earnings/:makeit_userid").get(makeituser.makeit_earnings);
 

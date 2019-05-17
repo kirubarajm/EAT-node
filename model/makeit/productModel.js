@@ -917,7 +917,7 @@ Product.admin_list_all__unapproval_product = function admin_list_all__unapproval
 };
 
 Product.getAllProductbymakeituserid = function getAllProductbymakeituserid(req,result) {
-  sql.query("Select * from Product where delete_status = 0 and  makeit_userid = '"+req.makeit_userid+"' and approved_status !=2", function (err, res) {
+  sql.query("Select * from Product where delete_status = 0 and  makeit_userid = '"+req.makeit_userid+"' and approved_status !=2 and approved_status !=3", function (err, res) {
 
           if(err) {
               console.log("error: ", err);

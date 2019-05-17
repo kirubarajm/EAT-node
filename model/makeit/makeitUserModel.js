@@ -1126,33 +1126,49 @@ Makeituser.sum_total_earnings_makeit = function (makeit_userid,result) {
                                 result(null, err);
                             }
                             else {
-                                res[0].dayearnings=res1;
-                                res[0].weekearnings=res2;
 
-                                if (res[0].earnings === null){ 
-                                    let sucobj = true;
-                                    let message = "Sorry there is no orders found!";
-                                    let resobj = {
-                                        success: sucobj,
-                                        status:false,
-                                        message:message,
-                                        result: res
-                                    };
-                        
-                                    result(null, resobj);
-                                }else{
-                        
-                                    let sucobj = true;
-                                    let message = "Total earnings";
-                                    let resobj = {
-                                        success: sucobj,
-                                        status:true,
-                                        message:message,
-                                        result: res
-                                    };
-                        
-                                    result(null, resobj);
-                                }
+                                var query = "select count(ordertime) as totalmonth from Orders where  makeit_user_id = '"+makeit_userid+"' and orderstatus = 6 and payment_status = 1 GROUP BY ordertime ";
+                                sql.query(query, function (err, res3) {
+                            
+                                    if (err) {
+                                        console.log("error: ", err);
+                                        result(null, err);
+                                    }
+                                    else {
+
+                                        res[0].dayearnings=res1;
+                                        res[0].weekearnings=res2;
+                                        res[0].monthlyaverage = res[0].earnings/12;
+                                        console.log(res3);
+                                        if (res[0].earnings === null){ 
+                                            let sucobj = true;
+                                            let message = "Sorry there is no orders found!";
+                                            let resobj = {
+                                                success: sucobj,
+                                                status:false,
+                                                message:message,
+                                                result: res
+                                            };
+                                
+                                            result(null, resobj);
+                                        }else{
+                                
+                                            let sucobj = true;
+                                            let message = "Total earnings";
+                                            let resobj = {
+                                                success: sucobj,
+                                                status:true,
+                                                message:message,
+                                                result: res
+                                            };
+                                
+                                            result(null, resobj);
+                                        }
+
+                                    }
+                                });
+                   
+                               
 
                 }
             });
