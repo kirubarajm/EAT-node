@@ -2,6 +2,9 @@
 var sql = require('../db.js');
 var constant = require('../constant.js');
 var request = require('request');
+const util = require('util');
+
+const query = util.promisify(sql.query).bind(sql);
 
 
 //Task object constructor
@@ -1430,9 +1433,10 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(n
 
 Eatuser.get_eat_region_makeit_list =  function get_eat_region_makeit_list (req,result) {
     
-   
-        var regionquery = "select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.rating rating,re.regionname,ht.hometownname,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('"+req.lon+"') ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid =ht.regionid join User us on us.regionid=re.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid  where  us.userid = '"+req.eatuserid+"' and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid HAVING distance <=6 order by distance ASC limit 3";
+        var nearbyotherregion = [];
+        var regionquery = "select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.address,mk.rating rating,re.regionname,ht.hometownname,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('"+req.lon+"') ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid =ht.regionid join User us on us.regionid=re.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid  where  us.userid = '"+req.eatuserid+"' and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid HAVING distance <=6 order by distance ASC limit 3";
     
+        console.log(regionquery);
         sql.query(regionquery, function (err, res) {
             if (err) {
                 console.log("error: ", err);
@@ -1451,7 +1455,7 @@ Eatuser.get_eat_region_makeit_list =  function get_eat_region_makeit_list (req,r
                                    
                                     var getregionlistquery = "select regionid,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(lat)) ) ) AS distance from Region where regionid != '"+res1[0].regionid+"' group by regionid  order by distance ASC";
                     
-                                    sql.query(getregionlistquery, function (err, res2) {
+                                    sql.query(getregionlistquery, async function (err, res2) {
                                         if (err) {
                                             console.log("error: ", err);
                                             result(err, null);
@@ -1464,38 +1468,32 @@ Eatuser.get_eat_region_makeit_list =  function get_eat_region_makeit_list (req,r
                                         
                                             for (let i = 0; i < res2.length; i++) {
 
-                                                console.log('loop'+res2[i].regionid);
-                                                var nearbyregionquery = "select mk.userid as makeituserid,mk.name as makeitusername,mk.regionid,mk.brandname as makeitbrandname,mk.rating rating,re.regionname,ht.hometownname,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid =ht.regionid join User us on us.regionid=re.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid  where mk.regionid = '"+res2[i].regionid+"' and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid,distance HAVING distance <=6 order by distance ASC";
+                                                var nearbyregionquery = "select mk.userid as makeituserid,mk.name as makeitusername,mk.address,mk.regionid,mk.brandname as makeitbrandname,mk.rating rating,re.regionname,ht.hometownname,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid =ht.regionid join User us on "+res2[i].regionid+"=re.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid join Cuisine cu on cu.cuisineid=cm.cuisineid  where us.userid = '"+req.eatuserid+"' and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid,distance HAVING distance <=6 order by distance ASC limit 3";
                                                
+                                                let kitchenlist = await query(nearbyregionquery);
                                                 
-                                                console.log('loop'+nearbyregionquery);
-                                                sql.query(nearbyregionquery, function (err, res3) {
-                                                    if (err) {
-                                                        console.log("error: ", err);
-                                                        result(err, null);
-                                                    }
-                                                    else {
+
+                                                console.log('loop'+kitchenlist.length);
+                                                // sql.query(nearbyregionquery, function (err, res3) {
+                                                //     if (err) {
+                                                //         console.log("error: ", err);
+                                                //         result(err, null);
+                                                //     }
+                                                //     else {
     
-                                                        console.log(res3);
-                                                        res.push(res3);
-                                                    }
-                                                });
+                                                //         console.log("res3-------------"+res3);
+                                                res = [...res, ...kitchenlist];
+                                                       // res.concat(kitchenlist);
+                                                        console.log('res loop'+res.length);
+                                                        
+                                                //     }
+                                                // });
 
                                             }
 
-                                        //    var nearbyregionquery = "select mk.userid as makeituserid,mk.name as makeitusername,mk.regionid,mk.brandname as makeitbrandname,mk.rating rating,re.regionname,ht.hometownname,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid =ht.regionid join User us on us.regionid=re.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid  where mk.regionid IN ('"+res2+"') and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid,distance HAVING distance <=6 order by distance ASC";
-                    
-                                            // sql.query(nearbyregionquery, function (err, res3) {
-                                            //     if (err) {
-                                            //         console.log("error: ", err);
-                                            //         result(err, null);
-                                            //     }
-                                            //     else {
-
-                                            //         console.log(res3);
-                                            //         res.push(res3);
-
-                                                console.log('region and distance '+ res2[0]);
+                                      
+                                            console.log("new by location"+nearbyotherregion);
+                                              
                                                 for (let i = 0; i < res.length; i++) {
                     
                                                     var eta = 15 + (3 * res[i].distance) ;

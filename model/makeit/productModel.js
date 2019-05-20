@@ -34,7 +34,7 @@ var Product = function(product){
 
 Product.createProduct = function createProduct(newProduct,itemlist, result) {   
   
-  
+        console.log(newProduct);
         sql.query("INSERT INTO Product set ?", newProduct, function (err, res) {
                 
                 if(err) {
@@ -187,8 +187,8 @@ Product.getAllliveProduct = function getAllliveProduct(liveproductid,result) {
 
 Product.moveliveproduct = function(req,result){
 
-  console.log(req);
-  if (req.active_status === 0) {
+  var active_status = parseInt(req.active_status);
+  if (active_status === 0) {
 
     sql.query("UPDATE Product SET active_status = ? WHERE productid = ?",[req.active_status,req.productid], function (err, res) {
        
@@ -231,7 +231,6 @@ Product.moveliveproduct = function(req,result){
                 let sucobj=true;
                 mesobj = "Product added to live successfully";
                       
-              // let mesobj = "Product added live successfully";
                 let resobj = {  
                   success: sucobj,
                   status:true,
@@ -919,7 +918,7 @@ Product.admin_list_all__unapproval_product = function admin_list_all__unapproval
 };
 
 Product.getAllProductbymakeituserid = function getAllProductbymakeituserid(req,result) {
-  sql.query("Select * from Product where delete_status = 0 and  makeit_userid = '"+req.makeit_userid+"' and approved_status !=2 and approved_status !=3", function (err, res) {
+  sql.query("Select * from Product where delete_status = 0 and  makeit_userid = '"+req.makeit_userid+"' and approved_status !=2 and approved_status !=3 group by productid order by created_at desc", function (err, res) {
 
           if(err) {
               console.log("error: ", err);

@@ -128,7 +128,7 @@ Menuitem.get_Menuitem_By_makeitid = function get_Menuitem_By_makeitid(userId, re
 
 Menuitem.update_a_menuitem_makeit_userid = function(req, result){
 
-  sql.query(" select * from Productitem where productid = "+req.menuitemid+"", function (err, res) {
+  sql.query(" select * from Productitem where productid = "+req.menuitemid+" and delete_status = 0", function (err, res) {
     if(err) {
         console.log("error: ", err);
         result(null, err);
@@ -198,66 +198,77 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
 
         if (res.length !== 0) {
       
-            if (res[0].active_status == 0) {
-  
-              if (res[0].approved_status == 0 || res[0].approved_status == 3) {
-  
-                var query = "UPDATE Menuitem SET active_status = 1,approved_time= ?,approved_status = "+req.approved_status+",approvedby=0  WHERE menuitemid = "+req.menuitemid+"";
-              sql.query(query, new Date(), function (err, res1) {
-                if(err) {
-                    console.log("error: ", err);
-                      result(null, err);
-                   }
-                 else{   
-                 
-                
-                     var  message = "Menuitem approved successfully"
-                  
-                      let sucobj=true;
-                      let resobj = {  
-                        success: sucobj,
-                        status:true,
-                        message:message,
-                        }; 
-          
-                     result(null, resobj);
-                      }
-                  }); 
-  
-                }else if(res[0].approved_status == 1){
-                  
-                      let sucobj=true;
-                      let resobj = {  
-                        success: sucobj,
-                        status:false,
-                        message: "Menuitem Already approved",
-                        }; 
-          
-                     result(null, resobj);
-  
-                }else if(res[0].approved_status == 2){
-                  console.log('test');
-                      let sucobj=true;
-                      let resobj = {  
-                        success: sucobj,
-                        status:false,
-                        message: "Menuitem Already rejected",
-                        }; 
-          
-                     result(null, resobj);
-                }
-            } else if(res[0].active_status == 1){
-              console.log('test');
-                      let sucobj=true;
-                      let resobj = {  
-                        success: sucobj,
-                        status:false,
-                        message: "Menuitem is live now",
-                        }; 
-          
-                     result(null, resobj);
+          sql.query(" select * from Productitem where itemid = "+req.menuitemid+" and delete_status = 0", function (err, res2) {
+            if(err) {
+                console.log("error: ", err);
+                result(null, err);
             }
+            else{
+
+              console.log(res2.length);
+              if (res2.length === 0) {
   
+                if (res[0].approved_status == 0 || res[0].approved_status == 3) {
+    
+                  var query = "UPDATE Menuitem SET active_status = 1,approved_time= ?,approved_status = "+req.approved_status+",approvedby=0  WHERE menuitemid = "+req.menuitemid+"";
+                sql.query(query, new Date(), function (err, res1) {
+                  if(err) {
+                      console.log("error: ", err);
+                        result(null, err);
+                     }
+                   else{   
+                   
+                  
+                       var  message = "Menuitem approved successfully"
+                    
+                        let sucobj=true;
+                        let resobj = {  
+                          success: sucobj,
+                          status:true,
+                          message:message,
+                          }; 
+            
+                       result(null, resobj);
+                        }
+                    }); 
+    
+                  }else if(res[0].approved_status == 1){
+                    
+                        let sucobj=true;
+                        let resobj = {  
+                          success: sucobj,
+                          status:false,
+                          message: "Menuitem Already approved",
+                          }; 
+            
+                       result(null, resobj);
+    
+                  }else if(res[0].approved_status == 2){
+                    console.log('Menuitem Already rejected');
+                        let sucobj=true;
+                        let resobj = {  
+                          success: sucobj,
+                          status:false,
+                          message: "Menuitem Already rejected",
+                          }; 
+            
+                       result(null, resobj);
+                  }
+              } else{
+                console.log('Menuitem is live now');
+                        let sucobj=true;
+                        let resobj = {  
+                          success: sucobj,
+                          status:false,
+                          message: "Menuitem is live now",
+                          }; 
+            
+                       result(null, resobj);
+              }
+
+            }
+          }); 
+            
           }else{
             let sucobj=true;
             let resobj = {  

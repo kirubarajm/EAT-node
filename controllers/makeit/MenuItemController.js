@@ -86,7 +86,7 @@ exports.delete_status_menuitem = function(req, res) {
 };
 
 exports.approve_status_menuitem = function(req, res) {
-  console.log(req);
+  
   Menuitem.approve_menuitem_status(req.body, function(err, product) {
     if (err) res.send(err);
     res.json(product);
