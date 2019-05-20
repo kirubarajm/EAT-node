@@ -187,6 +187,7 @@ Product.getAllliveProduct = function getAllliveProduct(liveproductid,result) {
 
 Product.moveliveproduct = function(req,result){
 
+  console.log(req);
   if (req.active_status === 0) {
 
     sql.query("UPDATE Product SET active_status = ? WHERE productid = ?",[req.active_status,req.productid], function (err, res) {
@@ -217,7 +218,7 @@ Product.moveliveproduct = function(req,result){
     }
     else{
 
-          if (res[0].approved_status === 1 && res[0].approved_status === 0) {
+          if (res[0].approved_status === 1 && res[0].active_status === 0) {
 
               sql.query("UPDATE Product SET active_status = ? WHERE productid = ?",[req.active_status,req.productid], function (err, res) {
                   
@@ -396,8 +397,9 @@ Product.update_quantity_byid = function update_quantity_byid (req, result){
 
 
 Product.update_quantity_product_byid = function update_quantity_product_byid (req, result){
+console.log(req);
 
-  if (req.active_status === 0) {
+  if (req.active_status === "0") {
 
     sql.query("UPDATE Product SET active_status = ? WHERE productid = ?",[req.active_status,req.productid], function (err, res) {
        
@@ -795,6 +797,7 @@ Product.approve_product_status =  function(req, result){
     }
     else{
       
+      console.log(res.length);
       if (res.length !== 0) {
 
           if (res[0].active_status === 0) {
@@ -810,8 +813,7 @@ Product.approve_product_status =  function(req, result){
                     result(null, err);
                  }
                else{   
-               
-                
+                               
                     message = "Product approved successfully"
                  
                     let sucobj=true;
@@ -826,7 +828,7 @@ Product.approve_product_status =  function(req, result){
                 }); 
 
               }else if(res[0].approved_status == 1){
-                console.log('test');
+                console.log('test'+res[0].approved_status);
                     let sucobj=true;
                     let resobj = {  
                       success: sucobj,

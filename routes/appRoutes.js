@@ -472,13 +472,8 @@ module.exports = function(app) {
 
   app.route("/admin/productdelete").put(product.delete_status_product);
 
-  app
-    .route("/admin/product/:id")
-    .get(product.read_a_product)
-    .put(product.update_a_product)
-    .delete(product.delete_a_product);
 
-  app.route("/admin/approvestatus").put(product.approve_status_product);
+  app.route("/admin/product/approvestatus").put(product.approve_status_product);
 
   app
     .route("/admin/product/unapprove")
@@ -487,6 +482,12 @@ module.exports = function(app) {
   app
     .route("/admin/menuitem/unapprove")
     .post(menuitem.admin_unapproval_approve_list);
+
+    app
+    .route("/admin/product/:id")
+    .get(product.read_a_product)
+    //.put(product.update_a_product)
+    .delete(product.delete_a_product);
 
   app.route("/admin/menuitem/:itemid").delete(menuitem.delete_status_menuitem);
 

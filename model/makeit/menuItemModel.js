@@ -198,12 +198,11 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
 
         if (res.length !== 0) {
       
-  
             if (res[0].active_status == 0) {
   
               if (res[0].approved_status == 0 || res[0].approved_status == 3) {
   
-                var query = "UPDATE Menuitem SET active_status = 1,approved_time= ?,approved_status = "+req.approved_status+",approvedby=0  WHERE productid = "+req.menuitemid+"";
+                var query = "UPDATE Menuitem SET active_status = 1,approved_time= ?,approved_status = "+req.approved_status+",approvedby=0  WHERE menuitemid = "+req.menuitemid+"";
               sql.query(query, new Date(), function (err, res1) {
                 if(err) {
                     console.log("error: ", err);

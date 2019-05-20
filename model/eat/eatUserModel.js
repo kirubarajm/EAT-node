@@ -1461,9 +1461,10 @@ Eatuser.get_eat_region_makeit_list =  function get_eat_region_makeit_list (req,r
                                           //  res2.forEach(function(v){ delete v.distance});
 
                                       
-
+                                        
                                             for (let i = 0; i < res2.length; i++) {
 
+                                                console.log('loop'+res2[i].regionid);
                                                 var nearbyregionquery = "select mk.userid as makeituserid,mk.name as makeitusername,mk.regionid,mk.brandname as makeitbrandname,mk.rating rating,re.regionname,ht.hometownname,mk.costfortwo,mk.img as makeitimg,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid =ht.regionid join User us on us.regionid=re.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid  where mk.regionid = '"+res2[i].regionid+"' and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid,distance HAVING distance <=6 order by distance ASC";
                                                
                                                 

@@ -68,7 +68,7 @@ exports.list_all_liveproduct = function(req, res) {
 };
 
 exports.moveliveproduct = function(req, res) {
-  console.log(req.body);
+ // console.log(req.body);
   Product.moveliveproduct(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
