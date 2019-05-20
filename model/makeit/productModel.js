@@ -178,7 +178,8 @@ Product.getAllliveProduct = function getAllliveProduct(liveproductid, result) {
 
 Product.moveliveproduct = function(req, result) {
   console.log(req);
-  if (req.active_status === 0) {
+  var active_status = parseInt(req.active_status);
+  if (active_status === 0) {
     sql.query(
       "UPDATE Product SET active_status = ? WHERE productid = ?",
       [req.active_status, req.productid],
@@ -223,7 +224,6 @@ Product.moveliveproduct = function(req, result) {
                   let sucobj = true;
                   mesobj = "Product added to live successfully";
 
-                  // let mesobj = "Product added live successfully";
                   let resobj = {
                     success: sucobj,
                     status: true,

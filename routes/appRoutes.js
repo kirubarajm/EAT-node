@@ -27,6 +27,7 @@ module.exports = function(app) {
   var master = require("../controllers/common/MastersController");
   var feedback = require("../controllers/common/EatfeedbackController");
   var orderrating = require("../controllers/common/OrderratingController");
+  var homedown = require("../controllers/common/HometownController");
 
   // todoList Routes
   app
@@ -665,6 +666,7 @@ module.exports = function(app) {
   // Masters
 
   app.route("/masters/regionlist").get(region.list_all_region);
+  app.route("/masters/homedownlist").get(homedown.list_all_homedown);
 
   app.route("/masters/cuisinelist").get(cusine.list_all_Cuisine);
 
