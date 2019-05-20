@@ -680,7 +680,7 @@ Product.productview_by_productid = function productview_by_productid(req,result)
           }
           else{
 
-            sql.query("select pi.quantity,mi.price,mi.menuitemid,mi.menuitem_name,mi.vegtype from Productitem pi join Menuitem mi on mi.Menuitemid = pi.itemid where pi.productid = "+req.productid+"", function (err, res1) {
+            sql.query("select pi.quantity,mi.price,mi.menuitemid,mi.menuitem_name,mi.vegtype,mi.approved_status from Productitem pi join Menuitem mi on mi.Menuitemid = pi.itemid where pi.productid = "+req.productid+"", function (err, res1) {
 
               if(err) {
                   console.log("error: ", err);
