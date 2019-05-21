@@ -337,8 +337,7 @@ Menuitem.update_delete_status =  function(itemid, result){
     }
     else{
 
-        
-      if (res.length !== 0) {
+      if (res.length === 0) {
 
         sql.query(" select * from Menuitem where menuitemid = "+itemid+" " , function (err, res1) {
           if(err) {

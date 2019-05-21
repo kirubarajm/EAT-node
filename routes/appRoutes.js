@@ -325,6 +325,11 @@ module.exports = function(app) {
     .route("/makeit/dayearnings/:makeit_userid")
     .get(makeituser.makeit_earnings_day);
 
+
+    app
+    .route("/makeit/menuitems/:makeit_userid")
+    .get(menuitem.read_a_menuitem_byid);
+
   /*Admin Api*/
   app.route("/admin/eatuser/add").post(eatuser.create_a_eatuser);
 
@@ -646,6 +651,8 @@ module.exports = function(app) {
     .post(eatuser.create_customerid_by_razorpay);
 
    app.route("/eat/region/kitchenlist").post(eatuser.eat_region_list_sort_filter);
+   app.route("/eat/regionlist").post(eatuser.eat_region_list);
+   app.route("/eat/kitche/showmore").post(eatuser.eat_region_kitchen_showmore);
 
   //query common
 

@@ -1,23 +1,37 @@
 "user strict";
 var sql = require("../db.js");
 var path = require("path");
-
+var url = require('url');
+var https = require('https');
+var proxy = require('proxy-agent');
 var AWS_ACCESS_KEY = "AKIAJJQUEYLIU23E63OA";
 var AWS_SECRET_ACCESS_KEY = "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";
 const fs = require("fs");
 const AWS = require("aws-sdk");
+
+
+
+// AWS.config.update({
+//   httpOptions: { 
+//     agent: proxy('http://52.219.62.68') 
+//   }
+// });
+
+
 const s3 = new AWS.S3({
   accessKeyId: AWS_ACCESS_KEY,
-  secretAccessKey: AWS_SECRET_ACCESS_KEY
+  secretAccessKey: AWS_SECRET_ACCESS_KEY,
+  region: 'us-east-1'
 });
 
+//  var s3 = new AWS.S3({region: 'us-east-1'});
+// s3.getObject({accessKeyId: AWS_ACCESS_KEY, secretAccessKey: AWS_SECRET_ACCESS_KEY}, function (err, data) {
+//   console.log(err, data);
+// });
+
+
+
 //Task object constructor
-// var Documents = function(documents){
-//     this.moveit_userid = documents.documentsname;
-//     this.driver_lic=documents.lat_range;
-//     this.long_range=documents.long_range;
-//     this.created_at = new Date();
-// };
 
 var Documents = function(documents) {
   this.type = documents.type;
