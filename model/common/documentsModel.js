@@ -3,7 +3,6 @@ var sql = require("../db.js");
 var path = require("path");
 var url = require('url');
 var https = require('https');
-var proxy = require('proxy-agent');
 var AWS_ACCESS_KEY = "AKIAJJQUEYLIU23E63OA";
 var AWS_SECRET_ACCESS_KEY = "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";
 const fs = require("fs");

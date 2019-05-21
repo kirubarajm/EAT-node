@@ -30,6 +30,14 @@ var Product = function(product) {
   //  this.updated_at = new Date()
 };
 
+Product.getTotalPrice = function createProduct(itemlist, result) {
+  var totalprice=0;
+  for(var i = 0; i < itemlist.length; i++){
+  }
+  result(null, totalprice);
+}
+
+
 Product.createProduct = function createProduct(newProduct, itemlist, result) {
   sql.query("INSERT INTO Product set ?", newProduct, function(err, res) {
     if (err) {
