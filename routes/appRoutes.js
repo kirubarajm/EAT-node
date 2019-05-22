@@ -651,8 +651,14 @@ module.exports = function(app) {
     .post(eatuser.create_customerid_by_razorpay);
 
    app.route("/eat/region/kitchenlist").post(eatuser.eat_region_list_sort_filter);
+
    app.route("/eat/regionlist").post(eatuser.eat_region_list);
+   
    app.route("/eat/kitche/showmore").post(eatuser.eat_region_kitchen_showmore);
+
+ //  app.route("/eat/product/lockrelease").post(product.eat_product_lockrelease);
+
+
 
   //query common
 

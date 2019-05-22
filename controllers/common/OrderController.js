@@ -249,14 +249,14 @@ exports.eatcreateOrder = function(req, res) {
 exports.online_order_place_conformation = function(req, res) {
   // var order_place = new Order(req.body);
   console.log(req.body);
-  if (!req.body.orderid || !req.body.payment_type) {
-    res
-      .status(400)
-      .send({
-        error: true,
-        message:
-          "Please provide orderid/payment_type/lock_status/payment_status"
-      });
+  if (!req.body.orderid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide orderid" });
+  }else if (!req.body.payment_type) {
+    res.status(400).send({ error: true,status:false, message: "Please provide payment_type" });
+  }else if (!req.body.payment_status) {
+    res.status(400).send({ error: true,status:false, message: "Please provide payment_status" });
+  }else if (!req.body.transactionid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide transactionid" });
   } else {
     Order.online_order_place_conformation(req.body, function(err, result) {
       if (err) res.send(err);

@@ -352,3 +352,13 @@ exports.eat_region_kitchen_showmore = function(req, res) {
     });
   }
 };
+
+
+exports.eat_user_referral = function(req, res) {
+  Eatuser.eat_user_referral_code(req.params, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+};

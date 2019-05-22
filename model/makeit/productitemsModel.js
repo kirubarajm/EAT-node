@@ -9,14 +9,10 @@ var Productitem = function(productitem) {
   this.quantity = productitem.quantity;
 };
 
-Productitem.createProductitems = function createProductitems(
-  product_item,
-  res
-) {
-  sql.query("INSERT INTO Productitem set ?", product_item, function(
-    err,
-    result
-  ) {
+Productitem.createProductitems = function createProductitems(product_item,res) {
+
+  console.log(product_item);
+  sql.query("INSERT INTO Productitem set ?", product_item, function(err,result) {
     if (err) {
       console.log("error: ", err);
       res(null, err);
@@ -24,11 +20,7 @@ Productitem.createProductitems = function createProductitems(
   });
 };
 
-Productitem.deleteProductitems = function createProductitems(
-  productid,
-  itemids,
-  res
-) {
+Productitem.deleteProductitems = function createProductitems(productid,itemids,res) {
   sql.query(
     "DELETE FROM Productitem where productid = " +
       productid +

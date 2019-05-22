@@ -217,12 +217,12 @@ const master = [
 
 // order payment status
  {'paymentstatus' : [
-    {"paymentstatusid":0,"paymentstatus":"Pending"},
-    {"paymentstatusid":1,"paymentstatus":"Paid"},
-    {"paymentstatusid":2,"paymentstatus":"Cancelled"},
+    {"paymentstatusid":0,"paymentstatus":"Paymemt Pending"},
+    {"paymentstatusid":1,"paymentstatus":"Paymemt paid"},
+    {"paymentstatusid":2,"paymentstatus":"Payment failed"},
     {"paymentstatusid":3,"paymentstatus":"Refunded"},
     {"paymentstatusid":4,"paymentstatus":"Declined"},
-    {"paymentstatusid":5,"paymentstatus":"onliIncompletene"},
+    {"paymentstatusid":5,"paymentstatus":"Paymemt Incomplete"},
 
 ]},
 

@@ -20,9 +20,7 @@ Orderitems.createOrderitems = function createOrderitems(order_item, res) {
       console.log("error: ", err);
       res(null, err);
     } else {
-      console.log("test");
       var OrderItemid = result.insertId;
-
       sql.query(
         "update Product set quantity= quantity-? WHERE productid = ?",
         [order_item.quantity, order_item.productid],
