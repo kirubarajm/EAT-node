@@ -375,7 +375,7 @@ Documents.newmakeitdocumentupload = function newmakeitdocumentupload(
     ContentType: "image/jpg",
     ACL: "public-read"
   };
-
+  console.log("params: ", params.Bucket);
   s3.upload(params, (err, data) => {
     if (err) {
       console.log("error: ", err);
@@ -416,7 +416,7 @@ Documents.makeit_product_upload_a_document = function makeit_product_upload_a_do
     ContentType: "image/jpg",
     ACL: "public-read"
   };
-
+  console.log("params: ", params.Bucket);
   s3.upload(params, (err, data) => {
     if (err) {
       console.log("error: ", err);
