@@ -26,6 +26,8 @@ exports.create_a_product = function(req, res) {
 
   if (!new_product.product_name) {
     res.status(400).send({ error: true, message: "Please provide name" });
+  }else if (!itemlist || itemlist.length===0) {
+    res.status(400).send({ error: true, message: "Please add Items" });
   } else {
     Product.createProduct(new_product, itemlist, function(err, result) {
       if (err) res.send(err);

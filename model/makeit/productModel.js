@@ -1,7 +1,8 @@
 "user strict";
 var sql = require("../db.js");
 var Productitem = require("../../model/makeit/productitemsModel.js");
-
+const util = require("util");
+const query = util.promisify(sql.query).bind(sql);
 //Task object constructor
 var Product = function(product) {
   this.makeit_userid = product.makeit_userid;
@@ -30,15 +31,33 @@ var Product = function(product) {
   //  this.updated_at = new Date()
 };
 
-Product.getTotalPrice = function createProduct(itemlist, result) {
-  var totalprice=0;
-  for(var i = 0; i < itemlist.length; i++){
+Product.getTotalPrice = async function createProduct(itemlist, result) {
+  var totalamount = 0;
+  var vegtype = 0;
+  var itemdetail = {};
+  for (var i = 0; i < itemlist.length; i++) {
+    const menuitem = await query(
+      "Select * From Menuitem where menuitemid = '" + itemlist[i].itemid + "'"
+    );
+    if (menuitem.length!==0) {
+      if (menuitem[0].vegtype === "1") vegtype = "1";
+      amount = menuitem[0].price * itemlist[i].quantity;
+      totalamount = totalamount + amount;
+    }
   }
-  result(null, totalprice);
-}
+  itemdetail.price = totalamount;
+  itemdetail.vegtype = vegtype;
+  return itemdetail;
+};
 
-
-Product.createProduct = function createProduct(newProduct, itemlist, result) {
+Product.createProduct = async function createProduct(
+  newProduct,
+  itemlist,
+  result
+) {
+  var Productdetail = await Product.getTotalPrice(itemlist);
+  newProduct.price = Productdetail.price;
+  newProduct.vegtype = Productdetail.vegtype;
   sql.query("INSERT INTO Product set ?", newProduct, function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -48,9 +67,7 @@ Product.createProduct = function createProduct(newProduct, itemlist, result) {
 
       for (var i = 0; i < itemlist.length; i++) {
         var product_item = new Productitem(itemlist[i]);
-
         product_item.productid = productid;
-
         Productitem.createProductitems(product_item, function(err, result) {
           if (err) res.send(err);
           res.json(result);
@@ -58,7 +75,7 @@ Product.createProduct = function createProduct(newProduct, itemlist, result) {
       }
 
       let sucobj = true;
-      let mesobj = "Product Item Created successfully";
+      let mesobj = "Product Created successfully";
       let resobj = {
         success: sucobj,
         message: mesobj,
@@ -199,8 +216,6 @@ Product.moveliveproduct = function(req, result) {
           var mesobj = {};
           let sucobj = true;
           mesobj = "Product removed from live successfully";
-
-          // let mesobj = "Product added live successfully";
           let resobj = {
             success: sucobj,
             status: true,
@@ -412,8 +427,6 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
           var mesobj = {};
           let sucobj = true;
           mesobj = "Product removed from live successfully";
-
-          // let mesobj = "Product added live successfully";
           let resobj = {
             success: sucobj,
             status: true,
@@ -432,12 +445,7 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
           console.log("error: ", err);
           result(null, err);
         } else {
-          console.log(res1[0].approved_status);
-          console.log(res1[0].active_status);
-
           if (res1[0].approved_status === 1 && res1[0].active_status === 0) {
-            console.log("product add quanity and move to live");
-
             sql.query(
               "UPDATE Product SET quantity = ?,active_status = ? WHERE productid = ? and makeit_userid = ?",
               [
@@ -464,7 +472,6 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
               }
             );
           } else if (res1[0].active_status === 1) {
-            console.log("product live");
             let sucobj = true;
             let resobj = {
               success: sucobj,
@@ -473,7 +480,6 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
             };
             result(null, resobj);
           } else if (res1[0].approved_status === 0) {
-            console.log("product  not approved");
             let sucobj = true;
             let resobj = {
               success: sucobj,
@@ -483,9 +489,6 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
 
             result(null, resobj);
           } else {
-            console.log("exit");
-            console.log(res1[0].approved_status);
-            console.log(res1[0].approved_status);
             let sucobj = true;
             let resobj = {
               success: sucobj,
@@ -520,7 +523,7 @@ Product.quantitydecrease = function(orderlist, result) {
 Product.update_a_product_by_makeit_userid = function(req, items, result) {
   sql.query(
     " select * from Product where productid = " + req.productid + "",
-    function(err, res) {
+    async function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
@@ -528,15 +531,14 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
         console.log(res[0].active_status);
 
         if (res[0].active_status == 0) {
-          console.log(req);
+          var Productdetail = await Product.getTotalPrice(items);
+          req.price = Productdetail.price;
+          req.vegtype = Productdetail.vegtype;
           var staticquery = "UPDATE Product SET ";
           var column = "";
 
           for (const [key, value] of Object.entries(req)) {
-            console.log(`${key} ${value}`);
-
             if (key !== "productid" && key !== "items") {
-              // var value = `=${value}`;
               column = column + key + "='" + value + "',";
             }
           }
@@ -556,7 +558,6 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
             itemid,
             function(err, result) {
               if (err) res.send(err);
-              // res.json(result);
             }
           );
 
@@ -572,7 +573,7 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
               result(err, null);
             } else {
               let sucobj = true;
-              let message = " Product updated successfully";
+              let message = "Product updated successfully";
               let resobj = {
                 success: sucobj,
                 status: true,
@@ -583,7 +584,6 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
             }
           });
         } else if (res[0].active_status == 1) {
-          console.log("product live");
           let sucobj = true;
           let resobj = {
             success: sucobj,
@@ -601,14 +601,15 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
 Product.edit_product_by_makeit_userid = function(req, items, result) {
   sql.query(
     " select * from Product where productid = " + req.productid + "",
-    function(err, res) {
+    async function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
       } else {
-        console.log(res[0].active_status);
-
         if (res[0].active_status == 0) {
+          var Productdetail = await Product.getTotalPrice(items);
+          req.price = Productdetail.price;
+          req.vegtype = Productdetail.vegtype;
           console.log(req);
           var staticquery = "UPDATE Product SET updated_at =?,";
           var column = "";
@@ -654,7 +655,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
               result(err, null);
             } else {
               let sucobj = true;
-              let message = " Product updated successfully";
+              let message = "Product updated successfully";
               let resobj = {
                 success: sucobj,
                 status: true,
@@ -827,7 +828,9 @@ Product.approve_product_status = function(req, result) {
                   console.log("error: ", err);
                   result(null, err);
                 } else {
-                  message = "Product approved successfully";
+                  let message = "Product approved successfully";
+                  if(req.approved_status===2) message = "Product Rejected successfully";
+                  
 
                   let sucobj = true;
                   let resobj = {
