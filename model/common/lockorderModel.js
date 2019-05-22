@@ -6,11 +6,12 @@ var Orderlock = function(orderlock) {
   this.orderid = orderlock.orderid;
   this.productid = orderlock.productid;
   this.quantity = orderlock.quantity;
-  this.created_at = new Date();
+  //this.created_at = new Date();
   //this.price = orderlock.price;
 };
 
 Orderlock.lockOrderitems = function lockOrderitems(order_item, res) {
+  console.log("orderlockitem"+order_item);
   sql.query("INSERT INTO Lock_order set ?", order_item, function(err, result) {
     if (err) {
       console.log("error: ", err);

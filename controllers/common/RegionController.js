@@ -3,7 +3,7 @@
 var Region = require("../../model/common/regionModel");
 
 exports.list_all_region = function(req, res) {
-  Region.getAllHometown(function(err, faq) {
+  Region.getAllregion(function(err, faq) {
     console.log("controller");
     if (err) res.send(err);
     console.log("res", faq);

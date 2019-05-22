@@ -25,9 +25,11 @@ exports.create_a_product = function(req, res) {
   var itemlist = req.body.items;
 
   if (!new_product.product_name) {
-    res.status(400).send({ error: true, message: "Please provide name" });
+    res.status(400).send({ error: true,status:false, message: "Please provide name" });
   }else if (!itemlist || itemlist.length===0) {
-    res.status(400).send({ error: true, message: "Please add Items" });
+    res.status(400).send({ error: true,status:false, message: "Please add Items" });
+  }else if (!new_product.makeit_userid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide makeit_userid" });
   } else {
     Product.createProduct(new_product, itemlist, function(err, result) {
       if (err) res.send(err);
@@ -130,6 +132,7 @@ exports.add_quantity_productlive = function(req, res) {
 
 exports.update_a_product_by_makeit_userid = function(req, res) {
   var items = req.body.items;
+
   Product.update_a_product_by_makeit_userid(req.body, items, function(
     err,
     product
@@ -137,6 +140,7 @@ exports.update_a_product_by_makeit_userid = function(req, res) {
     if (err) res.send(err);
     res.json(product);
   });
+
 };
 
 exports.productview = function(req, res) {
@@ -166,6 +170,11 @@ exports.approve_status_product = function(req, res) {
 
 exports.edit_product_by_makeit_userid = function(req, res) {
   var items = req.body.items;
+  if (!req.productid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide productid" });
+  }else if (!makeit_userid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide makeit_userid" });
+  } else {
   Product.edit_product_by_makeit_userid(req.body, items, function(
     err,
     product
@@ -173,6 +182,7 @@ exports.edit_product_by_makeit_userid = function(req, res) {
     if (err) res.send(err);
     res.json(product);
   });
+}
 };
 
 exports.admin_unapproval_approve_list = function(req, res) {

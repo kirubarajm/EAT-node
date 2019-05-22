@@ -69,15 +69,18 @@ Product.createProduct = async function createProduct(
         var product_item = new Productitem(itemlist[i]);
         product_item.productid = productid;
         Productitem.createProductitems(product_item, function(err, result) {
-          if (err) res.send(err);
-          res.json(result);
+          if (err) {
+            console.log("error: ", err);
+            result(err, null);
+          } 
         });
       }
 
-      let sucobj = true;
+     
       let mesobj = "Product Created successfully";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         message: mesobj,
         productid: productid
       };
@@ -941,7 +944,7 @@ Product.getAllProductbymakeituserid = function getAllProductbymakeituserid(
   sql.query(
     "Select * from Product where delete_status = 0 and  makeit_userid = '" +
       req.makeit_userid +
-      "' and approved_status !=2 and approved_status !=3",
+      "' and approved_status !=2",
     function(err, res) {
       if (err) {
         console.log("error: ", err);
