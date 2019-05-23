@@ -251,8 +251,6 @@ exports.online_order_place_conformation = function(req, res) {
   console.log(req.body);
   if (!req.body.orderid) {
     res.status(400).send({ error: true,status:false, message: "Please provide orderid" });
-  }else if (!req.body.payment_type) {
-    res.status(400).send({ error: true,status:false, message: "Please provide payment_type" });
   }else if (!req.body.payment_status) {
     res.status(400).send({ error: true,status:false, message: "Please provide payment_status" });
   }else if (!req.body.transactionid) {

@@ -728,13 +728,13 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
   var calculationdetails = {};
 
+  var orderlist = await query("Select * From Orders where userid = '" +req.userid+"' and orderstatus = 6");
+
+  
+ var ordercount = orderlist.length;
+
   for (let i = 0; i < orderitems.length; i++) {
-    const res1 = await query(
-      "Select * From Product where productid = '" +
-        orderitems[i].productid +
-        "'"
-    );
-    //console.log(res1);
+    const res1 = await query("Select * From Product where productid = '" +orderitems[i].productid+"'");
 
     if (res1[0].quantity < orderitems[i].quantity) {
       res1[0].availablity = false;
@@ -752,9 +752,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   }
   console.log(productdetails);
   var query1 =
-    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +
-    req.makeit_user_id +
-    " ";
+    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +req.makeit_user_id +"";
 
   sql.query(query1, function(err, res1) {
     if (err) {
@@ -780,6 +778,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         calculationdetails.delivery_charge = delivery_charge;
         res1[0].amountdetails = calculationdetails;
         res1[0].item = productdetails;
+        res1[0].ordercount = ordercount;
         let resobj = {
           success: true,
           status: isAvaliableItem

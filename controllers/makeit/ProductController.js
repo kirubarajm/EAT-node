@@ -170,9 +170,9 @@ exports.approve_status_product = function(req, res) {
 
 exports.edit_product_by_makeit_userid = function(req, res) {
   var items = req.body.items;
-  if (!req.productid) {
+  if (!req.body.productid) {
     res.status(400).send({ error: true,status:false, message: "Please provide productid" });
-  }else if (!makeit_userid) {
+  }else if (!req.body.makeit_userid) {
     res.status(400).send({ error: true,status:false, message: "Please provide makeit_userid" });
   } else {
   Product.edit_product_by_makeit_userid(req.body, items, function(

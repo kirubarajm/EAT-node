@@ -11,7 +11,7 @@ var Orderlock = function(orderlock) {
 };
 
 Orderlock.lockOrderitems = function lockOrderitems(order_item, res) {
-  console.log("orderlockitem"+order_item);
+
   sql.query("INSERT INTO Lock_order set ?", order_item, function(err, result) {
     if (err) {
       console.log("error: ", err);

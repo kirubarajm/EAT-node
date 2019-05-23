@@ -3,6 +3,12 @@ var sql = require('../db.js');
 var constant = require('../constant.js');
 var request = require('request');
 const util = require('util');
+const Razorpay = require("razorpay");
+var instance = new Razorpay({
+    key_id: 'rzp_test_3cduMl5T89iR9G',
+    key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+  })
+
 
 const query = util.promisify(sql.query).bind(sql);
 
@@ -1379,30 +1385,54 @@ if (staticquery.length === 0) {
 
 
 Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(newUser, result) { 
-     
-    var razorpay = "https://api.razorpay.com/v1/customers"
-    var instance = new Razorpay({
-        key_id: 'rzp_test_3cduMl5T89iR9G',
-        key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+ 
+  
+
+     var name = "sureshtovo1";
+     var email = "sureshtovo1@razorpay.com";
+     var contact = "1234567892";
+     var notes = "test";
+
+    instance.customers.create({name, email, contact, notes}).then((data) => {
+         console.log(data)
+
+      //  staticquery = "UPDATE User SET pushid_ios ='" + req.pushid_ios +"'  where userid = " + req.userid +" ";
+
+         let sucobj = true;
+         let message = "customer created successfully"
+         let resobj = {
+             success: sucobj,
+             status:true,
+             message: message,
+             result:data
+         };
+   
+         result(null, resobj);
+      }).catch((error) => {
+       
+        let sucobj = true;
+        let message = "Error"
+        let resobj = {
+            success: sucobj,
+            status:true,
+            message: message,
+            result:error
+        };
+  
+        result(null, resobj);
+
       })
 
-     
-    instance.customers.create({name, email, contact, notes})
-    request({ 
-        method: 'POST',  
-        rejectUnauthorized: false, 
-        url:razorpay
-      
-    }, function(error, response, body){
-        if(error) {
-            console.log("error: ", err);
-            result(null, err);
-        } else {
-            console.log(response.statusCode, body);
-            var responcecode = body.split("#");
-        }
-
-    });
+    // rzp.customers.create({
+    //     name: 'selvagsz',
+    //     email: 'test@razorpay.com',
+    //     contact: '123456789'
+    //   }).then((data) => {
+    //     // console.log(data)
+    //   }).catch((error) => {
+    //     // error
+    //   })
+  
 };
 
 

@@ -13,7 +13,7 @@ var Orderitems = function(orderitems) {
 };
 
 Orderitems.createOrderitems = function createOrderitems(order_item, res) {
-  console.log(order_item);
+
 
   sql.query("INSERT INTO OrderItem set ?", order_item, function(err, result) {
     if (err) {

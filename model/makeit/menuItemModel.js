@@ -373,7 +373,7 @@ Menuitem.update_delete_status =  function(itemid, result){
                           }
                       }); 
                     
-                } else if(res[0].active_status == 1){
+                } else if(res1[0].active_status == 1){
                   console.log('test');
                           let sucobj=true;
                           let resobj = {  

@@ -648,7 +648,7 @@ module.exports = function(app) {
 
   app
     .route("/eat/payment/customerid")
-    .post(eatuser.create_customerid_by_razorpay);
+    .get(eatuser.create_customerid_by_razorpay);
 
    app.route("/eat/region/kitchenlist").post(eatuser.eat_region_list_sort_filter);
 
