@@ -956,80 +956,8 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
 
  Eatuser.eatuser_login = function eatuser_login(newUser, result) { 
      
-    var OTP = Math.floor(Math.random() * 90000) + 10000;
+  var OTP = Math.floor(Math.random() * 90000) + 10000;
    
-    var passwordstatus = false;
-    var otpstatus  = false;
-    var genderstatus = false;
-    var otptemp = 0;
-    var otpurl = "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile="+newUser.phoneno+"&senderId=EATHOM&message=Your EAT App OTP is "+OTP+". Note: Please DO NOT SHARE this OTP with anyone."
-  
-
-    sql.query("Select * from User where phoneno = '"+newUser.phoneno+"'" , function (err, res) {             
-        if(err) {
-            console.log("error: ", err);
-            result(err, null);
-        }
-        else{
-            
-            console.log(res);
-            if(res.length === 0){
-            
-                console.log('validate password');
-            
-                request({ 
-                    method: 'GET',  
-                    rejectUnauthorized: false, 
-                    url:otpurl
-                  
-                }, function(error, response, body){
-                    if(error) {
-                        console.log("error: ", err);
-                        result(null, err);
-                    } else {
-                        console.log(response.statusCode, body);
-                        var responcecode = body.split("#");
-                        console.log(responcecode);
-
-                        if (responcecode[0] === '0') {
-                        
-                            sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res1) {
-                
-                                if(err) {
-                                    console.log("error: ", err);
-                                    result(null, err);
-                                }
-                                else{
-                                                      
-                                  let resobj = {  
-                                    success: true,
-                                    status:true,
-                                    message:responcecode[1],
-                                    passwordstatus:passwordstatus,
-                                    otpstatus:otpstatus,
-                                    genderstatus:genderstatus,
-                                    oid: res1.insertId
-                                    }; 
-                              
-                                 result(null, resobj);
-                                }
-                        });  
-                        }else{
-
-                            let resobj = {  
-                                success: true,
-                                status: false,
-                                message:responcecode[1],
-                                passwordstatus:passwordstatus,
-                                otpstatus:otpstatus,
-                                genderstatus:genderstatus
-                                }; 
-                          
-                             result(null, resobj);
-                        }
-                    }
-                });
-
   var passwordstatus = false;
   var otpstatus = false;
   var genderstatus = false;
