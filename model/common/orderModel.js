@@ -1262,7 +1262,7 @@ Order.online_order_place_conformation = function(order_place, result) {
 
   if (order_place.payment_status === 1) {
 
-    var query ="update Orders set payment_status = '" +order_place.payment_status + "',transactionid='" +order_place.transactionid + "',transaction_status= 'success', transaction_time= '"+transaction_time+"' WHERE orderid = '" +order_place.orderid +"' ";
+    var query ="update Orders set payment_status = '" +order_place.payment_status + "', lock_status = 0,transactionid='" +order_place.transactionid + "',transaction_status= 'success', transaction_time= '"+transaction_time+"' WHERE orderid = '" +order_place.orderid +"' ";
 
     var orderdetailsquery ="SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" +order_place.orderid +"'";
 
@@ -1390,7 +1390,7 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(
   sql.query(
     "select * from Orders where userid ='" +
       req.userid +
-      "' and orderstatus < 6 and lock_status = 0 ",
+      "' and orderstatus < 6 and lock_status = 0  ",
     function(err, res) {
       if (err) {
         console.log("error: ", err);
@@ -1458,6 +1458,8 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(
   );
 };
 
+
+
 Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
   req,
   orderitems,
@@ -1465,16 +1467,13 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
 ) {
   try {
     console.log("read_a_proceed_to_pay: ");
-    var tempmessage = "";
-    var newOrder = [];
-    const productquantity = [];
+
     const delivery_charge = constant.deliverycharge;
 
-    
     const res = await query(
-      "select * from Orders where orderstatus < 6 and lock_status != 0 and payment_status !=1 userid= '" +
-        req.userid +
-        "'"
+      "select * from Orders where userid= '" +
+      req.userid +
+      "' and orderstatus < 6 or lock_status != 0 and payment_status !=1 "
     );
 
     if (res.length == 0) {
@@ -1549,7 +1548,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
       function ordercreatecashondelivery(req, orderitems) {
         console.log("ordercreatecashondelivery: ");
         var new_Order = new Order(req);
-        // new_Order.locality = 'guindy';
+
         new_Order.delivery_charge = delivery_charge;
         sql.query("INSERT INTO Orders set ?", new_Order, function(err, res1) {
           if (err) {
@@ -1609,10 +1608,6 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
         }
         }
 
-      
-        // const getrazer_customerid = await query("Select * from User where userid = '" +req.userid +"'");
-        
-        // customerid = getrazer_customerid[0].razer_customerid;
 
         var new_Order = new Order(req);
         new_Order.delivery_charge = delivery_charge;

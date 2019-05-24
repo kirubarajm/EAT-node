@@ -22,7 +22,7 @@ var EatuserAddress = function(eatuseraddress){
 
 EatuserAddress.createUserAddress = function createUserAddress(new_address, result) {   
     
-    sql.query("Select * from Address where userid = '"+new_address.userid+"' and  address_type = '"+new_address.address_type+"'", function (err, res) {
+    sql.query("Select * from Address where userid = '"+new_address.userid+"' and  address_type = '"+new_address.address_type+"' and delete_status=0", function (err, res) {
                 
         if(err) {
             console.log("error: ", err);
@@ -30,7 +30,7 @@ EatuserAddress.createUserAddress = function createUserAddress(new_address, resul
         }
         else{
 
-        if (res.length === 0) {
+        if (res.length === 0 || new_address.address_type == 3) {
             sql.query("INSERT INTO Address set ?", new_address, function (err, res) {
                 
                 if(err) {
@@ -43,6 +43,7 @@ EatuserAddress.createUserAddress = function createUserAddress(new_address, resul
                   let resobj = {  
                     success: sucobj,
                     message:mesobj,
+                    status:true,
                     aid: res.insertId
                     }; 
               
@@ -52,26 +53,23 @@ EatuserAddress.createUserAddress = function createUserAddress(new_address, resul
                 
         }else{
             
-            new_address.address_type = 3;
-            sql.query("INSERT INTO Address set ?", new_address, function (err, res) {
-                
-                if(err) {
-                    console.log("error: ", err);
-                    result(null, err);
-                }
-                else{
+        
+
+            if (new_address.address_type === 1) {
+                var message = "Sorry home address already exist!";
+            }else if(new_address.address_type === 2){
+                var message = "Sorry office address already exist!";
+            }
                   let sucobj=true;
-                  let mesobj = "EatUser Address Created successfully";
+                  let mesobj = message;
                   let resobj = {  
                     success: sucobj,
                     message:mesobj,
+                    status:false,
                     aid: res.insertId
                     }; 
               
-                 result(null, resobj);
-                }
-                }); 
-                
+                 result(null, resobj);          
         }
 
         }

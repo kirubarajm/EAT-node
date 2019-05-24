@@ -366,7 +366,7 @@ Menuitem.update_delete_status =  function(itemid, result){
                           let resobj = {  
                             success: sucobj,
                             status:true,
-                            message: "menuitem Delete successfully",
+                            message: "Item deleted from the Inventory successfully",
                             }; 
               
                         result(null, resobj);
