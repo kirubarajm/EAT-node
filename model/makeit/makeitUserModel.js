@@ -802,10 +802,30 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   });
 };
 
-Makeituser.edit_makeit_users = function(req, cuisines, result) {
+Makeituser.edit_makeit_users = async function(req, cuisines, result) {
+
+  try {
   var removecuisines = req.removecuisines || [];
   cuisinesstatus = false;
   removecuisinesstatus = false;
+
+  if(req.hometownid){ 
+
+    sql.query("Select * from Hometown where hometownid="+ req.hometownid,async function(err, hometown) {
+      console.log("hometown: ", hometown);
+      if (err) {
+        console.log(
+          "error: ", err);
+        result(err, null);
+      } else {
+        
+        if(hometown&&hometown.length>0){
+          column = column +" regionid = '" + hometown[0].regionid + "',";  
+        }
+      }});
+   };
+ 
+   
   if (req.email || req.password || req.phoneno) {
     let sucobj = true;
     let message = "You can't to be Edit email / password/ phoneno";
@@ -813,19 +833,12 @@ Makeituser.edit_makeit_users = function(req, cuisines, result) {
       success: sucobj,
       message: message
     };
-
     result(null, resobj);
   } else {
-    sql.query(
-      "Select * from Hometown where hometownid="+ req.hometownid,
-      function(err, hometown) {
-        console.log("hometown: ", hometown);
-        if (err) {
-          console.log("error: ", err);
-          result(err, null);
-        } else {
+    var column = "";
+    var editquery ="";
+   
           staticquery = "UPDATE MakeitUser SET ";
-          var column = "";
           for (const [key, value] of Object.entries(req)) {
             if (
               key !== "userid" &&
@@ -840,19 +853,20 @@ Makeituser.edit_makeit_users = function(req, cuisines, result) {
             }
           }
 
-          if(hometown&&hometown.length>0){
-            column = column +" regionid = '" + hometown[0].regionid + "',";  
-          }
 
-          var query =
-            staticquery + column.slice(0, -1) + " where userid = " + req.userid;
-            console.log("query: ", query);
-          sql.query(query, function(err, res) {
+        
+          editquery=staticquery + column.slice(0, -1) + " where userid = " + req.userid;
+
+            console.log("query: ", editquery);
+
+            sql.query(editquery, function(err, res) {
             if (err) {
               console.log("error: ", err);
               result(err, null);
             } else {
+
               if (cuisines !== undefined) {
+
                 if (cuisines.length !== 0) {
                   cuisinesstatus = true;
                   cuisines_temp=0;
@@ -902,10 +916,18 @@ Makeituser.edit_makeit_users = function(req, cuisines, result) {
               result(null, resobj);
             }
           });
-        }
-      }
-    );
   }
+} catch (error) {
+  var errorCode = 402;
+  let sucobj = true;
+  let status = false;
+  let resobj = {
+    success: sucobj,
+    status: status,
+    errorCode: errorCode
+  };
+  result(null, resobj);
+}
 };
 
 Makeituser.makeituser_user_referral_code = function makeituser_user_referral_code(

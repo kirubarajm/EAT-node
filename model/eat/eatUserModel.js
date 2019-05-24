@@ -1264,6 +1264,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(
 };
 
 Eatuser.edit_eat_users = function(req, result) {
+
   var staticquery = "UPDATE User SET updated_at = ?, ";
   var column = "";
   req.referalcode = "EATWELL" + req.userid;
@@ -1465,23 +1466,6 @@ Eatuser.eat_user_forgot_password_byuserid = function eat_user_forgot_password_by
     }
   );
 
-  //        sql.query("insert into Otp(phone_number,apptype,otp)values('"+newUser.phoneno+"',4,'"+OTP+"')", function (err, res) {
-
-  //         if(err) {
-  //             console.log("error: ", err);
-  //             result(null, err);
-  //         }
-  //         else{
-
-  //           let resobj = {
-  //             success: true,
-  //             status:true,
-  //             oid: res.insertId
-  //             };
-
-  //          result(null, resobj);
-  //         }
-  // });
 };
 
 Eatuser.eat_user_forgot_password_update = function eat_user_forgot_password_update(
@@ -1654,7 +1638,7 @@ Eatuser.get_eat_region_makeit_list = function get_eat_region_makeit_list(
 
                 let kitchenlist = await query(nearbyregionquery);
 
-                console.log("loop" + kitchenlist.length);
+            //    console.log("loop" + kitchenlist.length);
                 // sql.query(nearbyregionquery, function (err, res3) {
                 //     if (err) {
                 //         console.log("error: ", err);
@@ -1665,13 +1649,13 @@ Eatuser.get_eat_region_makeit_list = function get_eat_region_makeit_list(
                 //         console.log("res3-------------"+res3);
                 res = [...res, ...kitchenlist];
                 // res.concat(kitchenlist);
-                console.log("res loop" + res.length);
+             //   console.log("res loop" + res.length);
 
                 //     }
                 // });
               }
 
-              console.log("new by location" + nearbyotherregion);
+          //    console.log("new by location" + nearbyotherregion);
 
               for (let i = 0; i < res.length; i++) {
                 var eta = 15 + 3 * res[i].distance;
@@ -1702,8 +1686,14 @@ Eatuser.get_eat_region_makeit_list = function get_eat_region_makeit_list(
 };
 
 Eatuser.get_eat_region_makeit_list_by_eatuserid =  function get_eat_region_makeit_list_by_eatuserid (req,result) {
-    
-    var getregionquery = "select lat,lon,regionid from  Region where regionid = (select regionid from User where userid= '"+req.eatuserid+"')";
+   
+ 
+  if (req.regionid < 1 || req.regionid ===undefined) {
+      var getregionquery = "select lat,lon,regionid from Region where regionid = (select regionid from User where userid= "+req.eatuserid+")";
+    }else{
+      var getregionquery = "select lat,lon,regionid from Region where regionid = "+req.regionid+"";
+    }
+    //var getregionquery = "select lat,lon,regionid from  Region where regionid = (select regionid from User where userid= '"+req.eatuserid+"')";
 
     sql.query(getregionquery, function (err, res1) {
         if (err) {
@@ -1733,12 +1723,12 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid =  function get_eat_region_makei
                           var kitchendetaillist=[];
                           var kitchencount = kitchenlist.length>limit?limit:kitchenlist.length;
                           res2[i].kitchencount = kitchenlist.length;
-                          console.log('kloop'+kitchencount);
+                         // console.log('kloop'+kitchencount);
                             
                             if (kitchenlist.length  !==0) {
 
                                 for (let j = 0; j < kitchencount; j++) {
-                                    console.log('loop'+kitchencount);
+                                  //  console.log('loop'+kitchencount);
                                     var eta = 15 + (3 * kitchenlist[j].distance) ;
                                     //15min Food Preparation time , 3min 1 km
                                     
@@ -1827,10 +1817,7 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(n
     var notes = "test";
 
    instance.customers.create({name, email, contact, notes}).then((data) => {
-        console.log(data)
-
-     //  staticquery = "UPDATE User SET pushid_ios ='" + req.pushid_ios +"'  where userid = " + req.userid +" ";
-
+   
         let sucobj = true;
         let message = "customer created successfully"
         let resobj = {
