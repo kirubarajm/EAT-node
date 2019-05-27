@@ -3,11 +3,11 @@ var sql = require('../db.js');
 var constant = require('../constant.js');
 var request = require('request');
 const util = require('util');
-const Razorpay = require("razorpay");
-var instance = new Razorpay({
-    key_id: 'rzp_test_3cduMl5T89iR9G',
-    key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
-  })
+//const Razorpay = require("razorpay");
+// var instance = new Razorpay({
+//     key_id: 'rzp_test_3cduMl5T89iR9G',
+//     key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+//   })
 
 
 const query = util.promisify(sql.query).bind(sql);
@@ -314,6 +314,10 @@ Eatuser.get_eat_makeit_list = function(req, result) {
 
 Eatuser.get_eat_makeit_product_list = function(req, result) {
   console.log(req);
+  if(!req.lat&&!req.lon){
+  req.lat='12.9760';
+  req.lon='80.2212';
+  }
 
   // sql.query("Select MakeitUser.*,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(lat)) ) ) AS distance from MakeitUser  HAVING distance!= '' ORDER BY distance", function (err, res) {
   //    if (req.eatuserid) {
@@ -1548,10 +1552,10 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(
   result
 ) {
   var razorpay = "https://api.razorpay.com/v1/customers";
-  var instance = new Razorpay({
-    key_id: "rzp_test_3cduMl5T89iR9G",
-    key_secret: "BSdpKV1M07sH9cucL5uzVnol"
-  });
+  // var instance = new Razorpay({
+  //   key_id: "rzp_test_3cduMl5T89iR9G",
+  //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
+  // });
 
   instance.customers.create({ name, email, contact, notes });
   request(

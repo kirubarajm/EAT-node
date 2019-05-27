@@ -339,11 +339,12 @@ Order.get_all_orders = function get_all_orders(req, result) {
 Order.get_all_vorders = function get_all_vorders(req, result) {
   var orderlimit = 20;
   var page = req.page || 1;
+  var makeithub_id = req.makeithub_id || 3;
   var startlimit = (page - 1) * orderlimit;
 
  
   var query =
-    "Select * from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id";
+    "Select od.*,us.name as name,us.phoneno as phoneno from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id";
   var searchquery =
     "us.phoneno LIKE  '%" +
     req.search +
@@ -355,7 +356,7 @@ Order.get_all_vorders = function get_all_vorders(req, result) {
     req.search +
     "%'";
   if (req.virtualkey !== "all") {
-    query = query + " where mk.virtualkey = '" + req.virtualkey + "'";
+    query = query + " where mk.virtualkey = '" + req.virtualkey + "' and mk.makeithub_id='"+makeithub_id+"'";
   }
   //var search= req.search
   if (req.virtualkey !== "all" && req.search) {

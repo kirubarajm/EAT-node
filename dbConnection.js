@@ -8,4 +8,12 @@ const authentication = {
   timezone: "IST"
 };
 
+// const authentication = {
+//   host: "localhost",
+//   user: "admin",
+//   password: "tovo@2020",
+//   database: "eattovo",
+//   timezone: "IST"
+// };
+
 module.exports = authentication;

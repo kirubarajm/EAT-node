@@ -28,6 +28,7 @@ module.exports = function(app) {
   var feedback = require("../controllers/common/EatfeedbackController");
   var orderrating = require("../controllers/common/OrderratingController");
   var homedown = require("../controllers/common/HometownController");
+  var makeithub = require("../controllers/common/MakeitHubController");
 
   // todoList Routes
   app
@@ -682,6 +683,7 @@ module.exports = function(app) {
 
   app.route("/masters/regionlist").get(region.list_all_region);
   app.route("/masters/homedownlist").get(homedown.list_all_homedown);
+  app.route("/masters/makeithub").get(makeithub.list_all_makeithubs);
 
   app.route("/masters/cuisinelist").get(cusine.list_all_Cuisine);
 
