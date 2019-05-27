@@ -380,7 +380,7 @@ exports.eat_explore_kitchen_dish = function(req, res) {
       .send({ error: true, status: false, message: "Please provide eatuserid" });
   }
    else {
-    Eatuser.eat_explore_kitchen_dish(req.body, function(err, region) {
+    Eatuser.eat_explore_kitchen_dish_region(req.body, function(err, region) {
       console.log("controller");
       if (err) res.send(err);
       console.log("res", region);

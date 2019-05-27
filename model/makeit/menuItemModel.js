@@ -330,7 +330,7 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
 Menuitem.update_delete_status =  function(itemid, result){
  
  
-  sql.query(" select * from Productitem where itemid = "+itemid+" and delete_status != 1", function (err, res) {
+  sql.query(" select * from Productitem where itemid = "+itemid+" and delete_status =0", function (err, res) {
     if(err) {
         console.log("error: ", err);
         result(null, err);
@@ -351,7 +351,7 @@ Menuitem.update_delete_status =  function(itemid, result){
       
             if (res1.length !== 0) {
 
-                if (res1[0].active_status == 0) {
+                // if (res1[0].active_status == 0) {
 
                   sql.query("DELETE FROM Menuitem WHERE menuitemid = "+itemid+" ",  function (err, res2) {
                     if(err) {
@@ -372,17 +372,17 @@ Menuitem.update_delete_status =  function(itemid, result){
                           }
                       }); 
                     
-                } else if(res1[0].active_status == 1){
+                // } else if(res1[0].active_status == 1){
                 
-                          let sucobj=true;
-                          let resobj = {  
-                            success: sucobj,
-                            status:false,
-                            message: "menuitem is live now, You can't delete",
-                            }; 
+                //           let sucobj=true;
+                //           let resobj = {  
+                //             success: sucobj,
+                //             status:false,
+                //             message: "menuitem is live now, You can't delete",
+                //             }; 
               
-                        result(null, resobj);
-                }
+                //         result(null, resobj);
+                // }
 
               }else{
                 let sucobj=true;

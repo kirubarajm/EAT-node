@@ -288,16 +288,10 @@ Makeituser.checkLogin = function checkLogin(req, result) {
   );
 };
 
-Makeituser.update_makeit_users = function(id, user, result) {
-  sql.query(
-    "UPDATE MakeitUser SET bank_name = ?, ifsc=?, bank_account_no=?, bank_holder_name=? WHERE userid = ?",
-    [
-      user.bank_name,
-      user.ifsc,
-      user.bank_account_no,
-      user.bank_holder_name,
-      id
-    ],
+Makeituser.update_makeit_users_bankaccount = function(user, result) {
+  var query = "UPDATE MakeitUser SET bank_name = '"+user.bank_name+"', ifsc='"+user.ifsc+"', bank_account_no='"+user.bank_account_no+"', bank_holder_name='"+user.bank_holder_name+"',branch_name='"+user.branch_name+"' WHERE userid = '"+user.userid+"'"
+  console.log(query);
+  sql.query(query,
     function(err, res) {
       if (err) {
         console.log("error: ", err);
@@ -305,17 +299,16 @@ Makeituser.update_makeit_users = function(id, user, result) {
         returnResponse(400, false, "error", err);
       } else {
         //result(null, res);
-        returnResponse(200, true, "Payment Registration Succdessfully", res);
+        returnResponse(true,true, "Payment Registration Succdessfully");
       }
     }
   );
 
-  function returnResponse(statusHttp, statusBool, message, data) {
+  function returnResponse(success, status, message) {
     result({
-      statusHttp: statusHttp,
-      statusBool: statusBool,
-      message: message,
-      result: data
+      success: success,
+      status: status,
+      message: message
     });
   }
 };
@@ -735,7 +728,11 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
  var ordercount = orderlist.length;
 
   for (let i = 0; i < orderitems.length; i++) {
+
     const res1 = await query("Select * From Product where productid = '" +orderitems[i].productid+"'");
+
+    console.log(res1.length);
+
 
     if (res1[0].quantity < orderitems[i].quantity) {
       res1[0].availablity = false;
@@ -809,22 +806,15 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
   var removecuisines = req.removecuisines || [];
   cuisinesstatus = false;
   removecuisinesstatus = false;
+  var column = "";
+  var editquery ="";
+ 
 
-  if(req.hometownid){ 
-
-    sql.query("Select * from Hometown where hometownid="+ req.hometownid,async function(err, hometown) {
-      console.log("hometown: ", hometown);
-      if (err) {
-        console.log(
-          "error: ", err);
-        result(err, null);
-      } else {
-        
-        if(hometown&&hometown.length>0){
-          column = column +" regionid = '" + hometown[0].regionid + "',";  
-        }
-      }});
-   };
+  if(req.hometownid){
+    const hometown = await query("Select * from Hometown where hometownid="+ req.hometownid);
+    console.log(hometown);
+    req.regionid=hometown[0].regionid;
+    };
  
    
   if (req.email || req.password || req.phoneno) {
@@ -836,8 +826,6 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
     };
     result(null, resobj);
   } else {
-    var column = "";
-    var editquery ="";
    
           staticquery = "UPDATE MakeitUser SET ";
           for (const [key, value] of Object.entries(req)) {
@@ -846,7 +834,7 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
               key !== "cuisines" &&
               key !== "region" &&
               key !== "rating" &&
-              key !== "removecuisines"
+              key !== "removecuisines" 
             ) {
               column = column + key + "='" + value + "',";
             } else if (key === "rating") {
@@ -929,7 +917,34 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
   };
   result(null, resobj);
 }
+
 };
+
+
+Makeituser.update_makeit_regionid = async function(req,result) {
+ console.log(req);
+
+ const updatestatus = await query("UPDATE MakeitUser SET regionid = '"+req.regionid+"' WHERE userid = '"+req.userid+"' ");
+console.log(updatestatus);
+  // sql.query("UPDATE MakeitUser SET regionid = '"+req.regionid+"' WHERE userid = '"+req.userid+"' ",function(err, res) {
+  //     if (err) {
+  //       console.log("error: ", err);
+  //       result(null, err);
+  //     }else{
+            
+          let resobj = {
+            success: true,
+            status: true
+          };
+         result(null, resobj);
+  //     }
+  //   }
+  // );
+ 
+};
+
+
+
 
 Makeituser.makeituser_user_referral_code = function makeituser_user_referral_code(
   req,

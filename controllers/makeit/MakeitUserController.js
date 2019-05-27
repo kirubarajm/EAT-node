@@ -102,9 +102,8 @@ exports.update_a_user = function(req, res) {
 };
 
 exports.update_payment_registration = function(req, res) {
-  Makeituser.update_makeit_users(
-    req.params.userid,
-    new Makeituser(req.body),
+
+  Makeituser.update_makeit_users_bankaccount(req.body,
     function(err, user) {
       if (err) res.send(err);
       res.json(user);

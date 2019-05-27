@@ -408,15 +408,17 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
   console.log(req);
 
   const active_status = parseInt(req.active_status)
+  
   if (active_status === 0) {
     sql.query(
-      "UPDATE Product SET active_status = ? WHERE productid = ?",
+      "UPDATE Product SET active_status = ?,quantity = 0 WHERE productid = ?",
       [req.active_status, req.productid],
       function(err, res) {
         if (err) {
           console.log("error: ", err);
           result(null, err);
         } else {
+
           var mesobj = {};
           let sucobj = true;
           mesobj = "Product removed from live successfully";

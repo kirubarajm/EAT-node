@@ -1336,7 +1336,7 @@ Order.online_order_place_conformation = function(order_place, result) {
               }
             });
 
-        //   }
+        //   }pay
 
         // });
 
