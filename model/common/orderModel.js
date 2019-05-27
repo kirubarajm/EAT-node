@@ -1331,7 +1331,7 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(
   sql.query(
     "select * from Orders where userid ='" +
       req.userid +
-      "' and orderstatus < 6 and lock_status = 0  ",
+      "' and orderstatus < 6 and lock_status = 0 ",
     function(err, res) {
       if (err) {
         console.log("error: ", err);

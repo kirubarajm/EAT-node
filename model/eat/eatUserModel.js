@@ -1843,4 +1843,18 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(n
 
      })
     }
+
+
+    Eatuser.eat_explore_kitchen_dish = function eat_explore_kitchen_dish(result) {
+      sql.query("Select * from User", function(err, res) {
+        if (err) {
+          console.log("error: ", err);
+          result(null, err);
+        } else {
+          result(null, res);
+        }
+      });
+    };
+
+
 module.exports = Eatuser;

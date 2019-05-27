@@ -7,6 +7,7 @@ var Productitem = function(productitem) {
   this.productid = productitem.productid;
   this.itemid = productitem.itemid;
   this.quantity = productitem.quantity;
+  this.delete_status = productitem.delete_status || 0;
 };
 
 Productitem.createProductitems = function createProductitems(product_item,res) {
