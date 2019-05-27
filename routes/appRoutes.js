@@ -659,7 +659,7 @@ module.exports = function(app) {
    
    app.route("/eat/kitche/showmore").post(eatuser.eat_region_kitchen_showmore);
 
-   app.route("/eat/explore").post(eatuser.eat_explore_kitchen_dish);
+   app.route("/eat/product/search").post(eatuser.eat_explore_kitchen_dish);
 
  //  app.route("/eat/product/lockrelease").post(product.eat_product_lockrelease);
 

@@ -1849,13 +1849,56 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(n
     }
 
 
-    Eatuser.eat_explore_kitchen_dish = function eat_explore_kitchen_dish(result) {
-      sql.query("Select * from User", function(err, res) {
+    Eatuser.eat_explore_kitchen_dish_region = function eat_explore_kitchen_dish_region(req,result) {
+
+        if (req.eatuserid) {
+          var query =
+            "Select pt.makeit_userid  as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img as makeitimg,mk.img as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+            req.lat +
+            "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
+            req.lon +
+            "') ) + sin( radians('" +
+            req.lat +
+            "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+            req.eatuserid +
+            "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
+            req.eatuserid +
+            "'  where product_name like '%" +
+            req.search +
+            "%' and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1  group by pt.makeit_userid";
+        } 
+        console.log(query);
+
+      sql.query(query, function(err, res) {
         if (err) {
           console.log("error: ", err);
           result(null, err);
         } else {
-          result(null, res);
+
+          for (let i = 0; i < res.length; i++) {
+            if (res[i].productlist) {
+              res[i].productlist = JSON.parse(res[i].productlist);
+  
+              res[i].distance = res[i].distance.toFixed(2);
+              //15min Food Preparation time , 3min 1 km
+              eta = 15 + 3 * res[i].distance;
+  
+              // if (eta > 60) {
+              //   eta = 60;
+              // }
+              res[i].eta = Math.round(eta) + " mins";
+            }
+          }
+
+
+          let resobj = {
+              success: true,
+              status:true,
+              result:res
+          };
+    
+          result(null, resobj);
+
         }
       });
     };

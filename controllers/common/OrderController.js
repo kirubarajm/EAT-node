@@ -282,6 +282,7 @@ exports.live_order_list_byeatuser = function(req, res) {
 };
 
 exports.read_a_proceed_to_pay = function(req, res) {
+  console.log(req.body);
   var orderitems = req.body.orderitems;
   if (!req.body.aid) {
     res
