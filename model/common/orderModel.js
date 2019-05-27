@@ -10,12 +10,12 @@ var Makeituser = require("../../model/makeit/makeitUserModel.js");
 var FCM = require("../../FcmSendNotification.js");
 var constant = require("../constant.js");
 var moment = require("moment");
-const Razorpay = require("razorpay");
+//const Razorpay = require("razorpay");
 
-var instance = new Razorpay({
-  key_id: 'rzp_test_3cduMl5T89iR9G',
-  key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
-})
+// var instance = new Razorpay({
+//   key_id: 'rzp_test_3cduMl5T89iR9G',
+//   key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+// })
 
 const query = util.promisify(sql.query).bind(sql);
 
@@ -222,6 +222,20 @@ Order.getOrderById = function getOrderById(orderid, result) {
   });
 };
 
+Order.updateOrderStatus = function updateOrderStatus(req, result) {
+  sql.query("Update Orders set orderstatus = ? where orderid = ? ", [req.orderstatus,req.orderid],function(
+    err,
+    res){
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {
+      let res={success:true,status:true,message:'Order status updated successfully'}
+      result(null, res);
+    }
+  });
+};
+
 Order.getAllOrder = function getAllOrder(result) {
   sql.query("Select * from Orders", function(err, res) {
     if (err) {
@@ -339,12 +353,12 @@ Order.get_all_orders = function get_all_orders(req, result) {
 Order.get_all_vorders = function get_all_vorders(req, result) {
   var orderlimit = 20;
   var page = req.page || 1;
-  var makeithub_id = req.makeithub_id || 3;
+  var makeithub_id = req.makeithub_id || 1;
   var startlimit = (page - 1) * orderlimit;
 
  
   var query =
-    "Select od.*,us.name as name,us.phoneno as phoneno from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id";
+    "Select od.*,us.name as name,us.phoneno as phoneno,mk.name as makeit_name,mk.brandname as makeit_brandname from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id";
   var searchquery =
     "us.phoneno LIKE  '%" +
     req.search +
@@ -947,7 +961,7 @@ Order.orderviewbyadmin = function(req, result) {
   console.log(req);
   // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
   sql.query(
-    "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" +
+    "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'virtualkey',ms.virtualkey) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" +
       req.id +
       "'",
     function(err, res) {
@@ -1595,7 +1609,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
 
         if (!userinfo[0].razer_customerid) {
           
-        var customerid = await Order.create_customerid_by_razorpay(userinfo);
+        var customerid = "1";//await Order.create_customerid_by_razorpay(userinfo);
         console.log("customerid:----- ", customerid); 
         if (!customerid) {
             let resobj = {

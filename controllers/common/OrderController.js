@@ -98,6 +98,13 @@ exports.order_view = function(req, res) {
   });
 };
 
+exports.order_status_update = function(req, res) {
+  Order.updateOrderStatus(req.body, function(err, order) {
+    if (err) res.send(err);
+    res.send(order);
+  });
+};
+
 exports.order_view_eatuser = function(req, res) {
   Order.orderviewbyeatuser(req.params, function(err, user) {
     console.log("controller");
