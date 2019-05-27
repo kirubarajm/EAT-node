@@ -198,15 +198,15 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
 
         if (res.length !== 0) {
       
-          sql.query(" select * from Productitem where itemid = "+req.menuitemid+" and delete_status = 0", function (err, res2) {
-            if(err) {
-                console.log("error: ", err);
-                result(null, err);
-            }
-            else{
+          // sql.query(" select * from Menuitem where itemid = "+req.menuitemid+" ", function (err, res2) {
+          //   if(err) {
+          //       console.log("error: ", err);
+          //       result(null, err);
+          //   }
+          //   else{
 
-              console.log(res2.length);
-              if (res2.length === 0) {
+              // console.log(res2.length);
+              // if (res2.length === 1) {
   
                 if (res[0].approved_status == 0 || res[0].approved_status == 3) {
     
@@ -254,20 +254,20 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
             
                        result(null, resobj);
                   }
-              } else{
-                console.log('Menuitem is live now');
-                        let sucobj=true;
-                        let resobj = {  
-                          success: sucobj,
-                          status:false,
-                          message: "Menuitem is live now",
-                          }; 
+              // } else{
+              //   console.log('There is no menu item available');
+              //           let sucobj=true;
+              //           let resobj = {  
+              //             success: sucobj,
+              //             status:false,
+              //             message: "There is no menu item available",
+              //             }; 
             
-                       result(null, resobj);
-              }
+              //          result(null, resobj);
+              // }
 
-            }
-          }); 
+          //   }
+          // }); 
             
           }else{
             let sucobj=true;
@@ -330,12 +330,14 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
 Menuitem.update_delete_status =  function(itemid, result){
  
  
-  sql.query(" select * from Productitem where itemid = "+itemid+" and delete_status = 1", function (err, res) {
+  sql.query(" select * from Productitem where itemid = "+itemid+" and delete_status != 1", function (err, res) {
     if(err) {
         console.log("error: ", err);
         result(null, err);
     }
     else{
+
+      console.log(res);
 
       if (res.length === 0) {
 
@@ -346,13 +348,10 @@ Menuitem.update_delete_status =  function(itemid, result){
           }
           else{
             
-            console.log(res1);
+      
             if (res1.length !== 0) {
 
                 if (res1[0].active_status == 0) {
-                  console.log('test1');
-
-                
 
                   sql.query("DELETE FROM Menuitem WHERE menuitemid = "+itemid+" ",  function (err, res2) {
                     if(err) {
@@ -374,7 +373,7 @@ Menuitem.update_delete_status =  function(itemid, result){
                       }); 
                     
                 } else if(res1[0].active_status == 1){
-                  console.log('test');
+                
                           let sucobj=true;
                           let resobj = {  
                             success: sucobj,

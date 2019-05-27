@@ -365,7 +365,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
         console.log("error: ", err);
         result(null, err);
       } else {
-        if (res[0].approved_status === 1 && res[0].active_status === 0) {
+        if (res[0].approved_status === 1) {
           sql.query(
             "UPDATE Product SET quantity = ? WHERE productid = ? and makeit_userid = ?",
             [req.quantity, req.productid, req.makeit_userid],
@@ -384,18 +384,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
               }
             }
           );
-        } else if (res[0].active_status == 1) {
-          console.log("product live");
-          let sucobj = true;
-          let resobj = {
-            success: sucobj,
-            status: false,
-            message:
-              "Following Product already in live, You can't quantity increase"
-          };
-
-          result(null, resobj);
-        } else if (res[0].approved_status == 0) {
+         } else if (res[0].approved_status == 0) {
           console.log("product live");
           let sucobj = true;
           let resobj = {
@@ -418,7 +407,8 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
 ) {
   console.log(req);
 
-  if (req.active_status === "0") {
+  const active_status = parseInt(req.active_status)
+  if (active_status === 0) {
     sql.query(
       "UPDATE Product SET active_status = ? WHERE productid = ?",
       [req.active_status, req.productid],
@@ -448,7 +438,7 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
           console.log("error: ", err);
           result(null, err);
         } else {
-          if (res1[0].approved_status === 1 && res1[0].active_status === 0) {
+          if (res1[0].approved_status === 1) {
             sql.query(
               "UPDATE Product SET quantity = ?,active_status = ? WHERE productid = ? and makeit_userid = ?",
               [
@@ -474,14 +464,6 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
                 }
               }
             );
-          } else if (res1[0].active_status === 1) {
-            let sucobj = true;
-            let resobj = {
-              success: sucobj,
-              status: false,
-              message: "Following Product already in live"
-            };
-            result(null, resobj);
           } else if (res1[0].approved_status === 0) {
             let sucobj = true;
             let resobj = {
