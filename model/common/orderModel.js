@@ -301,7 +301,66 @@ Order.get_all_orders = function get_all_orders(req, result) {
   //var search= req.search
   if (req.virtualkey !== "all" && req.search) {
     query = query + " and (" + searchquery + ")";
-  } else if (req.search) {
+  }else if (req.search) {
+    query = query + " where " + searchquery;
+  }
+
+  var limitquery =
+    query +
+    " order by od.orderid desc limit " +
+    startlimit +
+    "," +
+    orderlimit +
+    " ";
+
+  sql.query(limitquery, function(err, res1) {
+    if (err) {
+      console.log("error: ", err);
+      result(null, err);
+    } else {
+      var totalcount = 0;
+
+      sql.query(query, function(err, res2) {
+        totalcount = res2.length;
+
+        let sucobj = true;
+        let resobj = {
+          success: sucobj,
+          totalorder: totalcount,
+          result: res1
+        };
+
+        result(null, resobj);
+      });
+    }
+  });
+};
+
+Order.get_all_vorders = function get_all_vorders(req, result) {
+  var orderlimit = 20;
+  var page = req.page || 1;
+  var startlimit = (page - 1) * orderlimit;
+
+ 
+  var query =
+    "Select * from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id";
+  var searchquery =
+    "us.phoneno LIKE  '%" +
+    req.search +
+    "%' OR us.email LIKE  '%" +
+    req.search +
+    "%' or us.name LIKE  '%" +
+    req.search +
+    "%'  or od.orderid LIKE  '%" +
+    req.search +
+    "%'";
+  if (req.virtualkey !== "all") {
+    query = query + " where mk.virtualkey = '" + req.virtualkey + "'";
+  }
+  //var search= req.search
+  if (req.virtualkey !== "all" && req.search) {
+    query = query + " and (" + searchquery + ")";
+  }else if (req.search) {
     query = query + " where " + searchquery;
   }
 

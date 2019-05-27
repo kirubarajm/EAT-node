@@ -80,6 +80,15 @@ exports.list_all_orders = function(req, res) {
   });
 };
 
+exports.list_all_virtual_makeit_orders = function(req, res) {
+  Order.get_all_vorders(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+};
+
 exports.order_view = function(req, res) {
   Order.orderviewbyadmin(req.params, function(err, user) {
     console.log("controller");
