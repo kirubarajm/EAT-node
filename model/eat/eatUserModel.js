@@ -3,11 +3,11 @@ var sql = require('../db.js');
 var constant = require('../constant.js');
 var request = require('request');
 const util = require('util');
-//const Razorpay = require("razorpay");
-// var instance = new Razorpay({
-//     key_id: 'rzp_test_3cduMl5T89iR9G',
-//     key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
-//   })
+const Razorpay = require("razorpay");
+var instance = new Razorpay({
+    key_id: 'rzp_test_3cduMl5T89iR9G',
+    key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+  })
 
 
 const query = util.promisify(sql.query).bind(sql);
@@ -1849,7 +1849,7 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(n
     }
 
 
-    Eatuser.eat_explore_kitchen_dish_region = function eat_explore_kitchen_dish_region(req,result) {
+    Eatuser.eat_explore_kitchen_dish = function eat_explore_kitchen_dish(req,result) {
 
         if (req.eatuserid) {
           // var query =
@@ -1906,4 +1906,21 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(n
     };
 
 
+
+
+ Eatuser.eat_explore_store_data_by_cron = function eat_explore_store_data_by_cron(search, result) {
+  try {
+    
+  } catch (error) {
+    let sucobj = true;
+            let resobj = {
+              success: sucobj,
+              result: res
+            };
+    
+            result(null, resobj);
+          }
+  }
+     
+    
 module.exports = Eatuser;

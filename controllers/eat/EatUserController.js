@@ -365,7 +365,7 @@ exports.eat_user_referral = function(req, res) {
 
 
 
-exports.eat_explore_kitchen_dish = function(req, res) {
+exports.eat_explore_dish = function(req, res) {
   if (!req.body.lat) {
     res
       .status(400)
@@ -380,11 +380,21 @@ exports.eat_explore_kitchen_dish = function(req, res) {
       .send({ error: true, status: false, message: "Please provide eatuserid" });
   }
    else {
-    Eatuser.eat_explore_kitchen_dish_region(req.body, function(err, region) {
+    Eatuser.eat_explore_kitchen_dish(req.body, function(err, region) {
       console.log("controller");
       if (err) res.send(err);
       console.log("res", region);
       res.send(region);
     });
   }
+};
+
+
+exports.eat_explore_store_data = function(req, res) {
+  Eatuser.eat_explore_store_data_by_cron(req.params, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
 };

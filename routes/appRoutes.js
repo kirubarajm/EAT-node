@@ -667,7 +667,7 @@ module.exports = function(app) {
    
    app.route("/eat/kitche/showmore").post(eatuser.eat_region_kitchen_showmore);
 
-   app.route("/eat/product/search").post(eatuser.eat_explore_kitchen_dish);
+   app.route("/eat/product/search").post(eatuser.eat_explore_dish);
 
  //  app.route("/eat/product/lockrelease").post(product.eat_product_lockrelease);
 
@@ -688,6 +688,9 @@ module.exports = function(app) {
   app.route("/repliesread").put(queryanswer.update_read_answer);
 
   app.route("/masters").get(master.read_a_masters);
+
+  app.route("/eat/explore").get(eatuser.eat_explore_store_data);
+  
 
   // Masters
 
