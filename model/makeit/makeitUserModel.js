@@ -27,7 +27,6 @@ var Makeituser = function(makeituser) {
   this.bank_holder_name = makeituser.bank_holder_name;
   this.address = makeituser.address;
   this.virtualkey = makeituser.virtualkey || 0;
-  this.img = makeituser.img;
   this.rating = makeituser.rating;
   this.regionid = makeituser.regionid;
   this.costfortwo = makeituser.costfortwo;
@@ -36,6 +35,11 @@ var Makeituser = function(makeituser) {
   this.flatno = makeituser.flatno;
   this.pincode = makeituser.pincode;
   this.hometownid = makeituser.hometownid;
+  this.img1 = makeituser.img1;
+  this.img2 = makeituser.img2;
+  this.img3 = makeituser.img3;
+  this.img4 = makeituser.img4;
+
 };
 
 Makeituser.createUser = function createUser(newUser, result) {
@@ -119,7 +123,7 @@ Makeituser.getUserById = function getUserById(userId, result) {
   //var query1 = "Select * from MakeitUser where userid = '" + userId + "'";
 
   var query1 =
-    "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img, mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mkh.makeithub_id,mkh.makeithub_name, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
+    "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img1, mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mkh.makeithub_id,mkh.makeithub_name, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
     userId +
     "'";
   sql.query(query1, function(err, res) {
@@ -161,7 +165,7 @@ Makeituser.getAllUser = function getAllUser(result) {
   //  sql.query("Select * from MakeitUser", function (err, res) {
 
   var query =
-    "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img, mk.region, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, JSON_OBJECT('cuisines', JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename))) AS cuisines from MakeitUser mk  left join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid";
+    "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img1, mk.region, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, JSON_OBJECT('cuisines', JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename))) AS cuisines from MakeitUser mk  left join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid";
   
     sql.query(query, function(err, res) {
     // sql.query("select concat('[',GROUP_CONCAT(CONCAT('{"url :"', st.url,'"}')),']') url ,mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey  from MakeitUser as mu join Documents_Sales as ds on mu.userid = ds.makeit_userid join Documents as st on ds.docid = st.docid where mu.userid = 1 group by mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey ", function (err, res) {
@@ -750,7 +754,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   }
   console.log(productdetails);
   var query1 =
-    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +req.makeit_user_id +"";
+    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +req.makeit_user_id +"";
 
   sql.query(query1, function(err, res1) {
     if (err) {
@@ -1314,6 +1318,45 @@ Makeituser.sum_total_earnings_makeit = function(makeit_userid, result) {
       });
     }
   });
+};
+
+
+Makeituser.makeit_document_store_by_userid = async function makeit_document_store_by_userid(newdocument,result) {
+try {
+  temp = 0;
+  doclen = newdocument.length;
+  if (newdocument) {
+    
+    for (let i = 0; i < newdocument.length; i++) {
+      
+      const documentstore = await query("insert into Makeit_images (Makeit_images,makeit_userid)values('"+newdocument[i].Makeit_images+"','"+newdocument[i].makeit_userid+"')");
+
+      temp++;
+      
+    }
+  }
+
+if ( temp===doclen) {
+  let resobj = {
+    success: true,
+    status: true,
+    message: "Document uploaded succssfully"
+  };
+  result(null, resobj);
+}
+
+} catch (error) {
+  
+  var errorCode = 402;
+  let sucobj = true;
+  let status = false;
+  let resobj = {
+    success: sucobj,
+    status: status,
+    errorCode: errorCode
+  };
+  result(null, resobj);
+}
 };
 
 module.exports = Makeituser;

@@ -305,3 +305,16 @@ exports.makeit_earnings_day = function(req, res) {
     res.json(result);
   });
 };
+
+
+exports.makeit_document_store = function(req, res) {
+  console.log(req.body);
+  Makeituser.makeit_document_store_by_userid(req.body, function(
+    err,
+    result
+  ) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+

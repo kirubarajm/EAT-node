@@ -1391,7 +1391,8 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(
   sql.query(
     "select * from Orders where userid ='" +
       req.userid +
-      "' and orderstatus < 6 and lock_status = 0 ",
+      "' and orderstatus < 6 ",
+      //and (lock_status = 0 or lock_status = 1) and  payment_status =0
     function(err, res) {
       if (err) {
         console.log("error: ", err);
@@ -1410,7 +1411,7 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(
           result(null, resobj);
         } else {
           sql.query(
-            "Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +
+            "Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +
               req.userid +
               "' and ors.orderstatus < 6 and ors.lock_status = 0 ",
             function(err, res1) {
@@ -1474,8 +1475,9 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
     const res = await query(
       "select * from Orders where userid= '" +
       req.userid +
-      "' and orderstatus < 6 or lock_status != 0 and payment_status !=1 "
+      "' and orderstatus < 6 "
     );
+    //and (lock_status = 0 or lock_status = 1) and  payment_status = 0
 
     if (res.length == 0) {
       Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(
@@ -1508,7 +1510,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
             req.cus_lon = res2[0].lon;
 
 
-            var  makeitavailability = await query("Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img as makeitimg,ly.localityname,( 3959 * acos( cos( radians("+res2[0].lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+res2[0].lon+") ) + sin( radians("+res2[0].lat+") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  where mk.userid =83 and mk.appointment_status = 3 and mk.verified_status = 1");
+            var  makeitavailability = await query("Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,( 3959 * acos( cos( radians("+res2[0].lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+res2[0].lon+") ) + sin( radians("+res2[0].lat+") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  where mk.userid =83 and mk.appointment_status = 3 and mk.verified_status = 1");
 
             var eta = 15 + (3 * makeitavailability[0].distance) ;
             //15min Food Preparation time , 3min 1 km 

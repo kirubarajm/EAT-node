@@ -501,6 +501,13 @@ module.exports = function(app) {
   app.route("/admin/menuitem/:itemid").delete(menuitem.delete_status_menuitem);
 
   app.route("/admin/menuitem/approve").put(menuitem.approve_status_menuitem);
+ 
+  app.route("/admin/makeit/documentstore").post(makeituser.makeit_document_store);
+
+
+
+
+
 
   // Orders API
   app.route("/orders/ordercreate").post(orders.eatuser_order_create);
