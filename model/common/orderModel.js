@@ -10,12 +10,12 @@ var Makeituser = require("../../model/makeit/makeitUserModel.js");
 var FCM = require("../../FcmSendNotification.js");
 var constant = require("../constant.js");
 var moment = require("moment");
-//const Razorpay = require("razorpay");
+const Razorpay = require("razorpay");
 
-// var instance = new Razorpay({
-//   key_id: 'rzp_test_3cduMl5T89iR9G',
-//   key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
-// })
+var instance = new Razorpay({
+  key_id: 'rzp_test_3cduMl5T89iR9G',
+  key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+})
 
 const query = util.promisify(sql.query).bind(sql);
 
@@ -1345,7 +1345,7 @@ Order.online_order_place_conformation = function(order_place, result) {
     });
   } else if(order_place.payment_status == 2){
 
-    var query ="update Orders set payment_status = '" +order_place.payment_status + "',transactionid='" +order_place.transactionid + "',transaction_status= 'failed', transaction_time= '"+transaction_time+"' WHERE orderid = '" +order_place.orderid +"' ";
+    var query ="update Orders set payment_status = '" +order_place.payment_status + "',lock_status = 0,transactionid='" +order_place.transactionid + "',transaction_status= 'failed', transaction_time= '"+transaction_time+"' WHERE orderid = '" +order_place.orderid +"' ";
     
     var releasequantityquery = "select * from Lock_order where orderid ='"+order_place.orderid+"' ";
     
@@ -1398,78 +1398,132 @@ Order.online_order_place_conformation = function(order_place, result) {
 };
 
 
-Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(
-  req,
-  result
-) {
-  sql.query(
-    "select * from Orders where userid ='" +
-      req.userid +
-      "' and orderstatus < 6 ",
+Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, result) {
+  sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",
       //and (lock_status = 0 or lock_status = 1) and  payment_status =0
     function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
       } else {
+
         if (res.length === 0) {
+
           let sucobj = true;
           let message = "Active order not found!";
           let resobj = {
             success: sucobj,
             status: false,
             message: message,
-            result: res
+            //result: res
           };
-
           result(null, resobj);
         } else {
-          sql.query(
-            "Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +
-              req.userid +
-              "' and ors.orderstatus < 6 and ors.lock_status = 0 ",
-            function(err, res1) {
+
+          console.log(res[0].payment_status);
+          if (res[0].payment_type === "0") {
+            
+            sql.query( "Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid + "' and ors.orderstatus < 6 ",function(err, res1) {
               if (err) {
                 console.log("error: ", err);
                 result(null, err);
               } else {
                 for (let i = 0; i < res1.length; i++) {
-                  console.log(res1[i].ordertime);
+                
                   var deliverytime = new Date(res1[i].ordertime);
-                  console.log(deliverytime);
+                  
                   // d.setHours(d.getHours() + 5);
                   deliverytime.setMinutes(deliverytime.getMinutes() + 15);
 
-                  console.log(deliverytime);
-
+  
                   res1[i].deliverytime = deliverytime;
-
+  
                   res1[i].distance = res1[i].distance.toFixed(2);
                   //15min Food Preparation time , 3min 1 km
                   eta = 15 + 3 * res1[i].distance;
-
+  
                   res1[i].eta = Math.round(eta) + " mins";
-
+  
                   if (res1[i].items) {
                     var items = JSON.parse(res1[i].items);
                     res1[i].items = items.item;
                   }
                 }
                 //FCM.sendSingleNotification('csXP3KaickY:APA91bGMhsUBtiwFfRb-qBqZY4dxCZSCVdf3aC9gqjMbKYzLqkfGAWsoJApi5YJNQ3DIM73eHqEnO48fYidD4Iba5smyhqzp5M0mXxKHjnZ-WoZHlBnNkbK8RyO5aXe_skxC8dPZcyDT','Order Post','Order Accepted');
-
+  
                 let sucobj = true;
                 let resobj = {
                   success: sucobj,
                   status: true,
                   result: res1
                 };
-
+  
                 result(null, resobj);
               }
             }
           );
+          }else if (res[0].payment_type === "1" && res[0].payment_status === 1) {
+            sql.query( "Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid + "' and ors.orderstatus < 6 ",function(err, res1) {
+              if (err) {
+                console.log("error: ", err);
+                result(null, err);
+              } else {
+
+                for (let i = 0; i < res1.length; i++) {
+                  console.log(res1[i].ordertime);
+                  var deliverytime = new Date(res1[i].ordertime);
+                
+                  // d.setHours(d.getHours() + 5);
+                  deliverytime.setMinutes(deliverytime.getMinutes() + 15);
+  
+                  console.log(deliverytime);
+  
+                  res1[i].deliverytime = deliverytime;
+  
+                  res1[i].distance = res1[i].distance.toFixed(2);
+                  //15min Food Preparation time , 3min 1 km
+                  eta = 15 + 3 * res1[i].distance;
+  
+                  res1[i].eta = Math.round(eta) + " mins";
+  
+                  if (res1[i].items) {
+                    var items = JSON.parse(res1[i].items);
+                    res1[i].items = items.item;
+                  }
+                }
+                //FCM.sendSingleNotification('csXP3KaickY:APA91bGMhsUBtiwFfRb-qBqZY4dxCZSCVdf3aC9gqjMbKYzLqkfGAWsoJApi5YJNQ3DIM73eHqEnO48fYidD4Iba5smyhqzp5M0mXxKHjnZ-WoZHlBnNkbK8RyO5aXe_skxC8dPZcyDT','Order Post','Order Accepted');
+  
+                let sucobj = true;
+                let resobj = {
+                  success: sucobj,
+                  status: true,
+                  result: res1
+                };
+  
+                result(null, resobj);
+              }
+            }
+          );
+            
+          }else{
+            let sucobj = true;
+            let message = "Active order not found!";
+            let resobj = {
+              success: sucobj,
+              status: false,
+              message: message,
+              //result: res
+            };
+  
+            result(null, resobj);
+          }
+
+
+      
         }
       }
+
+     
     }
   );
 };
@@ -1524,7 +1578,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
             req.cus_lon = res2[0].lon;
 
 
-            var  makeitavailability = await query("Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,( 3959 * acos( cos( radians("+res2[0].lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+res2[0].lon+") ) + sin( radians("+res2[0].lat+") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  where mk.userid =83 and mk.appointment_status = 3 and mk.verified_status = 1");
+            var  makeitavailability = await query("Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,( 3959 * acos( cos( radians("+res2[0].lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+res2[0].lon+") ) + sin( radians("+res2[0].lat+") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  where mk.userid ='"+req.makeit_user_id+"' and mk.appointment_status = 3 and mk.verified_status = 1");
 
             var eta = 15 + (3 * makeitavailability[0].distance) ;
             //15min Food Preparation time , 3min 1 km 
@@ -1611,7 +1665,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
 
         if (!userinfo[0].razer_customerid) {
           
-        var customerid = "1";//await Order.create_customerid_by_razorpay(userinfo);
+        var customerid = await Order.create_customerid_by_razorpay(userinfo);
         console.log("customerid:----- ", customerid); 
         if (!customerid) {
             let resobj = {
