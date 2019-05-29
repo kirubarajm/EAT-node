@@ -621,6 +621,11 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
       " where mu.appointment_status = 3 and mu.verified_status = 1 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1";
   }
 
+  console.log(query);
+  if (req.vegtype === 0) {
+    query =query +" and pt.vegtype=0";
+  }
+
   if (req.sortid == 1) {
     query = query + " ORDER BY distance";
   } else if (req.sortid == 2) {
@@ -634,6 +639,8 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
   }
 
   console.log(query);
+ 
+  
   sql.query(query, function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -874,6 +881,8 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
       query +
       " where mk.appointment_status = 3 and mk.verified_status = 1  and pt.quantity != 0 and pt.delete_status !=1 ";
   }
+
+  
 
   if (req.sortid == 1) {
     query = query + " GROUP BY pt.productid ORDER BY distance";
@@ -1688,9 +1697,12 @@ Eatuser.get_eat_region_makeit_list = function get_eat_region_makeit_list(
   });
 };
 
-Eatuser.get_eat_region_makeit_list_by_eatuserid =  function get_eat_region_makeit_list_by_eatuserid (req,result) {
+Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_makeit_list_by_eatuserid (req,result) {
    
- 
+  const userinfo = await query("select regionid from User where userid= "+req.eatuserid+"");
+
+  if (userinfo.length !==0) {
+    
   if (req.regionid < 1 || req.regionid ===undefined) {
       var getregionquery = "select lat,lon,regionid from Region where regionid = (select regionid from User where userid= "+req.eatuserid+")";
     }else{
@@ -1764,6 +1776,17 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid =  function get_eat_region_makei
                 });
         }
   });
+}else{
+
+  let sucobj = true;
+  let resobj = {
+      success: sucobj,
+      status:false,
+      message:"Sorry following user not found!"
+  };
+
+  result(null, resobj);
+}
 };
 
 Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen_list_show_more (req,result) {
@@ -2026,9 +2049,9 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
           }
   }
      
-
+ // Eatuser.eat_explore_store_data_by_cron =  async function eat_explore_store_data_by_cron(search, result) {
   //console.log('Before job instantiation');
-  const job = new CronJob('* * 1 * * *',async function() {
+  const job = new CronJob(' 1 * * * * *',async function(search, result) {
     const d = new Date();
     console.log('At Ten Minutes:', d);
     try {
@@ -2059,7 +2082,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       
       }
   
-      const productquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct product_name as name,productid as id, 1 from Product where product_name IS NOT NULL group by product_name");
+      const productquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct product_name as name,productid as id, 1 from Product where product_name IS NOT NULL and active_status = 1 and quantity != 0  and delete_status !=1 group by product_name");
   
       if (productquery.err) {  
         let resobj = {
@@ -2072,7 +2095,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
     }else{
   
   
-      const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct name as name,userid as id, 2 from MakeitUser where name IS NOT NULL group by name");
+      const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct name as name,userid as id, 2 from MakeitUser where name IS NOT NULL and appointment_status = 3 and verified_status = 1 group by name");
   
       if (kitchenquery.err) {  
         let resobj = {
@@ -2096,14 +2119,14 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       result(null, resobj);
     }else{
   
-      let sucobj = true;
-      let resobj = {
-        success: sucobj,
-        status:true,
-        message:"Quick search updated"
-      };
+      // let sucobj = true;
+      // let resobj = {
+      //   success: sucobj,
+      //   status:true,
+      //   message:"Quick search updated"
+      // };
   
-      result(null, resobj);
+      // result(null, resobj);
     }
   
   
@@ -2115,7 +2138,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       let sucobj = true;
               let resobj = {
                 success: sucobj,
-                result: res
+               // result: res
               };
       
               result(null, resobj);
@@ -2123,5 +2146,5 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
   });
  // console.log('After job instantiation');
   job.start();  
-    
+//}  
 module.exports = Eatuser;
