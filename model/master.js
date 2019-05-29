@@ -285,6 +285,11 @@ const master = [
     }
 ] },
 
+{'quicksearch' : [
+    {"quicksearchid":1,"quicksearchtype" :'Product'},
+    {"quicksearchid":2,"quicksearchtype" :'kitchen'},
+    {"quicksearchid":3,"quicksearchtype" :'others'}
+]},
 
 ]
 module.exports = master;
