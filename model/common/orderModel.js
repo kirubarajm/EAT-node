@@ -1420,7 +1420,7 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
           console.log(res[0].payment_status);
           if (res[0].payment_type === "0") {
             
-            sql.query( "Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid + "' and ors.orderstatus < 6 ",function(err, res1) {
+            sql.query( "Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid + "' and ors.orderstatus < 6  group by pt.productid",function(err, res1) {
               if (err) {
                 console.log("error: ", err);
                 result(null, err);
@@ -1467,13 +1467,13 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, re
               } else {
 
                 for (let i = 0; i < res1.length; i++) {
-                  console.log(res1[i].ordertime);
+                 
                   var deliverytime = new Date(res1[i].ordertime);
                 
                   // d.setHours(d.getHours() + 5);
                   deliverytime.setMinutes(deliverytime.getMinutes() + 15);
   
-                  console.log(deliverytime);
+                  
   
                   res1[i].deliverytime = deliverytime;
   
@@ -1535,14 +1535,12 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
   try {
     console.log("read_a_proceed_to_pay: ");
 
+   
     const delivery_charge = constant.deliverycharge;
-
-    const res = await query(
-      "select * from Orders where userid= '" +
-      req.userid +
-      "' and orderstatus < 6 "
-    );
+    // var res = await Order.live_order_list_byeatuserid(req,responce);
+    const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
     //and (lock_status = 0 or lock_status = 1) and  payment_status = 0
+   // console.log(res);
 
     if (res.length == 0) {
       Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(
@@ -1662,8 +1660,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
 
         if (!userinfo[0].razer_customerid) {
           
-        var customerid = "1";//await Order.create_customerid_by_razorpay(userinfo);
-        console.log("customerid:----- ", customerid); 
+        var customerid = await Order.create_customerid_by_razorpay(userinfo);
+       // console.log("customerid:----- ", customerid); 
         if (!customerid) {
             let resobj = {
               success: true,

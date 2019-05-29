@@ -3,11 +3,12 @@ var sql = require('../db.js');
 var constant = require('../constant.js');
 var request = require('request');
 const util = require('util');
-// const Razorpay = require("razorpay");
-// var instance = new Razorpay({
-//     key_id: 'rzp_test_3cduMl5T89iR9G',
-//     key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
-//   })
+const CronJob = require('cron').CronJob;
+const Razorpay = require("razorpay");
+var instance = new Razorpay({
+    key_id: 'rzp_test_3cduMl5T89iR9G',
+    key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+  })
 
 
 const query = util.promisify(sql.query).bind(sql);
@@ -1373,23 +1374,48 @@ Eatuser.checkLogin = function checkLogin(req, result) {
   );
 };
 
-Eatuser.eat_user_post_registration = function(req, result) {
+Eatuser.eat_user_post_registration = async function(req, result) {
   var staticquery = "UPDATE User SET updated_at = ?, ";
   var column = "";
+
+  const userinfo = await query("Select * from User where userid = '" +req.userid +"'");
+
+  console.log(userinfo[0].razer_customerid);
+  var customerid = userinfo[0].razer_customerid
+
+  req.name= userinfo[0].name;
+  console.log(req);
+  if (!userinfo[0].razer_customerid) {
+    
+  var customerid = await Eatuser.create_customerid_by_razorpay(req);
+  console.log("customerid:----- ", customerid); 
+  if (!customerid) {
+      let resobj = {
+        success: true,
+        status: false,
+        message: "Sorry can't create the order due to customerid not yet generate"
+        
+      };
+    result(null,resobj );
+    return
+  }
+  }
+
+
 
   for (const [key, value] of Object.entries(req)) {
     console.log(`${key} ${value}`);
 
-    if (key !== "userid") {
+    if (key !== "userid" || key !== "name") {
       // var value = `=${value}`;
       column = column + key + "='" + value + "',";
     }
   }
 
-  var query =
+  var staticquery =
     staticquery + column.slice(0, -1) + " where userid = " + req.userid;
-  console.log(query);
-  sql.query(query, [new Date()], function(err, res) {
+  console.log(staticquery);
+  sql.query(staticquery, [new Date()], function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -1547,34 +1573,7 @@ Eatuser.update_pushid = function(req, result) {
   }
 };
 
-Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(
-  newUser,
-  result
-) {
-  var razorpay = "https://api.razorpay.com/v1/customers";
-  // var instance = new Razorpay({
-  //   key_id: "rzp_test_3cduMl5T89iR9G",
-  //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
-  // });
 
-  instance.customers.create({ name, email, contact, notes });
-  request(
-    {
-      method: "POST",
-      rejectUnauthorized: false,
-      url: razorpay
-    },
-    function(error, response, body) {
-      if (error) {
-        console.log("error: ", err);
-        result(null, err);
-      } else {
-        console.log(response.statusCode, body);
-        var responcecode = body.split("#");
-      }
-    }
-  );
-};
 
 Eatuser.get_eat_region_makeit_list = function get_eat_region_makeit_list(
   req,
@@ -1792,43 +1791,72 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
  });
 };
 
-
-Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(newUser, result) { 
+// Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(newUser, result) { 
  
   
 
-    var name = "sureshtovo1";
-    var email = "sureshtovo1@razorpay.com";
-    var contact = "1234567892";
-    var notes = "test";
+//   var name = "sureshtovo1";
+//   var email = "sureshtovo1@razorpay.com";
+//   var contact = "1234567892";
+//   var notes = "test";
 
-   instance.customers.create({name, email, contact, notes}).then((data) => {
-   
-        let sucobj = true;
-        let message = "customer created successfully"
-        let resobj = {
-            success: sucobj,
-            status:true,
-            message: message,
-            result:data
-        };
-  
-        result(null, resobj);
-     }).catch((error) => {
-      
-       let sucobj = true;
-       let message = "Error"
-       let resobj = {
-           success: sucobj,
-           status:true,
-           message: message,
-           result:error
-       };
+//  instance.customers.create({name, email, contact, notes}).then((data) => {
  
-       result(null, resobj);
+//       let sucobj = true;
+//       let message = "customer created successfully"
+//       let resobj = {
+//           success: sucobj,
+//           status:true,
+//           message: message,
+//           result:data
+//       };
 
-     })
-    }
+//       result(null, resobj);
+//    }).catch((error) => {
+    
+//      let sucobj = true;
+//      let message = "Error"
+//      let resobj = {
+//          success: sucobj,
+//          status:true,
+//          message: message,
+//          result:error
+//      };
+
+//      result(null, resobj);
+
+//    })
+//   }
+
+
+ Eatuser.create_customerid_by_razorpay = async function create_customerid_by_razorpay(req) { 
+ 
+  
+      var name = req.name;
+      var email = req.email;
+      var contact = req.phoneno;
+      var notes = "eatuser";
+      var cuId=false;
+    
+      return await instance.customers.create({name, email, contact, notes}).then((data) => {
+        cuId=data.id;
+        //  const updateforrazer_customerid = await query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ");
+       
+          sql.query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ", function(err, customerupdate) {
+           if (err) {
+            console.log("error: ", err);
+            //  return false;
+           } 
+          });
+          console.log("cuId:----- ", cuId);
+          return cuId;
+          }).catch((error) => {
+            console.log("error: ", error);
+            return false;
+          })
+    
+    
+    };
 
 
     Eatuser.eat_explore_kitchen_dish = function eat_explore_kitchen_dish(req,result) {
@@ -1853,7 +1881,7 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(n
         } 
 
 
-        console.log(query);
+       // console.log(query);
 
       sql.query(query, function(err, res) {
         if (err) {
@@ -1888,11 +1916,87 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(n
     };
 
 
-
-
- Eatuser.eat_explore_store_data_by_cron = function eat_explore_store_data_by_cron(search, result) {
+ Eatuser.eat_explore_store_data_by_cron =  async function eat_explore_store_data_by_cron(search, result) {
   try {
+    const quicksearchquery = await query("Select * from QuickSearch");
+    if (quicksearchquery.err) {  
+      let resobj = {
+      success: sucobj,
+      status:false,
+      result: err
+    };
+
+    result(null, resobj);
+  }else{
+
+
+    if (quicksearchquery) {
+
+      const truncatequery = await query("truncate QuickSearch");
+      if (truncatequery.err) {  
+        let resobj = {
+        success: sucobj,
+        status:false,
+        result: err
+      };
+  
+      result(null, resobj);
+    }
     
+    }
+
+    const productquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct product_name as name,productid as id, 1 from Product where product_name IS NOT NULL group by product_name");
+
+    if (productquery.err) {  
+      let resobj = {
+      success: sucobj,
+      status:false,
+      result: err
+    };
+
+    result(null, resobj);
+  }else{
+
+
+    const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct name as name,userid as id, 2 from MakeitUser where name IS NOT NULL group by name");
+
+    if (kitchenquery.err) {  
+      let resobj = {
+      success: sucobj,
+      status:false,
+      result: err
+    };
+
+    result(null, resobj);
+  }else{
+
+    const regionquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct regionname as name,regionid as id, 3 from Region where regionname IS NOT NULL group by regionname");
+
+    if (regionquery.err) {  
+      let resobj = {
+      success: sucobj,
+      status:false,
+      result: err
+    };
+
+    result(null, resobj);
+  }else{
+
+    let sucobj = true;
+    let resobj = {
+      success: sucobj,
+      status:true,
+      message:"Quick search updated"
+    };
+
+    result(null, resobj);
+  }
+
+
+  }
+}
+}
+  
   } catch (error) {
     let sucobj = true;
             let resobj = {
@@ -1904,5 +2008,102 @@ Eatuser.create_customerid_by_razorpay = function create_customerid_by_razorpay(n
           }
   }
      
+
+  //console.log('Before job instantiation');
+  const job = new CronJob('* * 1 * * *',async function() {
+    const d = new Date();
+    console.log('At Ten Minutes:', d);
+    try {
+      const quicksearchquery = await query("Select * from QuickSearch");
+      if (quicksearchquery.err) {  
+        let resobj = {
+        success: sucobj,
+        status:false,
+        result: err
+      };
+  
+      result(null, resobj);
+    }else{
+  
+  
+      if (quicksearchquery) {
+  
+        const truncatequery = await query("truncate QuickSearch");
+        if (truncatequery.err) {  
+          let resobj = {
+          success: sucobj,
+          status:false,
+          result: err
+        };
+    
+        result(null, resobj);
+      }
+      
+      }
+  
+      const productquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct product_name as name,productid as id, 1 from Product where product_name IS NOT NULL group by product_name");
+  
+      if (productquery.err) {  
+        let resobj = {
+        success: sucobj,
+        status:false,
+        result: err
+      };
+  
+      result(null, resobj);
+    }else{
+  
+  
+      const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct name as name,userid as id, 2 from MakeitUser where name IS NOT NULL group by name");
+  
+      if (kitchenquery.err) {  
+        let resobj = {
+        success: sucobj,
+        status:false,
+        result: err
+      };
+  
+      result(null, resobj);
+    }else{
+  
+      const regionquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct regionname as name,regionid as id, 3 from Region where regionname IS NOT NULL group by regionname");
+  
+      if (regionquery.err) {  
+        let resobj = {
+        success: sucobj,
+        status:false,
+        result: err
+      };
+  
+      result(null, resobj);
+    }else{
+  
+      let sucobj = true;
+      let resobj = {
+        success: sucobj,
+        status:true,
+        message:"Quick search updated"
+      };
+  
+      result(null, resobj);
+    }
+  
+  
+    }
+  }
+  }
+    
+    } catch (error) {
+      let sucobj = true;
+              let resobj = {
+                success: sucobj,
+                result: res
+              };
+      
+              result(null, resobj);
+            }
+  });
+ // console.log('After job instantiation');
+  job.start();  
     
 module.exports = Eatuser;
