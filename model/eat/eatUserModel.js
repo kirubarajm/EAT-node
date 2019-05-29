@@ -1649,26 +1649,8 @@ Eatuser.get_eat_region_makeit_list = function get_eat_region_makeit_list(
                   "' and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid,distance HAVING distance <=6 order by distance ASC limit 3";
 
                 let kitchenlist = await query(nearbyregionquery);
-
-            //    console.log("loop" + kitchenlist.length);
-                // sql.query(nearbyregionquery, function (err, res3) {
-                //     if (err) {
-                //         console.log("error: ", err);
-                //         result(err, null);
-                //     }
-                //     else {
-
-                //         console.log("res3-------------"+res3);
                 res = [...res, ...kitchenlist];
-                // res.concat(kitchenlist);
-             //   console.log("res loop" + res.length);
-
-                //     }
-                // });
               }
-
-          //    console.log("new by location" + nearbyotherregion);
-
               for (let i = 0; i < res.length; i++) {
                 var eta = 15 + 3 * res[i].distance;
                 res[i].eta = Math.round(eta) + " mins";

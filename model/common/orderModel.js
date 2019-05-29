@@ -10,12 +10,12 @@ var Makeituser = require("../../model/makeit/makeitUserModel.js");
 var FCM = require("../../FcmSendNotification.js");
 var constant = require("../constant.js");
 var moment = require("moment");
-const Razorpay = require("razorpay");
+// const Razorpay = require("razorpay");
 
-var instance = new Razorpay({
-  key_id: 'rzp_test_3cduMl5T89iR9G',
-  key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
-})
+// var instance = new Razorpay({
+//   key_id: 'rzp_test_3cduMl5T89iR9G',
+//   key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+// })
 
 const query = util.promisify(sql.query).bind(sql);
 
@@ -915,9 +915,8 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
 };
 
 Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
-  try {
     const rows = await query(
-      "Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id =" +
+      "Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id =" +
         moveit_user_id +
         " and   DATE(ors.ordertime) = CURDATE() order by  ors.order_assigned_time desc"
     );
@@ -930,6 +929,7 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
         status: false
       };
       result(null, res);
+      return;
     }
 
     for (let i = 0; i < rows.length; i++) {
@@ -951,10 +951,7 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
     };
 
     result(null, resobj);
-  } catch (err) {
-    var errorCode = 402;
-    result(null, errorCode);
-  }
+  
 };
 
 Order.orderviewbyadmin = function(req, result) {
