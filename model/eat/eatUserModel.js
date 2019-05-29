@@ -2010,7 +2010,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
      
 
   //console.log('Before job instantiation');
-  const job = new CronJob('* * 1 * * *',async function() {
+  const job = new CronJob('00 00 00 * * *',async function() {
     const d = new Date();
     console.log('At Ten Minutes:', d);
     try {
@@ -2078,14 +2078,14 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       result(null, resobj);
     }else{
   
-      let sucobj = true;
-      let resobj = {
-        success: sucobj,
-        status:true,
-        message:"Quick search updated"
-      };
+      // let sucobj = true;
+      // let resobj = {
+      //   success: sucobj,
+      //   status:true,
+      //   message:"Quick search updated"
+      // };
   
-      result(null, resobj);
+      // result(null, resobj);
     }
   
   
