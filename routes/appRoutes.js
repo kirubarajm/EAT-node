@@ -570,6 +570,8 @@ module.exports = function(app) {
     .route("/moveit/qualitychecklist")
     .post(moveituser.moveit_quality_checklist);
 
+    app.route("/moveit/pushid/add").put(moveituser.add_a_pushid);
+
   // Eat
 
   // app.route('/eat/dishlist')
@@ -699,10 +701,13 @@ module.exports = function(app) {
   app.route("/masters/makeithub").get(makeithub.list_all_makeithubs);
 
   app.route("/masters/cuisinelist").get(cusine.list_all_Cuisine);
+  
 
   app.route("/procedure").get(region.pro_call);
 
   /// temp
 
   app.route("/foodlist").post(eatuser.eat_makeit_product_list);
+
+  app.route("/admin/order/testpush").post(orders.testPush);
 };
