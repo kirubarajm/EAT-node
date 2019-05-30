@@ -60,8 +60,8 @@ Menuitem.getMenuitemById = function getMenuitemById(userId, result) {
             });   
 };
 
-Menuitem.getAllMenuitem = function getAllMenuitem(result) {
-        sql.query("Select * from Menuitem", function (err, res) {
+Menuitem.getAllMenuitem = function getAllMenuitem(req,result) {
+        sql.query("Select * from Menuitem ", function (err, res) {
 
                 if(err) {
                     console.log("error: ", err);
@@ -413,6 +413,24 @@ Menuitem.update_delete_status =  function(itemid, result){
 }); 
 };
 
+Menuitem.getAllMenuitembymakeituserid = function getAllMenuitembymakeituserid(req,result) {
+  sql.query("Select * from Menuitem where makeit_userid = ?",[req.makeit_userid], function (err, res) {
 
+          if(err) {
+              console.log("error: ", err);
+              result(null, err);
+          }
+          else{
+            console.log('Menuitem : ', res); 
+            let sucobj=true;
+            let resobj = {  
+              success: sucobj,
+              result: res 
+              }; 
+
+           result(null, resobj);
+          }
+      });   
+};
 
 module.exports= Menuitem;

@@ -92,3 +92,13 @@ exports.approve_status_menuitem = function(req, res) {
     res.json(product);
   });
 };
+
+
+exports.list_all_menuitem_by_makeituserid = function(req, res) {
+  Menuitem.getAllMenuitembymakeituserid(req.params,function(err, menuitem) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", menuitem);
+    res.send(menuitem);
+  });
+};

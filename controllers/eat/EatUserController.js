@@ -96,12 +96,26 @@ exports.eat_makeit_list = function(req, res) {
 };
 
 exports.eat_makeit_product_list = function(req, res) {
+  if (!req.body.lat) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lat" });
+  } else if (!req.body.lon) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lan" });
+  }else if (!req.body.eatuserid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide eatuserid" });
+  } else {
   Eatuser.get_eat_makeit_product_list(req.body, function(err, user) {
     console.log("controller");
     if (err) res.send(err);
     console.log("res", user);
     res.send(user);
   });
+}
 };
 
 exports.eat_dish_sort_filter = function(req, res) {
@@ -113,6 +127,10 @@ exports.eat_dish_sort_filter = function(req, res) {
     res
       .status(400)
       .send({ error: true, status: false, message: "Please provide lan" });
+  }else if (!req.body.eatuserid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide eatuserid" });
   } else {
     Eatuser.get_eat_dish_list_sort_filter(req.body, function(err, user) {
       console.log("controller");
@@ -132,6 +150,10 @@ exports.eat_kitchen_sort_filter = function(req, res) {
     res
       .status(400)
       .send({ error: true, status: false, message: "Please provide lan" });
+  }else if (!req.body.eatuserid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide eatuserid" });
   } else {
     Eatuser.get_eat_kitchen_list_sort_filter(req.body, function(err, user) {
       console.log("controller");
@@ -390,11 +412,27 @@ exports.eat_explore_dish = function(req, res) {
 };
 
 
-exports.eat_explore_store_data = function(req, res) {
-  Eatuser.eat_explore_store_data_by_cron(req.params, function(err, user) {
-    console.log("controller");
-    if (err) res.send(err);
-    console.log("res", user);
-    res.send(user);
-  });
+
+exports.eat_order_cancel = function(req, res) {
+  if (!req.body.lat) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lat" });
+  } else if (!req.body.lon) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lan" });
+  }else if (!req.body.eatuserid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide eatuserid" });
+  }
+   else {
+    Eatuser.eat_explore_kitchen_dish(req.body, function(err, region) {
+      console.log("controller");
+      if (err) res.send(err);
+      console.log("res", region);
+      res.send(region);
+    });
+  }
 };
