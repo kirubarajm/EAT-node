@@ -29,6 +29,7 @@ module.exports = function(app) {
   var orderrating = require("../controllers/common/OrderratingController");
   var homedown = require("../controllers/common/HometownController");
   var makeithub = require("../controllers/common/MakeitHubController");
+  var quicksearch = require("../controllers/common/QuickSearchController");
 
   // todoList Routes
   app
@@ -331,6 +332,10 @@ module.exports = function(app) {
     .route("/makeit/menuitems/:makeit_userid")
     .get(menuitem.read_a_menuitem_byid);
 
+    app
+    .route("/makeit/menuitemlist/:makeit_userid")
+    .get(menuitem.list_all_menuitem_by_makeituserid);
+
   /*Admin Api*/
   app.route("/admin/eatuser/add").post(eatuser.create_a_eatuser);
 
@@ -574,11 +579,7 @@ module.exports = function(app) {
 
   // Eat
 
-  // app.route('/eat/dishlist')
-  //   .post(eatuser.eat_dish_list);
 
-  // app.route('/eat/kitchenlist')
-  //   .post(eatuser.eat_makeit_list);
 
   app.route("/eat/products").post(eatuser.eat_makeit_product_list);
 
@@ -671,6 +672,13 @@ module.exports = function(app) {
 
    app.route("/eat/product/search").post(eatuser.eat_explore_dish);
 
+   app.route("/eat/explore").get(quicksearch.eat_explore_store_data);
+
+   app.route("/eat/quicksearch").post(quicksearch.eat_explore_quick_search);
+   
+
+   app.route("/eat/order/cancel").post(orders.eat_order_cancel);
+
  //  app.route("/eat/product/lockrelease").post(product.eat_product_lockrelease);
 
 
@@ -691,8 +699,7 @@ module.exports = function(app) {
 
   app.route("/masters").get(master.read_a_masters);
 
-  app.route("/eat/explore").get(eatuser.eat_explore_store_data);
-  
+
 
   // Masters
 

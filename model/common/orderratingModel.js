@@ -31,13 +31,11 @@ Orderrating.createOrderrating = function createOrderrating(
               console.log("error: ", err);
               res(null, err);
             } else {
-              let sucobj = true;
-              let mesobj = "Order rating Created successfully";
-
+              
               let resobj = {
-                success: sucobj,
+                success: true,
                 status: true,
-                message: mesobj,
+                message: "Thanks for your Order Rating",
                 orid: res.insertId
               };
 
@@ -46,7 +44,7 @@ Orderrating.createOrderrating = function createOrderrating(
           });
         } else {
           let sucobj = true;
-          let mesobj = "Already Created order rating!";
+          let mesobj = "Already order rating completed";
 
           let resobj = {
             success: sucobj,
@@ -90,7 +88,7 @@ Orderrating.getAllOrder = function getAllOrder(result) {
 };
 
 Orderrating.updateById = function(id, user, result) {
-  console.log("test");
+ 
   sql.query(
     "UPDATE Order_rating SET moveit_user_id = ? WHERE orderid = ?",
     [id, id],
