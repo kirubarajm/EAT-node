@@ -147,3 +147,11 @@ exports.edit_moveit_user_byid = function(req, res) {
     });
   }
 };
+
+
+exports.add_a_pushid = function(req, res) {
+  Moveituser.update_pushid(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

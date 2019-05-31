@@ -288,6 +288,14 @@ exports.live_order_list_byeatuser = function(req, res) {
   });
 };
 
+exports.testPush = function(req, res) {
+  console.log(req.body);
+  Order.test_push(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
 exports.read_a_proceed_to_pay = function(req, res) {
   console.log(req.body);
   var orderitems = req.body.orderitems;
