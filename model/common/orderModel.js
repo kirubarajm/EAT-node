@@ -8,6 +8,8 @@ var master = require("../master");
 var constant = require("../constant.js");
 var Makeituser = require("../../model/makeit/makeitUserModel.js");
 var FCM = require("../../FcmSendNotification.js");
+var FCM_EAT = require("../../FcmEatSendNotification.js");
+var PageidConstant = require("../../PageidConstant.js");
 var constant = require("../constant.js");
 var moment = require("moment");
 // const Razorpay = require("razorpay");
@@ -47,8 +49,6 @@ var Order = function(order) {
   this.cus_address = order.cus_address;
   this.lock_status = order.lock_status || 0;
 };
-
-
 
 Order.createOrder = async function createOrder(req, orderitems, result) {
   // console.log(req);
@@ -223,17 +223,29 @@ Order.getOrderById = function getOrderById(orderid, result) {
 };
 
 Order.updateOrderStatus = function updateOrderStatus(req, result) {
-  sql.query("Update Orders set orderstatus = ? where orderid = ? ", [req.orderstatus,req.orderid],function(
-    err,
-    res){
-    if (err) {
-      console.log("error: ", err);
-      result(err, null);
-    } else {
-      let res={success:true,status:true,message:'Order status updated successfully'}
-      result(null, res);
+ sql.query(
+    "Update Orders set orderstatus = ? where orderid = ? ",
+    [req.orderstatus, req.orderid],
+    async function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+        if (req.orderstatus === PageidConstant.masteridOrder_Accept) {
+          await Order.orderEatPushNotification(req.orderid,null,PageidConstant.pageidOrder_Accept);
+        }else if (req.orderstatus === PageidConstant.masteridOrder_Pickedup) {
+          await Order.orderEatPushNotification(req.orderid,null,PageidConstant.pageidOrder_Pickedup);
+        }
+
+        let res = {
+          success: true,
+          status: true,
+          message: "Order status updated successfully"
+        };
+        result(null, res);
+      }
     }
-  });
+  );
 };
 
 Order.getAllOrder = function getAllOrder(result) {
@@ -315,7 +327,7 @@ Order.get_all_orders = function get_all_orders(req, result) {
   //var search= req.search
   if (req.virtualkey !== "all" && req.search) {
     query = query + " and (" + searchquery + ")";
-  }else if (req.search) {
+  } else if (req.search) {
     query = query + " where " + searchquery;
   }
 
@@ -356,7 +368,6 @@ Order.get_all_vorders = function get_all_vorders(req, result) {
   var makeithub_id = req.makeithub_id || 1;
   var startlimit = (page - 1) * orderlimit;
 
- 
   var query =
     "Select od.*,us.name as name,us.phoneno as phoneno,mk.name as makeit_name,mk.brandname as makeit_brandname from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id";
   var searchquery =
@@ -370,12 +381,18 @@ Order.get_all_vorders = function get_all_vorders(req, result) {
     req.search +
     "%'";
   if (req.virtualkey !== "all") {
-    query = query + " where mk.virtualkey = '" + req.virtualkey + "' and mk.makeithub_id='"+makeithub_id+"'";
+    query =
+      query +
+      " where mk.virtualkey = '" +
+      req.virtualkey +
+      "' and mk.makeithub_id='" +
+      makeithub_id +
+      "'";
   }
   //var search= req.search
   if (req.virtualkey !== "all" && req.search) {
     query = query + " and (" + searchquery + ")";
-  }else if (req.search) {
+  } else if (req.search) {
     query = query + " where " + searchquery;
   }
 
@@ -413,8 +430,9 @@ Order.get_all_vorders = function get_all_vorders(req, result) {
 Order.order_assign = function order_assign(req, result) {
   sql.query(
     "Select online_status,pushid_android,pushid_ios From MoveitUser where userid= '" +
-      req.moveit_user_id +"' ",
-      async function(err, res1) {
+      req.moveit_user_id +
+      "' ",
+     function(err, res1) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
@@ -422,26 +440,31 @@ Order.order_assign = function order_assign(req, result) {
         console.log(res1);
         var online_status = res1[0].online_status;
         if (online_status == 1) {
-          const userdetail = await query("select us.name as name,ors.orderid as orderid,ors.price as price,ors.cus_address as place from Orders as ors left join User as us on ors.userid=us.userid where ors.orderid= '" +req.orderid +"'");
-        var pushid_android = res1[0].pushid_android;
-                var pushid_ios = res1[0].pushid_ios;
-                var push_title = "Order assign";
-                var push_message = "Hi Order assigned.Order id #" + req.orderid;
+          // const userdetail = await query(
+          //   "select us.name as name,ors.orderid as orderid,ors.price as price,ors.cus_address as place from Orders as ors left join User as us on ors.userid=us.userid where ors.orderid= '" +
+          //     req.orderid +
+          //     "'"
+          // );
+          // var pushid_android = res1[0].pushid_android;
+          // var pushid_ios = res1[0].pushid_ios;
+          // var push_title = "Order assign";
+          // var push_message = "Hi Order assigned.Order id #" + req.orderid;
           sql.query(
             "UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",
             [req.moveit_user_id, new Date(), req.orderid],
-             function(err, res2) {
+            async function(err, res2) {
               if (err) {
                 console.log("error: ", err);
                 result(null, err);
               } else {
-                if (pushid_android)
-                  FCM.sendSingleNotification(
-                    pushid_android,
-                    push_title,
-                    push_message,userdetail[0]
-                  );
-
+                // if (pushid_android)
+                // FCM.sendSingleNotification(
+                //     pushid_android,
+                //     push_title,
+                //     push_message,
+                //     userdetail[0]
+                //   );
+                await Order.orderMoveItPushNotification(req.orderid,PageidConstant.pageidMoveit_Order_Assigned,res1[0]);
                 let sucobj = true;
                 let message = "Order Assign Sucessfully";
                 let resobj = {
@@ -488,7 +511,6 @@ Order.getUnassignorders = function getUnassignorders(result) {
     }
   );
 };
-
 
 Order.orderviewbymoveituser = function(orderid, result) {
   // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
@@ -853,43 +875,42 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
 };
 
 Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
-    const rows = await query(
-      "Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.makeithub_lat as makeithublat,mh.makeithub_lon as makeithublon,mh.makeithub_address as makeithubaddress from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id =" +
-        moveit_user_id +
-        " and   DATE(ors.ordertime) = CURDATE() order by  ors.order_assigned_time desc"
-    );
+  const rows = await query(
+    "Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.makeithub_lat as makeithublat,mh.makeithub_lon as makeithublon,mh.makeithub_address as makeithubaddress from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id =" +
+      moveit_user_id +
+      " and   DATE(ors.ordertime) = CURDATE() order by  ors.order_assigned_time desc"
+  );
 
-    if (rows.length > 0) {
-      console.log("Fetching No of Store Id", rows.length);
-    } else {
-      var res = {
-        result: "Order is not found!",
-        status: false
-      };
-      result(null, res);
-      return;
-    }
-
-    for (let i = 0; i < rows.length; i++) {
-      var url =
-        "Select ot.productid,pt.product_name,ot.quantity from OrderItem ot join Product pt on ot.productid=pt.productid where ot.orderid = " +
-        rows[i].orderid +
-        "";
-
-      let products = await query(url);
-
-      rows[i].items = products;
-      rows[i].locality = "Guindy";
-    }
-    let sucobj = true;
-    let resobj = {
-      success: sucobj,
-      status: true,
-      result: rows
+  if (rows.length > 0) {
+    console.log("Fetching No of Store Id", rows.length);
+  } else {
+    var res = {
+      result: "Order is not found!",
+      status: false
     };
+    result(null, res);
+    return;
+  }
 
-    result(null, resobj);
-  
+  for (let i = 0; i < rows.length; i++) {
+    var url =
+      "Select ot.productid,pt.product_name,ot.quantity from OrderItem ot join Product pt on ot.productid=pt.productid where ot.orderid = " +
+      rows[i].orderid +
+      "";
+
+    let products = await query(url);
+
+    rows[i].items = products;
+    rows[i].locality = "Guindy";
+  }
+  let sucobj = true;
+  let resobj = {
+    success: sucobj,
+    status: true,
+    result: rows
+  };
+
+  result(null, resobj);
 };
 
 Order.orderviewbyadmin = function(req, result) {
@@ -1203,272 +1224,271 @@ Order.eatcreateOrder = async function eatcreateOrder(
   }
 };
 
-
-
 Order.online_order_place_conformation = function(order_place, result) {
-
-
-  var transaction_time = moment().format('YYYY-MM-DD HH:mm:ss');
+  var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
   if (order_place.payment_status === 1) {
+    var query =
+      "update Orders set payment_status = '" +
+      order_place.payment_status +
+      "', lock_status = 0,transactionid='" +
+      order_place.transactionid +
+      "',transaction_status= 'success', transaction_time= '" +
+      transaction_time +
+      "' WHERE orderid = '" +
+      order_place.orderid +
+      "' ";
 
-    var query ="update Orders set payment_status = '" +order_place.payment_status + "', lock_status = 0,transactionid='" +order_place.transactionid + "',transaction_status= 'success', transaction_time= '"+transaction_time+"' WHERE orderid = '" +order_place.orderid +"' ";
+    var orderdetailsquery =
+      "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" +
+      order_place.orderid +
+      "'";
 
-    var orderdetailsquery ="SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" +order_place.orderid +"'";
-
-   // var deletequery = "delete from Lock_order where orderid ='"+order_place.orderid+"' ";
+    // var deletequery = "delete from Lock_order where orderid ='"+order_place.orderid+"' ";
 
     sql.query(query, function(err, res1) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
       } else {
-
         // sql.query(deletequery, function(err, deleteres) {
         //   if (err) {
         //     console.log("error: ", err);
         //   } else {
 
-            sql.query(orderdetailsquery, function(err, res2) {
-              if (err) {
-                console.log("error: ", err);
-              } else {
-                
-                for (let i = 0; i < res2.length; i++) {
-    
-                  res2[i].distance = res2[i].distance.toFixed(2);
-                  //15min Food Preparation time , 3min 1 km
-                   var eta = 15 + 3 * res2[i].distance;
-    
-                  res2[i].eta = Math.round(eta) + " mins";
-    
-                  if (res2[i].userdetail) {
-                    res2[i].userdetail = JSON.parse(res2[i].userdetail);
-                  }
-    
-                  if (res2[i].makeitdetail) {
-                    res2[i].makeitdetail = JSON.parse(res2[i].makeitdetail);
-                  }
-                  if (res2[i].moveitdetail) {
-                    res2[i].moveitdetail = JSON.parse(res2[i].moveitdetail);
-                  }
-    
-                  if (res2[i].items) {
-                    var items = JSON.parse(res2[i].items);
-                    res2[i].items = items.item;
-                  }
-                }
-    
-                let message = "Your order placed  successfully";
-                let sucobj = true;
-                let resobj = {
-                  success: sucobj,
-                  status:true,
-                  message: message,
-                  orderdetails: res2
-                };
-                result(null, resobj);
+        sql.query(orderdetailsquery, function(err, res2) {
+          if (err) {
+            console.log("error: ", err);
+          } else {
+            for (let i = 0; i < res2.length; i++) {
+              res2[i].distance = res2[i].distance.toFixed(2);
+              //15min Food Preparation time , 3min 1 km
+              var eta = 15 + 3 * res2[i].distance;
+
+              res2[i].eta = Math.round(eta) + " mins";
+
+              if (res2[i].userdetail) {
+                res2[i].userdetail = JSON.parse(res2[i].userdetail);
               }
-            });
+
+              if (res2[i].makeitdetail) {
+                res2[i].makeitdetail = JSON.parse(res2[i].makeitdetail);
+              }
+              if (res2[i].moveitdetail) {
+                res2[i].moveitdetail = JSON.parse(res2[i].moveitdetail);
+              }
+
+              if (res2[i].items) {
+                var items = JSON.parse(res2[i].items);
+                res2[i].items = items.item;
+              }
+            }
+
+            let message = "Your order placed  successfully";
+            let sucobj = true;
+            let resobj = {
+              success: sucobj,
+              status: true,
+              message: message,
+              orderdetails: res2
+            };
+            result(null, resobj);
+          }
+        });
 
         //   }pay
 
         // });
-
-       
       }
     });
-  } else if(order_place.payment_status == 2){
+  } else if (order_place.payment_status == 2) {
+    var query =
+      "update Orders set payment_status = '" +
+      order_place.payment_status +
+      "',lock_status = 0,transactionid='" +
+      order_place.transactionid +
+      "',transaction_status= 'failed', transaction_time= '" +
+      transaction_time +
+      "' WHERE orderid = '" +
+      order_place.orderid +
+      "' ";
 
-    var query ="update Orders set payment_status = '" +order_place.payment_status + "',lock_status = 0,transactionid='" +order_place.transactionid + "',transaction_status= 'failed', transaction_time= '"+transaction_time+"' WHERE orderid = '" +order_place.orderid +"' ";
-    
-    var releasequantityquery = "select * from Lock_order where orderid ='"+order_place.orderid+"' ";
-    
+    var releasequantityquery =
+      "select * from Lock_order where orderid ='" + order_place.orderid + "' ";
 
     sql.query(query, function(err, res1) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
       } else {
-
         sql.query(releasequantityquery, function(err, res2) {
           if (err) {
             console.log("error: ", err);
             result(null, err);
           } else {
-    
-                for (let i = 0; i < res2.length; i++) {
-                  
-                  var productquantityadd = "update Product set quantity = quantity+"+res2[i].quantity+" where productid ="+res2[i].productid+"";
-                  
-                  sql.query(productquantityadd, function(err, res2) {
-                    if (err) {
-                      console.log("error: ", err);
-                      result(null, err);
-                    } else {
+            for (let i = 0; i < res2.length; i++) {
+              var productquantityadd =
+                "update Product set quantity = quantity+" +
+                res2[i].quantity +
+                " where productid =" +
+                res2[i].productid +
+                "";
 
-                    
-                    }
-                  });
+              sql.query(productquantityadd, function(err, res2) {
+                if (err) {
+                  console.log("error: ", err);
+                  result(null, err);
+                } else {
                 }
+              });
+            }
 
-                let sucobj = true;
-                let message = "Sorry payment not yet be paid following order";
-                let resobj = {
-                  success: sucobj,
-                  message: message,
-                  status:false,
-                  orderid: order_place.orderid
-                };
-                result(null, resobj);
+            let sucobj = true;
+            let message = "Sorry payment not yet be paid following order";
+            let resobj = {
+              success: sucobj,
+              message: message,
+              status: false,
+              orderid: order_place.orderid
+            };
+            result(null, resobj);
           }
         });
-
       }
     });
-    
-   
   }
-
 };
 
-
-Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(req, result) {
-  sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",
-      //and (lock_status = 0 or lock_status = 1) and  payment_status =0
+Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(
+  req,
+  result
+) {
+  sql.query(
+    "select * from Orders where userid ='" +
+      req.userid +
+      "' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",
+    //and (lock_status = 0 or lock_status = 1) and  payment_status =0
     function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
       } else {
-
         console.log(res.length);
         if (res.length === 0) {
-
           let sucobj = true;
           let message = "Active order not found!";
           let resobj = {
             success: sucobj,
             status: false,
-            message: message,
+            message: message
             //result: res
           };
           result(null, resobj);
         } else {
-
           console.log(res[0]);
           if (res[0].payment_type === "0") {
-
-              var liveorderquery = "Select distinct ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid + " and ors.orderstatus < 6  and payment_status !=2 group by pt.productid"
-              console.log(liveorderquery);
-              sql.query(liveorderquery ,function(err, res1) {
+            var liveorderquery =
+              "Select distinct ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +
+              req.userid +
+              " and ors.orderstatus < 6  and payment_status !=2 group by pt.productid";
+            console.log(liveorderquery);
+            sql.query(liveorderquery, function(err, res1) {
               if (err) {
                 console.log("error: ", err);
                 result(null, err);
               } else {
                 for (let i = 0; i < res1.length; i++) {
-                
                   var deliverytime = new Date(res1[i].ordertime);
-                  
+
                   // d.setHours(d.getHours() + 5);
                   deliverytime.setMinutes(deliverytime.getMinutes() + 15);
 
-  
                   res1[i].deliverytime = deliverytime;
-  
+
                   res1[i].distance = res1[i].distance.toFixed(2);
                   //15min Food Preparation time , 3min 1 km
                   eta = 15 + 3 * res1[i].distance;
-  
+
                   res1[i].eta = Math.round(eta) + " mins";
-  
+
                   if (res1[i].items) {
                     var items = JSON.parse(res1[i].items);
                     res1[i].items = items.item;
                   }
                 }
                 //FCM.sendSingleNotification('csXP3KaickY:APA91bGMhsUBtiwFfRb-qBqZY4dxCZSCVdf3aC9gqjMbKYzLqkfGAWsoJApi5YJNQ3DIM73eHqEnO48fYidD4Iba5smyhqzp5M0mXxKHjnZ-WoZHlBnNkbK8RyO5aXe_skxC8dPZcyDT','Order Post','Order Accepted');
-  
+
                 let sucobj = true;
                 let resobj = {
                   success: sucobj,
                   status: true,
                   result: res1
                 };
-  
+
                 result(null, resobj);
               }
-            }
-          );
-          }else if (res[0].payment_type === "1" && res[0].payment_status === 1) {
-
-            liveorderquery = "Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid + "' and ors.orderstatus < 6 and payment_status !=2 group by pt.productid";
-            sql.query(liveorderquery ,function(err, res1) {
+            });
+          } else if (
+            res[0].payment_type === "1" &&
+            res[0].payment_status === 1
+          ) {
+            liveorderquery =
+              "Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +
+              req.userid +
+              "' and ors.orderstatus < 6 and payment_status !=2 group by pt.productid";
+            sql.query(liveorderquery, function(err, res1) {
               if (err) {
                 console.log("error: ", err);
                 result(null, err);
               } else {
-
                 for (let i = 0; i < res1.length; i++) {
-                 
                   var deliverytime = new Date(res1[i].ordertime);
-                
+
                   // d.setHours(d.getHours() + 5);
                   deliverytime.setMinutes(deliverytime.getMinutes() + 15);
-  
-                  
-  
+
                   res1[i].deliverytime = deliverytime;
-  
+
                   res1[i].distance = res1[i].distance.toFixed(2);
                   //15min Food Preparation time , 3min 1 km
                   eta = 15 + 3 * res1[i].distance;
-  
+
                   res1[i].eta = Math.round(eta) + " mins";
-  
+
                   if (res1[i].items) {
                     var items = JSON.parse(res1[i].items);
                     res1[i].items = items.item;
                   }
                 }
                 //FCM.sendSingleNotification('csXP3KaickY:APA91bGMhsUBtiwFfRb-qBqZY4dxCZSCVdf3aC9gqjMbKYzLqkfGAWsoJApi5YJNQ3DIM73eHqEnO48fYidD4Iba5smyhqzp5M0mXxKHjnZ-WoZHlBnNkbK8RyO5aXe_skxC8dPZcyDT','Order Post','Order Accepted');
-  
+
                 let sucobj = true;
                 let resobj = {
                   success: sucobj,
                   status: true,
                   result: res1
                 };
-  
+
                 result(null, resobj);
               }
-            }
-          );
-            
-          }else{
+            });
+          } else {
             let sucobj = true;
             let message = "Active order not found!";
             let resobj = {
               success: sucobj,
               status: false,
-              message: message,
+              message: message
               //result: res
             };
-  
+
             result(null, resobj);
           }
-
-
-      
         }
       }
-
-     
     }
   );
 };
-
-
 
 Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
   req,
@@ -1478,12 +1498,15 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
   try {
     console.log("read_a_proceed_to_pay: ");
 
-   
     const delivery_charge = constant.deliverycharge;
     // var res = await Order.live_order_list_byeatuserid(req,responce);
-    const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
+    const res = await query(
+      "select * from Orders where userid ='" +
+        req.userid +
+        "' and orderstatus < 6  and payment_status !=2"
+    );
     //and (lock_status = 0 or lock_status = 1) and  payment_status = 0
-   // console.log(res);
+    // console.log(res);
 
     if (res.length == 0) {
       Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(
@@ -1508,48 +1531,52 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
                 req.userid +
                 "'"
             );
-          
-             
+
             req.cus_address = res2[0].address;
             req.locality = res2[0].locality;
             req.cus_lat = res2[0].lat;
             req.cus_lon = res2[0].lon;
 
+            var makeitavailability = await query(
+              "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,( 3959 * acos( cos( radians(" +
+                res2[0].lat +
+                ") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians(" +
+                res2[0].lon +
+                ") ) + sin( radians(" +
+                res2[0].lat +
+                ") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  where mk.userid ='" +
+                req.makeit_user_id +
+                "' and mk.appointment_status = 3 and mk.verified_status = 1"
+            );
 
-            var  makeitavailability = await query("Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,( 3959 * acos( cos( radians("+res2[0].lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+res2[0].lon+") ) + sin( radians("+res2[0].lat+") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  where mk.userid ='"+req.makeit_user_id+"' and mk.appointment_status = 3 and mk.verified_status = 1");
+            var eta = 15 + 3 * makeitavailability[0].distance;
+            //15min Food Preparation time , 3min 1 km
 
-            var eta = 15 + (3 * makeitavailability[0].distance) ;
-            //15min Food Preparation time , 3min 1 km 
-              
-            if (makeitavailability[0].distance <= 6 && eta <= 60 ) {
-              
-            
-            var distancetime =   Math.round(eta) +"mins" ;  
-         
-            console.log(makeitavailability[0].distance);
-            console.log(distancetime);
+            if (makeitavailability[0].distance <= 6 && eta <= 60) {
+              var distancetime = Math.round(eta) + "mins";
 
-            if (req.payment_type === 0) {
-              console.log("cash on delivery");
-              ordercreatecashondelivery(req, res3.result[0].item);
-            } else if (req.payment_type === 1) {
-              console.log("cash on online");
-              ordercreateonline(req, res3.result[0].item);
+              console.log(makeitavailability[0].distance);
+              console.log(distancetime);
+
+              if (req.payment_type === 0) {
+                console.log("cash on delivery");
+                ordercreatecashondelivery(req, res3.result[0].item);
+              } else if (req.payment_type === 1) {
+                console.log("cash on online");
+                ordercreateonline(req, res3.result[0].item);
+              }
+            } else {
+              let sucobj = true;
+              let status = false;
+              let mesobj =
+                "Sorry This kitchen service is not available! for following address";
+              let resobj = {
+                success: sucobj,
+                status: status,
+                message: mesobj
+              };
+              result(null, resobj);
             }
-          }else{
-
-            let sucobj = true;
-            let status = false;
-            let mesobj =
-              "Sorry This kitchen service is not available! for following address";
-            let resobj = {
-              success: sucobj,
-              status: status,
-              message: mesobj
-            };
-            result(null, resobj);
-
-          }
           }
         }
       });
@@ -1579,7 +1606,9 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
                 if (err) result.send(err);
               });
             }
-            PushNotification(req.userid, orderid);
+            //PushNotification(req.userid, orderid);
+            Order.orderEatPushNotification(req.orderid,req.userid,PageidConstant.pageidOrder_Post);
+            //Order.orderMakeItPushNotification(req.orderid,req.makeit_user_id,PageidConstant.pageidMakeit_Order_Post);
             let sucobj = true;
             let status = true;
             let mesobj = "Order Created successfully";
@@ -1594,41 +1623,40 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
         });
       }
 
+      async function ordercreateonline(req, orderitems) {
+        const userinfo = await query(
+          "Select * from User where userid = '" + req.userid + "'"
+        );
 
-     async function ordercreateonline(req, orderitems) {
-   
-        const userinfo = await query("Select * from User where userid = '" +req.userid +"'");
-
-        var customerid = userinfo[0].razer_customerid
+        var customerid = userinfo[0].razer_customerid;
 
         if (!userinfo[0].razer_customerid) {
-          
-        var customerid = await Order.create_customerid_by_razorpay(userinfo);
-       // console.log("customerid:----- ", customerid); 
-        if (!customerid) {
+          var customerid = await Order.create_customerid_by_razorpay(userinfo);
+          // console.log("customerid:----- ", customerid);
+          if (!customerid) {
             let resobj = {
               success: true,
               status: false,
-              message: "Sorry can't create the order due to customerid not yet generate"
-              
+              message:
+                "Sorry can't create the order due to customerid not yet generate"
             };
-          result(null,resobj );
-          return
+            result(null, resobj);
+            return;
+          }
         }
-        }
-
 
         var new_Order = new Order(req);
         new_Order.delivery_charge = delivery_charge;
         new_Order.lock_status = 1;
-  
-        
-        sql.query("INSERT INTO Orders set ?", new_Order, async function(err, res1) {
+
+        sql.query("INSERT INTO Orders set ?", new_Order, async function(
+          err,
+          res1
+        ) {
           if (err) {
             console.log("error: ", err);
             result(null, err);
           } else {
-
             var orderid = res1.insertId;
 
             for (var i = 0; i < orderitems.length; i++) {
@@ -1639,38 +1667,35 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
               orderitem.quantity = orderitems[i].cartquantity;
               orderitem.price = orderitems[i].price;
               var items = new Orderitem(orderitem);
-              
+
               var orderitemlock = {};
               orderitemlock.productid = orderitems[i].productid;
               orderitemlock.quantity = orderitems[i].cartquantity;
               orderitemlock.orderid = orderid;
               orderitemlock = new Orderlock(orderitemlock);
 
-          
               orderitemlock.orderid = orderid;
 
               Orderitem.createOrderitems(items, function(err, res2) {
-                if (err) 
-                result.send(err);
+                if (err) result.send(err);
               });
 
-              
-              Orderlock.lockOrderitems(orderitemlock, function (err, orderlockresponce) {
-                        if (err)
-                        result.send(err);
-                     });
-              }
-
-
+              Orderlock.lockOrderitems(orderitemlock, function(
+                err,
+                orderlockresponce
+              ) {
+                if (err) result.send(err);
+              });
+            }
 
             let mesobj = "Order Created successfully";
             let sucobj = true;
             let resobj = {
               success: sucobj,
               status: true,
-              message:mesobj,
-              price:new_Order.price,
-              razer_customerid:customerid,
+              message: mesobj,
+              price: new_Order.price,
+              razer_customerid: customerid,
               orderid: orderid
             };
 
@@ -1678,7 +1703,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
           }
         });
       }
-    
+
       function PushNotification(userid, orderid) {
         sql.query("SELECT * FROM User where userid = " + userid, function(
           err,
@@ -1690,11 +1715,11 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
           } else {
             var pushid_android = user[0].pushid_android;
             var pushid_ios = user[0].pushid_ios;
-            var push_title = "Order Accepted";
+            var push_title = "Order Posted";
             var push_message =
               "Hi! your Order accepted. your Order id #" + orderid;
             if (pushid_android)
-              FCM.sendOrderNotificationAndroid(
+              FCM_EAT.sendOrderNotificationAndroid(
                 pushid_android,
                 push_title,
                 push_message
@@ -1727,64 +1752,236 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
   }
 };
 
-
 Order.test_push = function test_push(req, result) {
-
-  FCM.sendSingleNotification(
+  console.log("req.pushid_android-->" + req.pushid_android);
+  FCM_EAT.sendOrderNotificationAndroid(
     req.pushid_android,
-    'Order Success',
-    'This Order is canceled'
+    "Sample Test notification",
+    "Your Order Posted successful",
+    PageidConstant.pageidOrder_Post
   );
 
   result(null, "Push success");
-  
 };
 
-Order.create_customerid_by_razorpay = async function create_customerid_by_razorpay(userinfo) { 
- 
-  
+Order.create_customerid_by_razorpay = async function create_customerid_by_razorpay(
+  userinfo
+) {
   var name = userinfo[0].name;
   var email = userinfo[0].email;
   var contact = userinfo[0].phoneno;
   var notes = "eatuser";
-  var cuId=false;
+  var cuId = false;
 
-  return await instance.customers.create({name, email, contact, notes}).then((data) => {
-    cuId=data.id;
-    //  const updateforrazer_customerid = await query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ");
-   
-      sql.query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + userinfo[0].userid +" ", function(err, customerupdate) {
-       if (err) {
-        console.log("error: ", err);
-        //  return false;
-       } 
-      });
+  return await instance.customers
+    .create({ name, email, contact, notes })
+    .then(data => {
+      cuId = data.id;
+      //  const updateforrazer_customerid = await query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ");
+
+      sql.query(
+        "UPDATE User SET razer_customerid ='" +
+          data.id +
+          "'  where userid = " +
+          userinfo[0].userid +
+          " ",
+        function(err, customerupdate) {
+          if (err) {
+            console.log("error: ", err);
+            //  return false;
+          }
+        }
+      );
       console.log("cuId:----- ", cuId);
       return cuId;
-      }).catch((error) => {
-        console.log("error: ", error);
-        return false;
-      })
+    })
+    .catch(error => {
+      console.log("error: ", error);
+      return false;
+    });
+};
+
+Order.eat_order_cancel_by_orderid = async function eat_order_cancel_by_orderid(
+  req,
+  result
+) {
+  const orderdetails = await query(
+    "select * from Orders where orderid ='" + req.orderid + "' "
+  );
+
+  if (orderdetails[0].orderstatus < 5) {
+    sql.query(
+      "UPDATE Orders SET orderstatus = 7 WHERE orderid ='" + req.orderid + "'",
+      function(err, res) {
+        if (err) {
+          console.log("error: ", err);
+          result(null, err);
+        } else {
+          result(null, res);
+        }
+      }
+    );
+  }
+};
+Order.getPushOrderDetail= async function(orderid) {
+ var orders=await query("SELECT * FROM Orders where orderid = " +orderid);
+ return orders[0];
+}
+
+Order.getEatUserDetail= async function(userid) {
+  var EatUser=await query("SELECT * FROM User where userid = " +userid);
+  return EatUser[0];
+ }
+
+Order.orderEatPushNotification = async function(orderid,userid,pageid) {
+  if(!userid) {
+    var orders = await Order.getPushOrderDetail(orderid);
+    userid=orders.userid;
+    console.log("orderid--->"+orderid+"---userid-->"+userid+"---pageid--->"+pageid);
+  }
+  
+  const user = await Order.getEatUserDetail(userid);
+  var pushid_android = user[0].pushid_android;
+  var pushid_ios = user[0].pushid_ios;
+  var push_title = "Sample Order message";
+  var push_message = "";
+  switch (pageid) {
+    case PageidConstant.pageidOrder_Post:
+      push_title = "Order Post";
+      push_message =
+        "Hi! your Order posted successful.Your OrderID is#" + orderid;
+      break;
+
+    case PageidConstant.pageidOrder_Accept:
+      push_title = "Order Accecpt";
+      push_message =
+        "Hi! your Order accepted successful.Please wait for some more time";
+      break;
+
+    case PageidConstant.pageidOrder_Pickedup:
+      push_title = "Order Picked up";
+      push_message ="Hi! your Order Picked up.Please wait your food reaced soon.";
+      break;
+
+    case PageidConstant.pageidOrder_Reached:
+      push_title = "Order Near to me";
+      push_message = "Hi! your Order Waiting.Please picked up";
+      break;
+
+    case PageidConstant.pageidOrder_Delivered:
+      push_title = "Order Delivered";
+      push_message = "Hi! your Order Delivered successful";
+      break;
+  }
+
+  if (pushid_android) {
+    console.log("push_title---send---"+push_title);
+    FCM_EAT.sendOrderNotificationAndroid(
+      pushid_android,
+      push_title,
+      push_message,pageid
+    );
+  }
 };
 
 
-Order.eat_order_cancel_by_orderid =  async function eat_order_cancel_by_orderid(req, result) {
-
-  const orderdetails = await query("select * from Orders where orderid ='" +req.orderid +"' ");
- 
-  if (orderdetails[0].orderstatus < 5) {
-    
-    sql.query("UPDATE Orders SET orderstatus = 7 WHERE orderid ='" +req.orderid +"'",function(err, res) {
-      if (err) {
-        console.log("error: ", err);
-        result(null, err);
-      } else {
-        result(null, res);
-      }
-    }
-  );
+Order.orderMakeItPushNotification = async function(orderid,makeit_userid,pageid) {
+  if(!makeit_userid) {
+    var orders = await Order.getPushOrderDetail(orderid);
+    makeit_user_id=orders.makeit_user_id;
   }
   
+  const Makeituser = await query("SELECT * FROM MakeitUser where userid = " + makeit_user_id);
+  var pushid_android = Makeituser[0].pushid_android;
+  var pushid_ios = Makeituser[0].pushid_ios;
+  var data=null;
+  switch (pageid) {
+    case PageidConstant.pageidMakeit_Order_Post:
+        data = {
+          title: "New Order Posted",
+          message: "OrderID is#" +orderid,
+          pageid:""+pageid,
+          app: "Make-it",
+          notification_type: "1"
+      };
+      break;
+
+      case PageidConstant.pageidMakeit_Order_Cancel:
+        data = {
+          title: "Order Cancel",
+          message: "Sorry,Order cancel OrderID is#" +orderid,
+          pageid:""+pageid,
+          app: "Make-it",
+          notification_type: "1"
+      };
+      break;
+  }
+  if (pushid_android&&data) {
+    FCM.sendMakeitOrderPostNotification(pushid_android,data);
+  }
+};
+
+
+Order.orderMoveItPushNotification = async function(orderid,pageid,move_it_user_detail) {
+  const orders = await Order.getPushOrderDetail(orderid);
+  var Eatuserid=orders.userid;
+  var data = null;
+  var Eatuserdetail=null
+  switch (pageid) {
+    case PageidConstant.pageidMoveit_Order_Assigned:
+      Eatuserdetail = await Order.getEatUserDetail(Eatuserid);
+      data = {
+        title: "Order assign",
+        message: "Order Assigned to you. OrderID is#" +orderid,
+        pageid:""+pageid,
+        name:""+Eatuserdetail.name,
+        price:""+orders.price,
+        orderid:""+orders.orderid,
+        place:""+orders.cus_address,
+        app: "Move-it",
+        notification_type: "1"
+    };
+      break;
+
+    case PageidConstant.pageidMoveit_Order_Cancel:
+        Eatuserdetail = await Order.getEatUserDetail(Eatuserid);
+        data = {
+          title: "Order Cancel",
+          message :"Sorry! your current orders is canceled. OrderID is#" +orderid,
+          pageid:""+pageid,
+          name:""+Eatuserdetail.name,
+          price:""+orders.price,
+          orderid:""+orders.orderid,
+          place:""+orders.cus_address,
+          app: "Move-it",
+          notification_type: "1"
+      };
+      break;
+
+    case PageidConstant.pageidMoveit_Order_Prepared:
+        data = {
+          title : "Order is Prepared",
+          message :"Hi! Your current order is prepared.",
+          pageid:""+pageid,
+          app: "Move-it",
+          notification_type: "1"
+      };
+      
+      break;
+  }
+
+  if(data==null) return;
+
+  if(!move_it_user_detail){
+    move_it_user_detail = await query("SELECT * FROM MoveitUser where userid = " + orders.moveit_user_id);
+    move_it_user_detail =move_it_user_detail[0];
+  }
+
+  const pushid_android = move_it_user_detail.pushid_android;
+  const pushid_ios = move_it_user_detail.pushid_ios;
+  if (pushid_android) {
+    FCM.sendMoveitOrderAssignNotification(pushid_android,data);
+  }
 };
 
 module.exports = Order;

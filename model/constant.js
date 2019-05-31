@@ -8,8 +8,6 @@ const calculate = {
     radiuslimit : 6,
     foodpreparationtime:15,
     onekm:3
-    
-    
 }
 
 

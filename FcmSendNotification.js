@@ -1,18 +1,25 @@
-var FCM = require("fcm-node");
-var serverKey = require("./tovologies-1550475998119-firebase-adminsdk-jra7a-00656defb2.json"); //put your server key here
-var fcm = new FCM(serverKey);
+const firebase = require("firebase-admin");
+var MoveitserverKey = require("./tovologies-1550475998119-firebase-adminsdk-jra7a-00656defb2.json");
+var Move_it = null;
+
+exports.initializeAppName = function() {
+  
+  if (!Move_it) {
+    Move_it = firebase.initializeApp(
+      {
+        credential: firebase.credential.cert(MoveitserverKey),
+        databaseURL: "https://move-it-app.firebaseio.com/"
+      },
+      "move-it-app"
+    );
+  }else{
+    console.log("Move_it name--->" + Move_it.name);
+  }
+};
 
 exports.sendSingleNotification = function(token, title, message,userdetail) {
-  var message = {
-    //this may vary according to the message type (single recipient, multicast, topic, et cetera)
-    to: token,
-    //collapse_key: 'your_collapse_key',
-
-    // notification: {
-    //   title: title,
-    //   body: message
-    // },
-
+  exports.initializeAppName();
+  const payload = {
     data: {
       title: title,
       message: message,
@@ -25,124 +32,36 @@ exports.sendSingleNotification = function(token, title, message,userdetail) {
       notification_type: "1"
     }
   };
-
-  fcm.send(message, function(err, response) {
-    if (err) {
-      console.log("Something has gone wrong!--" + err);
-    } else {
-      console.log("Successfully sent with response: ", response);
-    }
-  });
+ 
+  const options = {
+    priority: 'high',
+    timeToLive: 60 * 60 * 24, // 1 day
+  };
+  Move_it.messaging().sendToDevice(token, payload, options);
 };
 
-exports.sendOrderNotificationAndroid = function(token, title, message) {
-  var message = {
-    to: token,
-
-    notification: {
-      title: title,
-      body: message
-    },
-
-    data: {
-      title: title,
-      message: message,
-      page_id: "1",
-      notification_type: "1"
-    }
+exports.sendMoveitOrderAssignNotification = function(token, moveit_data) {
+  exports.initializeAppName();
+  console.log("push_data---"+moveit_data.name);
+  const payload ={
+    data:moveit_data
+  }
+  const options = {
+    priority: 'high',
+    timeToLive: 60 * 60 * 24, // 1 day
   };
-
-  fcm.send(message, function(err, response) {
-    if (err) {
-      console.log("Something has gone wrong!--" + err);
-    } else {
-      console.log("Successfully sent with response: ", response);
-    }
-  });
+  Move_it.messaging().sendToDevice(token, payload, options);
 };
 
-exports.sendImageNotificationAndroid = function(token, title, message, image) {
-  var message = {
-    to: token,
-
-    data: {
-      title: title,
-      message: message,
-      page_id: "1",
-      notification_type: 3,
-      image: image
-    }
+exports.sendMakeitOrderPostNotification = function(token, makeit_data) {
+  exports.initializeAppName();
+  console.log("push_data---"+makeit_data);
+  const payload ={
+    data:makeit_data
+  }
+  const options = {
+    priority: 'high',
+    timeToLive: 60 * 60 * 24, // 1 day
   };
-
-  fcm.send(message, function(err, response) {
-    if (err) {
-      console.log("Something has gone wrong!--" + err);
-    } else {
-      console.log("Successfully sent with response: ", response);
-    }
-  });
-};
-
-exports.sendBigTextNotificationAndroid = function(token, title, message) {
-  var message = {
-    to: token,
-
-    data: {
-      title: title,
-      message: message,
-      page_id: "1",
-      notification_type: 2,
-      image: image
-    }
-  };
-
-  fcm.send(message, function(err, response) {
-    if (err) {
-      console.log("Something has gone wrong!--" + err);
-    } else {
-      console.log("Successfully sent with response: ", response);
-    }
-  });
-};
-
-exports.sendUpdateNotificationAndroid = function(token, title, message) {
-  var message = {
-    to: token,
-
-    data: {
-      title: title,
-      message: message,
-      page_id: "0",
-      notification_type: 1
-    }
-  };
-
-  fcm.send(message, function(err, response) {
-    if (err) {
-      console.log("Something has gone wrong!--" + err);
-    } else {
-      console.log("Successfully sent with response: ", response);
-    }
-  });
-};
-
-exports.sendUpdateNotificationIOS = function(token, title, message) {
-  var message = {
-    to: token,
-
-    data: {
-      title: title,
-      message: message,
-      page_id: "0",
-      notification_type: 1
-    }
-  };
-
-  fcm.send(message, function(err, response) {
-    if (err) {
-      console.log("Something has gone wrong!--" + err);
-    } else {
-      console.log("Successfully sent with response: ", response);
-    }
-  });
+  Move_it.messaging().sendToDevice(token, payload, options);
 };
