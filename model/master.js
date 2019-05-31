@@ -85,15 +85,18 @@ const master = [
      'foodcycle' : [
     {
         "foodcycleStatusid":1,
-        "foodcycle":"Breakfast"
+        "foodcycle":"Breakfast",
+        "foodtime":" 7 to 12",
     },
     {
         "foodcycleStatusid":2,
-        "foodcycle":"Lunch"
+        "foodcycle":"Lunch",
+        "foodtime":"12 to 4",
     },
     {
         "foodcycleStatusid":3,
-        "foodcycle":"Dinner"
+        "foodcycle":"Dinner",
+        "foodtime":"6 to 11",
     }
 ] },
 

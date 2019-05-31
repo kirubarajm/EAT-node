@@ -1359,33 +1359,48 @@ Order.online_order_place_conformation = function(order_place, result) {
   }
 };
 
-Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(
-  req,
-  result
-) {
-  sql.query(
-    "select * from Orders where userid ='" +
-      req.userid +
-      "' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",
-    //and (lock_status = 0 or lock_status = 1) and  payment_status =0
+
+Order.live_order_list_byeatuserid = async  function live_order_list_byeatuserid(req, result) {
+
+  const orderdetails = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus = 6  and payment_status = 1 order by orderid desc limit 1");
+  
+  if (orderdetails) {
+    
+  for (let i = 0; i < orderdetails.length; i++) {
+    
+    const orderratingdetails = await query("select * from Order_rating where orderid ='" +orderdetails[i].orderid +"'");
+    orderdetails[i].rating = true;
+
+    if (orderratingdetails.length===0) {
+      
+      orderdetails[i].rating = false;
+    }
+
+  }
+}
+  sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",
+      //and (lock_status = 0 or lock_status = 1) and  payment_status =0
     function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
       } else {
-        console.log(res.length);
+
+       
         if (res.length === 0) {
           let sucobj = true;
           let message = "Active order not found!";
           let resobj = {
             success: sucobj,
             status: false,
-            message: message
+            message: message,
+            orderdetails:orderdetails,
             //result: res
           };
           result(null, resobj);
         } else {
-          console.log(res[0]);
+
+        
           if (res[0].payment_type === "0") {
             var liveorderquery =
               "Select distinct ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +
@@ -1422,6 +1437,7 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(
                 let resobj = {
                   success: sucobj,
                   status: true,
+                  orderdetails:orderdetails,
                   result: res1
                 };
 
@@ -1466,6 +1482,7 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(
                 let resobj = {
                   success: sucobj,
                   status: true,
+                  orderdetails:orderdetails,
                   result: res1
                 };
 
@@ -1478,7 +1495,8 @@ Order.live_order_list_byeatuserid = function live_order_list_byeatuserid(
             let resobj = {
               success: sucobj,
               status: false,
-              message: message
+              message: message,
+              orderdetails:orderdetails
               //result: res
             };
 
