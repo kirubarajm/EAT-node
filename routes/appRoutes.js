@@ -78,7 +78,7 @@ module.exports = function(app) {
   //Routes for makeit users
 
   app
-    .route("/makeitusers")
+    .route("/makeit/user")
     .get(makeituser.list_all_user)
     .post(makeituser.create_a_user);
 
@@ -151,8 +151,12 @@ module.exports = function(app) {
     .get(documents.list_all_sales_training_documents);
   //.post(documents.create_a_sales_training_documents);
 
-  app
-    .route("/menuitem")
+  // app
+  //   .route("/menuitem")
+  //   .get(menuitem.list_all_menuitem)
+  //   .post(menuitem.create_a_menuitem);
+    app
+    .route("/makeit/menuitem")
     .get(menuitem.list_all_menuitem)
     .post(menuitem.create_a_menuitem);
 
@@ -166,6 +170,12 @@ module.exports = function(app) {
     .route("/product")
     .get(product.list_all_product)
     .post(product.create_a_product);
+
+    app
+    .route("/makeit/product")
+    .get(product.list_all_product)
+    .post(product.create_a_product);
+
 
   app.route("/vproduct").get(product.list_all_virtual_product);
 
@@ -233,17 +243,7 @@ module.exports = function(app) {
     .put(faq.update_a_faq)
     .delete(faq.delete_a_faq);
 
-  /*app.route('/order')
-     .get(order.list_all_order)
-     .post(order.create_a_order);
- 
-    app.route('/order/:id')
-     .get(order.read_a_order)
-     .put(order.update_a_order)
-     .delete(order.delete_a_order);*/
 
-  // app.route('/createorder')
-  // .post(makeituser.createorder);
 
   // Makeit
 
@@ -253,15 +253,24 @@ module.exports = function(app) {
 
   app.route("/makeit/orders/:id").get(makeituser.orderlist);
 
-  app.route("/vorders/:orderid").get(makeituser.orderview);
+ // app.route("/vorders/:orderid").get(makeituser.orderview);
 
-  app.route("/orders").put(makeituser.orderstatus);
+  app.route("/makeit/orderview/:orderid").get(makeituser.orderview);
 
-  app.route("/lproduct/:makeit_userid").get(product.list_all_liveproduct);
+ // app.route("/orders").put(makeituser.orderstatus);
 
-  app.route("/product/moveliveproduct/").post(product.moveliveproduct);
+  app.route("/makeit/orderstatus").put(makeituser.orderstatus);
 
-  app.route("/product/productitem/:productid").get(product.productitemlist);
+ // app.route("/lproduct/:makeit_userid").get(product.list_all_liveproduct);
+  app.route("/makeit/lproduct/:makeit_userid").get(product.list_all_liveproduct);
+
+ // app.route("/product/moveliveproduct/").post(product.moveliveproduct);
+
+  app.route("/makeit/moveliveproduct/").post(product.moveliveproduct);
+
+ // app.route("/product/productitem/:productid").get(product.productitemlist);
+
+  app.route("/makeit/productitem/:productid").get(product.productitemlist);
 
   app.route("/virtual/eatusers").get(eatuser.list_all_virtual_eatuser);
 

@@ -24,7 +24,7 @@ var Eatuser = function(eatuser) {
   //  this.created_at = new Date();
   this.virtualkey = eatuser.virtualkey || 0;
   this.otp_status = eatuser.otp_status || "";
-  this.gender = eatuser.gender || "";
+  this.gender = eatuser.gender ;
   this.regionid = eatuser.regionid;
   this.pushid_android = eatuser.pushid_android;
   this.pushid_ios = eatuser.pushid_android;
@@ -85,7 +85,7 @@ Eatuser.createUser = function createUser(newUser, result) {
 
 Eatuser.getUserById = function getUserById(userId, result) {
   sql.query(
-    "Select userid,name,email,phoneno,Locality,created_at,virtualkey from User where userid = ? ",
+    "Select us.userid,us.name,us.email,us.phoneno,us.Locality,us.created_at,us.virtualkey,us.gender,re.regionname from User us join Region re on re.regionid = us.regionid  where us.userid = ? ",
     userId,
     function(err, res) {
       if (err) {
@@ -1158,23 +1158,21 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
   );
 };
 
-Eatuser.eatuser_otpverification = function eatuser_otpverification(
-  req,
-  result
-) {
+Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
   var otp = 0;
   var passwordstatus = false;
   var otpstatus = false;
   var genderstatus = false;
 
-  sql.query("Select * from Otp where oid = '" + req.oid + "'", function(
-    err,
-    res
-  ) {
+  sql.query("Select * from Otp where oid = " +req.oid+ "", function(err,res) {
     if (err) {
       console.log("error: ", err);
       result(err, null);
     } else {
+
+      console.log(res);
+      console.log(req.otp);
+
       if (res[0].otp == req.otp) {
         console.log("OTP VALID");
         sql.query(
@@ -1887,7 +1885,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
         } 
 
 
-       // console.log(query);
+        console.log(query);
 
       sql.query(query, function(err, res) {
         if (err) {

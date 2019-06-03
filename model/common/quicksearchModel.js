@@ -54,8 +54,8 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
     }else{
   
   
-      const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  brandname as name,userid as id, 2 from MakeitUser where (brandname IS NOT NULL and brandname != '') and appointment_status = 3 and verified_status = 1");
-  
+    //  const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  mk.brandname as name,mk.userid as id, 2 from MakeitUser mk join Product pt on pt.makeit_userid=mk.userid where (mk.brandname IS NOT NULL and brandname != '') and mk.appointment_status = 3 and mk.verified_status = 1 and pt.active_status =1 and pt.quantity != 0  and pt.delete_status !=1");
+    const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  mk.brandname as name,mk.userid as id, 2 from MakeitUser mk join Product pt on pt.makeit_userid=mk.userid where (mk.brandname IS NOT NULL and brandname != '') and mk.appointment_status = 3 and mk.verified_status = 1 and pt.active_status =1 and pt.quantity != 0  and pt.delete_status !=1 group by mk.userid");
       if (kitchenquery.err) {  
         let resobj = {
         success: sucobj,
@@ -150,7 +150,8 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
       // }else{
     
     
-        const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  brandname as name,userid as id, 2 from MakeitUser where (brandname IS NOT NULL and brandname != '') and appointment_status = 3 and verified_status = 1");
+      //  const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  brandname as name,userid as id, 2 from MakeitUser where (brandname IS NOT NULL and brandname != '') and appointment_status = 3 and verified_status = 1");
+      const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  mk.brandname as name,mk.userid as id, 2 from MakeitUser mk join Product pt on pt.makeit_userid=mk.userid where (mk.brandname IS NOT NULL and brandname != '') and mk.appointment_status = 3 and mk.verified_status = 1 and pt.active_status =1 and pt.quantity != 0  and pt.delete_status !=1 group by mk.userid");
     
       //   if (kitchenquery.err) {  
       //     let resobj = {
