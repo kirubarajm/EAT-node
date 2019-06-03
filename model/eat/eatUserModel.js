@@ -11,7 +11,7 @@ var instance = new Razorpay({
   })
 
 
-const query = util.promisify(sql.query).bind(sql);
+//const query = util.promisify(sql.query).bind(sql);
 
 //Task object constructor
 var Eatuser = function(eatuser) {
@@ -24,7 +24,7 @@ var Eatuser = function(eatuser) {
   //  this.created_at = new Date();
   this.virtualkey = eatuser.virtualkey || 0;
   this.otp_status = eatuser.otp_status || "";
-  this.gender = eatuser.gender || "";
+  this.gender = eatuser.gender;
   this.regionid = eatuser.regionid;
   this.pushid_android = eatuser.pushid_android;
   this.pushid_ios = eatuser.pushid_android;

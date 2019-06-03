@@ -2,7 +2,7 @@
 var sql = require("../db.js");
 var constant = require("../constant.js");
 const util = require("util");
-const query = util.promisify(sql.query).bind(sql);
+//const query = util.promisify(sql.query).bind(sql);
 var request = require("request");
 
 var Cusinemakeit = require("../../model/makeit/cusinemakeitModel");
@@ -1358,5 +1358,56 @@ if ( temp===doclen) {
   result(null, resobj);
 }
 };
+
+
+
+Makeituser.update_pushid = function(req, result) {
+  var staticquery = "";
+  if (req.pushid_android && req.userid) {
+    staticquery =
+      "UPDATE MakeitUser SET pushid_android ='" +
+      req.pushid_android +
+      "'   where userid = " +
+      req.userid +
+      " ";
+  } else if (req.pushid_ios && req.userid) {
+    staticquery =
+      "UPDATE MakeitUser SET pushid_ios ='" +
+      req.pushid_ios +
+      "'  where userid = " +
+      req.userid +
+      " ";
+  }
+
+  if (staticquery.length === 0) {
+    let sucobj = true;
+    let message = "There no valid data";
+    let resobj = {
+      success: sucobj,
+      status: false,
+      message: message
+    };
+
+    result(null, resobj);
+  } else {
+    sql.query(staticquery, function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+        let sucobj = true;
+        let message = "Updated successfully";
+        let resobj = {
+          success: sucobj,
+          status: true,
+          message: message
+        };
+
+        result(null, resobj);
+      }
+    });
+  }
+};
+
 
 module.exports = Makeituser;

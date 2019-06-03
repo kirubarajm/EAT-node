@@ -3,7 +3,6 @@ const express = require("express"),
   bodyParser = require("body-parser");
 port = process.env.PORT || 3000;
 var cors = require("cors");
-const fs = require("fs");
 
 //   for (var k in VERSIONS) {
 //     app.use(VERSIONS[k], require('./routes' + VERSIONS[k]));

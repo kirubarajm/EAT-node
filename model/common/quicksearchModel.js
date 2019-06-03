@@ -3,7 +3,7 @@ var sql = require("../db.js");
 const CronJob = require('cron').CronJob;
 const util = require('util');
 
-const query = util.promisify(sql.query).bind(sql);
+//const query = util.promisify(sql.query).bind(sql);
 var QuickSearch = function(QuickSearch){
     this.eatuserid = QuickSearch.eatuserid;
     this.productid=QuickSearch.productid || 0;

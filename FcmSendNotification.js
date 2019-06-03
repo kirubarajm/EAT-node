@@ -40,12 +40,8 @@ exports.sendSingleNotification = function(token, title, message,userdetail) {
   Move_it.messaging().sendToDevice(token, payload, options);
 };
 
-exports.sendMoveitOrderAssignNotification = function(token, moveit_data) {
+exports.sendMoveitOrderAssignNotification = function(token, payload) {
   exports.initializeAppName();
-  console.log("push_data---"+moveit_data.name);
-  const payload ={
-    data:moveit_data
-  }
   const options = {
     priority: 'high',
     timeToLive: 60 * 60 * 24, // 1 day

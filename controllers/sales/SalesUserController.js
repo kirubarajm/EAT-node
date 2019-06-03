@@ -103,3 +103,11 @@ exports.edit_a_user = function(req, res) {
     });
   }
 };
+
+
+exports.add_a_pushid = function(req, res) {
+  Salesuser.update_pushid(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

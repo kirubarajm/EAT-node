@@ -234,4 +234,53 @@ Salesuser.edit_sales_users = function (req, result) {
 };
 
 
+Salesuser.update_pushid = function(req, result) {
+    var staticquery = "";
+    if (req.pushid_android && req.userid) {
+      staticquery =
+        "UPDATE Sales_QA_employees SET pushid_android ='" +
+        req.pushid_android +
+        "'   where id = " +
+        req.userid +
+        " ";
+    } else if (req.pushid_ios && req.userid) {
+      staticquery =
+        "UPDATE Sales_QA_employees SET pushid_ios ='" +
+        req.pushid_ios +
+        "'  where id = " +
+        req.userid +
+        " ";
+    }
+  
+    if (staticquery.length === 0) {
+      let sucobj = true;
+      let message = "There no valid data";
+      let resobj = {
+        success: sucobj,
+        status: false,
+        message: message
+      };
+  
+      result(null, resobj);
+    } else {
+      sql.query(staticquery, function(err, res) {
+        if (err) {
+          console.log("error: ", err);
+          result(err, null);
+        } else {
+          let sucobj = true;
+          let message = "Updated successfully";
+          let resobj = {
+            success: sucobj,
+            status: true,
+            message: message
+          };
+  
+          result(null, resobj);
+        }
+      });
+    }
+  };
+
+
 module.exports = Salesuser;
