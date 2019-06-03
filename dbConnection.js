@@ -9,12 +9,10 @@ const authentication = {
   timezone: "IST",
 };
 
-// const authentication = {
-//   host: "localhost",
-//   user: "admin",
-//   password: "tovo@2020",
-//   database: "eattovo",
-//   timezone: "IST"
-// };
+// host : '13.127.100.137',
+// user : 'eattovo',
+// password : 'Eat_2020',
+// database : 'eattovo',
+// timezone : 'IST'
 
 module.exports = authentication;
