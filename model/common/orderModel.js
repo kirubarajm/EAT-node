@@ -12,14 +12,14 @@ var FCM_EAT = require("../../FcmEatSendNotification.js");
 var PageidConstant = require("../../PageidConstant.js");
 var constant = require("../constant.js");
 var moment = require("moment");
-// const Razorpay = require("razorpay");
+const Razorpay = require("razorpay");
 
-// var instance = new Razorpay({
-//   key_id: 'rzp_test_3cduMl5T89iR9G',
-//   key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
-// })
+var instance = new Razorpay({
+  key_id: 'rzp_test_3cduMl5T89iR9G',
+  key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+})
 
-//const query = util.promisify(sql.query).bind(sql);
+const query = util.promisify(sql.query).bind(sql);
 
 //Task object constructor
 var Order = function(order) {

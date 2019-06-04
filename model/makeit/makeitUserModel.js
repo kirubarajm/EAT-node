@@ -2,7 +2,7 @@
 var sql = require("../db.js");
 var constant = require("../constant.js");
 const util = require("util");
-//const query = util.promisify(sql.query).bind(sql);
+const query = util.promisify(sql.query).bind(sql);
 var request = require("request");
 
 var Cusinemakeit = require("../../model/makeit/cusinemakeitModel");
