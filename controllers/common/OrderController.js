@@ -297,7 +297,7 @@ exports.testPush = function(req, res) {
 };
 
 exports.read_a_proceed_to_pay = function(req, res) {
-  //console.log(req.body);
+  console.log(req.body);
   var orderitems = req.body.orderitems;
   if (!req.body.aid) {
     res
