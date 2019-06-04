@@ -11,7 +11,7 @@ var instance = new Razorpay({
   })
 
 
-const query = util.promisify(sql.query).bind(sql);
+//const query = util.promisify(sql.query).bind(sql);
 
 //Task object constructor
 var Eatuser = function(eatuser) {

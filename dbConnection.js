@@ -6,7 +6,7 @@ const authentication = {
   user: "eattovo",
   password: "eattv2020",
   database: "eattovo",
-  timezone: "IST"
+  timezone: "IST",
 };
 
 // host : '13.127.100.137',
