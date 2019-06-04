@@ -1508,11 +1508,7 @@ Order.live_order_list_byeatuserid = async  function live_order_list_byeatuserid(
   );
 };
 
-Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
-  req,
-  orderitems,
-  result
-) {
+Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
   try {
     console.log("read_a_proceed_to_pay: ");
 
@@ -1527,14 +1523,11 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
     // console.log(res);
 
     if (res.length == 0) {
-      Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(
-        err,
-        res3
-      ) {
+      Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(err, res3) {
         if (err) {
           result(err, null);
         } else {
-          console.log(res3.status);
+        //  console.log(res3.status);
           if (res3.status != true) {
             result(null, res3);
           } else {
@@ -1542,13 +1535,10 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
             req.gst = amountdata.gstcharge;
             req.price = amountdata.grandtotal;
 
-            const res2 = await query(
-              "Select * from Address where aid = '" +
-                req.aid +
-                "' and userid = '" +
-                req.userid +
-                "'"
-            );
+            const res2 = await query("Select * from Address where aid = "+req.aid +" and userid = " +req.userid +"");
+
+            console.log(res2);
+          
 
             req.cus_address = res2[0].address;
             req.locality = res2[0].locality;
