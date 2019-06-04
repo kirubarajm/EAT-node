@@ -1384,6 +1384,7 @@ Eatuser.checkLogin = function checkLogin(req, result) {
   );
 };
 
+
 Eatuser.eat_user_post_registration = async function(req, result) {
   var staticquery = "UPDATE User SET updated_at = ?, ";
   var column = "";
@@ -1394,6 +1395,7 @@ Eatuser.eat_user_post_registration = async function(req, result) {
   var customerid = userinfo[0].razer_customerid
 
   req.name= userinfo[0].name;
+  req.phoneno= userinfo[0].phoneno;
   console.log(req);
   if (!userinfo[0].razer_customerid) {
     

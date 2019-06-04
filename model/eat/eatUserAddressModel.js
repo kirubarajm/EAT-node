@@ -85,9 +85,15 @@ EatuserAddress.getaddressById = function getaddressById(userId, result) {
                 result(err, null);
             }
             else{
-               let sucobj=true;
+                status = true;
+                if (res.length ===0) {
+                    
+                    status = false;
+                }
+                let sucobj=true;
                 let resobj = {  
                 success: sucobj,
+                status:status,
                 result: res
                 }; 
 
