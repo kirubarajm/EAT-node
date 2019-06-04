@@ -332,6 +332,8 @@ module.exports = function(app) {
 
   app.route("/makeit/earnings/:makeit_userid").get(makeituser.makeit_earnings);
 
+  app.route("/makeit/pushid/add").put(makeituser.add_a_pushid);
+
   app
     .route("/makeit/dayearnings/:makeit_userid")
     .get(makeituser.makeit_earnings_day);
@@ -543,6 +545,8 @@ module.exports = function(app) {
   app.route("/sales/documentView").post(salesdocument.sales_document_view);
 
   app.route("/sales/document/remove").delete(documents.remove_s3_sales_doc);
+
+  app.route("/sales/pushid/add").put(salesuser.add_a_pushid);
 
   // Common
 

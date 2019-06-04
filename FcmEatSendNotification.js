@@ -33,7 +33,7 @@ exports.sendOrderNotificationAndroid = function(
     data: {
       title: title,
       message: message,
-      page_id: ""+page_id,
+      pageid: ""+page_id,
       notification_type: "1"
     }
   };

@@ -19,7 +19,7 @@ var moment = require("moment");
 //   key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
 // })
 
-const query = util.promisify(sql.query).bind(sql);
+//const query = util.promisify(sql.query).bind(sql);
 
 //Task object constructor
 var Order = function(order) {
@@ -466,7 +466,7 @@ Order.order_assign = function order_assign(req, result) {
                 //   );
                 await Order.orderMoveItPushNotification(req.orderid,PageidConstant.pageidMoveit_Order_Assigned,res1[0]);
                 let sucobj = true;
-                let message = "Order Assign Sucessfully";
+                let message = "Order Assign Successfully";
                 let resobj = {
                   success: sucobj,
                   message: message
@@ -876,7 +876,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
 
 Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
   const rows = await query(
-    "Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.makeithub_lat as makeithublat,mh.makeithub_lon as makeithublon,mh.makeithub_address as makeithubaddress from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id =" +
+    "Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id =" +
       moveit_user_id +
       " and   DATE(ors.ordertime) = CURDATE() order by  ors.order_assigned_time desc"
   );
@@ -1616,7 +1616,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
             }
             //PushNotification(req.userid, orderid);
             Order.orderEatPushNotification(req.orderid,req.userid,PageidConstant.pageidOrder_Post);
-            //Order.orderMakeItPushNotification(req.orderid,req.makeit_user_id,PageidConstant.pageidMakeit_Order_Post);
+            Order.orderMakeItPushNotification(req.orderid,req.makeit_user_id,PageidConstant.pageidMakeit_Order_Post);
             let sucobj = true;
             let status = true;
             let mesobj = "Order Created successfully";
@@ -1848,22 +1848,18 @@ Order.orderEatPushNotification = async function(orderid,userid,pageid) {
     console.log("orderid--->"+orderid+"---userid-->"+userid+"---pageid--->"+pageid);
   }
   
-  const user = await Order.getEatUserDetail(userid);
-  var pushid_android = user[0].pushid_android;
-  var pushid_ios = user[0].pushid_ios;
-  var push_title = "Sample Order message";
-  var push_message = "";
+  
+  var push_title = null;
+  var push_message =null;
   switch (pageid) {
     case PageidConstant.pageidOrder_Post:
       push_title = "Order Post";
-      push_message =
-        "Hi! your Order posted successful.Your OrderID is#" + orderid;
+      push_message ="Hi! your Order posted successful.Your OrderID is#" + orderid;
       break;
 
     case PageidConstant.pageidOrder_Accept:
       push_title = "Order Accecpt";
-      push_message =
-        "Hi! your Order accepted successful.Please wait for some more time";
+      push_message ="Hi! your Order accepted successful.Please wait for some more time";
       break;
 
     case PageidConstant.pageidOrder_Pickedup:
@@ -1881,11 +1877,11 @@ Order.orderEatPushNotification = async function(orderid,userid,pageid) {
       push_message = "Hi! your Order Delivered successful";
       break;
   }
-
-  if (pushid_android) {
-    console.log("push_title---send---"+push_title);
+  const user = await Order.getEatUserDetail(userid);
+  console.log("user--->"+user.name);
+  if (user.pushid_android) {
     FCM_EAT.sendOrderNotificationAndroid(
-      pushid_android,
+      user.pushid_android,
       push_title,
       push_message,pageid
     );
@@ -1899,9 +1895,7 @@ Order.orderMakeItPushNotification = async function(orderid,makeit_userid,pageid)
     makeit_user_id=orders.makeit_user_id;
   }
   
-  const Makeituser = await query("SELECT * FROM MakeitUser where userid = " + makeit_user_id);
-  var pushid_android = Makeituser[0].pushid_android;
-  var pushid_ios = Makeituser[0].pushid_ios;
+  
   var data=null;
   switch (pageid) {
     case PageidConstant.pageidMakeit_Order_Post:
@@ -1924,8 +1918,9 @@ Order.orderMakeItPushNotification = async function(orderid,makeit_userid,pageid)
       };
       break;
   }
-  if (pushid_android&&data) {
-    FCM.sendMakeitOrderPostNotification(pushid_android,data);
+  var Makeituser = await query("SELECT * FROM MakeitUser where userid = " + makeit_user_id);
+  if (Makeituser&&Makeituser[0].pushid_android&&data) {
+    FCM.sendMakeitOrderPostNotification(Makeituser[0].pushid_android,data);
   }
 };
 
@@ -1933,12 +1928,12 @@ Order.orderMakeItPushNotification = async function(orderid,makeit_userid,pageid)
 Order.orderMoveItPushNotification = async function(orderid,pageid,move_it_user_detail) {
   const orders = await Order.getPushOrderDetail(orderid);
   var Eatuserid=orders.userid;
-  var data = null;
+  var payload = null;
   var Eatuserdetail=null
   switch (pageid) {
     case PageidConstant.pageidMoveit_Order_Assigned:
       Eatuserdetail = await Order.getEatUserDetail(Eatuserid);
-      data = {
+       payload = {data :{
         title: "Order assign",
         message: "Order Assigned to you. OrderID is#" +orderid,
         pageid:""+pageid,
@@ -1948,12 +1943,12 @@ Order.orderMoveItPushNotification = async function(orderid,pageid,move_it_user_d
         place:""+orders.cus_address,
         app: "Move-it",
         notification_type: "1"
-    };
+    }};
       break;
 
     case PageidConstant.pageidMoveit_Order_Cancel:
         Eatuserdetail = await Order.getEatUserDetail(Eatuserid);
-        data = {
+         payload = {data :{
           title: "Order Cancel",
           message :"Sorry! your current orders is canceled. OrderID is#" +orderid,
           pageid:""+pageid,
@@ -1963,32 +1958,30 @@ Order.orderMoveItPushNotification = async function(orderid,pageid,move_it_user_d
           place:""+orders.cus_address,
           app: "Move-it",
           notification_type: "1"
-      };
+      }};
       break;
 
     case PageidConstant.pageidMoveit_Order_Prepared:
-        data = {
+       payload = {data :{
           title : "Order is Prepared",
           message :"Hi! Your current order is prepared.",
           pageid:""+pageid,
           app: "Move-it",
           notification_type: "1"
-      };
+      }};
       
       break;
   }
 
-  if(data==null) return;
+  if(payload==null) return;
 
   if(!move_it_user_detail){
     move_it_user_detail = await query("SELECT * FROM MoveitUser where userid = " + orders.moveit_user_id);
     move_it_user_detail =move_it_user_detail[0];
   }
 
-  const pushid_android = move_it_user_detail.pushid_android;
-  const pushid_ios = move_it_user_detail.pushid_ios;
-  if (pushid_android) {
-    FCM.sendMoveitOrderAssignNotification(pushid_android,data);
+  if (move_it_user_detail.pushid_android) {
+    FCM.sendMoveitOrderAssignNotification(move_it_user_detail.pushid_android,payload);
   }
 };
 
