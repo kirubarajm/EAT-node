@@ -605,11 +605,12 @@ Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveit
             req.orderid,
             req.moveit_userid
           ],
-          function(err, res2) {
+          async function(err, res2) {
             if (err) {
               console.log("error: ", err);
               result(null, err);
             } else {
+              await Order.orderEatPushNotification(req.orderid,null,PageidConstant.pageidOrder_Pickedup);
               let sucobj = true;
               let message = "Order Pickedup successfully";
               let resobj = {
@@ -647,7 +648,7 @@ Order.order_delivery_status_by_moveituser = function(req, result) {
             sql.query(
               "UPDATE Orders SET orderstatus = ?,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
               [req.orderstatus, new Date(), req.orderid, req.moveit_user_id],
-              function(err, res) {
+              async function(err, res) {
                 if (err) {
                   console.log("error: ", err);
                   result(null, err);
@@ -660,7 +661,7 @@ Order.order_delivery_status_by_moveituser = function(req, result) {
                     message: message,
                     orderdeliverystatus: orderdeliverystatus
                   };
-
+                  await Order.orderEatPushNotification(req.orderid,null,PageidConstant.pageidOrder_Delivered);
                   result(null, resobj);
                 }
               }
@@ -1508,7 +1509,11 @@ Order.live_order_list_byeatuserid = async  function live_order_list_byeatuserid(
   );
 };
 
-Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
+Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
+  req,
+  orderitems,
+  result
+) {
   try {
     console.log("read_a_proceed_to_pay: ");
 
@@ -1523,11 +1528,14 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
     // console.log(res);
 
     if (res.length == 0) {
-      Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(err, res3) {
+      Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(
+        err,
+        res3
+      ) {
         if (err) {
           result(err, null);
         } else {
-        //  console.log(res3.status);
+          console.log(res3.status);
           if (res3.status != true) {
             result(null, res3);
           } else {
@@ -1535,10 +1543,13 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
             req.gst = amountdata.gstcharge;
             req.price = amountdata.grandtotal;
 
-            const res2 = await query("Select * from Address where aid = "+req.aid +" and userid = " +req.userid +"");
-
-            console.log(res2);
-          
+            const res2 = await query(
+              "Select * from Address where aid = '" +
+                req.aid +
+                "' and userid = '" +
+                req.userid +
+                "'"
+            );
 
             req.cus_address = res2[0].address;
             req.locality = res2[0].locality;
@@ -1615,7 +1626,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
               });
             }
             //PushNotification(req.userid, orderid);
-            Order.orderEatPushNotification(req.orderid,req.userid,PageidConstant.pageidOrder_Post);
+            //Order.orderEatPushNotification(req.orderid,req.userid,PageidConstant.pageidOrder_Post);
             Order.orderMakeItPushNotification(req.orderid,req.makeit_user_id,PageidConstant.pageidMakeit_Order_Post);
             let sucobj = true;
             let status = true;
@@ -1930,6 +1941,7 @@ Order.orderMoveItPushNotification = async function(orderid,pageid,move_it_user_d
   var Eatuserid=orders.userid;
   var payload = null;
   var Eatuserdetail=null
+
   switch (pageid) {
     case PageidConstant.pageidMoveit_Order_Assigned:
       Eatuserdetail = await Order.getEatUserDetail(Eatuserid);
@@ -1980,7 +1992,7 @@ Order.orderMoveItPushNotification = async function(orderid,pageid,move_it_user_d
     move_it_user_detail =move_it_user_detail[0];
   }
 
-  if (move_it_user_detail.pushid_android) {
+  if (move_it_user_detail&&move_it_user_detail.pushid_android) {
     FCM.sendMoveitOrderAssignNotification(move_it_user_detail.pushid_android,payload);
   }
 };
