@@ -596,6 +596,7 @@ module.exports = function(app) {
 
 
   app.route("/eat/products").post(eatuser.eat_makeit_product_list);
+  app.route("/eat/foodlist").post(eatuser.eat_makeit_product_list);
 
   app.route("/eat/placeorder").post(orders.eatuser_order_create);
 

@@ -2,9 +2,9 @@
 var sql = require("../db.js");
 var constant = require("../constant.js");
 const util = require("util");
-//const query = util.promisify(sql.query).bind(sql);
+const query = util.promisify(sql.query).bind(sql);
 var request = require("request");
-var OrderModel = require("../../model/common/orderModel");
+//var OrderModel = require("../../model/common/orderModel");
 var Cusinemakeit = require("../../model/makeit/cusinemakeitModel");
 var PageidConstant = require("../../PageidConstant.js");
 
@@ -575,7 +575,7 @@ Makeituser.orderstatusbyorderid = function(req, result) {
         console.log("error: ", err);
         result(null, err);
       } else {
-        await OrderModel.orderMoveItPushNotification(req.orderid,PageidConstant.pageidMoveit_Order_Prepared,null);
+       // await OrderModel.orderMoveItPushNotification(req.orderid,PageidConstant.pageidMoveit_Order_Prepared,null);
         let sucobj = true;
         let mesobj = "Status Update Successfully";
         let resobj = {
@@ -712,11 +712,8 @@ Makeituser.update_makeit_followup_status = function(
   );
 };
 
-Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid(
-  req,
-  orderitems,
-  result
-) {
+Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid( req, orderitems,result) {
+ // console.log(req);
   //try {
   var tempmessage = "";
   var gst = constant.gst;
@@ -737,7 +734,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
     const res1 = await query("Select * From Product where productid = '" +orderitems[i].productid+"'");
 
-    console.log(res1.length);
+   // console.log(res1.length);
 
 
     if (res1[0].quantity < orderitems[i].quantity) {
@@ -751,10 +748,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     res1[0].amount = amount;
     res1[0].cartquantity = orderitems[i].quantity;
     totalamount = totalamount + amount;
-    console.log(res1);
+  //  console.log(res1);
     productdetails.push(res1[0]);
   }
-  console.log(productdetails);
+ // console.log(productdetails);
   var query1 =
     "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +req.makeit_user_id +"";
 
@@ -783,6 +780,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         res1[0].amountdetails = calculationdetails;
         res1[0].item = productdetails;
         res1[0].ordercount = ordercount;
+        console.log(res1);
         let resobj = {
           success: true,
           status: isAvaliableItem
