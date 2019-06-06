@@ -8,6 +8,10 @@ var AWS_SECRET_ACCESS_KEY = "um40ybaasGDsRkvGplwfhBTY0uPWJA81GqQD/UcW";
 const fs = require("fs");
 const AWS = require("aws-sdk");
 
+const util = require("util");
+const query = util.promisify(sql.query).bind(sql);
+
+
 
 
 // AWS.config.update({
@@ -223,17 +227,33 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
   });
 };
 
-Documents.createnewDocumentlist = function createnewDocumentlist(
-  documentlist,
-  res
-) {
-  sql.query("INSERT INTO Documents set ?", documentlist, function(err, result) {
-    if (err) {
-      console.log("error: ", err);
-      res(null, err);
-    }
-  });
+Documents.createnewDocumentlist = async function createnewDocumentlist( documentlist, result) {
+
+  var Documentscount = await query("Select * From Documents where docid = '" +documentlist.docid+"' and type = '" +documentlist.type+"'");
+
+  console.log(Documentscount.length);
+  if (Documentscount.length === 0) {
+    var newDocumentsinsert = await query("INSERT INTO Documents set ?", documentlist);
+  }else{
+
+    var newDocumentsinsert = await query("Update Documents set url = '" +documentlist.url+"' where docid = '" +documentlist.docid+"' and type = '" +documentlist.type+"'");
+  }
+  // sql.query("INSERT INTO  set ?", documentlist, function(err, result) {
+  //   if (err) {
+  //     console.log("error: ", err);
+  //     res(null, err);
+  //   }
+  // });
+  let sucobj = "true";
+      let message = "Document saved successfully";
+      let resobj = {
+        success: sucobj,
+        message: message
+      };
+      result(null, resobj);
 };
+
+
 
 Documents.remove_document = function(req, result) {
   const fs = require("fs");

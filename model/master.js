@@ -58,7 +58,7 @@ const master = [
     ] },
     
 
-   { 'registrationStatus' : [
+   { 'makeitregistrationStatus' : [
     {
         "registrationStatusid":0,
         "registrationStatus":"Registration"
@@ -101,16 +101,41 @@ const master = [
 ] },
 
 
+// // Sales for followupstatus
+//  {'salesfollowupstatus' : [
+//     {
+//         "followupstatussid":0,
+//         "followupstatus":"incomplete"
+// },
+//     {
+//         "followupstatussid":1,
+//         "followupstatus":"complete"
+//     }
+// ]},
+
+
 // Sales for followupstatus
- {'salesfollowupstatus' : [
+{'salesfollowupstatus' : [
     {
         "followupstatussid":0,
-     "followupstatus":"incomplete"
-},
+        "followupstatus":"incomplete"
+    },
     {
         "followupstatussid":1,
         "followupstatus":"complete"
-    }
+    },
+    {
+        "followupstatussid":2,
+        "followupstatus":"info-reschedule"
+    },
+    {
+        "followupstatussid":3,
+        "followupstatus":"appointment-reschedule"
+    },
+    {
+        "followupstatussid":4,
+        "followupstatus":"appointment-reschedule"
+    },
 ]},
 
 
@@ -206,10 +231,13 @@ const master = [
 
 // image upload type 
  { 'documenttypemakeit' : [
-    {"documenttypeid":0,"documenttype":"Kitchen image"},
-    {"documenttypeid":1,"documenttype":"Kitchen Appliances"},
-    {"documenttypeid":2,"documenttype":"Packaging image"},
-    {"documenttypeid":3,"documenttype":"Signature image"}
+    {"documenttypeid":1,"documenttype":"Kitchen image"},
+    {"documenttypeid":2,"documenttype":"Kitchen Appliances"},
+    {"documenttypeid":3,"documenttype":"Packaging image"},
+    {"documenttypeid":4,"documenttype":"Signature image"},
+    {"documenttypeid":5,"documenttype":"Personal identification document"},
+    {"documenttypeid":6,"documenttype":"pan card"},
+    {"documenttypeid":6,"documenttype":"Address proof"}
 ]},
 
 // sales move online 

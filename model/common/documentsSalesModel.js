@@ -1,6 +1,8 @@
 "user strict";
 var sql = require("../db.js");
 var Documents = require("./documentsModel.js");
+const util = require("util");
+const query = util.promisify(sql.query).bind(sql);
 
 //Task object constructor
 var Documentsales = function(documentsales) {
@@ -10,40 +12,50 @@ var Documentsales = function(documentsales) {
   //this.created_at = new Date();
 };
 
-Documentsales.createnewDocument = function createnewDocument(
-  newdocument,
-  new_documents_list,
-  res
-) {
-  sql.query("INSERT INTO Documents_Sales set ?", newdocument, function(
-    err,
-    res1
-  ) {
-    if (err) {
-      console.log("error: ", err);
-      res(null, err);
-    } else {
-      var docid = res1.insertId;
+Documentsales.createnewDocument = async function createnewDocument(newdocument,new_documents_list,res) {
 
-      for (var i = 0; i < new_documents_list.length; i++) {
-        var documentlist = new Documents(new_documents_list[i]);
-        documentlist.docid = docid;
+  var salesdocu = await query("Select * From Documents_Sales where sales_userid = '" +newdocument.sales_userid+"' and makeit_userid = '" +newdocument.makeit_userid+"'");
+ 
+  if (salesdocu.length === 0) {
+   
+    var salesinsert = await query("INSERT INTO Documents_Sales set ?", newdocument);
+    console.log(salesinsert.insertId);
+    var docid  = salesinsert.insertId;
+    console.log("insert");
+  }else{
+    var docid  = salesdocu[0].docid;
+    console.log("get docid");
+  }
 
-        Documents.createnewDocumentlist(documentlist, function(err, result) {
-          if (err) res.send(err);
-        });
-      }
+ // var docid = res1.insertId;
+ 
+ console.log(new_documents_list);
+  for (var i = 0; i < new_documents_list.length; i++) {
+    var documentlist = new Documents(new_documents_list[i]);
+    documentlist.docid = docid;
+    Documents.createnewDocumentlist(documentlist, function(err, result) {
+      if (err) res.send(err);
+    });
+  }
 
-      let sucobj = true;
-      let mesobj = "Document stored successfully";
-      let resobj = {
-        success: sucobj,
-        message: mesobj,
-        docid: docid
-      };
-      res(null, resobj);
-    }
-  });
+  // sql.query("INSERT INTO Documents_Sales set ?", newdocument, function(err,res1) {
+  //   if (err) {
+  //     console.log("error: ", err);
+  //     res(null, err);
+  //   } else {
+     
+
+     
+  //   }
+  // });
+  let sucobj = true;
+  let mesobj = "Document stored successfully";
+  let resobj = {
+    success: sucobj,
+    message: mesobj,
+    docid: docid
+  };
+  res(null, resobj);
 };
 
 Documentsales.getDocumentById = function getDocumentById(id, result) {

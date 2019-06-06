@@ -85,7 +85,7 @@ Eatuser.createUser = function createUser(newUser, result) {
 
 Eatuser.getUserById = function getUserById(userId, result) {
   sql.query(
-    "Select us.userid,us.name,us.email,us.phoneno,us.Locality,us.created_at,us.virtualkey,us.gender,re.regionname from User us join Region re on re.regionid = us.regionid  where us.userid = ? ",
+    "Select us.userid,us.name,us.email,us.phoneno,us.Locality,us.created_at,us.virtualkey,us.gender,re.regionname,us.regionid from User us join Region re on re.regionid = us.regionid  where us.userid = ? ",
     userId,
     function(err, res) {
       if (err) {
@@ -1349,6 +1349,7 @@ Eatuser.checkLogin = function checkLogin(req, result) {
                     res[0].address_title = res1[0].address_title;
                     res[0].lat = res1[0].lat;
                     res[0].lon = res1[0].lon;
+                    res[0].address = res1[0].address;
                   }
                   let status = res.length == 1 ? true : false;
                   let resobj = {

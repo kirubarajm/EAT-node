@@ -548,6 +548,13 @@ module.exports = function(app) {
 
   app.route("/sales/pushid/add").put(salesuser.add_a_pushid);
 
+  app.route("/sales/brandidentity").put(makeituser.edit_makeit_brand_identity);
+
+
+
+
+
+
   // Common
 
   // Moveit

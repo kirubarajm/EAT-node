@@ -40,6 +40,8 @@ var Makeituser = function(makeituser) {
   this.img2 = makeituser.img2;
   this.img3 = makeituser.img3;
   this.img4 = makeituser.img4;
+  this.gender=makeituser.gender;
+  this.food_type=makeituser.food_type;
 
 };
 
@@ -1409,5 +1411,108 @@ Makeituser.update_pushid = function(req, result) {
   }
 };
 
+Makeituser.edit_makeit_brand_identity_by_sales = async function(req, cuisines, result) {
+
+  try {
+ 
+  cuisinesstatus = false;
+  removecuisinesstatus = false;
+  var column = "";
+  var editquery ="";
+ 
+
+  if(req.hometownid){
+    const hometown = await query("Select * from Hometown where hometownid="+ req.hometownid);
+    console.log(hometown);
+    req.regionid=hometown[0].regionid;
+    };
+ 
+   
+  if (req.email || req.password || req.phoneno) {
+    let sucobj = true;
+    let message = "You can't to be Edit email / password/ phoneno";
+    let resobj = {
+      success: sucobj,
+      message: message
+    };
+    result(null, resobj);
+  } else {
+   
+          staticquery = "UPDATE MakeitUser SET ";
+          for (const [key, value] of Object.entries(req)) {
+            if (
+              key !== "userid" &&
+              key !== "cuisines" &&
+              key !== "region" &&
+              key !== "rating" &&
+              key !== "removecuisines" 
+            ) {
+              column = column + key + "='" + value + "',";
+            } else if (key === "rating") {
+              column = column + key + "= " + value + ",";
+            }
+          }
+
+
+        
+          editquery=staticquery + column.slice(0, -1) + " where userid = " + req.userid;
+
+            console.log("query: ", editquery);
+
+            sql.query(editquery, function(err, res) {
+            if (err) {
+              console.log("error: ", err);
+              result(err, null);
+            } else {
+
+              if (cuisines !== undefined) {
+
+                if (cuisines.length !== 0) {
+                  cuisinesstatus = true;
+                  cuisines_temp=0;
+                  for (let i = 0; i < cuisines.length; i++) {
+                    var new_cuisine = new Cusinemakeit(cuisines[i]);
+                    new_cuisine.makeit_userid = req.userid;
+                    Cusinemakeit.createCusinemakeit(new_cuisine, function(
+                      err,
+                      res2
+                    ) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        cuisines_temp++;
+                      }
+                    });
+                  }
+                }
+              }
+             
+              let sucobj = true;
+              let message = "Updated successfully";
+
+              let resobj = {
+                success: sucobj,
+                status: true,
+                message: message
+              };
+
+              result(null, resobj);
+            }
+          });
+  }
+} catch (error) {
+  var errorCode = 402;
+  let sucobj = true;
+  let status = false;
+  let resobj = {
+    success: sucobj,
+    status: status,
+    errorCode: errorCode
+  };
+  result(null, resobj);
+}
+
+};
 
 module.exports = Makeituser;
