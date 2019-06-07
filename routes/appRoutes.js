@@ -550,6 +550,8 @@ module.exports = function(app) {
 
   app.route("/sales/brandidentity").put(makeituser.edit_makeit_brand_identity);
 
+  app.route("/sales/infoCreate").post(salesdocument.create_a_new_infodocument);
+
 
 
 

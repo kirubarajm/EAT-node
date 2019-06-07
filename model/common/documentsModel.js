@@ -227,7 +227,16 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
   });
 };
 
-Documents.createnewDocumentlist = async function createnewDocumentlist( documentlist, result) {
+Documents.createnewDocumentlist = function createnewDocumentlist(documentlist,res) {
+  sql.query("INSERT INTO Documents set ?", documentlist, function(err, result) {
+    if (err) {
+      console.log("error: ", err);
+      res(null, err);
+    }
+  });
+};
+
+Documents.createnewinfoDocument= async function createnewinfoDocument( documentlist, result) {
 
   var Documentscount = await query("Select * From Documents where docid = '" +documentlist.docid+"' and type = '" +documentlist.type+"'");
 
@@ -238,12 +247,7 @@ Documents.createnewDocumentlist = async function createnewDocumentlist( document
 
     var newDocumentsinsert = await query("Update Documents set url = '" +documentlist.url+"' where docid = '" +documentlist.docid+"' and type = '" +documentlist.type+"'");
   }
-  // sql.query("INSERT INTO  set ?", documentlist, function(err, result) {
-  //   if (err) {
-  //     console.log("error: ", err);
-  //     res(null, err);
-  //   }
-  // });
+
   let sucobj = "true";
       let message = "Document saved successfully";
       let resobj = {
@@ -252,7 +256,6 @@ Documents.createnewDocumentlist = async function createnewDocumentlist( document
       };
       result(null, resobj);
 };
-
 
 
 Documents.remove_document = function(req, result) {

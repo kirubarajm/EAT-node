@@ -136,9 +136,11 @@ Salesuser.checkLogin = function checkLogin(req, result) {
             result(resobj, null);
         }
         else {
-            let sucobj = (res.length == 1) ? 'true' : 'false';
+            let sucobj = (res.length == 1) ? true : false;
+            let status = (res.length == 1) ? true : false;
             let resobj = {
                 success: sucobj,
+                status:status,
                 result: res
             };
             console.log("result: ---", res.length);
