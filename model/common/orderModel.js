@@ -12,14 +12,14 @@ var FCM_EAT = require("../../FcmEatSendNotification.js");
 var PageidConstant = require("../../PageidConstant.js");
 var constant = require("../constant.js");
 var moment = require("moment");
-// const Razorpay = require("razorpay");
+const Razorpay = require("razorpay");
 
-// var instance = new Razorpay({
-//   key_id: 'rzp_test_3cduMl5T89iR9G',
-//   key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
-// })
+var instance = new Razorpay({
+  key_id: 'rzp_test_3cduMl5T89iR9G',
+  key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+})
 
-//const query = util.promisify(sql.query).bind(sql);
+const query = util.promisify(sql.query).bind(sql);
 
 //Task object constructor
 var Order = function(order) {
@@ -1099,11 +1099,7 @@ Order.orderlistbyeatuser = async function(req, result) {
   );
 };
 
-Order.eatcreateOrder = async function eatcreateOrder(
-  newOrder,
-  orderItems,
-  result
-) {
+Order.eatcreateOrder = async function eatcreateOrder(newOrder,orderItems,result) {
   const productquantity = [];
 
   for (let i = 0; i < orderItems.length; i++) {
@@ -1509,29 +1505,19 @@ Order.live_order_list_byeatuserid = async  function live_order_list_byeatuserid(
   );
 };
 
-Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
-  req,
-  orderitems,
-  result
-) {
-  try {
+Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems, result) {
+  // try {
     console.log("read_a_proceed_to_pay: ");
 
     const delivery_charge = constant.deliverycharge;
     // var res = await Order.live_order_list_byeatuserid(req,responce);
-    const res = await query(
-      "select * from Orders where userid ='" +
-        req.userid +
-        "' and orderstatus < 6  and payment_status !=2"
-    );
+    const res = await query("select * from Orders where userid ='" +req.userid + "' and orderstatus < 6  and payment_status !=2");
     //and (lock_status = 0 or lock_status = 1) and  payment_status = 0
-    // console.log(res);
+   //  console.log(res);
 
-    if (res.length == 0) {
-      Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(
-        err,
-        res3
-      ) {
+    if (res.length === 0) {
+     
+      Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(err, res3) {
         if (err) {
           result(err, null);
         } else {
@@ -1539,17 +1525,13 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
           if (res3.status != true) {
             result(null, res3);
           } else {
+
+            console.log(res3);
             var amountdata = res3.result[0].amountdetails;
             req.gst = amountdata.gstcharge;
             req.price = amountdata.grandtotal;
 
-            const res2 = await query(
-              "Select * from Address where aid = '" +
-                req.aid +
-                "' and userid = '" +
-                req.userid +
-                "'"
-            );
+            const res2 = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
 
             req.cus_address = res2[0].address;
             req.locality = res2[0].locality;
@@ -1758,17 +1740,17 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
       };
       result(null, resobj);
     }
-  } catch (error) {
-    var errorCode = 402;
-    let sucobj = true;
-    let status = false;
-    let resobj = {
-      success: sucobj,
-      status: status,
-      errorCode: errorCode
-    };
-    result(null, resobj);
-  }
+  // } catch (error) {
+  //   var errorCode = 402;
+  //   let sucobj = true;
+  //   let status = false;
+  //   let resobj = {
+  //     success: sucobj,
+  //     status: status,
+  //     errorCode: errorCode
+  //   };
+  //   result(null, resobj);
+  // }
 };
 
 Order.test_push = function test_push(req, result) {
