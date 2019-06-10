@@ -2,7 +2,7 @@
 module.exports = function(app) {
   //forever start server.js
 
-  var todoList = require("../controllers/AppController");
+  var todoList = require("../controllers/appController");
   var eatuser = require("../controllers/eat/EatUserController");
   var moveituser = require("../controllers/moveit/MoveitUserController");
   var makeituser = require("../controllers/makeit/MakeitUserController");
