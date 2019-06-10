@@ -1,6 +1,7 @@
 'user strict';
 var sql = require('../db.js');
 var Makeituser = require('../../model/makeit/makeitUserModel.js');
+var moment = require("moment");
 
 //Task object constructor
 var Allocation = function(allocation){
@@ -54,8 +55,7 @@ Allocation.updateAllocation = function updateAllocation(req, result) {
                 result(err, null);
             }
             else{
-                
-                
+                        
                 sql.query("UPDATE MakeitUser SET appointment_status = 2 WHERE userid = ?", req.makeit_userid, function (err, res) {
                     if(err) {
                         console.log("error: ", err);
@@ -65,6 +65,7 @@ Allocation.updateAllocation = function updateAllocation(req, result) {
                         let message = "Appointment assign successfully";
                         let resobj = {  
                         success: sucobj,
+                        status:true,
                         message:message
                         }; 
                         result(null, resobj);
@@ -92,8 +93,12 @@ Allocation.getAllocationById = function getAllocationById(userId, result) {
 };
 
 
-Allocation.getAllocationBySalesEmpId = function getAllocationBySalesEmpId(userId, result) {
-        sql.query("Select * from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = ? ", userId, function (err, res) {             
+Allocation.getAllocationBySalesEmpId = function getAllocationBySalesEmpId(userid, result) {
+
+      //  sql.query("Select * from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = ? ", userId, function (err, res) {  
+            
+            sql.query("Select alc.aid,alc.sales_emp_id,alc.makeit_userid,alc.status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid as makeit_region,mu.email,mu.lat,mu.lon,mu.appointment_status,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = '"+userid+"' and DATE(booking_date_time) = CURDATE() and status !=1 ", function (err, res) {             
+      
                 if(err) {
                     console.log("error: ", err);
                     result(err, null);
@@ -154,19 +159,29 @@ Allocation.remove = function(id, result){
 
 Allocation.update_a_followupstatus = function(req, result){
 
+    var booking_date_time = moment().format("YYYY-MM-DD HH:mm:ss");
+
     
-    sql.query("UPDATE Allocation SET status = ? WHERE makeit_userid = ? and sales_emp_id = ?" , [req.status,req.makeit_userid,req.sales_emp_id], function (err, res) {
+    if (req.status === 2 || req.status === 3 || req.status === 4) {
+        statusquery = "UPDATE Allocation SET status = '"+req.status+"',booking_date_time = '"+req.scheduledate+"' WHERE aid  = '"+req.aid+"' ";
+        
+       // makeit_userid = '"+req.makeit_userid+"' and sales_emp_id = '"+req.sales_emp_id+"' ";
+    }
+
+    console.log(statusquery);
+    
+    sql.query(statusquery, function (err, res) {
             if(err) {
                 console.log("error: ", err);
                   result(null, err);
                }
              else{
-                var makeitfollowupstatus = new Makeituser(req);
-                Makeituser.update_makeit_followup_status(makeitfollowupstatus, function (err, result) {
-                    if (err)
-                    result.send(err);
-                    // res.json(result);
-                }); 
+                // var makeitfollowupstatus = new Makeituser(req);
+                // Makeituser.update_makeit_followup_status(makeitfollowupstatus, function (err, result) {
+                //     if (err)
+                //     result.send(err);
+                //     // res.json(result);
+                // }); 
                 
                 let sucobj=true;
                 let mesobj = "Follow up status updated successfully";

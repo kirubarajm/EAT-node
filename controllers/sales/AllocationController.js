@@ -12,6 +12,11 @@ exports.list_all_allocation = function(req, res) {
 };
 
 exports.list_all_allocation_by_salesempid = function(req, res) {
+  if (!req.params.id) {
+    res
+      .status(400)
+      .send({ error: true,status:false, message: "Please provide sales_emp_id" });
+  } else {
   Allocation.getAllocationBySalesEmpId(req.params.id, function(
     err,
     allocation
@@ -21,6 +26,7 @@ exports.list_all_allocation_by_salesempid = function(req, res) {
     console.log("res", allocation);
     res.send(allocation);
   });
+}
 };
 
 exports.create_a_allocation = function(req, res) {
@@ -62,11 +68,29 @@ exports.delete_a_allocation = function(req, res) {
 };
 
 exports.update_a_followupstatus = function(req, res) {
-  Allocation.update_a_followupstatus(new Allocation(req.body), function(
+  if (!req.body.status) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide status" });
+  } else if (!req.body.makeit_userid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide makeit_userid" });
+  }else if (!req.body.sales_emp_id) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide sales_emp_id" });
+  }else if (!req.body.aid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide aid" });
+  } else {
+  Allocation.update_a_followupstatus(req.body, function(
     err,
     allocation
   ) {
     if (err) res.send(err);
     res.json(allocation);
   });
+}
 };

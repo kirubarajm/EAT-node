@@ -325,3 +325,16 @@ exports.add_a_pushid = function(req, res) {
   });
 };
 
+exports.edit_makeit_brand_identity = function(req, res) {
+  var cuisines = req.body.cuisines;
+  if (!req.body.userid) {
+    res
+      .status(400)
+      .send({ error: true, message: "Please provide makeit userid" });
+  } else {
+    Makeituser.edit_makeit_brand_identity_by_sales(req.body, cuisines, function(err, user) {
+      if (err) res.send(err);
+      res.json(user);
+    });
+  }
+};
