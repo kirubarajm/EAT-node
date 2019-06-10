@@ -1,6 +1,8 @@
 "user strict";
 var sql = require("../db.js");
 var Documents = require("./documentsModel.js");
+var PackagingBox = require("./packagingboxModel.js");
+
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 
@@ -12,7 +14,50 @@ var Documentsales = function(documentsales) {
   //this.created_at = new Date();
 };
 
-Documentsales.createnewDocument = async function createnewDocument(newdocument,new_documents_list,res) {
+Documentsales.createnewDocument = function createnewDocument(newdocument,new_documents_list,packagingdetails,res) {
+  sql.query("INSERT INTO Documents_Sales set ?", newdocument, function(err,res1) {
+    if (err) {
+      console.log("error: ", err);
+      res(null, err);
+    } else {
+      var docid = res1.insertId;
+
+      for (var i = 0; i < new_documents_list.length; i++) {
+        var documentlist = new Documents(new_documents_list[i]);
+        documentlist.docid = docid;
+
+        Documents.createnewDocumentlist(documentlist, function(err, result) {
+          if (err) res.send(err);
+        });
+      }
+
+      for (var i = 0; i < packagingdetails.length; i++) {
+        var newpackagingdetails = new PackagingBox(packagingdetails[i]);
+     //   documentlist.docid = docid;
+          newpackagingdetails.sales_userid = newdocument.sales_userid;
+          newpackagingdetails.makeit_userid = newdocument.makeit_userid;
+          newpackagingdetails.aid = newdocument.aid;
+
+          console.log(newpackagingdetails);
+        PackagingBox.createnewPackagingBox(newpackagingdetails, function(err, result) {
+          if (err) res.send(err);
+        });
+      }
+      
+
+      let sucobj = true;
+      let mesobj = "Document stored successfully";
+      let resobj = {
+        success: sucobj,
+        message: mesobj,
+        docid: docid
+      };
+      res(null, resobj);
+    }
+  });
+};
+
+Documentsales.infodocumentcreate = async function infodocumentcreate(newdocument,new_documents_list,res) {
 
   var salesdocu = await query("Select * From Documents_Sales where sales_userid = '" +newdocument.sales_userid+"' and makeit_userid = '" +newdocument.makeit_userid+"'");
  
@@ -33,21 +78,11 @@ Documentsales.createnewDocument = async function createnewDocument(newdocument,n
   for (var i = 0; i < new_documents_list.length; i++) {
     var documentlist = new Documents(new_documents_list[i]);
     documentlist.docid = docid;
-    Documents.createnewDocumentlist(documentlist, function(err, result) {
+    Documents.createnewinfoDocument(documentlist, function(err, result) {
       if (err) res.send(err);
     });
   }
 
-  // sql.query("INSERT INTO Documents_Sales set ?", newdocument, function(err,res1) {
-  //   if (err) {
-  //     console.log("error: ", err);
-  //     res(null, err);
-  //   } else {
-     
-
-     
-  //   }
-  // });
   let sucobj = true;
   let mesobj = "Document stored successfully";
   let resobj = {

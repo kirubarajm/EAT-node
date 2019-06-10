@@ -63,6 +63,8 @@ exports.delete_a_documents = function(req, res) {
 exports.create_a_new_documents = function(req, res) {
   var new_documents = new DocumentSales(req.body);
   var new_documents_list = req.body.documentlist;
+  var packagingdetails = req.body.packagingdetails;
+
   // console.log(new_documents);
   //console.log(req.files);
   //handles null error
@@ -71,7 +73,7 @@ exports.create_a_new_documents = function(req, res) {
       .status(400)
       .send({ error: true, message: "Please provide documents name" });
   } else {
-    DocumentSales.createnewDocument(new_documents, new_documents_list, function(
+    DocumentSales.createnewDocument(new_documents, new_documents_list,packagingdetails, function(
       err,
       documents
     ) {
@@ -99,4 +101,27 @@ exports.sales_document_view = function(req, res) {
     if (err) res.send(err);
     res.json(documents);
   });
+};
+
+
+
+exports.create_a_new_infodocument = function(req, res) {
+  var new_documents = new DocumentSales(req.body);
+  var new_documents_list = req.body.documentlist;
+  // console.log(new_documents);
+  //console.log(req.files);
+  //handles null error
+  if (!new_documents || !new_documents_list) {
+    res
+      .status(400)
+      .send({ error: true, message: "Please provide documents name" });
+  } else {
+    DocumentSales.infodocumentcreate(new_documents, new_documents_list, function(
+      err,
+      documents
+    ) {
+      if (err) res.send(err);
+      res.json(documents);
+    });
+  }
 };

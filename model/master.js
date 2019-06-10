@@ -237,7 +237,7 @@ const master = [
     {"documenttypeid":4,"documenttype":"Signature image"},
     {"documenttypeid":5,"documenttype":"Personal identification document"},
     {"documenttypeid":6,"documenttype":"pan card"},
-    {"documenttypeid":6,"documenttype":"Address proof"}
+    {"documenttypeid":7,"documenttype":"Address proof"}
 ]},
 
 // sales move online 
@@ -321,6 +321,21 @@ const master = [
     {"quicksearchid":2,"quicksearchtype" :'kitchen'},
     {"quicksearchid":3,"quicksearchtype" :'others'}
 ]},
+
+{ 'boxingtype' : [
+    {
+        "boxingtypeid": 1, "description": "Small Boxes"
+    },
+    {
+        "boxingtypeid": 2,"description": "Medium Boxes"
+    },
+    {
+        "boxingtypeid": 3,"description": "Large Boxes"
+    },
+    {
+        "boxingtypeid": 4,"description": "Outer Boxes"
+    }
+] },
 
 ]
 module.exports = master;
