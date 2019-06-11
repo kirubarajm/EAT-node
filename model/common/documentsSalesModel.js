@@ -14,8 +14,16 @@ var Documentsales = function(documentsales) {
   //this.created_at = new Date();
 };
 
-Documentsales.createnewDocument = function createnewDocument(newdocument,new_documents_list,packagingdetails,res) {
-  sql.query("INSERT INTO Documents_Sales set ?", newdocument, function(err,res1) {
+Documentsales.createnewDocument = function createnewDocument(
+  newdocument,
+  new_documents_list,
+  packagingdetails,
+  res
+) {
+  sql.query("INSERT INTO Documents_Sales set ?", newdocument, function(
+    err,
+    res1
+  ) {
     if (err) {
       console.log("error: ", err);
       res(null, err);
@@ -25,25 +33,23 @@ Documentsales.createnewDocument = function createnewDocument(newdocument,new_doc
       for (var i = 0; i < new_documents_list.length; i++) {
         var documentlist = new Documents(new_documents_list[i]);
         documentlist.docid = docid;
-
-        Documents.createnewDocumentlist(documentlist, function(err, result) {
+        Documents.createnewinfoDocument(documentlist, function(err, result) {
           if (err) res.send(err);
         });
       }
 
       for (var i = 0; i < packagingdetails.length; i++) {
         var newpackagingdetails = new PackagingBox(packagingdetails[i]);
-     //   documentlist.docid = docid;
-          newpackagingdetails.sales_userid = newdocument.sales_userid;
-          newpackagingdetails.makeit_userid = newdocument.makeit_userid;
-          newpackagingdetails.aid = newdocument.aid;
-
-          console.log(newpackagingdetails);
-        PackagingBox.createnewPackagingBox(newpackagingdetails, function(err, result) {
+        newpackagingdetails.sales_userid = newdocument.sales_userid;
+        newpackagingdetails.makeit_userid = newdocument.makeit_userid;
+        newpackagingdetails.aid = newdocument.aid;
+        PackagingBox.createnewPackagingBox(newpackagingdetails, function(
+          err,
+          result
+        ) {
           if (err) res.send(err);
         });
       }
-      
 
       let sucobj = true;
       let mesobj = "Document stored successfully";
@@ -57,30 +63,103 @@ Documentsales.createnewDocument = function createnewDocument(newdocument,new_doc
   });
 };
 
-Documentsales.infodocumentcreate = async function infodocumentcreate(newdocument,new_documents_list,res) {
 
-  var salesdocu = await query("Select * From Documents_Sales where sales_userid = '" +newdocument.sales_userid+"' and makeit_userid = '" +newdocument.makeit_userid+"'");
- 
+Documentsales.createkitchenDoument = async function createkitchenDoument(
+  newdocument,
+  new_documents_list,
+  packagingdetails,
+  res
+) {
+  var salesdocu = await query(
+    "Select * From Documents_Sales where sales_userid = '" +
+      newdocument.sales_userid +
+      "' and makeit_userid = '" +
+      newdocument.makeit_userid +
+      "'"
+  );
+  var docid = 0;
   if (salesdocu.length === 0) {
-   
-    var salesinsert = await query("INSERT INTO Documents_Sales set ?", newdocument);
-    console.log(salesinsert.insertId);
-    var docid  = salesinsert.insertId;
-    console.log("insert");
-  }else{
-    var docid  = salesdocu[0].docid;
-    console.log("get docid");
+    var salesinsert = await query(
+      "INSERT INTO Documents_Sales set ?",
+      newdocument
+    );
+    docid = salesinsert.insertId;
+  } else {
+    docid = salesdocu[0].docid;
   }
 
- // var docid = res1.insertId;
- 
- console.log(new_documents_list);
-  for (var i = 0; i < new_documents_list.length; i++) {
-    var documentlist = new Documents(new_documents_list[i]);
-    documentlist.docid = docid;
-    Documents.createnewinfoDocument(documentlist, function(err, result) {
-      if (err) res.send(err);
+  if (new_documents_list&&docid) {
+    for (var i = 0; i < new_documents_list.length; i++) {
+      var documentlist = new Documents(new_documents_list[i]);
+      documentlist.docid = docid;
+      await Documents.createkitchenImageUpload(documentlist, function(
+        err,
+        result
+      ) {
+        if (err){ res(err, null);}
+        if(!result) { res(err, { success: true,
+          status:false,
+          message: 'sorry your kitchen image upload falied'});}
+      });
+    }
+  }
+
+  if (packagingdetails&&docid) {
+  for (var i = 0; i < packagingdetails.length; i++) {
+    var newpackagingdetails = new PackagingBox(packagingdetails[i]);
+    newpackagingdetails.sales_userid = newdocument.sales_userid;
+    newpackagingdetails.makeit_userid = newdocument.makeit_userid;
+    newpackagingdetails.aid = docid;
+    await PackagingBox.createPackagingBox(newpackagingdetails, function(
+      err,
+      result
+    ) {
+      if (err){ res(err, null);}
     });
+  }
+}
+
+  let sucobj = true;
+  let mesobj = "Document stored successfully";
+  let resobj = {
+    success: sucobj,
+    message: mesobj,
+    docid: docid
+  };
+  res(null, resobj);
+};
+
+Documentsales.infodocumentcreate = async function infodocumentcreate(
+  newdocument,
+  new_documents_list,
+  res
+) {
+  var salesdocu = await query(
+    "Select * From Documents_Sales where sales_userid = '" +
+      newdocument.sales_userid +
+      "' and makeit_userid = '" +
+      newdocument.makeit_userid +
+      "'"
+  );
+  var docid = 0;
+  if (salesdocu.length === 0) {
+    var salesinsert = await query(
+      "INSERT INTO Documents_Sales set ?",
+      newdocument
+    );
+    docid = salesinsert.insertId;
+  } else {
+    docid = salesdocu[0].docid;
+  }
+
+  if (new_documents_list&&docid) {
+    for (var i = 0; i < new_documents_list.length; i++) {
+      var documentlist = new Documents(new_documents_list[i]);
+      documentlist.docid = docid;
+      await Documents.createnewinfoDocument(documentlist, function(err, result) {
+        if (err) res.send(err);
+      });
+    }
   }
 
   let sucobj = true;

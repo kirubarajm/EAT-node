@@ -1,8 +1,8 @@
 "user strict";
 var sql = require("../db.js");
 var path = require("path");
-var url = require('url');
-var https = require('https');
+var url = require("url");
+var https = require("https");
 var AWS_ACCESS_KEY = "AKIAJJQUEYLIU23E63OA";
 var AWS_SECRET_ACCESS_KEY = "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";
 const fs = require("fs");
@@ -11,28 +11,22 @@ const AWS = require("aws-sdk");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 
-
-
-
 // AWS.config.update({
-//   httpOptions: { 
-//     agent: proxy('http://52.219.62.68') 
+//   httpOptions: {
+//     agent: proxy('http://52.219.62.68')
 //   }
 // });
-
 
 const s3 = new AWS.S3({
   accessKeyId: AWS_ACCESS_KEY,
   secretAccessKey: AWS_SECRET_ACCESS_KEY,
-  region: 'us-east-1'
+  region: "us-east-1"
 });
 
 //  var s3 = new AWS.S3({region: 'us-east-1'});
 // s3.getObject({accessKeyId: AWS_ACCESS_KEY, secretAccessKey: AWS_SECRET_ACCESS_KEY}, function (err, data) {
 //   console.log(err, data);
 // });
-
-
 
 //Task object constructor
 
@@ -192,8 +186,15 @@ Documents.remove = function(id, result) {
 Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
   //console.log(newDocument.files.lic); // the uploaded file object
 
-  if (Object.keys(newDocument.files).length == 0) {
-    return result.status(400).send("No files were uploaded.");
+  if (
+    !newDocument.files ||
+    !newDocument.files.lic ||
+    Object.keys(newDocument.files).length == 0
+  ) {
+    result(
+      { success: true, status: false, message: "No files were uploaded." },
+      null
+    );
   }
 
   var fileName = newDocument.files.lic;
@@ -214,7 +215,6 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
       console.log("error: ", err);
       result(err, null);
     } else {
-      //console.log(res.insertId);
       let sucobj = "true";
       let message = "Document uploaded successfully";
       let resobj = {
@@ -227,7 +227,10 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
   });
 };
 
-Documents.createnewDocumentlist = function createnewDocumentlist(documentlist,res) {
+Documents.createnewDocumentlist = function createnewDocumentlist(
+  documentlist,
+  res
+) {
   sql.query("INSERT INTO Documents set ?", documentlist, function(err, result) {
     if (err) {
       console.log("error: ", err);
@@ -236,27 +239,125 @@ Documents.createnewDocumentlist = function createnewDocumentlist(documentlist,re
   });
 };
 
-Documents.createnewinfoDocument= async function createnewinfoDocument( documentlist, result) {
+Documents.addNewkitchan = function addNewkitchan(documentlist, res) {
+  sql.query("INSERT INTO Documents set ?", documentlist, function(err, result) {
+    if (err) {
+      console.log("error: ", err);
+      res(null, false);
+    } else res(null, true);
+  });
+};
 
-  var Documentscount = await query("Select * From Documents where docid = '" +documentlist.docid+"' and type = '" +documentlist.type+"'");
+Documents.updateNewkitchan = function updateNewkitchan(document, res) {
+  sql.query(
+    "UPDATE Documents set url = '" +
+      document.url +
+      "' where did='" +
+      document.did +
+      "'",
+    function(err, result) {
+      if (err) {
+        console.log("error: ", err);
+        res(null, false);
+      } else res(null, true);
+    }
+  );
+};
 
-  console.log(Documentscount.length);
+Documents.createnewinfoDocument = async function createnewinfoDocument(
+  documentlist,
+  result
+) {
+  var Documentscount = await query(
+    "Select * From Documents where docid = '" +
+      documentlist.docid +
+      "' and type = '" +
+      documentlist.type +
+      "'"
+  );
+
+  console.log(Documentscount.length+"--doc-id--"+documentlist.docid+"--doc-type--"+documentlist.type);
   if (Documentscount.length === 0) {
-    var newDocumentsinsert = await query("INSERT INTO Documents set ?", documentlist);
-  }else{
-
-    var newDocumentsinsert = await query("Update Documents set url = '" +documentlist.url+"' where docid = '" +documentlist.docid+"' and type = '" +documentlist.type+"'");
+    var newDocumentsinsert = await query(
+      "INSERT INTO Documents set ?",
+      documentlist
+    );
+  } else {
+    var newDocumentsinsert = await query(
+      "Update Documents set url = '" +
+        documentlist.url +
+        "' where docid = '" +
+        documentlist.docid +
+        "' and type = '" +
+        documentlist.type +
+        "'"
+    );
   }
 
   let sucobj = "true";
-      let message = "Document saved successfully";
-      let resobj = {
-        success: sucobj,
-        message: message
-      };
-      result(null, resobj);
+  let message = "Document saved successfully";
+  let resobj = {
+    success: sucobj,
+    message: message
+  };
+  result(null, resobj);
 };
 
+Documents.createkitchenImageUpload = async function createkitchenImageUpload(
+  documentlist,
+  result
+) {
+  if (documentlist.did) {
+    newDocumentsinsert = await Documents.updateNewkitchan(
+      documentlist,
+      result
+    )
+    result(null,newDocumentsinsert);
+  } else {
+    var kitchenImage = await query(
+      "Select * From Documents where docid = '" +
+        documentlist.docid +
+        "' and type = '" +
+        documentlist.type +
+        "'"
+    );
+    if (kitchenImage.length >= 5) {
+      result(null,false);
+    }else{
+      newDocumentsinsert = await Documents.addNewkitchan(
+        documentlist,
+        result
+      )
+      result(null,newDocumentsinsert);
+    }
+    
+  }
+  // var kitchenImage = await query(
+  //   "Select * From Documents where docid = '" +
+  //     documentlist.docid +
+  //     "' and type = '" +
+  //     documentlist.type +
+  //     "'"
+  // );
+
+  //   if(kitchenImage.length>=5){
+  //     var docM='kitchen'
+  //     if(documentlist.type===2) docM='kitchen application' ;
+  //     let resobj = {
+  //       success: true,
+  //       status:false,
+  //       message: 'Your '+docM+' image uploaded limt exited',
+  //     };
+  //     return resobj;
+  //   }
+  // var newDocumentsinsert = await Documents.createnewDocumentlist(documentlist,result);
+  // let resobj = {
+  //   success: true,
+  //   status:true,
+  //   message: "Document saved successfully",
+  // };
+  // return resobj;
+};
 
 Documents.remove_document = function(req, result) {
   const fs = require("fs");

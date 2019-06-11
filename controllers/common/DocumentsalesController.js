@@ -73,7 +73,7 @@ exports.create_a_new_documents = function(req, res) {
       .status(400)
       .send({ error: true, message: "Please provide documents name" });
   } else {
-    DocumentSales.createnewDocument(new_documents, new_documents_list,packagingdetails, function(
+    DocumentSales.createkitchenDoument(new_documents, new_documents_list,packagingdetails, function(
       err,
       documents
     ) {

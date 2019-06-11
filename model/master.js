@@ -238,11 +238,9 @@ const master = [
  { 'documenttypemakeit' : [
     {"documenttypeid":1,"documenttype":"Kitchen image"},
     {"documenttypeid":2,"documenttype":"Kitchen Appliances"},
-    {"documenttypeid":3,"documenttype":"Packaging image"},
-    {"documenttypeid":4,"documenttype":"Signature image"},
-    {"documenttypeid":5,"documenttype":"Personal identification document"},
-    {"documenttypeid":6,"documenttype":"pan card"},
-    {"documenttypeid":7,"documenttype":"Address proof"}
+    {"documenttypeid":3,"documenttype":"Identification document"},
+    {"documenttypeid":4,"documenttype":"Address proof"},
+    {"documenttypeid":5,"documenttype":"Signature image"},
 ]},
 
 // sales move online 

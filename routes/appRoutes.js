@@ -78,12 +78,12 @@ module.exports = function(app) {
   //Routes for makeit users
 
   app
-    .route("/makeit/user")
+    .route("/makeit/users")
     .get(makeituser.list_all_user)
     .post(makeituser.create_a_user);
 
   app
-    .route("/makeitusers/:userid")
+    .route("/makeit/user/:userid")
     .get(makeituser.read_a_user)
     .put(makeituser.update_a_user)
     .delete(makeituser.delete_a_user);
@@ -418,6 +418,7 @@ module.exports = function(app) {
   app
     .route("/admin/sales/documentupload")
     .post(documents.sales_upload_a_documents);
+    
 
   app
     .route("/admin/moveit/documentupload")
@@ -531,16 +532,13 @@ module.exports = function(app) {
   app.route("/orders/ordercreate").post(orders.eatuser_order_create);
 
   //Sales API
-
   app.route("/sales/followupstatus").put(allocation.update_a_followupstatus);
 
   app.route("/sales/faq").get(faq.list_all_faq);
 
-  app.route("/sales/rating").post(salesuser.create_a_rating);
+  //app.route("/sales/documentUpload").post(documents.upload_a_documents);
 
-  app.route("/sales/documentUpload").post(documents.upload_a_documents);
-
-  app.route("/sales/documentCreate").post(salesdocument.create_a_new_documents);
+  app.route("/sales/makeit/documentupload").post(documents.upload_a_documents);
 
   app.route("/sales/documentView").post(salesdocument.sales_document_view);
 
@@ -548,9 +546,10 @@ module.exports = function(app) {
 
   app.route("/sales/pushid/add").put(salesuser.add_a_pushid);
 
-  app.route("/sales/brandidentity").put(makeituser.edit_makeit_brand_identity);
-
-  app.route("/sales/infoCreate").post(salesdocument.create_a_new_infodocument);
+  app.route("/sales/makeitinfo/update").put(makeituser.edit_makeit_brand_identity);
+  app.route("/sales/makeitdocument/update").post(salesdocument.create_a_new_infodocument);
+  app.route("/sales/makeitkitchan/update").post(salesdocument.create_a_new_documents);
+  app.route("/sales/rating").post(salesuser.create_a_rating);
 
 
 

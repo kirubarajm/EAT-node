@@ -1,5 +1,7 @@
 "user strict";
 var sql = require("../db.js");
+const util = require("util");
+const query = util.promisify(sql.query).bind(sql);
 
 var PackagingBox = function(packagingbox) {
     this.boxtype = packagingbox.boxtype;
@@ -20,6 +22,38 @@ var PackagingBox = function(packagingbox) {
       }
     });
   };
+
+
+  PackagingBox.createPackagingBox = async function createPackagingBox(boxdetail,res) {
+
+    var packingbox = await query(
+      "Select * From Packaging_Boxs where sales_userid = '" +
+      boxdetail.sales_userid +
+        "' and makeit_userid = '" +
+        boxdetail.makeit_userid +
+        "' and boxtype = '" +
+        boxdetail.boxtype +
+        "'"
+    );
+    if (packingbox.length === 0) {
+      sql.query("INSERT INTO Packaging_Boxs set ?", boxdetail, function(err, packinginsert) {
+        if (err) {
+          console.log("error: ", err);
+          res(err, null);
+        }
+      });
+    } else {
+      var pid = packingbox[0].docid;
+      console.log("update: ", 'update the packing...');
+      sql.query("UPDATE Packaging_Boxs set count = '"+boxdetail.count+"' where pid='"+pid+"'", function(err, packinginsert) {
+        if (err) {
+          console.log("error: ", err);
+          res(err, null);
+        }
+      });
+    }
+ 
+};
   
 
 // PackagingBox.createnewPackagingBox= async function createnewPackagingBox( packagingboxdetails, result) {
