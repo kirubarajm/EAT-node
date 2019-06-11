@@ -126,16 +126,21 @@ const master = [
     },
     {
         "followupstatussid":2,
-        "followupstatus":"info-reschedule"
+        "followupstatus":"info-schedule"
     },
     {
         "followupstatussid":3,
-        "followupstatus":"appointment-reschedule"
+        "followupstatus":"info-reschedule"
     },
     {
         "followupstatussid":4,
-        "followupstatus":"appointment-reschedule"
+        "followupstatus":"appointment-schedule"
     },
+    
+    {
+        "followupstatussid":5,
+        "followupstatus":"appointment-reschedule"
+    }
 ]},
 
 

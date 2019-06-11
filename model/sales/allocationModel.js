@@ -161,11 +161,10 @@ Allocation.update_a_followupstatus = function(req, result){
 
     var booking_date_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
-    
-    if (req.status === 2 || req.status === 3 || req.status === 4) {
+    var statusquery = "UPDATE Allocation SET status = '"+req.status+"' WHERE aid ='"+req.aid+"'";
+
+    if (req.scheduledate&&(req.status===2||req.status===4)) {
         statusquery = "UPDATE Allocation SET status = '"+req.status+"',booking_date_time = '"+req.scheduledate+"' WHERE aid  = '"+req.aid+"' ";
-        
-       // makeit_userid = '"+req.makeit_userid+"' and sales_emp_id = '"+req.sales_emp_id+"' ";
     }
 
     console.log(statusquery);
@@ -176,13 +175,6 @@ Allocation.update_a_followupstatus = function(req, result){
                   result(null, err);
                }
              else{
-                // var makeitfollowupstatus = new Makeituser(req);
-                // Makeituser.update_makeit_followup_status(makeitfollowupstatus, function (err, result) {
-                //     if (err)
-                //     result.send(err);
-                //     // res.json(result);
-                // }); 
-                
                 let sucobj=true;
                 let mesobj = "Follow up status updated successfully";
                 let resobj = {  

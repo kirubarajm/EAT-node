@@ -124,7 +124,7 @@ Makeituser.createUser = function createUser(newUser, result) {
 Makeituser.getUserById = function getUserById(userId, result) {
   //var query1 = "select mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey from MakeitUser as mu join Documents_Sales as ds on mu.userid = ds.makeit_userid join Documents as st on ds.docid = st.docid where mu.userid = '"+userId+"'";
   //var query1 = "Select * from MakeitUser where userid = '" + userId + "'";
-
+// JSON_OBJECT('img1',mk.img1,'img2',mk.img2,'img3',mk.img3,'img4',mk.img4) As Images
   var query1 =
     "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img1, mk.img2,mk.img3,mk.img4,mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mkh.makeithub_id,mkh.makeithub_name, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
     userId +
@@ -139,6 +139,14 @@ Makeituser.getUserById = function getUserById(userId, result) {
           res[i].cuisines = JSON.parse(res[i].cuisines);
         }
       }
+      
+        
+        if(res[0].img1) res[0].Images = [res[0].img1];
+        if(res[0].img2) res[0].Images.push(res[0].img2);
+        if(res[0].img3) res[0].Images.push(res[0].img3);
+        if(res[0].img4) res[0].Images.push(res[0].img4);
+      
+      
 
       sql.query(
         "select st.url,st.docid,st.type from Documents_Sales as ds join Documents as st on ds.docid = st.docid where ds.makeit_userid = '" +

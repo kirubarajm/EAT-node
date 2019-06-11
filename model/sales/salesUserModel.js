@@ -124,26 +124,27 @@ Salesuser.remove = function (id, result) {
 };
 
 Salesuser.checkLogin = function checkLogin(req, result) {
-    var reqs = [req.email, req.password];
-    sql.query("Select * from Sales_QA_employees where email = ? and password = ?", reqs, function (err, res) {
+    var reqs = [req.phoneno, req.password];
+    sql.query("Select * from Sales_QA_employees where phoneno = ? and password = ?", reqs, function (err, res) {
         if (err) {
             console.log("error: ", err);
-
             let resobj = {
-                success: 'false',
+                success: true,
+                status:false,
+                message:'Sorry! unfortunately stopped.',
                 result: err
             };
             result(resobj, null);
         }
         else {
-            let sucobj = (res.length == 1) ? true : false;
             let status = (res.length == 1) ? true : false;
+            let message = (status) ? 'Successfully login' : 'Sorry! your not valid login';
             let resobj = {
-                success: sucobj,
+                success: true,
                 status:status,
+                message:message,
                 result: res
             };
-            console.log("result: ---", res.length);
             result(null, resobj);
         }
     });
