@@ -25,15 +25,8 @@ Makeitrating.createRating = function createRating(new_rating, result) {
                           result(null, err);
                        }
                      else{
-                        // var makeitfollowupstatus = new Makeituser(req);
-                        // Makeituser.update_makeit_followup_status(makeitfollowupstatus, function (err, result) {
-                        //     if (err)
-                        //     result.send(err);
-                        //     // res.json(result);
-                        // }); 
-                        
                         let sucobj=true;
-                        let mesobj = "Job completed successfully";
+                        let mesobj = "Rating Update successfully";
                         let resobj = {  
                         success: sucobj,
                         message:mesobj

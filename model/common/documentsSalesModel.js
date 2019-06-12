@@ -63,70 +63,82 @@ Documentsales.createnewDocument = function createnewDocument(
   });
 };
 
-
 Documentsales.createkitchenDoument = async function createkitchenDoument(
   newdocument,
-  new_documents_list,
+  kitchanImage,
+  kitchanApplicationImage,
   packagingdetails,
+  document_delete_list,
   res
 ) {
-  var salesdocu = await query(
-    "Select * From Documents_Sales where sales_userid = '" +
-      newdocument.sales_userid +
-      "' and makeit_userid = '" +
-      newdocument.makeit_userid +
-      "'"
-  );
-  var docid = 0;
-  if (salesdocu.length === 0) {
-    var salesinsert = await query(
-      "INSERT INTO Documents_Sales set ?",
-      newdocument
+  try{
+    var salesdocu = await query(
+      "Select * From Documents_Sales where sales_userid = '" +
+        newdocument.sales_userid +
+        "' and makeit_userid = '" +
+        newdocument.makeit_userid +
+        "'"
     );
-    docid = salesinsert.insertId;
-  } else {
-    docid = salesdocu[0].docid;
-  }
-
-  if (new_documents_list&&docid) {
-    for (var i = 0; i < new_documents_list.length; i++) {
-      var documentlist = new Documents(new_documents_list[i]);
-      documentlist.docid = docid;
-      await Documents.createkitchenImageUpload(documentlist, function(
-        err,
-        result
-      ) {
-        if (err){ res(err, null);}
-        if(!result) { res(err, { success: true,
-          status:false,
-          message: 'sorry your kitchen image upload falied'});}
+    var docid = 0;
+    if (salesdocu.length === 0) {
+      var salesinsert = await query(
+        "INSERT INTO Documents_Sales set ?",
+        newdocument
+      );
+      docid = salesinsert.insertId;
+    } else {
+      docid = salesdocu[0].docid;
+    }
+  
+    if (document_delete_list&&document_delete_list.length !== 0) {
+      await Documents.deletekitchenImage(document_delete_list, function(err,result) {
+        if (err) return res(err, null);
       });
     }
+  
+    if (kitchanImage && docid) {
+      var isUploaded=await Documents.createkitchenImageUpload(kitchanImage,docid,1);
+      if(!isUploaded) return res({ status: false, message: "Your kitchen image uploaded limt exiteded." } ,null);
+      console.log("kitchenImages length: ",'----------------');
+    }
+  
+    if (kitchanApplicationImage && docid) {
+      console.log("kitchanApplicationImage length: ", '-------------');
+      var iskaUploaded=await Documents.createkitchenImageUpload(kitchanApplicationImage,docid,2);
+      if(!iskaUploaded)  return res({ status: false, message: "Your kitchen application image uploaded limt exiteded." } ,null);
+    }
+  
+   
+  
+    if (packagingdetails && docid) {
+      console.log("packagingdetails length: ", '-------------');
+      for (var i = 0; i < packagingdetails.length; i++) {
+        var newpackagingdetails = new PackagingBox(packagingdetails[i]);
+        newpackagingdetails.sales_userid = newdocument.sales_userid;
+        newpackagingdetails.makeit_userid = newdocument.makeit_userid;
+        newpackagingdetails.aid = docid;
+        await PackagingBox.createPackagingBox(newpackagingdetails, function(
+          err,
+          result
+        ) {
+          if (err) return res(err, null);
+          
+        });
+      }
+    }
+  
+    let sucobj = true;
+    let mesobj = "Document stored successfully";
+    let resobj = {
+      success: sucobj,
+      message: mesobj,
+      docid: docid
+    };
+    res(null, resobj);
+  }catch(e){
+    console.log("error--",e);
   }
-
-  if (packagingdetails&&docid) {
-  for (var i = 0; i < packagingdetails.length; i++) {
-    var newpackagingdetails = new PackagingBox(packagingdetails[i]);
-    newpackagingdetails.sales_userid = newdocument.sales_userid;
-    newpackagingdetails.makeit_userid = newdocument.makeit_userid;
-    newpackagingdetails.aid = docid;
-    await PackagingBox.createPackagingBox(newpackagingdetails, function(
-      err,
-      result
-    ) {
-      if (err){ res(err, null);}
-    });
-  }
-}
-
-  let sucobj = true;
-  let mesobj = "Document stored successfully";
-  let resobj = {
-    success: sucobj,
-    message: mesobj,
-    docid: docid
-  };
-  res(null, resobj);
+  
 };
 
 Documentsales.infodocumentcreate = async function infodocumentcreate(
@@ -152,11 +164,14 @@ Documentsales.infodocumentcreate = async function infodocumentcreate(
     docid = salesdocu[0].docid;
   }
 
-  if (new_documents_list&&docid) {
+  if (new_documents_list && docid) {
     for (var i = 0; i < new_documents_list.length; i++) {
       var documentlist = new Documents(new_documents_list[i]);
       documentlist.docid = docid;
-      await Documents.createnewinfoDocument(documentlist, function(err, result) {
+      await Documents.createnewinfoDocument(documentlist, function(
+        err,
+        result
+      ) {
         if (err) res.send(err);
       });
     }

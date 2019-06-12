@@ -239,13 +239,8 @@ Documents.createnewDocumentlist = function createnewDocumentlist(
   });
 };
 
-Documents.addNewkitchan = function addNewkitchan(documentlist, res) {
-  sql.query("INSERT INTO Documents set ?", documentlist, function(err, result) {
-    if (err) {
-      console.log("error: ", err);
-      res(null, false);
-    } else res(null, true);
-  });
+Documents.addNewkitchan = function addNewkitchan(documentlist) {
+  return sql.query("INSERT INTO Documents set ?", documentlist);
 };
 
 Documents.updateNewkitchan = function updateNewkitchan(document, res) {
@@ -276,7 +271,13 @@ Documents.createnewinfoDocument = async function createnewinfoDocument(
       "'"
   );
 
-  console.log(Documentscount.length+"--doc-id--"+documentlist.docid+"--doc-type--"+documentlist.type);
+  console.log(
+    Documentscount.length +
+      "--doc-id--" +
+      documentlist.docid +
+      "--doc-type--" +
+      documentlist.type
+  );
   if (Documentscount.length === 0) {
     var newDocumentsinsert = await query(
       "INSERT INTO Documents set ?",
@@ -304,59 +305,40 @@ Documents.createnewinfoDocument = async function createnewinfoDocument(
 };
 
 Documents.createkitchenImageUpload = async function createkitchenImageUpload(
-  documentlist,
+  kitchanImageList, docid,type,
+) {
+    var limit =5;
+    var kitchenImages = await query("Select * From Documents where docid = '" +docid +"' and type = '"+type+"'");
+    var balance =limit-kitchenImages.length;
+    console.log("kitchenImages length: ", kitchanImageList.length);
+    console.log("kitchenImages balance: ", balance);
+
+    if(kitchanImageList.length>balance) {
+      console.log("kitchenImages balance: ", balance);
+      return false;
+    }else {
+      for (var i = 0; i < kitchanImageList.length; i++) {
+        var document = new Documents(kitchanImageList[i]);
+        document.docid = docid;
+        await Documents.addNewkitchan(document);
+      }
+      console.log("kitchenImages true: ", balance);
+      return true;
+    }
+  
+};
+
+Documents.deletekitchenImage = async function deletekitchenImage(
+  documentdeletelist,
   result
 ) {
-  if (documentlist.did) {
-    newDocumentsinsert = await Documents.updateNewkitchan(
-      documentlist,
-      result
-    )
-    result(null,newDocumentsinsert);
-  } else {
-    var kitchenImage = await query(
-      "Select * From Documents where docid = '" +
-        documentlist.docid +
-        "' and type = '" +
-        documentlist.type +
-        "'"
-    );
-    if (kitchenImage.length >= 5) {
-      result(null,false);
-    }else{
-      newDocumentsinsert = await Documents.addNewkitchan(
-        documentlist,
-        result
-      )
-      result(null,newDocumentsinsert);
-    }
-    
+  if (documentdeletelist && documentdeletelist.length > 0) {
+    var deletedIds = JSON.stringify(documentdeletelist);
+    var deleteQuery = "DELETE From Documents where did IN (" + deletedIds + ")";
+    console.log("Kitachen deleteQuery: ", deleteQuery);
+    var kitchenImagedelete = await query(deleteQuery);
+    result(null, kitchenImagedelete);
   }
-  // var kitchenImage = await query(
-  //   "Select * From Documents where docid = '" +
-  //     documentlist.docid +
-  //     "' and type = '" +
-  //     documentlist.type +
-  //     "'"
-  // );
-
-  //   if(kitchenImage.length>=5){
-  //     var docM='kitchen'
-  //     if(documentlist.type===2) docM='kitchen application' ;
-  //     let resobj = {
-  //       success: true,
-  //       status:false,
-  //       message: 'Your '+docM+' image uploaded limt exited',
-  //     };
-  //     return resobj;
-  //   }
-  // var newDocumentsinsert = await Documents.createnewDocumentlist(documentlist,result);
-  // let resobj = {
-  //   success: true,
-  //   status:true,
-  //   message: "Document saved successfully",
-  // };
-  // return resobj;
 };
 
 Documents.remove_document = function(req, result) {

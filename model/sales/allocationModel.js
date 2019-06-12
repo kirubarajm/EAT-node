@@ -113,9 +113,10 @@ Allocation.getAllocationBySalesEmpId = function getAllocationBySalesEmpId(
         console.log("error: ", err);
         result(err, null);
       } else {
-        let sucobj = true;
+        let status = res.length===0?false:true;
         let resobj = {
-          success: sucobj,
+          success: true,
+          status:status,
           result: res
         };
         result(null, resobj);

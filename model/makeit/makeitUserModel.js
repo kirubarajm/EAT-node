@@ -692,10 +692,10 @@ Makeituser.updatemakeit_user_approval = function(req, result) {
         console.log("error: ", err);
         result(null, err);
       } else {
-        let sucobj = true;
         let message = "Makeit user verify status updated";
         let resobj = {
-          success: sucobj,
+          success: true,
+          status: true,
           message: message
           //result: res
         };

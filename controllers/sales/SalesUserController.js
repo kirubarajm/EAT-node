@@ -2,6 +2,7 @@
 
 var Salesuser = require("../../model/sales/salesUserModel.js");
 var Makeitrating = require("../../model/makeit/makeitRatingModel.js");
+var Makeitapproved = require("../../model/makeit/makeitApprovedModel.js");
 
 exports.list_all_user = function(req, res) {
   Salesuser.getAllUser(function(err, user) {
@@ -81,6 +82,61 @@ exports.create_a_rating = function(req, res) {
       res.json(result);
     });
   }
+};
+
+exports.makeit_approved = function(req, res) {
+  var approvedState = new Makeitapproved(req.body);
+  if (
+    !approvedState.makeit_userid ||
+    !approvedState.sales_emp_id
+  ) {
+    res
+      .status(400)
+      .send({
+        error: true,
+        message: "Please provide makeit_userid/sales_emp_id"
+      });
+  } else {
+    Makeitapproved.makeitApprovedUpdate(approvedState, function(err, result) {
+      if (err) res.send(err);
+      res.json(result);
+    });
+  }
+};
+
+exports.get_makeit_kitchen_info = function(req, res) {
+  Salesuser.getMakeitkitchenInfo(req.params.makeit_userid, function(err, kitcheninfo) {
+    if (err) res.send(err);
+    res.json(kitcheninfo);
+  });
+};
+
+exports.get_makeit_user_document = function(req, res) {
+  Salesuser.getMakeitUserDocument(req.params.makeit_userid, function(err, kitcheninfo) {
+    if (err) res.send(err);
+    res.json(kitcheninfo);
+  });
+};
+
+exports.get_makeit_kitchen_document = function(req, res) {
+  Salesuser.getMakeitKitchenDocument(req.params.makeit_userid, function(err, kitcheninfo) {
+    if (err) res.send(err);
+    res.json(kitcheninfo);
+  });
+};
+
+exports.get_sales_makeit_rating = function(req, res) {
+  Salesuser.getSalesMakeitRating(req.params.makeit_userid, function(err, kitcheninfo) {
+    if (err) res.send(err);
+    res.json(kitcheninfo);
+  });
+};
+
+exports.get_kitchen_info = function(req, res) {
+  Salesuser.getkitchenInfo(req.params.makeit_userid, function(err, kitcheninfo) {
+    if (err) res.send(err);
+    res.json(kitcheninfo);
+  });
 };
 
 exports.salesSearch = function(req, res) {
