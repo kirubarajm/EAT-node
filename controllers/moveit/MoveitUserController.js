@@ -155,3 +155,10 @@ exports.add_a_pushid = function(req, res) {
     res.json(user);
   });
 };
+
+exports.admin_phoneno_verified = function(req, res) {
+  Moveituser.admin_send_otp(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

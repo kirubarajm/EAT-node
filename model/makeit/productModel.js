@@ -674,7 +674,7 @@ Product.productview_by_productid = function productview_by_productid(
 ) {
   const items = [];
   sql.query(
-    " select * from Product where productid = " + req.productid + "",
+    " select pd.*,mk.brandname,mk.name as makeit_name,mk.phoneno as makeit_phoneno,mk.address as makeit_address,mk.locality,mk.verified_status as makeit_verified from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid where productid = " + req.productid + "",
     function(err, res) {
       if (err) {
         console.log("error: ", err);
@@ -883,7 +883,7 @@ Product.admin_list_all__unapproval_product = function admin_list_all__unapproval
   console.log(req);
 
   var query =
-    "Select * from Product where delete_status !=1 and active_status !=1 and approved_status !=1 and approved_status !=2 ";
+    "Select pd.*,mk.brandname,mk.name as makeit_name from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid  where delete_status !=1 and active_status !=1 and approved_status !=1 and approved_status !=2 ";
 
   console.log(req.approved_status);
 

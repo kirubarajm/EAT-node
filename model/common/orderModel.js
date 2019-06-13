@@ -493,7 +493,7 @@ Order.getUnassignorders = function getUnassignorders(result) {
   /// Select * from Orders as ors left join User as us on ors.userid=us .userid where ors.moveit_status = '0';
   // sql.query("Select * from Orders where moveit_status = '0' ", function (err, res) {
   sql.query(
-    "Select * from Orders as ors left join User as us on ors.userid=us.userid where ors.moveit_user_id = 0 and ors.orderstatus <= 2",
+    "Select * from Orders as ors left join User as us on ors.userid=us.userid where ors.moveit_user_id = 0 and ors.orderstatus <= 3",
     function(err, res) {
       if (err) {
         console.log("error: ", err);
@@ -1871,8 +1871,7 @@ Order.orderEatPushNotification = async function(orderid,userid,pageid) {
       break;
   }
   const user = await Order.getEatUserDetail(userid);
-  console.log("user--->"+user.name);
-  if (user.pushid_android) {
+  if (user&&user.pushid_android) {
     FCM_EAT.sendOrderNotificationAndroid(
       user.pushid_android,
       push_title,

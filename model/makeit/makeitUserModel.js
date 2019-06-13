@@ -139,14 +139,6 @@ Makeituser.getUserById = function getUserById(userId, result) {
           res[i].cuisines = JSON.parse(res[i].cuisines);
         }
       }
-      
-        
-        if(res[0].img1) res[0].Images = [res[0].img1];
-        if(res[0].img2) res[0].Images.push(res[0].img2);
-        if(res[0].img3) res[0].Images.push(res[0].img3);
-        if(res[0].img4) res[0].Images.push(res[0].img4);
-      
-      
 
       sql.query(
         "select st.url,st.docid,st.type from Documents_Sales as ds join Documents as st on ds.docid = st.docid where ds.makeit_userid = '" +
@@ -1023,7 +1015,7 @@ Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(
           var otpurl =
             "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
             newUser.phoneno +
-            "&senderId=EATHOM&message=Your EAT App OTP is " +
+            "&senderId=EATHOM&message=Your EAT-MAKE-IT App OTP is " +
             OTP +
             ". Note: Please DO NOT SHARE this OTP with anyone.";
 

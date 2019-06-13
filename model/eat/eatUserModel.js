@@ -318,9 +318,10 @@ Eatuser.get_eat_makeit_product_list = function(req, result) {
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
   var radiuslimit=constant.radiuslimit;
+  var Images=[];
   if (req.eatuserid) {
     var query =
-      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.img2,mk.img3,mk.img4,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +
@@ -335,7 +336,7 @@ Eatuser.get_eat_makeit_product_list = function(req, result) {
       " and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1 ";
   } else {
     var query =
-      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.img2,mk.img3,mk.img4,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +
@@ -357,6 +358,12 @@ Eatuser.get_eat_makeit_product_list = function(req, result) {
       result(err, null);
     } else {
       console.log(res[0].productlist);
+        if(res[0].makeitimg) Images.push(res[0].makeitimg);
+        if(res[0].img2) Images.push(res[0].img2);
+        if(res[0].img3) Images.push(res[0].img3);
+        if(res[0].img4) Images.push(res[0].img4);
+        if(Images.length!==0) res[0].images=Images;
+
       if (res[0].makeituserid !== null && res[0].productlist !== null) {
         for (let i = 0; i < res.length; i++) {
           if (res[i].productlist) {

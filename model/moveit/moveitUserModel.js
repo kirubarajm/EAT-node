@@ -389,4 +389,10 @@ Moveituser.update_pushid = function(req, result) {
     }
   };
 
+
+
+Moveituser.admin_send_otp = function admin_send_otp(req, result) {
+    
+};
+
 module.exports = Moveituser;
