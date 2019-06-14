@@ -157,28 +157,36 @@ const master = [
     {
         'OrderStatus': [{
                 "OrderStatusid": 0,
-                "OrderStatus": "orderput"
+                "OrderStatus": "Orderput"
             },
             {
                 "OrderStatusid": 1,
-                "OrderStatus": "orderAccept"
+                "OrderStatus": "Order Accept"
             },
             {
                 "OrderStatusid": 2,
-                "OrderStatus": "orderPreparing"
+                "OrderStatus": "Order Preparing"
             },
             {
                 "OrderStatusid": 3,
-                "OrderStatus": "orderPrepared"
+                "OrderStatus": "Order Prepared"
+            },
+            {
+                "OrderStatusid": 4,
+                "OrderStatus": "Kitchen reached"
             }, //orderPacked
             // "OrderStatusid":4,"OrderStatus":"kitchen reached",
             {
                 "OrderStatusid": 5,
-                "OrderStatus": "orderPickedup"
+                "OrderStatus": "Order Pickedup"
             },
             {
                 "OrderStatusid": 6,
-                "OrderStatus": "orderDelivered"
+                "OrderStatus": "Order Delivered"
+            },
+            {
+                "OrderStatusid": 7,
+                "OrderStatus": "Order Cancel"
             }
         ]
     },

@@ -607,13 +607,13 @@ module.exports = function(app) {
 
 
   app.route("/eat/products").post(eatuser.eat_makeit_product_list);
-  app.route("/eat/foodlist").post(eatuser.eat_makeit_product_list);
 
   app.route("/eat/placeorder").post(orders.eatuser_order_create);
 
   app.route("/eat/order/:orderid").get(orders.order_view_eatuser);
 
   app.route("/eat/orders/:userid").get(orders.order_list_eatuser);
+
 
   app.route("/eat/address")
     .get(eatuseraddress.list_all_address)

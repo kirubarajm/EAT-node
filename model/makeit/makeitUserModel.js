@@ -593,14 +593,14 @@ Makeituser.orderstatusbyorderid = function(req, result) {
 };
 
 Makeituser.get_admin_list_all_makeitusers = function(req, result) {
-  req.appointment_status = "" + req.appointment_status;
-
-  req.virtualkey = "" + req.virtualkey;
+  req.appointment_status =req.appointment_status||"all";
+  req.verified_status =req.verified_status||"all";
+  req.virtualkey = req.virtualkey||"all";
 
   //    rsearch = req.search || ''
 
   //  var query = "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img, mk.region, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating,JSON_OBJECT('cuisines', JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename))) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid";
-  var query = "select * from MakeitUser ";
+  var query = "select * from MakeitUser";
 
   var searchquery = "name LIKE  '%" + req.search + "%'";
 
@@ -1441,7 +1441,7 @@ Makeituser.edit_makeit_brand_identity_by_sales = async function(req, cuisines, r
           staticquery = "UPDATE MakeitUser SET ";
           for (const [key, value] of Object.entries(req)) {
             if (
-              key !== "userid" &&
+              key !== "makeit_userid" &&
               key !== "cuisines" &&
               key !== "region" &&
               key !== "rating" &&
@@ -1455,9 +1455,7 @@ Makeituser.edit_makeit_brand_identity_by_sales = async function(req, cuisines, r
 
 
         
-          editquery=staticquery + column.slice(0, -1) + " where userid = " + req.userid;
-
-            console.log("query: ", editquery);
+          editquery=staticquery + column.slice(0, -1) + " where userid = " + req.makeit_userid;
 
             sql.query(editquery, function(err, res) {
             if (err) {
@@ -1472,7 +1470,7 @@ Makeituser.edit_makeit_brand_identity_by_sales = async function(req, cuisines, r
                   cuisines_temp=0;
                   for (let i = 0; i < cuisines.length; i++) {
                     var new_cuisine = new Cusinemakeit(cuisines[i]);
-                    new_cuisine.makeit_userid = req.userid;
+                    new_cuisine.makeit_userid = req.makeit_userid;
                     Cusinemakeit.createCusinemakeit(new_cuisine, function(
                       err,
                       res2

@@ -327,7 +327,7 @@ exports.add_a_pushid = function(req, res) {
 
 exports.edit_makeit_brand_identity = function(req, res) {
   var cuisines = req.body.cuisines;
-  if (!req.body.userid) {
+  if (!req.body.makeit_userid) {
     res
       .status(400)
       .send({ error: true, message: "Please provide makeit userid" });
