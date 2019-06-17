@@ -65,11 +65,8 @@ exports.create_a_new_documents = function(req, res) {
   var kitchanImage = req.body.kitchanimage;
   var kitchanApplicationImage = req.body.kitchan_application_image;
   var packagingdetails = req.body.packagingdetails;
-  var document_delete_list = req.body.documentdeletedlist;
-
-  // console.log(new_documents);
-  //console.log(req.files);
-  //handles null error
+  var document_delete_list = req.body.documentdeletelist;
+  
   if (!new_documents) {
     res
       .status(400)
@@ -110,15 +107,16 @@ exports.sales_document_view = function(req, res) {
 exports.create_a_new_infodocument = function(req, res) {
   var new_documents = new DocumentSales(req.body);
   var new_documents_list = req.body.documentlist;
+  var document_delete_list = req.body.documentdeletelist;
   // console.log(new_documents);
   //console.log(req.files);
   //handles null error
-  if (!new_documents || !new_documents_list) {
+  if (!new_documents) {
     res
       .status(400)
-      .send({ error: true, message: "Please provide documents name" });
+      .send({ error: true, message: "Please provide documents" });
   } else {
-    DocumentSales.infodocumentcreate(new_documents, new_documents_list, function(
+    DocumentSales.infodocumentcreate(new_documents, new_documents_list,document_delete_list, function(
       err,
       documents
     ) {

@@ -541,6 +541,25 @@ Makeituser.all_order_list = function(result) {
   });
 };
 
+Makeituser.appointment_info = function(makeit_id,result) {
+  var query = "select alc.status,alc.booking_date_time,su.name as sales_name from Allocation as alc left join Sales_QA_employees as su on su.id=alc.sales_emp_id where alc.makeit_userid='"+makeit_id+"'";
+
+  sql.query(query, function(err, res) {
+    if (err) {
+      console.log("error: ", err);
+      result(null, err);
+    } else {
+      let sucobj = true;
+      res[0].statusInfo= res[0].status===2?'Info session': res[0].status===4?'Sales Appointment': res[0].status===0? 'Wating for Sales man':'Sales man reached.'
+      let resobj = {
+        success: sucobj,
+        result: res
+      };
+      result(null, resobj);
+    }
+  });
+};
+
 Makeituser.all_order_list_bydate = function(req, result) {
   console.log(req.body);
   sql.query(
@@ -675,8 +694,8 @@ Makeituser.get_admin_list_all_makeitusers = function(req, result) {
 
 Makeituser.updatemakeit_user_approval = function(req, result) {
   sql.query(
-    "UPDATE MakeitUser SET appointment_status = 3 ,verified_status = '" +
-      req.verified_status +
+    "UPDATE MakeitUser SET appointment_status = 3 ,ka_status = '" +
+      req.ka_status +
       "' WHERE userid = ?",
     req.makeit_userid,
     function(err, res) {
@@ -690,6 +709,29 @@ Makeituser.updatemakeit_user_approval = function(req, result) {
           status: true,
           message: message
           //result: res
+        };
+
+        result(null, resobj);
+      }
+    }
+  );
+};
+
+Makeituser.admin_makeit_user_approval = function(req, result) {
+  sql.query(
+    "UPDATE MakeitUser SET ka_status = '" +req.ka_status +
+      "' WHERE userid = ?",
+    req.makeit_userid,
+    function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(null, err);
+      } else {
+        let message = "Makeit user verify status updated.";
+        let resobj = {
+          success: true,
+          status: true,
+          message: message
         };
 
         result(null, resobj);

@@ -110,7 +110,7 @@ Salesuser.getMakeitUserDocument = function getMakeitUserDocument(
   result
 ) {
   sql.query(
-    "Select doc.url,doc.did,doc.type from Documents_Sales as docs left join Documents as doc on doc.docid=docs.docid where docs.makeit_userid = '" +
+    "Select doc.url,doc.did,doc.type,doc.image_type from Documents_Sales as docs left join Documents as doc on doc.docid=docs.docid where docs.makeit_userid = '" +
       userId +
       "' and type NOT IN (1,2)",
     function(err, res) {
@@ -189,7 +189,7 @@ Salesuser.getMakeitKitchenDocument = function getMakeitKitchenDocument(
   result
 ) {
   sql.query(
-    "Select doc.url,doc.did,doc.type from Documents_Sales as docs left join Documents as doc on doc.docid=docs.docid where docs.makeit_userid = '" +
+    "Select doc.url,doc.did,doc.type,doc.image_type from Documents_Sales as docs left join Documents as doc on doc.docid=docs.docid where docs.makeit_userid = '" +
       userId +
       "' and type IN (1,2)",
     function(err, res) {

@@ -99,11 +99,9 @@ Documentsales.createkitchenDoument = async function createkitchenDoument(
     if (kitchanImage && docid) {
       var isUploaded=await Documents.createkitchenImageUpload(kitchanImage,docid,1);
       if(!isUploaded) return res({ status: false, message: "Your kitchen image uploaded limt exiteded." } ,null);
-      console.log("kitchenImages length: ",'----------------');
     }
   
     if (kitchanApplicationImage && docid) {
-      console.log("kitchanApplicationImage length: ", '-------------');
       var iskaUploaded=await Documents.createkitchenImageUpload(kitchanApplicationImage,docid,2);
       if(!iskaUploaded)  return res({ status: false, message: "Your kitchen application image uploaded limt exiteded." } ,null);
     }
@@ -111,7 +109,6 @@ Documentsales.createkitchenDoument = async function createkitchenDoument(
    
   
     if (packagingdetails && docid) {
-      console.log("packagingdetails length: ", '-------------');
       for (var i = 0; i < packagingdetails.length; i++) {
         var newpackagingdetails = new PackagingBox(packagingdetails[i]);
         newpackagingdetails.sales_userid = newdocument.sales_userid;
@@ -144,6 +141,7 @@ Documentsales.createkitchenDoument = async function createkitchenDoument(
 Documentsales.infodocumentcreate = async function infodocumentcreate(
   newdocument,
   new_documents_list,
+  document_delete_list,
   res
 ) {
   var salesdocu = await query(
@@ -164,6 +162,12 @@ Documentsales.infodocumentcreate = async function infodocumentcreate(
     docid = salesdocu[0].docid;
   }
 
+  if (document_delete_list&&document_delete_list.length !== 0) {
+    await Documents.deletekitchenImage(document_delete_list, function(err,result) {
+      if (err) return res(err, null);
+    });
+  }
+
   if (new_documents_list && docid) {
     for (var i = 0; i < new_documents_list.length; i++) {
       var documentlist = new Documents(new_documents_list[i]);
@@ -177,10 +181,10 @@ Documentsales.infodocumentcreate = async function infodocumentcreate(
     }
   }
 
-  let sucobj = true;
   let mesobj = "Document stored successfully";
   let resobj = {
-    success: sucobj,
+    success: true,
+    status: true,
     message: mesobj,
     docid: docid
   };

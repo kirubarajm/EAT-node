@@ -174,7 +174,7 @@ Allocation.update_a_followupstatus = function(req, result) {
     req.aid +
     "'";
 
-  if (req.scheduledate && (req.status === 2 || req.status === 4)) {
+  if (req.scheduledate && (req.status === '2' || req.status === '4')) {
     statusquery =
       "UPDATE Allocation SET status = '" +
       req.status +

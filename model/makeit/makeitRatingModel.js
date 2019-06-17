@@ -18,7 +18,6 @@ Makeitrating.createRating = function createRating(new_rating, result) {
                 result(err, null);
             }
             else{
-                //console.log(res.insertId);
                 sql.query("UPDATE Allocation SET status = 1 WHERE makeit_userid = ? and sales_emp_id = ?" , [new_rating.makeit_userid,new_rating.sales_emp_id], function (err, res) {
                     if(err) {
                         console.log("error: ", err);

@@ -270,6 +270,41 @@ const master = [
             },
         ]
     },
+// document table image_type using fornt and back ids
+    {
+        'imagetype': [
+            {
+            "image_type_id": 0,
+            "image_type": "default"
+            },
+            {
+                "image_type_id": 1,
+                "image_type": "Front"
+            },
+            {
+                "image_type_id": 2,
+                "image_type": "Back"
+            },
+        ]
+    },
+
+    // kitchen/makeit approval status
+    {
+        'ka_status': [
+            {
+            "ka_status": 0,
+            "approval_status": "default"
+            },
+            {
+                "ka_status": 1,
+                "approval_status": "Sales Approval"
+            },
+            {
+                "ka_status": 2,
+                "approval_status": "Admin Approval"
+            },
+        ]
+    },
 
     // image upload type 
     {
@@ -292,6 +327,11 @@ const master = [
             {
                 "documenttypeid": 5,
                 "documenttype": "Signature image"
+            },
+
+            {
+                "documenttypeid": 6,
+                "documenttype": "Pan Card"
             },
         ]
     },
