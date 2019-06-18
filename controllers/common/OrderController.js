@@ -329,10 +329,10 @@ exports.read_a_proceed_to_pay = function(req, res) {
 
 
 exports.eat_order_cancel = function(req, res) {
-  if (!req.body.eatuserid) {
+  if (!req.body.orderid) {
     res
       .status(400)
-      .send({ error: true, status: false, message: "Please provide eatuserid" });
+      .send({ error: true, status: false, message: "Please provide orderid" });
   }
    else {
     Order.eat_order_cancel(req.body, function(err, ordercancel) {
@@ -358,7 +358,7 @@ exports.makeit_order_cancel = function(req, res) {
 
 exports.makeit_order_accept = function(req, res) {
   if (!req.body.orderid) {
-   res
+   res 
      .status(400)
      .send({ error: true, status: false, message: "Please provide orderid" });
  }

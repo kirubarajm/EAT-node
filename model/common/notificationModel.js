@@ -16,11 +16,13 @@ var Notification = function(notification) {
 
 Notification.getPushOrderDetail = async function(orderid) {
   var orders = await query("SELECT * FROM Orders where orderid = " + orderid);
+  console.log("orders--->"+orders)
   return orders[0];
 };
 
 Notification.getEatUserDetail = async function(userid) {
   var EatUser = await query("SELECT * FROM User where userid = " + userid);
+  console.log("EatUser--->"+EatUser)
   return EatUser[0];
 };
 
@@ -32,55 +34,74 @@ Notification.orderEatPushNotification = async function(
   if (!userid) {
     var orders = await Notification.getPushOrderDetail(orderid);
     userid = orders.userid;
-    console.log(
-      "orderid--->" +
-        orderid +
-        "---userid-->" +
-        userid +
-        "---pageid--->" +
-        pageid
-    );
   }
-
-  var push_title = null;
-  var push_message = null;
+  var data=null;
   switch (pageid) {
     case PushConstant.pageidOrder_Post:
-      push_title = "Order Post";
-      push_message =
-        "Hi! your Order posted successful.Your OrderID is#" + orderid;
+        data={
+        title: "Order Post",
+        message: "Hi! your Order posted successful.Your OrderID is#" + orderid,
+        pageid: "" + pageid,
+        app: "Eat",
+        notification_type: "1"
+        }
       break;
 
     case PushConstant.pageidOrder_Accept:
-      push_title = "Order Accecpt";
-      push_message =
-        "Hi! your Order accepted successful.Please wait for some more time";
+        data={
+          title: "Order Accecpt",
+          message: "Hi! your Order accepted successful.Please wait for some more time",
+          pageid: "" + pageid,
+          app: "Eat",
+          notification_type: "1"
+          }
       break;
 
     case PushConstant.pageidOrder_Pickedup:
-      push_title = "Order Picked up";
-      push_message =
-        "Hi! your Order Picked up.Please wait your food reaced soon.";
+        data={
+          title: "Order Picked up",
+          message: "Hi! your Order Picked up.Please wait your food reaced soon.",
+          pageid: "" + pageid,
+          app: "Eat",
+          notification_type: "1"
+          }
       break;
 
     case PushConstant.pageidOrder_Reached:
-      push_title = "Order Near to me";
-      push_message = "Hi! your Order Waiting.Please picked up";
+        data={
+          title: "Order Near to me",
+          message: "Hi! your Order Waiting.Please picked up",
+          pageid: "" + pageid,
+          app: "Eat",
+          notification_type: "1"
+          }
       break;
 
     case PushConstant.pageidOrder_Delivered:
-      push_title = "Order Delivered";
-      push_message = "Hi! your Order Delivered successful";
+        data={
+          title: "Order Delivered",
+          message: "Hi! your Order Delivered successful",
+          pageid: "" + pageid,
+          app: "Eat",
+          notification_type: "1"
+          }
+      break;
+
+      case PushConstant.pageidOrder_Cancel:
+        data={
+          title: "Order Cancel",
+          message: "Sorry! your order not accepting.",
+          pageid: "" + pageid,
+          app: "Eat",
+          notification_type: "1"
+          }
       break;
   }
-  const user = await Order.getEatUserDetail(userid);
-  console.log("user--->" + user.name);
-  if (user.pushid_android) {
-    FCM_EAT.sendOrderNotificationAndroid(
-      user.pushid_android,
-      push_title,
-      push_message,
-      pageid
+  if (data == null) return;
+  const user = await Notification.getEatUserDetail(userid);
+  if (user&&user.pushid_android) {
+    FCM_EAT.sendNotificationAndroid(
+      user.pushid_android,data
     );
   }
 };
@@ -103,25 +124,29 @@ Notification.orderMakeItPushNotification = async function(
         message: "OrderID is#" + orderid,
         pageid: "" + pageid,
         app: "Make-it",
+        orderid:""+orderid,
         notification_type: "1"
       };
       break;
 
     case PushConstant.pageidMakeit_Order_Cancel:
       data = {
-        title: "Order Cancel",
-        message: "Sorry,Order cancel OrderID is#" + orderid,
+        title: "Order Canceled",
+        message: "Sorry,Order canceled OrderID is#" + orderid,
         pageid: "" + pageid,
         app: "Make-it",
+        orderid:""+orderid,
         notification_type: "1"
       };
       break;
   }
+
+  if (data == null) return;
   var Makeituser = await query(
     "SELECT * FROM MakeitUser where userid = " + makeit_user_id
   );
-  if (Makeituser && Makeituser[0].pushid_android && data) {
-    FCM_Moveit.sendMakeitOrderPostNotification(Makeituser[0].pushid_android, data);
+  if (Makeituser && Makeituser[0].pushid_android) {
+    FCM_Makeit.sendNotificationAndroid(Makeituser[0].pushid_android, data);
   }
 };
 
@@ -132,14 +157,13 @@ Notification.orderMoveItPushNotification = async function(
 ) {
   const orders = await Notification.getPushOrderDetail(orderid);
   var Eatuserid = orders.userid;
-  var payload = null;
+  var data = null;
   var Eatuserdetail = null;
 
   switch (pageid) {
     case PushConstant.pageidMoveit_Order_Assigned:
       Eatuserdetail = await Notification.getEatUserDetail(Eatuserid);
-      payload = {
-        data: {
+        data={
           title: "Order assign",
           message: "Order Assigned to you. OrderID is#" + orderid,
           pageid: "" + pageid,
@@ -150,13 +174,11 @@ Notification.orderMoveItPushNotification = async function(
           app: "Move-it",
           notification_type: "1"
         }
-      };
       break;
 
     case PushConstant.pageidMoveit_Order_Cancel:
       Eatuserdetail = await Notification.getEatUserDetail(Eatuserid);
-      payload = {
-        data: {
+        data={
           title: "Order Cancel",
           message:
             "Sorry! your current orders is canceled. OrderID is#" + orderid,
@@ -168,24 +190,21 @@ Notification.orderMoveItPushNotification = async function(
           app: "Move-it",
           notification_type: "1"
         }
-      };
       break;
 
     case PushConstant.pageidMoveit_Order_Prepared:
-      payload = {
-        data: {
+        data={
           title: "Order is Prepared",
           message: "Hi! Your current order is prepared.",
           pageid: "" + pageid,
           app: "Move-it",
           notification_type: "1"
         }
-      };
 
       break;
   }
 
-  if (payload == null) return;
+  if (data == null) return;
 
   if (!move_it_user_detail) {
     move_it_user_detail = await query(
@@ -195,9 +214,9 @@ Notification.orderMoveItPushNotification = async function(
   }
 
   if (move_it_user_detail && move_it_user_detail.pushid_android) {
-    FCM_Moveit.sendMoveitOrderAssignNotification(
+    FCM_Moveit.sendNotificationAndroid(
       move_it_user_detail.pushid_android,
-      payload
+      data
     );
   }
 };

@@ -2,8 +2,7 @@ const firebase = require("firebase-admin");
 var MoveitserverKey = require("../moveit-a9128-firebase-adminsdk-3h0b8-6315acfc79.json");
 var Move_it = null;
 
-exports.initializeAppName = function() {
-  
+function initializeAppName() {
   if (!Move_it) {
     Move_it = firebase.initializeApp(
       {
@@ -17,47 +16,19 @@ exports.initializeAppName = function() {
   }
 };
 
-exports.sendSingleNotification = function(token, title, message,userdetail) {
-  exports.initializeAppName();
-  const payload = {
-    data: {
-      title: title,
-      message: message,
-      name:""+userdetail.name,
-      price:""+userdetail.price,
-      orderid:""+userdetail.orderid,
-      place:""+userdetail.place,
-      page_id: "1",
-      app: "Move-it",
-      notification_type: "1"
-    }
-  };
- 
+exports.sendNotificationAndroid = function(
+  token,
+  dat,
+) {
+  initializeAppName();
   const options = {
-    priority: 'high',
-    timeToLive: 60 * 60 * 24, // 1 day
+    priority: "high",
+    timeToLive: 60 * 60 * 24 // 1 day
   };
-  Move_it.messaging().sendToDevice(token, payload, options);
-};
-
-exports.sendMoveitOrderAssignNotification = function(token, payload) {
-  exports.initializeAppName();
-  const options = {
-    priority: 'high',
-    timeToLive: 60 * 60 * 24, // 1 day
+  console.log("token:"+token);
+  var payload = {
+    data: dat
   };
-  Move_it.messaging().sendToDevice(token, payload, options);
-};
-
-exports.sendMakeitOrderPostNotification = function(token, makeit_data) {
-  exports.initializeAppName();
-  console.log("push_data---"+makeit_data);
-  const payload ={
-    data:makeit_data
-  }
-  const options = {
-    priority: 'high',
-    timeToLive: 60 * 60 * 24, // 1 day
-  };
+  console.log("payload:"+payload.data.title);
   Move_it.messaging().sendToDevice(token, payload, options);
 };

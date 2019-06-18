@@ -13,6 +13,7 @@ const PushConstant={
     pageidOrder_Pickedup:5,
     pageidOrder_Reached:6,
     pageidOrder_Delivered:7,
+    pageidOrder_Cancel:8,
 
 
     pageidMoveit_Order_Assigned:1,
@@ -21,6 +22,7 @@ const PushConstant={
 
     pageidMakeit_Order_Post:1,
     pageidMakeit_Order_Cancel:2,
+    
 
 };
 
