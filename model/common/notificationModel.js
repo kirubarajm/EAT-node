@@ -270,7 +270,6 @@ Notification.queries_answers_PushNotification = async function(
     "SELECT * FROM "+userTable+" where userid = " + userid
   );
   if (Userdetails && Userdetails[0].pushid_android && data) {
-    //if(type==1)
     FCM_Obj.sendNotificationAndroid(Userdetails[0].pushid_android, data);
   }
 };
