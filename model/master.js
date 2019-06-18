@@ -191,6 +191,26 @@ const master = [
         ]
     },
 
+    // order cancel by for using who is the cancel orders
+
+    
+    {
+        'cancel_by': [
+            {
+                "id": 0,
+                "appid": "default"
+            },
+            {
+                "id": 1,
+                "appid": "EAT"
+            },
+            {
+                "id": 2,
+                "appid": "Make-it"
+            }
+
+        ]
+    },
     //order payment type
     {
         'paymenttype': [{

@@ -329,25 +329,43 @@ exports.read_a_proceed_to_pay = function(req, res) {
 
 
 exports.eat_order_cancel = function(req, res) {
-  if (!req.body.lat) {
-    res
-      .status(400)
-      .send({ error: true, status: false, message: "Please provide lat" });
-  } else if (!req.body.lon) {
-    res
-      .status(400)
-      .send({ error: true, status: false, message: "Please provide lan" });
-  }else if (!req.body.eatuserid) {
+  if (!req.body.eatuserid) {
     res
       .status(400)
       .send({ error: true, status: false, message: "Please provide eatuserid" });
   }
    else {
-    Order.eat_order_cancel_by_orderid(req.body, function(err, region) {
-      console.log("controller");
+    Order.eat_order_cancel(req.body, function(err, ordercancel) {
       if (err) res.send(err);
-      console.log("res", region);
-      res.send(region);
+      res.send(ordercancel);
     });
   }
+};
+
+exports.makeit_order_cancel = function(req, res) {
+   if (!req.body.orderid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide orderid" });
+  }
+   else {
+    Order.makeit_order_cancel(req.body, function(err, ordercancel) {
+      if (err) res.send(err);
+      res.send(ordercancel);
+    });
+  }
+};
+
+exports.makeit_order_accept = function(req, res) {
+  if (!req.body.orderid) {
+   res
+     .status(400)
+     .send({ error: true, status: false, message: "Please provide orderid" });
+ }
+  else {
+   Order.makeit_order_accept(req.body, function(err, ordercancel) {
+     if (err) res.send(err);
+     res.send(ordercancel);
+   });
+ }
 };

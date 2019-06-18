@@ -248,7 +248,7 @@ module.exports = function(app) {
   // Makeit
 
   app.route("/makeit/orders").get(makeituser.all_order_list);
-  app.route("/makeit/appoinmentinfo/:makeit_userid").get(makeituser.appointment_info);
+
 
   app.route("/makeit/orders/listbydate").post(makeituser.all_order_list_bydate);
 
@@ -347,6 +347,10 @@ module.exports = function(app) {
     app
     .route("/makeit/menuitemlist/:makeit_userid")
     .get(menuitem.list_all_menuitem_by_makeituserid);
+
+    app.route("/makeit/appoinmentinfo/:makeit_userid").get(makeituser.appointment_info);
+    app.route("/makeit/order/cancel").put(orders.makeit_order_cancel);
+    app.route("/makeit/order/accept").put(orders.makeit_order_accept);
 
   /*Admin Api*/
   app.route("/admin/eatuser/add").post(eatuser.create_a_eatuser);

@@ -1885,7 +1885,7 @@ Order.create_customerid_by_razorpay = async function create_customerid_by_razorp
     });
 };
 
-Order.eat_order_cancel_by_orderid = async function eat_order_cancel_by_orderid(
+Order.eat_order_cancel = async function eat_order_cancel(
   req,
   result
 ) {
@@ -1895,16 +1895,28 @@ Order.eat_order_cancel_by_orderid = async function eat_order_cancel_by_orderid(
 
   if (orderdetails[0].orderstatus < 5) {
     sql.query(
-      "UPDATE Orders SET orderstatus = 7 WHERE orderid ='" + req.orderid + "'",
+      "UPDATE Orders SET orderstatus = 7,cancel_by = 1 WHERE orderid ='" + req.orderid + "'",
       function(err, res) {
         if (err) {
-          console.log("error: ", err);
-          result(null, err);
+          result(err, null);
         } else {
-          result(null, res);
+          let response={
+            success: true,
+            status: true,
+            message : "Your order canceled successfully.",
+            result:res
+          }
+          result(null, response);
         }
       }
     );
+  }else{
+    let response={
+      success: true,
+      status: false,
+      message : "Sorry! Your order almost reached to you.so can't canceled."
+    }
+    result(null, response);
   }
 };
 Order.getPushOrderDetail = async function(orderid) {
@@ -2088,6 +2100,51 @@ Order.orderMoveItPushNotification = async function(
       payload
     );
   }
+};
+
+Order.makeit_order_cancel = async function makeit_order_cancel(
+  req,
+  result
+) {
+    sql.query(
+      "UPDATE Orders SET orderstatus = 7,cancel_by = 2 WHERE orderid ='" + req.orderid + "'",
+      function(err, res) {
+        if (err) {
+          result(err, null);
+        } else {
+          let response={
+            success: true,
+            status: true,
+            message : "order canceled successfully.",
+            result:res
+          }
+          result(null, response);
+        }
+      }
+    );
+  
+};
+
+Order.makeit_order_accept = async function makeit_order_accept(
+  req,
+  result
+) {
+    sql.query(
+      "UPDATE Orders SET orderstatus = 1 WHERE orderid ='" + req.orderid + "'",
+      function(err, res) {
+        if (err) {
+          result(err,null);
+        } else {
+          let response={
+            success: true,
+            status: true,
+            message : "Order accept successfully.",
+            result:res
+          }
+          result(null, response);
+        }
+      }
+    );
 };
 
 module.exports = Order;
