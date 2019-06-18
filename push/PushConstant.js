@@ -1,4 +1,4 @@
-const PageidConstant={
+const PushConstant={
     masteridOrder_Post:0,
     masteridOrder_Accept:1,
     masteridOrder_Preparing:2,
@@ -21,8 +21,8 @@ const PageidConstant={
 
     pageidMakeit_Order_Post:1,
     pageidMakeit_Order_Cancel:2,
+
 };
 
-
-module.exports = PageidConstant;
+module.exports = PushConstant;
 

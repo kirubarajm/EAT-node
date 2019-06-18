@@ -6,7 +6,6 @@ const query = util.promisify(sql.query).bind(sql);
 var request = require("request");
 //var OrderModel = require("../../model/common/orderModel");
 var Cusinemakeit = require("../../model/makeit/cusinemakeitModel");
-var PageidConstant = require("../../PageidConstant.js");
 
 //Task object constructor
 var Makeituser = function(makeituser) {

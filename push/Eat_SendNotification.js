@@ -1,8 +1,8 @@
 const firebase = require("firebase-admin");
-var EatserverKey = require("./eat-app-9c47f-firebase-adminsdk-dgp75-7c570f4349.json");
+var EatserverKey = require("../eat-app-9c47f-firebase-adminsdk-dgp75-7c570f4349.json");
 var EAT = null;
 
-exports.initializeAppName = function() {
+function initializeAppName () {
   if (!EAT) {
     EAT=firebase.initializeApp(
       {
@@ -23,7 +23,7 @@ exports.sendOrderNotificationAndroid = function(
   title,
   message,page_id
 ) {
-  exports.initializeAppName();
+  initializeAppName();
   const options = {
     priority: "high",
     timeToLive: 60 * 60 * 24 // 1 day

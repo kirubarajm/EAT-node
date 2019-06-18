@@ -1,5 +1,5 @@
 const firebase = require("firebase-admin");
-var MoveitserverKey = require("./tovologies-1550475998119-firebase-adminsdk-jra7a-00656defb2.json");
+var MoveitserverKey = require("../moveit-a9128-firebase-adminsdk-3h0b8-6315acfc79.json");
 var Move_it = null;
 
 exports.initializeAppName = function() {
