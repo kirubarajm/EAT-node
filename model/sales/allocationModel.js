@@ -2,6 +2,8 @@
 var sql = require("../db.js");
 var Makeituser = require("../../model/makeit/makeitUserModel.js");
 var moment = require("moment");
+var Notification = require("../../model/common/notificationModel.js");
+
 
 //Task object constructor
 var Allocation = function(allocation) {
@@ -165,8 +167,6 @@ Allocation.remove = function(id, result) {
 };
 
 Allocation.update_a_followupstatus = function(req, result) {
-  var booking_date_time = moment().format("YYYY-MM-DD HH:mm:ss");
-
   var statusquery =
     "UPDATE Allocation SET status = '" +
     req.status +
@@ -198,7 +198,7 @@ Allocation.update_a_followupstatus = function(req, result) {
         success: sucobj,
         message: mesobj
       };
-
+      Notification.appointment_makeit_PushNotification(req.makeit_userid,req.status,req.sales_emp_id,req.scheduledate);
       result(null, resobj);
     }
   });

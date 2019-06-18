@@ -2,9 +2,12 @@
 var sql = require("../db.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
-var FCM = require("../../FcmSendNotification.js");
-var FCM_EAT = require("../../FcmEatSendNotification.js");
-var PageidConstant = require("../../PageidConstant.js");
+var FCM_Moveit = require("../../push/Moveit_SendNotification.js");
+var FCM_EAT = require("../../push/Eat_SendNotification.js");
+var FCM_Makeit = require("../../push/Makeit_SendNotification.js");
+var FCM_Sales = require("../../push/Sales_SendNotification.js");
+
+var PushConstant = require("../../push/PushConstant.js");
 
 var Notification = function(notification) {
   this.title = notification.title;
@@ -42,30 +45,30 @@ Notification.orderEatPushNotification = async function(
   var push_title = null;
   var push_message = null;
   switch (pageid) {
-    case PageidConstant.pageidOrder_Post:
+    case PushConstant.pageidOrder_Post:
       push_title = "Order Post";
       push_message =
         "Hi! your Order posted successful.Your OrderID is#" + orderid;
       break;
 
-    case PageidConstant.pageidOrder_Accept:
+    case PushConstant.pageidOrder_Accept:
       push_title = "Order Accecpt";
       push_message =
         "Hi! your Order accepted successful.Please wait for some more time";
       break;
 
-    case PageidConstant.pageidOrder_Pickedup:
+    case PushConstant.pageidOrder_Pickedup:
       push_title = "Order Picked up";
       push_message =
         "Hi! your Order Picked up.Please wait your food reaced soon.";
       break;
 
-    case PageidConstant.pageidOrder_Reached:
+    case PushConstant.pageidOrder_Reached:
       push_title = "Order Near to me";
       push_message = "Hi! your Order Waiting.Please picked up";
       break;
 
-    case PageidConstant.pageidOrder_Delivered:
+    case PushConstant.pageidOrder_Delivered:
       push_title = "Order Delivered";
       push_message = "Hi! your Order Delivered successful";
       break;
@@ -94,7 +97,7 @@ Notification.orderMakeItPushNotification = async function(
 
   var data = null;
   switch (pageid) {
-    case PageidConstant.pageidMakeit_Order_Post:
+    case PushConstant.pageidMakeit_Order_Post:
       data = {
         title: "New Order Posted",
         message: "OrderID is#" + orderid,
@@ -104,7 +107,7 @@ Notification.orderMakeItPushNotification = async function(
       };
       break;
 
-    case PageidConstant.pageidMakeit_Order_Cancel:
+    case PushConstant.pageidMakeit_Order_Cancel:
       data = {
         title: "Order Cancel",
         message: "Sorry,Order cancel OrderID is#" + orderid,
@@ -118,7 +121,7 @@ Notification.orderMakeItPushNotification = async function(
     "SELECT * FROM MakeitUser where userid = " + makeit_user_id
   );
   if (Makeituser && Makeituser[0].pushid_android && data) {
-    FCM.sendMakeitOrderPostNotification(Makeituser[0].pushid_android, data);
+    FCM_Moveit.sendMakeitOrderPostNotification(Makeituser[0].pushid_android, data);
   }
 };
 
@@ -133,7 +136,7 @@ Notification.orderMoveItPushNotification = async function(
   var Eatuserdetail = null;
 
   switch (pageid) {
-    case PageidConstant.pageidMoveit_Order_Assigned:
+    case PushConstant.pageidMoveit_Order_Assigned:
       Eatuserdetail = await Notification.getEatUserDetail(Eatuserid);
       payload = {
         data: {
@@ -150,7 +153,7 @@ Notification.orderMoveItPushNotification = async function(
       };
       break;
 
-    case PageidConstant.pageidMoveit_Order_Cancel:
+    case PushConstant.pageidMoveit_Order_Cancel:
       Eatuserdetail = await Notification.getEatUserDetail(Eatuserid);
       payload = {
         data: {
@@ -168,7 +171,7 @@ Notification.orderMoveItPushNotification = async function(
       };
       break;
 
-    case PageidConstant.pageidMoveit_Order_Prepared:
+    case PushConstant.pageidMoveit_Order_Prepared:
       payload = {
         data: {
           title: "Order is Prepared",
@@ -192,11 +195,84 @@ Notification.orderMoveItPushNotification = async function(
   }
 
   if (move_it_user_detail && move_it_user_detail.pushid_android) {
-    FCM.sendMoveitOrderAssignNotification(
+    FCM_Moveit.sendMoveitOrderAssignNotification(
       move_it_user_detail.pushid_android,
       payload
     );
   }
 };
+
+
+Notification.appointment_makeit_PushNotification = async function(
+  makeit_userid,
+  status, sales_userid, datetime
+) {
+var sales_user_detail = await query(
+    "SELECT name FROM Sales_QA_employees where id = " + sales_userid
+);
+sales_user_detail=sales_user_detail[0];
+var data = null;
+var salesman_name = sales_user_detail.name;
+console.log("outside");
+  switch (status) {
+    case 2:
+      data = {
+        title: "Info session scheduled",
+        message: "Your Info Session for EAT is assigned to "+salesman_name+ " on " + datetime ,
+        pageid: "3",
+        app: "Make-it",
+        notification_type: "1"
+      };
+      console.log("22");
+      break;
+
+      case 4:
+        data = {
+          title: "Sales session scheduled",
+          message: "Your Sales Session for EAT is assigned to "+salesman_name+ " on " + datetime ,
+          pageid: "3",
+          app: "Make-it",
+          notification_type: "1"
+        };
+        break;   
+  }
+  var Makeituser = await query(
+    "SELECT pushid_android FROM MakeitUser where userid = " + makeit_userid
+  );
+  if (Makeituser && Makeituser[0].pushid_android && data) {
+    FCM_Makeit.sendNotificationAndroid(Makeituser[0].pushid_android, data);
+  }
+};
+
+
+Notification.queries_answers_PushNotification = async function(
+  userid,qid,answer,type
+) {
+  var Userdetails = null;
+  var userTable="";
+  var FCM_Obj =null;
+  var appname="";
+  if(type=1) {userTable="MakeitUser"; FCM_Obj =FCM_Makeit; appname="Makeit"}
+  else if(type=2) {userTable="MoveitUser"; FCM_Obj =FCM_Moveit; appname="Moveit"}
+  else if(type=3) {userTable="Sales_QA_employees"; FCM_Obj =FCM_Sales; appname="Sales";}
+  else if(type=4) {userTable="User"; FCM_Obj =FCM_EAT; appname="Eat";}
+
+  var data = null;
+  data = {
+        title: "Queries Replied",
+        message: answer,
+        pageid: "4", //Need to change depends on type
+        app: appname, 
+        notification_type: "1"
+      };
+
+  Userdetails = await query(
+    "SELECT * FROM "+userTable+" where userid = " + userid
+  );
+  if (Userdetails && Userdetails[0].pushid_android && data) {
+    FCM_Obj.sendNotificationAndroid(Userdetails[0].pushid_android, data);
+  }
+};
+
 
 module.exports = Notification;

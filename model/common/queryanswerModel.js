@@ -2,6 +2,7 @@
 var sql = require("../db.js");
 var masters = require("../master.js");
 var constant = require("../constant.js");
+var Notification = require("../common/notificationModel.js");
 const fs = require("fs");
 
 //Task object constructor
@@ -30,7 +31,7 @@ QueryAnswer.createanswer = function createanswer(req, result) {
         status: true,
         message: message
       };
-
+      Notification.queries_answers_PushNotification(req.userid,req.qid,req.answer,req.type);
       result(null, resobj);
     }
   });
