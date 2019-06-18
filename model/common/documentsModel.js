@@ -34,6 +34,7 @@ var Documents = function(documents) {
   this.type = documents.type;
   this.url = documents.url;
   this.docid = documents.docid;
+  this.image_type = documents.image_type || 0;
   this.created_at = new Date();
 };
 
@@ -268,6 +269,8 @@ Documents.createnewinfoDocument = async function createnewinfoDocument(
       documentlist.docid +
       "' and type = '" +
       documentlist.type +
+      "' and image_type = '" +
+      documentlist.image_type +
       "'"
   );
 
@@ -291,6 +294,8 @@ Documents.createnewinfoDocument = async function createnewinfoDocument(
         documentlist.docid +
         "' and type = '" +
         documentlist.type +
+        "' and image_type = '" +
+        documentlist.image_type +
         "'"
     );
   }
@@ -333,7 +338,7 @@ Documents.deletekitchenImage = async function deletekitchenImage(
   result
 ) {
   if (documentdeletelist && documentdeletelist.length > 0) {
-    var deletedIds = JSON.stringify(documentdeletelist);
+    var deletedIds = documentdeletelist.toString();
     var deleteQuery = "DELETE From Documents where did IN (" + deletedIds + ")";
     console.log("Kitachen deleteQuery: ", deleteQuery);
     var kitchenImagedelete = await query(deleteQuery);

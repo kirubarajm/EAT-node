@@ -30,4 +30,23 @@ MakeitApproved.makeitApprovedUpdate = function makeitApprovedUpdate(updatestate,
           })
 }
 
+MakeitApproved.admin_makeitApprovedUpdate = function admin_makeitApprovedUpdate(updatestate, result) {
+    
+  Makeituser.admin_makeit_user_approval(updatestate,function (err, res) {
+      if(err) {
+          console.log("error: ", err);
+            result(null, err);
+         }
+       else{
+          let sucobj=true;
+          let mesobj = "Job completed successfully";
+          let resobj = {  
+          success: sucobj,
+          message:mesobj
+          }; 
+              result(null, resobj);
+            }
+        })
+}
+
 module.exports= MakeitApproved;

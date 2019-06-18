@@ -249,6 +249,7 @@ module.exports = function(app) {
 
   app.route("/makeit/orders").get(makeituser.all_order_list);
 
+
   app.route("/makeit/orders/listbydate").post(makeituser.all_order_list_bydate);
 
   app.route("/makeit/orders/:id").get(makeituser.orderlist);
@@ -346,6 +347,10 @@ module.exports = function(app) {
     app
     .route("/makeit/menuitemlist/:makeit_userid")
     .get(menuitem.list_all_menuitem_by_makeituserid);
+
+    app.route("/makeit/appoinmentinfo/:makeit_userid").get(makeituser.appointment_info);
+    app.route("/makeit/order/cancel").put(orders.makeit_order_cancel);
+    app.route("/makeit/order/accept").put(orders.makeit_order_accept);
 
   /*Admin Api*/
   app.route("/admin/eatuser/add").post(eatuser.create_a_eatuser);
@@ -523,7 +528,7 @@ module.exports = function(app) {
  
   app.route("/admin/makeit/documentstore").post(makeituser.makeit_document_store);
 
-
+  app.route("/admin/makeit/approved").put(salesuser.admin_makeit_approved);
 
 
 
@@ -550,7 +555,7 @@ module.exports = function(app) {
   app.route("/sales/makeitdocument/update").post(salesdocument.create_a_new_infodocument);
   app.route("/sales/makeitkitchan/update").post(salesdocument.create_a_new_documents);
   app.route("/sales/rating").post(salesuser.create_a_rating);
-  app.route("/sales/makeit/approved").post(salesuser.makeit_approved);
+  app.route("/sales/makeit/approved").put(salesuser.makeit_approved);
   app.route("/sales/makeitinfo/:makeit_userid").get(salesuser.get_makeit_kitchen_info);
   app.route("/sales/makeitdocument/:makeit_userid").get(salesuser.get_makeit_user_document);
   app.route("/sales/makeitkitchens/:makeit_userid").get(salesuser.get_makeit_kitchen_document);

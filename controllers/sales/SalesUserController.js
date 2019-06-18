@@ -104,6 +104,25 @@ exports.makeit_approved = function(req, res) {
   }
 };
 
+exports.admin_makeit_approved = function(req, res) {
+  if (
+    !req.body.makeit_userid ||
+    !req.body.admin_id
+  ) {
+    res
+      .status(400)
+      .send({
+        error: true,
+        message: "Please provide makeit_userid/admin_id"
+      });
+  } else {
+    Makeitapproved.admin_makeitApprovedUpdate(req.body, function(err, result) {
+      if (err) res.send(err);
+      res.json(result);
+    });
+  }
+};
+
 exports.get_makeit_kitchen_info = function(req, res) {
   Salesuser.getMakeitkitchenInfo(req.params.makeit_userid, function(err, kitcheninfo) {
     if (err) res.send(err);

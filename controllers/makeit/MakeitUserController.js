@@ -140,6 +140,13 @@ exports.all_order_list = function(req, res) {
   });
 };
 
+exports.appointment_info = function(req, res) {
+  Makeituser.appointment_info(req.params.makeit_userid,function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
 exports.all_order_list_bydate = function(req, res) {
   // console.log(req.body);
   Makeituser.all_order_list_bydate(req.body, function(err, result) {
