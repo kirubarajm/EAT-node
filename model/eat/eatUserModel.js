@@ -333,7 +333,7 @@ Eatuser.get_eat_makeit_product_list = function(req, result) {
       req.eatuserid +
       "'  where mk.userid = " +
       req.makeit_userid +
-      " and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1 ";
+      " and mk.ka_status = 2 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1 ";
   } else {
     var query =
       "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.img2,mk.img3,mk.img4,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
@@ -344,7 +344,7 @@ Eatuser.get_eat_makeit_product_list = function(req, result) {
       req.lat +
       "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  join Fav fa on fa.makeit_userid = mk.userid  join Fav faa on faa.productid = pt.productid  where mk.userid =" +
       req.makeit_userid +
-      " and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1";
+      " and mk.ka_status = 2 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1";
   }
 
   if (req.vegtype === 0) {
@@ -486,7 +486,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     console.log("search");
     query =
       query +
-      " where mu.appointment_status = 3 and mu.verified_status = 1 and pt.active_status = 1 and pt.quantity != 0  and pt.delete_status !=1 and pt.product_name like '%" +
+      " where mu.appointment_status = 3 and mu.ka_status = 2 and pt.approved_status = 2 and mu.verified_status = 1 and pt.active_status = 1 and pt.quantity != 0  and pt.delete_status !=1 and pt.product_name like '%" +
       req.search +
       "%'";
   } else if (
@@ -498,14 +498,14 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and" +
         filterquery;
     } else {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and " +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1) and " +
         filterquery;
     }
   } else if (
@@ -517,14 +517,14 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and (" +
         filterquery;
     } else {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (" +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1) and (" +
         filterquery;
     }
   } else if (
@@ -536,7 +536,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and (pt.product_name like '%" +
         req.search +
@@ -545,7 +545,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     } else {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (pt.product_name like '%" +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1) and (pt.product_name like '%" +
         req.search +
         "%') and " +
         filterquery;
@@ -559,7 +559,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and (pt.product_name like '%" +
         req.search +
@@ -568,7 +568,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     } else {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (pt.product_name like '%" +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1) and (pt.product_name like '%" +
         req.search +
         "%' and " +
         filterquery;
@@ -582,7 +582,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and (pt.product_name like '%" +
         req.search +
@@ -591,7 +591,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     } else {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (pt.product_name like '%" +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1) and (pt.product_name like '%" +
         req.search +
         "%' and " +
         filterquery;
@@ -605,14 +605,14 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and (" +
         filterquery;
     } else {
       query =
         query +
-        " where (mu.appointment_status = 3 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (" +
+        " where (mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2) and (pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1) and (" +
         filterquery;
     }
   } else if (
@@ -623,7 +623,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     console.log("search");
     query =
       query +
-      " where mu.appointment_status = 3 and mu.verified_status = 1 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1";
+      " where mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2 and pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1";
   }
 
   console.log(query);
@@ -751,7 +751,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     console.log("search");
     query =
       query +
-      " where mk.appointment_status = 3 and mk.verified_status = 1 and pt.delete_status !=1 and mk.name like '%" +
+      " where mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 and pt.delete_status !=1 and mk.name like '%" +
       req.search +
       "%'";
   } else if (
@@ -763,14 +763,14 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and" +
         filterquery;
     } else {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and " +
+        " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and " +
         filterquery;
     }
   } else if (
@@ -782,14 +782,14 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and (" +
         filterquery;
     } else {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (" +
+        " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (" +
         filterquery;
     }
   } else if (
@@ -801,7 +801,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mk.appointment_status = 3 and  mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and (mk.name like '%" +
         req.search +
@@ -810,7 +810,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     } else {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (mk.name like '%" +
+        " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (mk.name like '%" +
         req.search +
         "%') and " +
         filterquery;
@@ -824,7 +824,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and (mk.name like '%" +
         req.search +
@@ -833,7 +833,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     } else {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) and (mk.name like '%" +
+        " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) and (mk.name like '%" +
         req.search +
         "%' and " +
         filterquery;
@@ -847,7 +847,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and (mk.name like '%" +
         req.search +
@@ -856,7 +856,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     } else {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (mk.name like '%" +
+        " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (mk.name like '%" +
         req.search +
         "%' and " +
         filterquery;
@@ -870,14 +870,14 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     if (req.eatuserid) {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
+        " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 OR fa.eatuserid = '" +
         req.eatuserid +
         "') and (" +
         filterquery;
     } else {
       query =
         query +
-        " where (mk.appointment_status = 3 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (" +
+        " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1) and (" +
         filterquery;
     }
   } else if (
@@ -888,7 +888,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     console.log("search");
     query =
       query +
-      " where mk.appointment_status = 3 and mk.verified_status = 1  and pt.quantity != 0 and pt.delete_status !=1 ";
+      " where mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1  and pt.quantity != 0 and pt.delete_status !=1 ";
   }
 
   if (req.vegtype ===0) {
@@ -1659,7 +1659,7 @@ Eatuser.get_eat_region_makeit_list = function get_eat_region_makeit_list(req,res
                   res2[i].regionid +
                   "=re.regionid left join Cuisine_makeit cm on cm.makeit_userid = mk.userid join Cuisine cu on cu.cuisineid=cm.cuisineid  where us.userid = '" +
                   req.eatuserid +
-                  "' and mk.appointment_status = 3 and mk.verified_status = 1 group by mk.userid,distance HAVING distance <="+radiuslimit+" order by distance ASC limit 3";
+                  "' and mk.appointment_status = 3 and mk.ka_status = 2 and mk.verified_status = 1 group by mk.userid,distance HAVING distance <="+radiuslimit+" order by distance ASC limit 3";
 
                 let kitchenlist = await query(nearbyregionquery);
                 res = [...res, ...kitchenlist];
@@ -1732,7 +1732,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
                         for (let i = 0; i < res2.length; i++) {
 
                      
-                       var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and pt.quantity != 0 and pt.delete_status !=1  GROUP BY pt.productid   HAVING distance <="+radiuslimit+" ORDER BY distance";
+                       var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and mk.ka_status = 2 and pt.approved_status=2 and  pt.quantity != 0 and pt.delete_status !=1  GROUP BY pt.productid   HAVING distance <="+radiuslimit+" ORDER BY distance";
                         //console.log(nearbyregionquery);
                           let kitchenlist = await query(nearbyregionquery);
                           var kitchendetaillist=[];
@@ -1797,7 +1797,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
   var radiuslimit=constant.radiuslimit;
 
 
-    var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+req.regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and pt.quantity != 0 and pt.delete_status !=1  GROUP BY pt.productid   HAVING distance <="+radiuslimit+" ORDER BY distance";
+    var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+req.regionid+"  and  mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status = 2 and mk.verified_status = 1  and pt.quantity != 0 and pt.delete_status !=1  GROUP BY pt.productid   HAVING distance <="+radiuslimit+" ORDER BY distance";
 
       
        sql.query(nearbyregionquery, function (err, res) {
@@ -1889,7 +1889,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
             req.eatuserid +
             "'  where product_name like '%" +
             req.search +
-            "%' and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1  group by pt.makeit_userid";
+            "%' and pt.active_status = 1 and mk.ka_status = 2 and pt.approved_status=2 and pt.quantity != 0 and pt.delete_status != 1  group by pt.makeit_userid";
 
           //var query ="Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid as makeit_region,re.regionname, pt.product_name,pt.vegtype,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,cu.cuisineid,ly.localityname, ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid join Cuisine cu on cu.cuisineid=pt.cuisine left join Locality ly on mu.localityid=ly.localityid join Region re on re.regionid = mu.regionid left join Fav fa on fa.productid = pt.productid and fa.eatuserid = '"+req.eatuserid+"'  where mu.appointment_status = 3 and mu.verified_status = 1 and pt.active_status =1 and pt.quantity != 0  and pt.delete_status !=1 and pt.product_name like '%"+req.search+"%'  HAVING distance <="+radiuslimit+" ORDER BY pt.product_name ASC";
         } 

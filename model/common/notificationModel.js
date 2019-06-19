@@ -111,9 +111,10 @@ Notification.orderMakeItPushNotification = async function(
   makeit_userid,
   pageid
 ) {
+  console.log("orderid->",orderid);
   if (!makeit_userid) {
     var orders = await Notification.getPushOrderDetail(orderid);
-    makeit_user_id = orders.makeit_user_id;
+    makeit_userid = orders.makeit_user_id;
   }
 
   var data = null;
@@ -143,7 +144,7 @@ Notification.orderMakeItPushNotification = async function(
 
   if (data == null) return;
   var Makeituser = await query(
-    "SELECT * FROM MakeitUser where userid = " + makeit_user_id
+    "SELECT * FROM MakeitUser where userid = " + makeit_userid
   );
   if (Makeituser && Makeituser[0].pushid_android) {
     FCM_Makeit.sendNotificationAndroid(Makeituser[0].pushid_android, data);

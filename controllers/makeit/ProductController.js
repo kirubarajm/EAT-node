@@ -107,7 +107,6 @@ exports.admin_list_all_product = function(req, res) {
 //  };
 
 exports.add_quantity = function(req, res) {
-  console.log(req.body);
   Product.update_quantity_byid(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);

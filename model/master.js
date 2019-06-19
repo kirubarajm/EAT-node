@@ -493,19 +493,23 @@ const master = [
     {
         'productapprovestatus': [{
                 "statusid": 0,
-                "description": "new peoduct"
+                "description": "Defult"
             },
             {
                 "statusid": 1,
-                "description": "Product accept"
+                "description": "Product Intermediate approved"
             },
             {
                 "statusid": 2,
-                "description": "product reject"
+                "description": "Product Eat approved"
             },
             {
                 "statusid": 3,
-                "description": "product edit"
+                "description": "Product reject"
+            },
+            {
+                "statusid": 4,
+                "description": "Product edit"
             }
         ]
     },

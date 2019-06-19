@@ -185,19 +185,18 @@ Documents.remove = function(id, result) {
 };
 
 Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
-  //console.log(newDocument.files.lic); // the uploaded file object
-
   if (
     !newDocument.files ||
     !newDocument.files.lic ||
     Object.keys(newDocument.files).length == 0
   ) {
     result(
-      { success: true, status: false, message: "No files were uploaded." },
+      { error: true, status: false, message: "No files uploaded." },
       null
     );
-  }
+  }else{
 
+  console.log('cancel-->')
   var fileName = newDocument.files.lic;
   var name = fileName.name;
 
@@ -216,16 +215,17 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
       console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = "true";
       let message = "Document uploaded successfully";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         message: message,
         data: data
       };
       result(null, resobj);
     }
   });
+}
 };
 
 Documents.createnewDocumentlist = function createnewDocumentlist(

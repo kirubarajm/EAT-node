@@ -101,7 +101,7 @@ module.exports = function(app) {
 
   app.route("/makeit/bookappointment").put(makeituser.creat_a_appointment);
 
-  app.route("/makeit/appointments/").get(makeituser.list_all_appointment);
+  app.route("/makeit/appointments").get(makeituser.list_all_appointment);
 
   //Routes for Sales users
 
@@ -267,7 +267,7 @@ module.exports = function(app) {
 
  // app.route("/product/moveliveproduct/").post(product.moveliveproduct);
 
-  app.route("/makeit/moveliveproduct/").post(product.moveliveproduct);
+  app.route("/makeit/moveliveproduct").post(product.moveliveproduct);
 
  // app.route("/product/productitem/:productid").get(product.productitemlist);
 

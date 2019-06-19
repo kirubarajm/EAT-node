@@ -45,7 +45,7 @@ var Order = function(order) {
   this.cus_address = order.cus_address;
   this.lock_status = order.lock_status || 0;
   this.cancel_by = order.cancel_by || 0;
-  this.item_missing= order.item_missing || 0;
+  this.item_missing = order.item_missing || 0;
 };
 
 Order.createOrder = async function createOrder(req, orderitems, result) {
@@ -101,13 +101,15 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
       function ordercreatecashondelivery(req, orderitems) {
         console.log("ordercreatecashondelivery:");
         var new_Order = new Order(req);
-        // new_Order.locality = 'guindy';
-        //new_Order.orderstatus = 6;
         new_Order.delivery_charge = delivery_charge;
 
         console.log(new_Order);
         console.log(orderitems);
-        sql.query("INSERT INTO Orders set ?", new_Order, function(err, res1) {
+
+        sql.query("INSERT INTO Orders set ?", new_Order, async function(
+          err,
+          res1
+        ) {
           if (err) {
             console.log("error: ", err);
             result(null, err);
@@ -122,12 +124,16 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
               orderitem.quantity = orderitems[i].cartquantity;
               orderitem.price = orderitems[i].price;
               var items = new Orderitem(orderitem);
-
               Orderitem.createOrderitems(items, function(err, res2) {
                 if (err) result.send(err);
-                //  console.log(res2);
               });
             }
+            await Notification.orderMakeItPushNotification(
+              orderid,
+              req.makeit_user_id,
+              PushConstant.pageidMakeit_Order_Post
+            );
+
             let sucobj = true;
             let status = true;
             let mesobj = "Order Created successfully";
@@ -135,46 +141,6 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
               success: sucobj,
               status: status,
               message: mesobj,
-              orderid: orderid
-            };
-            result(null, resobj);
-          }
-        });
-      }
-
-      function ordercreateonline() {
-        sql.query("INSERT INTO Orders set ?", newOrder, function(err, res1) {
-          if (err) {
-            console.log("error: ", err);
-            result(null, err);
-          } else {
-            var orderid = res1.insertId;
-
-            for (var i = 0; i < orderitems.length; i++) {
-              var orderitemlock = new Orderlock(orderitems[i]);
-              orderitemlock.orderid = orderid;
-
-              var orderitem = new Orderitem(orderitems[i]);
-              orderitem.orderid = orderid;
-
-              Orderitem.createOrderitems(orderitem, function(
-                err,
-                orderitemresponce
-              ) {
-                if (err) result.send(err);
-              });
-
-              Orderlock.lockOrderitems(orderitemlock, function(
-                err,
-                orderitemresponce
-              ) {
-                if (err) result.send(err);
-              });
-            }
-
-            let sucobj = true;
-            let resobj = {
-              success: sucobj,
               orderid: orderid
             };
             result(null, resobj);
@@ -454,7 +420,6 @@ Order.order_assign = function order_assign(req, result) {
                 console.log("error: ", err);
                 result(null, err);
               } else {
-                
                 await Notification.orderMoveItPushNotification(
                   req.orderid,
                   PushConstant.pageidMoveit_Order_Assigned,
@@ -1010,7 +975,10 @@ Order.orderviewbyeatuser = function(req, result) {
                   res[0].items = items.item;
                 }
                 console.log("res[0].orderstatus:-- ", res[0].orderstatus);
-                res[0].trackingstatus=Order.orderTrackingDetail(res[0].orderstatus,res[0].moveitdetail);
+                res[0].trackingstatus = Order.orderTrackingDetail(
+                  res[0].orderstatus,
+                  res[0].moveitdetail
+                );
                 //}
 
                 let sucobj = true;
@@ -1031,10 +999,10 @@ Order.orderviewbyeatuser = function(req, result) {
   );
 };
 
-Order.orderTrackingDetail = function(orderstatus,moveit_detail) {
+Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
   var trackingDetail = {};
-  var moveit_name =moveit_detail?moveit_detail.name:"";
-  orderstatus=orderstatus?orderstatus:0;
+  var moveit_name = moveit_detail ? moveit_detail.name : "";
+  orderstatus = orderstatus ? orderstatus : 0;
   switch (orderstatus) {
     case 0:
       trackingDetail.message1 = "Awaiting your mom’s response";
@@ -1045,7 +1013,8 @@ Order.orderTrackingDetail = function(orderstatus,moveit_detail) {
     case 1:
       trackingDetail.message1 = "Your order has been received";
       trackingDetail.message2 = "Preparing.. With love, Your MOM";
-      trackingDetail.message3 = "Mr."+moveit_name+" is on his way to pickup";
+      trackingDetail.message3 =
+        "Mr." + moveit_name + " is on his way to pickup";
       break;
 
     case 2:
@@ -1053,13 +1022,15 @@ Order.orderTrackingDetail = function(orderstatus,moveit_detail) {
     case 4:
       trackingDetail.message1 = "Your order has been received";
       trackingDetail.message2 = "Your MOM has packed your food";
-      trackingDetail.message3 = "Mr."+moveit_name+" is on his way to pickup";
+      trackingDetail.message3 =
+        "Mr." + moveit_name + " is on his way to pickup";
       break;
 
     case 5:
       trackingDetail.message1 = "Your order has been received";
       trackingDetail.message2 = "Your MOM has packed your food";
-      trackingDetail.message3 = "Mr."+moveit_name+" is on his way to delivery";
+      trackingDetail.message3 =
+        "Mr." + moveit_name + " is on his way to delivery";
       break;
   }
   return trackingDetail;
@@ -1278,67 +1249,35 @@ Order.online_order_place_conformation = function(order_place, result) {
       "' WHERE orderid = '" +
       order_place.orderid +
       "' ";
-
-    var orderdetailsquery =
-      "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" +
-      order_place.orderid +
-      "'";
-
-    // var deletequery = "delete from Lock_order where orderid ='"+order_place.orderid+"' ";
+    var deletequery =
+      "delete from Lock_order where orderid ='" + order_place.orderid + "' ";
 
     sql.query(query, function(err, res1) {
       if (err) {
         console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
-        // sql.query(deletequery, function(err, deleteres) {
-        //   if (err) {
-        //     console.log("error: ", err);
-        //   } else {
-
-        sql.query(orderdetailsquery, function(err, res2) {
+        sql.query(deletequery, async function(err, deleteres) {
           if (err) {
             console.log("error: ", err);
+            result(err, null);
           } else {
-            for (let i = 0; i < res2.length; i++) {
-              res2[i].distance = res2[i].distance.toFixed(2);
-              //15min Food Preparation time , 3min 1 km
-              var eta = 15 + 3 * res2[i].distance;
+            await Notification.orderMakeItPushNotification(
+              order_place.orderid,
+              null,
+              PushConstant.pageidMakeit_Order_Post
+            );
 
-              res2[i].eta = Math.round(eta) + " mins";
-
-              if (res2[i].userdetail) {
-                res2[i].userdetail = JSON.parse(res2[i].userdetail);
-              }
-
-              if (res2[i].makeitdetail) {
-                res2[i].makeitdetail = JSON.parse(res2[i].makeitdetail);
-              }
-              if (res2[i].moveitdetail) {
-                res2[i].moveitdetail = JSON.parse(res2[i].moveitdetail);
-              }
-
-              if (res2[i].items) {
-                var items = JSON.parse(res2[i].items);
-                res2[i].items = items.item;
-              }
-            }
-
-            let message = "Your order placed  successfully";
+            let message = "Your order placed successfully";
             let sucobj = true;
             let resobj = {
               success: sucobj,
               status: true,
-              message: message,
-              orderdetails: res2
+              message: message
             };
             result(null, resobj);
           }
         });
-
-        //   }pay
-
-        // });
       }
     });
   } else if (order_place.payment_status == 2) {
@@ -1359,12 +1298,11 @@ Order.online_order_place_conformation = function(order_place, result) {
     sql.query(query, function(err, res1) {
       if (err) {
         console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         sql.query(releasequantityquery, function(err, res2) {
           if (err) {
-            console.log("error: ", err);
-            result(null, err);
+            result(err, null);
           } else {
             for (let i = 0; i < res2.length; i++) {
               var productquantityadd =
@@ -1605,7 +1543,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
               res2[0].lat +
               ") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  where mk.userid ='" +
               req.makeit_user_id +
-              "' and mk.appointment_status = 3 and mk.verified_status = 1"
+              "' and mk.appointment_status = 3 and mk.verified_status = 1 and mk.ka_status = 2"
           );
 
           var eta = 15 + 3 * makeitavailability[0].distance;
@@ -1666,7 +1604,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
             });
           }
           Notification.orderMakeItPushNotification(
-            req.orderid,
+            orderid,
             req.makeit_user_id,
             PushConstant.pageidMakeit_Order_Post
           );
@@ -1764,8 +1702,6 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
         }
       });
     }
-
-   
   } else {
     let sucobj = true;
     let status = false;
@@ -1828,142 +1764,144 @@ Order.create_customerid_by_razorpay = async function create_customerid_by_razorp
     });
 };
 
-Order.create_refund = function create_refund(refundDetail){
+Order.create_refund = function create_refund(refundDetail) {
   var refund = new RefundStatus(refundDetail);
-  RefundStatus.createRefund(refund,function(err,res){
-    if(err) return false;
+  RefundStatus.createRefund(refund, function(err, res) {
+    if (err) return false;
     else return true;
   });
 };
 
-Order.eat_order_cancel = async function eat_order_cancel(
-  req,
-  result
-) {
+Order.eat_order_cancel = async function eat_order_cancel(req, result) {
   const orderdetails = await query(
     "select * from Orders where orderid ='" + req.orderid + "'"
   );
 
-  if (orderdetails[0].orderstatus<5) {
+  if (orderdetails[0].orderstatus < 5) {
     sql.query(
-      "UPDATE Orders SET orderstatus = 7,cancel_by = 1 WHERE orderid ='" + req.orderid + "'",
+      "UPDATE Orders SET orderstatus = 7,cancel_by = 1 WHERE orderid ='" +
+        req.orderid +
+        "'",
       async function(err, res) {
         if (err) {
           result(err, null);
         } else {
-          var refundDetail={
-            orderid:req.orderid,
-            original_amt:orderdetails[0].price,
-            status:0
-          }
-          if(orderdetails[0].payment_type==="1"&&orderdetails[0].payment_status===1) await Order.create_refund(refundDetail);
+          var refundDetail = {
+            orderid: req.orderid,
+            original_amt: orderdetails[0].price,
+            status: 0
+          };
+          if (
+            orderdetails[0].payment_type === "1" &&
+            orderdetails[0].payment_status === 1
+          )
+            await Order.create_refund(refundDetail);
           await Notification.orderMakeItPushNotification(
             req.orderid,
             null,
             PushConstant.pageidMakeit_Order_Cancel
           );
-          let response={
+          let response = {
             success: true,
             status: true,
-            message : "Your order canceled successfully.",
-          }
+            message: "Your order canceled successfully."
+          };
           result(null, response);
         }
       }
     );
-  }else if(orderdetails[0].orderstatus===5){
-    let response={
+  } else if (orderdetails[0].orderstatus === 5) {
+    let response = {
       success: true,
       status: false,
-      message : "Sorry! Your order almost reached to you.So can't be cancel"
-    }
+      message: "Sorry! Your order almost reached to you.So can't be cancel"
+    };
     result(null, response);
-  }else if(orderdetails[0].orderstatus===6){
-    let response={
+  } else if (orderdetails[0].orderstatus === 6) {
+    let response = {
       success: true,
       status: false,
-      message : "Sorry! Your order already deliverd."
-    }
+      message: "Sorry! Your order already deliverd."
+    };
     result(null, response);
-  }else if(orderdetails[0].orderstatus===7){
-    let response={
+  } else if (orderdetails[0].orderstatus === 7) {
+    let response = {
       success: true,
       status: false,
-      message : "Sorry! Your order already canceled."
-    }
+      message: "Sorry! Your order already canceled."
+    };
     result(null, response);
   }
 };
 
-
-Order.makeit_order_cancel = async function makeit_order_cancel(
-  req,
-  result
-) {
+Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
   const orderdetails = await query(
     "select * from Orders where orderid ='" + req.orderid + "'"
   );
-  if(orderdetails[0].orderstatus===7){
-    let response={
+  if (orderdetails[0].orderstatus === 7) {
+    let response = {
       success: true,
       status: false,
-      message : "Sorry! order already canceled."
-    }
+      message: "Sorry! order already canceled."
+    };
     result(null, response);
-  }else{
-    sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 2 WHERE orderid ='" + req.orderid + "'",
+  } else {
+    sql.query(
+      "UPDATE Orders SET orderstatus = 7,cancel_by = 2 WHERE orderid ='" +
+        req.orderid +
+        "'",
       async function(err, res) {
         if (err) {
           result(err, null);
         } else {
-          var refundDetail={
-            orderid:orderdetails[0].orderid,
-            original_amt:orderdetails[0].price,
-            status:0
-          }
-          if(orderdetails[0].payment_type==="1"&&orderdetails[0].payment_status===1) await Order.create_refund(refundDetail);
+          var refundDetail = {
+            orderid: orderdetails[0].orderid,
+            original_amt: orderdetails[0].price,
+            status: 0
+          };
+          if (
+            orderdetails[0].payment_type === "1" &&
+            orderdetails[0].payment_status === 1
+          )
+            await Order.create_refund(refundDetail);
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
             PushConstant.pageidOrder_Cancel
           );
-          let response={
+          let response = {
             success: true,
             status: true,
-            message : "order canceled successfully.",
-          }
+            message: "order canceled successfully."
+          };
           result(null, response);
         }
       }
     );
   }
-  
 };
 
-Order.makeit_order_accept = async function makeit_order_accept(
-  req,
-  result
-) {
-    sql.query(
-      "UPDATE Orders SET orderstatus = 1 WHERE orderid ='" + req.orderid + "'",
-      async function(err, res) {
-        if (err) {
-          result(err,null);
-        } else {
-          await Notification.orderEatPushNotification(
-            req.orderid,
-            null,
-            PushConstant.pageidOrder_Accept
-          );
-          let response={
-            success: true,
-            status: true,
-            message : "Order accepted successfully.",
-          }
-          result(null, response);
-        }
+Order.makeit_order_accept = async function makeit_order_accept(req, result) {
+  sql.query(
+    "UPDATE Orders SET orderstatus = 1 WHERE orderid ='" + req.orderid + "'",
+    async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        await Notification.orderEatPushNotification(
+          req.orderid,
+          null,
+          PushConstant.pageidOrder_Accept
+        );
+        let response = {
+          success: true,
+          status: true,
+          message: "Order accepted successfully."
+        };
+        result(null, response);
       }
-    );
+    }
+  );
 };
 
 module.exports = Order;

@@ -26,7 +26,7 @@ var Product = function(product) {
   //  this.created_at = new Date();
   this.quantity = product.quantity || 0;
   this.cuisine = product.cuisine || 1;
-  this.approved_status = product.approved_status || 0;
+  this.approved_status = product.approved_status || 1;
 
   //  this.updated_at = new Date()
 };
@@ -231,25 +231,23 @@ Product.moveliveproduct = function(req, result) {
     );
   } else {
     sql.query(
-      " select * from Product where productid = " + req.productid + "",
+      " select pt.approved_status,pt.active_status,mu.ka_status from Product pt left join MakeitUser mu on mu.makeit_user_id = pt.makeit_userid where productid = " + req.productid + "",
       function(err, res) {
         if (err) {
           console.log("error: ", err);
           result(null, err);
         } else {
-          if (res[0].approved_status === 1 && res[0].active_status === 0) {
+          if(res[0].approved_status !== 0 && res[0].active_status === 0 && res[0].ka_status === 2) {
             sql.query(
               "UPDATE Product SET active_status = ? WHERE productid = ?",
               [req.active_status, req.productid],
               function(err, res) {
                 if (err) {
-                  console.log("error: ", err);
-                  result(null, err);
+                  result(err,null);
                 } else {
-                  var mesobj = {};
                   let sucobj = true;
-                  mesobj = "Product added to live successfully";
-
+                  var mesobj = "Product added to live successfully";
+                  
                   let resobj = {
                     success: sucobj,
                     status: true,
@@ -260,25 +258,31 @@ Product.moveliveproduct = function(req, result) {
                 }
               }
             );
-          } else if (res[0].active_status == 1) {
-            console.log("product live");
+          } else if (res[0].active_status === 1) {
             let sucobj = true;
             let resobj = {
               success: sucobj,
               status: false,
-              message: "Following Product already in live"
+              message: "Following Product already in live."
             };
 
             result(null, resobj);
-          } else if (res[0].approved_status == 0) {
-            console.log("product live");
+          }else if(res[0].ka_status !== 2){
             let sucobj = true;
             let resobj = {
               success: sucobj,
               status: false,
-              message: "Sorry Product not yet approved, You can't move to live"
+              message: "Sorry Product can't move to live,Your kitchen waiting for approval."
             };
 
+            result(null, resobj);
+          }else if (res[0].approved_status === 0){
+            let sucobj = true;
+            let resobj = {
+              success: sucobj,
+              status: false,
+              message: "Sorry Product not yet approved,You can't move to live."
+            };
             result(null, resobj);
           }
         }
@@ -362,10 +366,17 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
     " select * from Product where productid = " + req.productid + "",
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
-        if (res[0].approved_status === 1) {
+        if (res[0].approved_status === 1 && req.quantity>=4) {
+          let resobj = {
+            success: sucobj,
+            status: false,
+            message:
+              "Sorry Product live limit is exitded.only set 3."
+          };
+          result(null, resobj);
+        }else if (res[0].approved_status !== 0) {
           sql.query(
             "UPDATE Product SET quantity = ? WHERE productid = ? and makeit_userid = ?",
             [req.quantity, req.productid, req.makeit_userid],
@@ -632,7 +643,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
           var query =
             staticquery +
             column.slice(0, -1) +
-            " ,approved_status = 3 where productid = " +
+            " ,approved_status = 4 where productid = " +
             req.productid;
           console.log(query);
 
@@ -796,27 +807,25 @@ Product.approve_product_status = function(req, result) {
     function(err, res) {
       if (err) {
         console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         console.log(res.length);
         if (res.length !== 0) {
           if (res[0].active_status === 0) {
-            if (res[0].approved_status === 0 || res[0].approved_status === 3) {
+            if (res[0].approved_status === 1|| res[0].approved_status === 4) {
               var query =
-                "UPDATE Product SET approved_time= ?,approved_status = " +
+                "UPDATE Product SET approved_time = ?,approved_status = " +
                 req.approved_status +
-                ",approvedby=0 WHERE productid = " +
+                ",approvedby= 1 WHERE productid = " +
                 req.productid +
                 "";
-
-              console.log(query);
               sql.query(query, new Date(), function(err, res1) {
                 if (err) {
                   console.log("error: ", err);
                   result(null, err);
                 } else {
                   let message = "Product approved successfully";
-                  if(req.approved_status===2) message = "Product Rejected successfully";
+                  if(req.approved_status===3) message = "Product Rejected successfully";
                   
 
                   let sucobj = true;
@@ -829,7 +838,7 @@ Product.approve_product_status = function(req, result) {
                   result(null, resobj);
                 }
               });
-            } else if (res[0].approved_status == 1) {
+            } else if (res[0].approved_status === 2) {
               console.log("test" + res[0].approved_status);
               let sucobj = true;
               let resobj = {
@@ -839,7 +848,7 @@ Product.approve_product_status = function(req, result) {
               };
 
               result(null, resobj);
-            } else if (res[0].approved_status == 2) {
+            } else if (res[0].approved_status == 3) {
               console.log("Product already rejected");
               let sucobj = true;
               let resobj = {
@@ -883,26 +892,10 @@ Product.admin_list_all__unapproval_product = function admin_list_all__unapproval
   console.log(req);
 
   var query =
-    "Select pd.*,mk.brandname,mk.name as makeit_name from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid  where delete_status !=1 and active_status !=1 and approved_status !=1 and approved_status !=2 ";
+    "Select pd.*,mk.brandname,mk.name as makeit_name from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid  where delete_status !=1 and active_status !=1";
 
-  console.log(req.approved_status);
-
-  if (req.approved_status === 0) {
-    query =
-      query +
-      " and approved_status = '" +
-      req.approved_status +
-      "' order by created_at desc";
-  } else if (req.approved_status === 3) {
-    query =
-      query +
-      " and approved_status = '" +
-      req.approved_status +
-      "' order by updated_at desc";
-  }
-
+  query =query +" and approved_status = '"+req.approved_status +"' order by created_at desc";
   console.log(query);
-
   sql.query(query, function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -928,7 +921,7 @@ Product.getAllProductbymakeituserid = function getAllProductbymakeituserid(
   sql.query(
     "Select * from Product where delete_status = 0 and  makeit_userid = '" +
       req.makeit_userid +
-      "' and approved_status !=2",
+      "' and approved_status !=3",
     function(err, res) {
       if (err) {
         console.log("error: ", err);

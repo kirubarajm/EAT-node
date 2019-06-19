@@ -63,12 +63,11 @@ exports.delete_a_documents = function(req, res) {
 
 exports.upload_a_documents = function(req, res) {
   var new_documents = new Document(req.body);
-  //console.log(req.files);
   //handles null error
-  if (!new_documents) {
+  if (!new_documents||new_documents&&!new_documents.url) {
     res
       .status(400)
-      .send({ error: true, message: "Please provide documents name" });
+      .send({ error: true,status:false,message:"Please provide documents" });
   } else {
     Document.newdocumentupload(req, function(err, documents) {
       if (err) res.send(err);
