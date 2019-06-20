@@ -255,7 +255,7 @@ module.exports = function(app) {
   app.route("/makeit/orders/listbydate").post(makeituser.all_order_list_bydate);
 
   app.route("/makeit/orders/:id").get(makeituser.orderlist);
-
+  app.route("/makeit/ordershistory/:id").get(makeituser.orderhistory);
  // app.route("/vorders/:orderid").get(makeituser.orderview);
 
   app.route("/makeit/orderview/:orderid").get(makeituser.orderview);
@@ -377,9 +377,7 @@ module.exports = function(app) {
 
   app.route("/admin/makeitusers").post(makeituser.admin_list_all_makeitusers);
 
-  app
-    .route("/admin/makeituser/approval")
-    .put(makeituser.admin_makeit_user_approval);
+  app.route("/admin/unapproved/makeitlist").post(makeituser.admin_makeit_unapproved_list);
 
   app.route("/admin/makeituser/add").post(makeituser.create_a_user);
 
@@ -474,7 +472,7 @@ module.exports = function(app) {
 
   app.route("/admin/menuitem/edit").put(menuitem.update_a_menuitem);
 
-  app.route("/admin/cartdetails").post(makeituser.read_a_cartdetails);
+  app.route("/admin/cartdetails").post(makeituser.admin_check_cartdetails);
 
   app.route("/admin/querylist").post(queryquestion.read_a_question);
 
@@ -534,7 +532,7 @@ module.exports = function(app) {
 
   app.route("/admin/refundlist").get(refundstatus.get_all_refund_list);
 
-
+  app.route("/admin/order/cancel").put(orders.admin_order_cancel);
 
   // Orders API
   app.route("/orders/ordercreate").post(orders.eatuser_order_create);

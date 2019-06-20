@@ -133,6 +133,14 @@ exports.orderlist = function(req, res) {
   });
 };
 
+exports.orderhistory = function(req, res) {
+  console.log(req.params);
+  Makeituser.orderhistorybyuserid(req.params.id, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
 exports.all_order_list = function(req, res) {
   Makeituser.all_order_list(function(err, result) {
     if (err) res.send(err);
@@ -170,24 +178,11 @@ exports.admin_list_all_makeitusers = function(req, res) {
   });
 };
 
-exports.admin_makeit_user_approval = function(req, res) {
-  if (!req.body.makeit_userid || !req.body.verified_status) {
-    res
-      .status(400)
-      .send({ error: true, message: "Please makeit_userid/verified_status" });
-  } else {
-    Makeituser.updatemakeit_user_approval(req.body, function(err, user) {
-      if (err) res.send(err);
-      res.json(user);
-    });
-  }
-};
-
-exports.update_makeit_users = function(req, res) {
-  console.log(req);
-  Makeituser.update_makeit_users(new Makeituser(req.body), function(err, user) {
+exports.admin_makeit_unapproved_list = function(req, res) {
+  console.log(req.body);
+  Makeituser.admin_get_unapproved_makeitlist(req.body, function(err, result) {
     if (err) res.send(err);
-    res.json(user);
+    res.json(result);
   });
 };
 
@@ -203,6 +198,27 @@ exports.read_a_cartdetails = function(req, res) {
       });
   } else {
     Makeituser.read_a_cartdetails_makeitid(req.body, orderitems, function(
+      err,
+      user
+    ) {
+      if (err) res.send(err);
+      res.json(user);
+    });
+  }
+};
+
+exports.admin_check_cartdetails = function(req, res) {
+  var orderitems = req.body.orderitems;
+  if (!req.body.makeit_user_id) {
+    res
+      .status(400)
+      .send({
+        error: true,
+        status: false,
+        message: "Please provide makeit_user_id"
+      });
+  } else {
+    Makeituser.admin_check_cartdetails(req.body, orderitems, function(
       err,
       user
     ) {

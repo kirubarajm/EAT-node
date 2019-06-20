@@ -1904,4 +1904,51 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
   );
 };
 
+Order.admin_order_cancel = async function admin_order_cancel(req, result) {
+  const orderdetails = await query(
+    "select * from Orders where orderid ='" + req.orderid + "'"
+  );
+  if (orderdetails[0].orderstatus === 7) {
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! order already canceled."
+    };
+    result(null, response);
+  } else {
+    sql.query(
+      "UPDATE Orders SET orderstatus = 7,cancel_by = 2 WHERE orderid ='" +
+        req.orderid +
+        "'",
+      async function(err, res) {
+        if (err) {
+          result(err, null);
+        } else {
+          var refundDetail = {
+            orderid: orderdetails[0].orderid,
+            original_amt: orderdetails[0].price,
+            status: 0
+          };
+          if (
+            orderdetails[0].payment_type === "1" &&
+            orderdetails[0].payment_status === 1
+          )
+            await Order.create_refund(refundDetail);
+          await Notification.orderEatPushNotification(
+            req.orderid,
+            null,
+            PushConstant.pageidOrder_Cancel
+          );
+          let response = {
+            success: true,
+            status: true,
+            message: "order canceled successfully."
+          };
+          result(null, response);
+        }
+      }
+    );
+  }
+};
+
 module.exports = Order;

@@ -174,6 +174,13 @@ exports.order_pickup_status = function(req, res) {
   // }
 };
 
+exports.admin_order_cancel = function(req, res) {
+  Order.admin_order_cancel(req.body, function(err, ordercancel) {
+    if (err) res.send(err);
+    res.send(ordercancel);
+  });
+};
+
 exports.order_delivery_status = function(req, res) {
   if (req.body.orderstatus === 6 || req.body.orderstatus === "6") {
     Order.order_delivery_status_by_moveituser(req.body, function(err, result) {

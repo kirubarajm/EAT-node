@@ -471,18 +471,11 @@ Makeituser.orderviewbymakeituser = function(req, result) {
 };
 
 Makeituser.orderlistbyuserid = function(id, result) {
-  console.log(id);
-  // if (id) {
-  //     var query = "select * from Orders WHERE makeit_user_id  = '" + id + "' order by orderid desc";
-  // } else {
-  //     var query = "select * from Orders order by orderid desc";
-  // }
-
   if (id) {
     var query =
       "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid WHERE makeit_user_id  = '" +
       id +
-      "' group by orderid order by orderid  desc";
+      "' and   DATE(ors.ordertime) = CURDATE() group by orderid order by orderid  desc";
   } else {
     var query = "select * from Orders order by orderid desc";
   }
@@ -510,9 +503,53 @@ Makeituser.orderlistbyuserid = function(id, result) {
         }
       }
 
-      let sucobj = true;
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
+        result: res1
+      };
+
+      result(null, resobj);
+    }
+  });
+};
+
+Makeituser.orderhistorybyuserid = function(id, result) {
+  if (id) {
+    var query =
+      "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid WHERE makeit_user_id  = '" +
+      id +
+      "' and (ors.orderstatus = 6 or ors.orderstatus = 7) group by orderid order by orderid  desc";
+  } else {
+    var query = "select * from Orders order by orderid desc";
+  }
+
+  sql.query(query, function(err, res1) {
+    if (err) {
+      console.log("error: ", err);
+      result(null, err);
+    } else {
+      for (let i = 0; i < res1.length; i++) {
+        if (res1[i].userdetail) {
+          res1[i].userdetail = JSON.parse(res1[i].userdetail);
+        }
+
+        if (res1[i].makeitdetail) {
+          res1[i].makeitdetail = JSON.parse(res1[i].makeitdetail);
+        }
+        if (res1[i].moveitdetail) {
+          res1[i].moveitdetail = JSON.parse(res1[i].moveitdetail);
+        }
+
+        if (res1[i].items) {
+          var items = JSON.parse(res1[i].items);
+          res1[i].items = items;
+        }
+      }
+
+      let resobj = {
+        success: true,
+        status:true,
         result: res1
       };
 
@@ -612,7 +649,6 @@ Makeituser.orderstatusbyorderid = function(req, result) {
 
 Makeituser.get_admin_list_all_makeitusers = function(req, result) {
   req.appointment_status =req.appointment_status||"all";
-  req.verified_status =req.verified_status||"all";
   req.virtualkey = req.virtualkey||"all";
 
   //    rsearch = req.search || ''
@@ -691,52 +727,26 @@ Makeituser.get_admin_list_all_makeitusers = function(req, result) {
   });
 };
 
-Makeituser.updatemakeit_user_approval = function(req, result) {
-  sql.query(
-    "UPDATE MakeitUser SET appointment_status = 3 ,ka_status = '" +
-      req.ka_status +
-      "' WHERE userid = ?",
-    req.makeit_userid,
-    function(err, res) {
-      if (err) {
-        console.log("error: ", err);
-        result(null, err);
-      } else {
-        let message = "Makeit user verify status updated";
-        let resobj = {
-          success: true,
-          status: true,
-          message: message
-          //result: res
-        };
+Makeituser.admin_get_unapproved_makeitlist = function(req, result) {
+  var query = "select * from MakeitUser where ka_status=1 and virtualkey=0";
+  var searchquery = " and name LIKE  '%" + req.search + "%' OR us.brandname LIKE '%" + req.search +"%'";
+   if (req.search) {
+    query = query + searchquery;
+  }
+  console.log(query);
+  sql.query(query, function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      let resobj = {
+        success: true,
+        status:true,
+        result: res
+      };
 
-        result(null, resobj);
-      }
+      result(null, resobj);
     }
-  );
-};
-
-Makeituser.admin_makeit_user_approval = function(req, result) {
-  sql.query(
-    "UPDATE MakeitUser SET ka_status = '" +req.ka_status +
-      "' WHERE userid = ?",
-    req.makeit_userid,
-    function(err, res) {
-      if (err) {
-        console.log("error: ", err);
-        result(null, err);
-      } else {
-        let message = "Makeit user verify status updated.";
-        let resobj = {
-          success: true,
-          status: true,
-          message: message
-        };
-
-        result(null, resobj);
-      }
-    }
-  );
+  });
 };
 
 Makeituser.update_makeit_followup_status = function(
@@ -765,13 +775,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var totalamount = 0;
   var amount = 0;
   var isAvaliableItem = true;
-
   var calculationdetails = {};
 
   var orderlist = await query("Select * From Orders where userid = '" +req.userid+"' and orderstatus = 6");
-
-  
- var ordercount = orderlist.length;
+  var ordercount = orderlist.length;
 
   for (let i = 0; i < orderitems.length; i++) {
 
@@ -846,6 +853,83 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     }
   });
 };
+
+
+Makeituser.admin_check_cartdetails = async function admin_check_cartdetails( req, orderitems,result) {
+   var tempmessage = "";
+   var gst = constant.gst;
+   var delivery_charge = constant.deliverycharge;
+   const productdetails = [];
+   var totalamount = 0;
+   var amount = 0;
+   var isAvaliableItem = true;
+   var calculationdetails = {};
+ 
+   for (let i = 0; i < orderitems.length; i++) {
+ 
+     const res1 = await query("Select * From Product where productid = '" +orderitems[i].productid+"'");
+     if (res1[0].quantity < orderitems[i].quantity) {
+       res1[0].availablity = false;
+       tempmessage = tempmessage + res1[0].product_name + ",";
+       isAvaliableItem = false;
+     } else {
+       res1[0].availablity = true;
+     }
+     amount = res1[0].price * orderitems[i].quantity;
+     res1[0].amount = amount;
+     res1[0].cartquantity = orderitems[i].quantity;
+     totalamount = totalamount + amount;
+     productdetails.push(res1[0]);
+   }
+   var query1 =
+     "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +req.makeit_user_id;
+ 
+   sql.query(query1, function(err, res1) {
+     if (err) {
+       console.log("error: ", err);
+       result(err, null);
+     } else {
+       for (let i = 0; i < res1.length; i++) {
+         if (res1[i].cuisines) {
+           res1[i].cuisines = JSON.parse(res1[i].cuisines);
+         }
+       }
+ 
+       if (res1.length !== 0) {
+         var gstcharge = (totalamount / 100) * gst;
+ 
+         gstcharge = Math.round(gstcharge);
+ 
+         const grandtotal = +gstcharge + +totalamount + +delivery_charge;
+ 
+         calculationdetails.grandtotal = grandtotal;
+         calculationdetails.gstcharge = gstcharge;
+         calculationdetails.totalamount = totalamount;
+         calculationdetails.delivery_charge = delivery_charge;
+         res1[0].amountdetails = calculationdetails;
+         res1[0].item = productdetails;
+         let resobj = {
+           success: true,
+           status: isAvaliableItem
+         };
+         if (!isAvaliableItem)
+           resobj.message = tempmessage.slice(0, -1) + " is not avaliable";
+         (resobj.result = res1), result(null, resobj);
+       } else {
+         let sucobj = true;
+         let status = false;
+         message = "There is no data available!, Kindly check the Makeituser id";
+         let resobj = {
+           success: sucobj,
+           status: status,
+           message: message
+         };
+ 
+         result(null, resobj);
+       }
+     }
+   });
+ };
 
 Makeituser.edit_makeit_users = async function(req, cuisines, result) {
 
