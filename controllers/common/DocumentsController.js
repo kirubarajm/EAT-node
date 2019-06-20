@@ -64,7 +64,8 @@ exports.delete_a_documents = function(req, res) {
 exports.upload_a_documents = function(req, res) {
   var new_documents = new Document(req.body);
   //handles null error
-  if (!new_documents||new_documents&&!new_documents.url) {
+  //console.log("new_documents",new_documents);
+  if (!new_documents) {
     res
       .status(400)
       .send({ error: true,status:false,message:"Please provide documents" });
@@ -136,7 +137,7 @@ exports.makeit_upload_a_documents = function(req, res) {
 
 exports.makeit_product_upload_a_document = function(req, res) {
   var new_documents = new Document(req.body);
-
+ // console.log("new_documents",new_documents);
   if (!new_documents) {
     res
       .status(400)

@@ -231,7 +231,7 @@ Product.moveliveproduct = function(req, result) {
     );
   } else {
     sql.query(
-      " select pt.approved_status,pt.active_status,mu.ka_status from Product pt left join MakeitUser mu on mu.makeit_user_id = pt.makeit_userid where productid = " + req.productid + "",
+      "select pt.approved_status,pt.active_status,mu.ka_status from Product pt left join MakeitUser mu on mu.userid = pt.makeit_userid where productid = '" + req.productid + "'",
       function(err, res) {
         if (err) {
           console.log("error: ", err);
@@ -443,15 +443,30 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
         }
       }
     );
-  } else {
+  } else{
     sql.query(
-      " select * from Product where productid = " + req.productid + "",
+      "select pt.approved_status,pt.active_status,mu.ka_status from Product pt left join MakeitUser mu on mu.userid = pt.makeit_userid where productid = '" + req.productid + "'",
       function(err, res1) {
         if (err) {
           console.log("error: ", err);
           result(null, err);
         } else {
-          if (res1[0].approved_status === 1) {
+          if(res1[0].ka_status !== 2){
+            let resobj = {
+              success: true,
+              status: false,
+              message: "Sorry Product can't move to live,Your kitchen waiting for approval."
+            };
+
+            result(null, resobj);
+          }else if (res1[0].approved_status === 1 && req.quantity>=4) {
+            let resobj = {
+              success: true,
+              status: false,
+              message:"Sorry Product live limit is exitded. only set 3."
+            };
+            result(null, resobj);
+          }else if (res1[0].approved_status !== 0) {
             sql.query(
               "UPDATE Product SET quantity = ?,active_status = ? WHERE productid = ? and makeit_userid = ?",
               [
@@ -465,11 +480,10 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
                   console.log("error: ", err);
                   result(null, err);
                 } else {
-                  let sucobj = true;
                   let message =
                     "Quantity added and product moved to live successfully";
                   let resobj = {
-                    success: sucobj,
+                    success: true,
                     message: message,
                     status: true
                   };
@@ -478,18 +492,17 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
               }
             );
           } else if (res1[0].approved_status === 0) {
-            let sucobj = true;
+           
             let resobj = {
-              success: sucobj,
+              success: true,
               status: false,
               message: "Sorry Product not yet approved, You can't move to live"
             };
 
             result(null, resobj);
           } else {
-            let sucobj = true;
             let resobj = {
-              success: sucobj,
+              success: true,
               status: false,
               message: "Sorry Product not yet approved, You can't move to live"
             };
@@ -612,6 +625,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
           var staticquery = "UPDATE Product SET updated_at =?,";
           var column = "";
 
+          //make the edited product column query without productid and items array
           for (const [key, value] of Object.entries(req)) {
             console.log(`${key} ${value}`);
 
@@ -621,6 +635,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
             }
           }
           var itemid = "";
+          // add new item and update item count for edit state
           for (var i = 0; i < items.length; i++) {
             var product_item = items[i];
             itemid = itemid + product_item.itemid + ",";
@@ -631,12 +646,12 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
             });
           }
           itemid = itemid.slice(0, -1);
+          // remove deleted items for edit state.
           Productitem.deleteProductitems(
             product_item.productid,
             itemid,
             function(err, result) {
               if (err) res.send(err);
-              // res.json(result);
             }
           );
 
