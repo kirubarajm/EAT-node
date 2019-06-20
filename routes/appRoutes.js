@@ -30,6 +30,7 @@ module.exports = function(app) {
   var homedown = require("../controllers/common/HometownController");
   var makeithub = require("../controllers/common/MakeitHubController");
   var quicksearch = require("../controllers/common/QuickSearchController");
+  var refundcoupon = require("../controllers/common/RefundCouponController");
 
   // todoList Routes
   app
@@ -742,10 +743,10 @@ module.exports = function(app) {
   
 
   app.route("/procedure").get(region.pro_call);
+  
+  app.route("/admin/order/refund/list/:activestatus").get(refundcoupon.list_all_refund_coupon_by_activestatus);
+  app.route("/admin/order/refund/create/").post(refundcoupon.createRefundCoupon);
+  app.route("/admin/order/refund/remove/:rcid").delete(refundcoupon.delete_a_RefundCoupon);
+  app.route("/eat/order/refund/getlastcoupon/:userid").get(refundcoupon.read_a_refundcoupon_by_userid);
 
-  /// temp
-
-  app.route("/foodlist").post(eatuser.eat_makeit_product_list);
-
-  app.route("/admin/order/testpush").post(orders.testPush);
 };
