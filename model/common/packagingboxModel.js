@@ -43,9 +43,9 @@ var PackagingBox = function(packagingbox) {
         }
       });
     } else {
-      var pid = packingbox[0].docid;
-      console.log("update: ", 'update the packing...');
-      sql.query("UPDATE Packaging_Boxs set count = '"+boxdetail.count+"' where pid='"+pid+"'", function(err, packinginsert) {
+      var pid = packingbox[0].pid;
+      var updateq="UPDATE Packaging_Boxs set count = '"+boxdetail.count+"' where pid='"+pid+"' and boxtype = '" +boxdetail.boxtype+"'"
+      sql.query(updateq, function(err, packinginsert) {
         if (err) {
           console.log("error: ", err);
           res(err, null);

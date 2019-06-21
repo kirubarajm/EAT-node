@@ -145,7 +145,7 @@ exports.get_makeit_kitchen_document = function(req, res) {
 };
 
 exports.get_sales_makeit_rating = function(req, res) {
-  Salesuser.getSalesMakeitRating(req.params.makeit_userid, function(err, kitcheninfo) {
+  Makeitrating.getSalesMakeitRating(req.params.makeit_userid, function(err, kitcheninfo) {
     if (err) res.send(err);
     res.json(kitcheninfo);
   });

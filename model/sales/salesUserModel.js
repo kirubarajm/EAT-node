@@ -153,35 +153,7 @@ Salesuser.getMakeitPackingDetails = function getMakeitPackingDetails(
   );
 };
 
-Salesuser.getSalesMakeitRating = function getSalesMakeitRating(
-    userId,
-    result
-  ) {
-    sql.query(
-      "Select rating from SalesRatingForMakeit where makeit_userid = '" +
-        userId +
-        "'",
-      function(err, res) {
-        if (err) {
-          console.log("error: ", err);
-          result(err, null);
-        } else {
-        var ratingDoc ={};
-        let status = false;
-        if(res.length!==0) {
-            status=true;
-            ratingDoc.rating=res[0].rating;
-        }
-          let resobj = {
-            success: true,
-            status:status,
-            result: ratingDoc
-          };
-          result(null, resobj);
-        }
-      }
-    );
-  };
+
 
 
 Salesuser.getMakeitKitchenDocument = function getMakeitKitchenDocument(

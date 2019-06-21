@@ -109,6 +109,8 @@ Documentsales.createkitchenDoument = async function createkitchenDoument(
    
   
     if (packagingdetails && docid) {
+      console.log("packagingdetails-->",docid)
+      
       for (var i = 0; i < packagingdetails.length; i++) {
         var newpackagingdetails = new PackagingBox(packagingdetails[i]);
         newpackagingdetails.sales_userid = newdocument.sales_userid;

@@ -649,7 +649,7 @@ Makeituser.orderstatusbyorderid = function(req, result) {
 
 Makeituser.get_admin_list_all_makeitusers = function(req, result) {
   req.appointment_status =req.appointment_status||"all";
-  req.virtualkey = req.virtualkey||"all";
+  req.virtualkey = req.virtualkey;
 
   //    rsearch = req.search || ''
 
@@ -747,6 +747,30 @@ Makeituser.admin_get_unapproved_makeitlist = function(req, result) {
       result(null, resobj);
     }
   });
+};
+Makeituser.updatemakeit_user_approval = function(req, result){
+  req.ka_status =parseInt(req.ka_status);
+  var appointment_status=req.ka_status===1?3:2;
+  sql.query("UPDATE MakeitUser SET appointment_status = '"+appointment_status+"' ,ka_status = '"+req.ka_status+"' WHERE userid = ?",req.makeit_userid, function (err, res) {
+      if(err) {
+          console.log("error: ", err);
+          result(null, err);
+      }
+      else{
+        let message = req.ka_status===1?"Kitchen approved successfully.":"Kitchen decline successfully.";
+        let resobj = {  
+          success: true,
+          status:true,
+          message:message,
+          //result: res 
+          }; 
+
+       result(null, resobj);
+      }
+  
+  }); 
+
+         
 };
 
 Makeituser.update_makeit_followup_status = function(
@@ -1535,6 +1559,7 @@ Makeituser.update_pushid = function(req, result) {
     });
   }
 };
+
 
 Makeituser.edit_makeit_brand_identity_by_sales = async function(req, cuisines, result) {
 

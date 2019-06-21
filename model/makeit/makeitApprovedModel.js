@@ -6,7 +6,7 @@ var Makeituser = require("../../model/makeit/makeitUserModel.js");
 //Task object constructor
 var MakeitApproved = function (makeitrating) {
     this.makeit_userid = makeitrating.makeit_userid;
-    this.verified_status = makeitrating.verified_status;
+    this.ka_status = makeitrating.ka_status;
     this.sales_emp_id = makeitrating.sales_emp_id;
     //this.created_at = new Date();    
 };
@@ -19,13 +19,7 @@ MakeitApproved.makeitApprovedUpdate = function makeitApprovedUpdate(updatestate,
               result(null, err);
            }
          else{
-            let sucobj=true;
-            let mesobj = "Job completed successfully";
-            let resobj = {  
-            success: sucobj,
-            message:mesobj
-            }; 
-                result(null, resobj);
+                result(null, res);
               }
           })
 }
