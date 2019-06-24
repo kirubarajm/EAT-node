@@ -1147,10 +1147,7 @@ Makeituser.makeituser_user_referral_code = function makeituser_user_referral_cod
   );
 };
 
-Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(
-  newUser,
-  result
-) {
+Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(newUser,result) {
   sql.query(
     "Select * from MakeitUser where phoneno = '" + newUser.phoneno + "'",
     function(err, res1) {
@@ -1168,8 +1165,8 @@ Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(
             OTP +
             ". Note: Please DO NOT SHARE this OTP with anyone.";
 
-          request(
-            {
+            console.log(otpurl);
+          request({
               method: "GET",
               rejectUnauthorized: false,
               url: otpurl

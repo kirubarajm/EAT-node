@@ -12,6 +12,8 @@ var RefundStatus = require("../../model/refund/refundStatusModel");
 var moment = require("moment");
 const Razorpay = require("razorpay");
 var PushConstant = require("../../push/PushConstant.js");
+var RefundCoupon = require("../../model/common/refundCouponModel");
+var RefundOnline = require("../../model/common/refundonlineModel");
 
 var instance = new Razorpay({
   key_id: "rzp_test_3cduMl5T89iR9G",
@@ -974,6 +976,16 @@ Order.orderviewbyeatuser = function(req, result) {
                   var items = JSON.parse(res[0].items);
                   res[0].items = items.item;
                 }
+
+                if (res[0].ordertime) {
+                var deliverytime = new Date(res[0].ordertime);
+
+                // d.setHours(d.getHours() + 5);
+                deliverytime.setMinutes(deliverytime.getMinutes() + 15);
+
+                res[0].deliverytime = deliverytime; 
+                }
+
                 console.log("res[0].orderstatus:-- ", res[0].orderstatus);
                 res[0].trackingstatus = Order.orderTrackingDetail(
                   res[0].orderstatus,
@@ -1951,4 +1963,84 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
   }
 };
 
+
+Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req, result) {
+  
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
+ // console.log(orderdetails);
+  if (orderdetails) {
+   
+          if (orderdetails[0].orderstatus === 6) {
+            
+            sql.query("UPDATE Orders SET item_missing = 1,item_missing_reason='"+req.item_missing_reason+"' WHERE orderid ='" + req.orderid + "'",function(err, res1) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  //console.log(orderdetails[0].payment_type);
+                  if (orderdetails[0].payment_type === "0") {
+                     
+                  var rc =new RefundCoupon(req);
+                  RefundCoupon.createRefundCoupon(rc, async function(err,res2) {
+                    if (err) {
+                      result(err, null);
+                    } else {
+                      // console.log(res3.status);
+                      if (res2.status != true) {
+                        result(null, res2);
+                      } else {
+                        let response = {
+                          success: true,
+                          status: true,
+                          message: "Refunded created successfully."
+                        };
+                        result(null, response);
+                      }
+                    }
+                  });
+                }else if(orderdetails[0].payment_type === "1"){
+                 // var rc =new RefundOnline(req);
+                  RefundOnline.createRefund(req, async function(err,res2) {
+                    if (err) {
+                      result(err, null);
+                    } else {
+                      // console.log(res3.status);
+                      if (res2.status != true) {
+                        result(null, res2);
+                      } else {
+                        let response = {
+                          success: true,
+                          status: true,
+                          message: "Refunded created successfully."
+                        };
+                        result(null, response);
+                      }
+                    }
+                  });
+
+                }
+               
+                }
+              }
+            );
+
+          }else{
+
+            let response = {
+              success: true,
+              status: false,
+              message: "Following order not yet to delivered"
+            };
+            result(null, response);
+          }
+
+  }else{
+
+    let response = {
+      success: true,
+      status: false,
+      message: "Following order is not available"
+    };
+    result(null, response);
+  }
+};
 module.exports = Order;
