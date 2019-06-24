@@ -1,6 +1,8 @@
 "user strict";
 
 var sql = require("../db.js");
+const util = require("util");
+const query = util.promisify(sql.query).bind(sql);
 
 var RefundCoupon = function(refund_coupon) {
   this.orderid = refund_coupon.orderid;
@@ -14,7 +16,7 @@ var RefundCoupon = function(refund_coupon) {
 };
 
 //For Admin
-RefundCoupon.createRefundCoupon = function createRefundCoupon(req, result) {
+RefundCoupon.createRefundCoupon = async function createRefundCoupon(req, result) {
   //rc.orderid = req.orderid;
   //rc.refund_used_orderid = req.refund_used_orderid;
   //rc.refundamount =req.refundamount;
@@ -23,6 +25,11 @@ RefundCoupon.createRefundCoupon = function createRefundCoupon(req, result) {
 
   //need to add item missing contion
   console.log("ddd:"+req.orderid);
+
+  const orderrefunddetails = await query("select * from Refund_Coupon where orderid ='" + req.orderid + "' and active_status=1");
+  console.log(orderrefunddetails.length);
+  if (orderrefunddetails.length===0) {
+   
   sql.query("Select userid,price from Orders where orderid=? ",[req.orderid], function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -38,11 +45,11 @@ RefundCoupon.createRefundCoupon = function createRefundCoupon(req, result) {
           if (err) {
             result(err, null);
           } else {
-            let sucobj = true;
-            let message = "RefundCoupon created successfully";
+           
             let resobj = {
-              success: sucobj,
-              message: message
+              success: true,
+              status:true,
+              message: "RefundCoupon created successfully"
             };
             result(null, resobj);
           }
@@ -50,6 +57,15 @@ RefundCoupon.createRefundCoupon = function createRefundCoupon(req, result) {
       
       };
     });
+  }else{
+    let resobj = {
+      success: true,
+      status:false,
+      message: "Sorry RefundCoupon Already exist for following order! Please check once again"
+    };
+    result(null, resobj);
+  }
+
 };
 
 

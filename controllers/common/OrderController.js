@@ -385,3 +385,18 @@ exports.makeit_order_accept = function(req, res) {
    });
  }
 };
+
+exports.eat_order_missing = function(req, res) {
+  
+  if (!req.body.orderid) {
+   res 
+     .status(400)
+     .send({ error: true, status: false, message: "Please provide orderid" });
+ }
+  else {
+   Order.eat_order_missing_byuserid(req.body, function(err, ordercancel) {
+     if (err) res.send(err);
+     res.send(ordercancel);
+   });
+ }
+};
