@@ -126,10 +126,10 @@ Documentsales.createkitchenDoument = async function createkitchenDoument(
       }
     }
   
-    let sucobj = true;
     let mesobj = "Document stored successfully";
     let resobj = {
-      success: sucobj,
+      success: true,
+      status:true,
       message: mesobj,
       docid: docid
     };

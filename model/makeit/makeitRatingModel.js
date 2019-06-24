@@ -12,6 +12,7 @@ var Makeitrating = function(makeitrating) {
 };
 
 Makeitrating.createRating = async function createRating(new_rating, result) {
+  console.log("createRating-->"+new_rating);
   var rating = await query(
     "Select * from SalesRatingForMakeit where makeit_userid = '" +
       new_rating.makeit_userid +
@@ -47,25 +48,6 @@ Makeitrating.createRating = async function createRating(new_rating, result) {
       if (err) {
         res(err, null);
       } else {
-        update_allocation(
-          new_rating.makeit_userid,
-          new_rating.sales_emp_id,
-          result
-        );
-      }
-    });
-  }
-};
-
-function update_allocation(makeit_userid, sales_emp_id, result) {
-  sql.query(
-    "UPDATE Allocation SET status = 1 WHERE makeit_userid = ? and sales_emp_id = ?",
-    [makeit_userid, sales_emp_id],
-    function(err, res) {
-      if (err) {
-        console.log("error: ", err);
-        result(err, null);
-      } else {
         let mesobj = "Rating Update successfully";
         let resobj = {
           success: true,
@@ -73,10 +55,17 @@ function update_allocation(makeit_userid, sales_emp_id, result) {
           message: mesobj
         };
         result(null, resobj);
+        // update_allocation(
+        //   new_rating.makeit_userid,
+        //   new_rating.sales_emp_id,
+        //   result
+        // );
       }
-    }
-  );
-}
+    });
+  }
+};
+
+
 
 Makeitrating.getSalesMakeitRating = function getSalesMakeitRating(
   userId,

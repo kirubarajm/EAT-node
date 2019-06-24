@@ -749,14 +749,20 @@ Makeituser.admin_get_unapproved_makeitlist = function(req, result) {
   });
 };
 Makeituser.updatemakeit_user_approval = function(req, result){
+  console.log("updatemakeit_user_approval-->"+req);
   req.ka_status =parseInt(req.ka_status);
   var appointment_status=req.ka_status===1?3:2;
-  sql.query("UPDATE MakeitUser SET appointment_status = '"+appointment_status+"' ,ka_status = '"+req.ka_status+"' WHERE userid = ?",req.makeit_userid, function (err, res) {
+  sql.query("UPDATE MakeitUser SET appointment_status = '"+appointment_status+"' ,ka_status = '"+req.ka_status+"' WHERE userid = ?",req.makeit_userid, async function (err, res) {
       if(err) {
           console.log("error: ", err);
           result(null, err);
       }
       else{
+        await update_allocation(
+          req.makeit_userid,
+          req.sales_emp_id
+        );
+
         let message = req.ka_status===1?"Kitchen approved successfully.":"Kitchen decline successfully.";
         let resobj = {  
           success: true,
@@ -772,6 +778,20 @@ Makeituser.updatemakeit_user_approval = function(req, result){
 
          
 };
+
+function update_allocation(makeit_userid, sales_emp_id) {
+  sql.query(
+    "UPDATE Allocation SET status = 1 WHERE makeit_userid = ? and sales_emp_id = ?",
+    [makeit_userid, sales_emp_id],
+    function(err, res) {
+      if (err) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+  );
+}
 
 Makeituser.update_makeit_followup_status = function(
   makeitfollowupstatus,
