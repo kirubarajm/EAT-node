@@ -336,14 +336,14 @@ Order.get_all_orders = function get_all_orders(req, result) {
   });
 };
 
-Order.get_all_vorders = function get_all_vorders(req, result) {
+Order.get_today_vorders = function get_today_vorders(req, result) {
   var orderlimit = 20;
   var page = req.page || 1;
   var makeithub_id = req.makeithub_id || 1;
   var startlimit = (page - 1) * orderlimit;
 
   var query =
-    "Select od.*,us.name as name,us.phoneno as phoneno,mk.name as makeit_name,mk.brandname as makeit_brandname from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id";
+    "Select od.*,us.name as name,us.phoneno as phoneno,mk.name as makeit_name,mk.brandname as makeit_brandname from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id where DATE(od.ordertime) = CURDATE() and mk.virtualkey = 1";
   var searchquery =
     "us.phoneno LIKE  '%" +
     req.search +
@@ -354,20 +354,79 @@ Order.get_all_vorders = function get_all_vorders(req, result) {
     "%'  or od.orderid LIKE  '%" +
     req.search +
     "%'";
-  if (req.virtualkey !== "all") {
+
+  if (req.makeithub_id) {
     query =
       query +
-      " where mk.virtualkey = '" +
-      req.virtualkey +
-      "' and mk.makeithub_id='" +
+      " and mk.makeithub_id='" +
+      makeithub_id +
+      "'";
+  }
+
+  if (req.search) {
+    query = query + " and (" + searchquery + ")";
+  } 
+
+  var limitquery =
+    query +
+    " order by od.orderid desc limit " +
+    startlimit +
+    "," +
+    orderlimit +
+    " ";
+
+  sql.query(limitquery, function(err, res1) {
+    if (err) {
+      console.log("error: ", err);
+      result(null, err);
+    } else {
+      var totalcount = 0;
+
+      sql.query(query, function(err, res2) {
+        totalcount = res2.length;
+
+      
+        let resobj = {
+          success: true,
+          status:true,
+          totalorder: totalcount,
+          result: res1
+        };
+
+        result(null, resobj);
+      });
+    }
+  });
+};
+
+Order.get_all_vorders = function get_all_vorders(req, result) {
+  var orderlimit = 20;
+  var page = req.page || 1;
+  var makeithub_id = req.makeithub_id || 0;
+  var startlimit = (page - 1) * orderlimit;
+
+  var query =
+    "Select od.*,us.name as name,us.phoneno as phoneno,mk.name as makeit_name,mk.brandname as makeit_brandname from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id where mk.virtualkey = 1";
+  var searchquery =
+    "us.phoneno LIKE  '%" +
+    req.search +
+    "%' OR us.email LIKE  '%" +
+    req.search +
+    "%' or us.name LIKE  '%" +
+    req.search +
+    "%'  or od.orderid LIKE  '%" +
+    req.search +
+    "%'";
+  if (req.makeithub_id) {
+    query =
+      query +
+      " and mk.makeithub_id='" +
       makeithub_id +
       "'";
   }
   //var search= req.search
-  if (req.virtualkey !== "all" && req.search) {
+  if (req.search) {
     query = query + " and (" + searchquery + ")";
-  } else if (req.search) {
-    query = query + " where " + searchquery;
   }
 
   var limitquery =
@@ -388,9 +447,9 @@ Order.get_all_vorders = function get_all_vorders(req, result) {
       sql.query(query, function(err, res2) {
         totalcount = res2.length;
 
-        let sucobj = true;
         let resobj = {
-          success: sucobj,
+          success: true,
+          status:true,
           totalorder: totalcount,
           result: res1
         };
