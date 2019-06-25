@@ -1012,8 +1012,7 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
         if (res.length === 0) {
           console.log("validate password");
 
-          request(
-            {
+          request({
               method: "GET",
               rejectUnauthorized: false,
               url: otpurl

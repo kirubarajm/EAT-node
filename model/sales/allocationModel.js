@@ -109,7 +109,7 @@ Allocation.getAllocationBySalesEmpId = function getAllocationBySalesEmpId(
   sql.query(
     "Select alc.aid,alc.sales_emp_id,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = '" +
       userid +
-      "' and DATE(alc.booking_date_time) = CURDATE() and status !=1 ",
+      "' and DATE(alc.booking_date_time) = CURDATE() and alc.status !=1 ",
     function(err, res) {
       if (err) {
         console.log("error: ", err);
@@ -167,17 +167,20 @@ Allocation.remove = function(id, result) {
 };
 
 Allocation.update_a_followupstatus = function(req, result) {
+  var status = parseInt(req.status)
   var statusquery =
-    "UPDATE Allocation SET status = '" +
-    req.status +
-    "' WHERE aid ='" +
+    "UPDATE Allocation SET status = " +
+    status +
+    " WHERE aid ='" +
     req.aid +
     "'";
 
-  if (req.scheduledate && (req.status === '2' || req.status === '4')) {
+  
+
+  if (req.scheduledate && (status === 2 || status === 4)) {
     statusquery =
       "UPDATE Allocation SET status = '" +
-      req.status +
+      status +
       "',booking_date_time = '" +
       req.scheduledate +
       "' WHERE aid  = '" +
