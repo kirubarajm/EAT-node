@@ -88,6 +88,7 @@ RefundCoupon.getAllrefundcoupon_by_activstatus = function getAllrefundcoupon_by_
 
 //For EAT user to show in Order page
 RefundCoupon.getarefundcoupon_by_userid = function getarefundcoupon_by_userid(userid,result) {
+  console.log("userid: ", userid);
   sql.query("Select * from Refund_Coupon where userid=? and active_status=1 ORDER BY created_at DESC limit 1",[userid], function(err, res) {
     if (err) {
       console.log("error: ", err);

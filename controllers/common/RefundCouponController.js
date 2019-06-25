@@ -26,7 +26,7 @@ exports.createRefundCoupon = function(req, res) {
 };
 
 exports.read_a_refundcoupon_by_userid = function(req, res) {
-  RefundCoupon.getarefundcoupon_by_userid(req.body, function(err, result) {
+  RefundCoupon.getarefundcoupon_by_userid(req.params.userid, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });

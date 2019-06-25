@@ -789,9 +789,10 @@ Makeituser.update_makeit_followup_status = function(
   );
 };
 
+
+//cart details for ear user
 Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid( req, orderitems,result) {
- // console.log(req);
-  //try {
+ 
   var tempmessage = "";
   var gst = constant.gst;
   var delivery_charge = constant.deliverycharge;
@@ -804,12 +805,11 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var orderlist = await query("Select * From Orders where userid = '" +req.userid+"' and orderstatus = 6");
   var ordercount = orderlist.length;
 
+
+  // To check product availablity 
   for (let i = 0; i < orderitems.length; i++) {
 
     const res1 = await query("Select * From Product where productid = '" +orderitems[i].productid+"'");
-
-   // console.log(res1.length);
-
 
     if (res1[0].quantity < orderitems[i].quantity) {
       res1[0].availablity = false;
@@ -822,14 +822,14 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     res1[0].amount = amount;
     res1[0].cartquantity = orderitems[i].quantity;
     totalamount = totalamount + amount;
-  //  console.log(res1);
+  //  if product is availablity to push into product details
     productdetails.push(res1[0]);
   }
- // console.log(productdetails);
+ // This query is to get the makeit details and cuisine details
   var query1 =
     "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid="+req.userid +" left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +req.makeit_user_id;
 
-  sql.query(query1, function(err, res1) {
+  sql.query(query1, async function(err, res1) {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -840,13 +840,26 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         }
       }
 
+      //refund 
+      if (req.rcid) { 
+      var refundlist = await query("Select * From Refund_Coupon where rcid = '" +req.rcid+"' and active_status = 1"); 
+      }
+
       if (res1.length !== 0) {
         var gstcharge = (totalamount / 100) * gst;
 
         gstcharge = Math.round(gstcharge);
 
-        const grandtotal = +gstcharge + +totalamount + +delivery_charge;
+        var grandtotal = +gstcharge + +totalamount + +delivery_charge;
 
+        if (refundlist) {
+         
+          grandtotal = grandtotal - refundlist[0].refundamount;
+          
+          if (grandtotal < 0) grandtotal = 0; 
+          calculationdetails.refundamount = refundlist[0].refundamount; 
+         
+        }
         calculationdetails.grandtotal = grandtotal;
         calculationdetails.gstcharge = gstcharge;
         calculationdetails.totalamount = totalamount;
@@ -854,15 +867,16 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         res1[0].amountdetails = calculationdetails;
         res1[0].item = productdetails;
         res1[0].ordercount = ordercount;
-        console.log(res1);
+       // console.log(res1);
         let resobj = {
           success: true,
           status: isAvaliableItem
         };
+
         if (!isAvaliableItem)
           resobj.message = tempmessage.slice(0, -1) + " is not avaliable";
-        (resobj.result = res1), result(null, resobj);
-      } else {
+         (resobj.result = res1), result(null, resobj);
+        } else {
         let sucobj = true;
         let status = false;
         message = "There is no data available!, Kindly check the Makeituser id";
@@ -1159,58 +1173,64 @@ Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(
           var OTP = Math.floor(Math.random() * 90000) + 10000;
 
           var otpurl =
-            "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
-            newUser.phoneno +
-            "&senderId=EATHOM&message=Your EAT-MAKE-IT App OTP is " +
-            OTP +
-            ". Note: Please DO NOT SHARE this OTP with anyone.";
+          "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
+          newUser.phoneno +
+          "&senderId=EATHOM&message=Your EAT App OTP is " +
+          OTP +
+          ". Note: Please DO NOT SHARE this OTP with anyone.";
 
-            console.log(otpurl);
           request({
-              method: "GET",
-              rejectUnauthorized: false,
-              url: otpurl
-            },
-            function(error, response, body) {
-              if (error) {
-                console.log("error--->" + error);
-              } else {
-                var responcecode = body.split("#");
+            method: "GET",
+            rejectUnauthorized: false,
+            url: otpurl
+          },
+          function(error, response, body) {
+            if (error) {
+              console.log("error: ", err);
+              result(null, err);
+            } else {
+              console.log(response.statusCode, body);
+              var responcecode = body.split("#");
+              console.log(responcecode);
 
-                if (responcecode[0] === "0") {
-                  sql.query(
-                    "insert into Otp(phone_number,apptype,otp)values('" +
-                      newUser.phoneno +
-                      "',4,'" +
-                      OTP +
-                      "')",
-                    function(err, res) {
-                      if (err) {
-                        console.log("error: ", err);
-                        result(null, err);
-                      } else {
-                        let resobj = {
-                          success: true,
-                          status: true,
-                          message: responcecode[1],
-                          oid: res.insertId
-                        };
+              if (responcecode[0] === "0") {
+                sql.query(
+                  "insert into Otp(phone_number,apptype,otp)values('" +
+                    newUser.phoneno +
+                    "',4,'" +
+                    OTP +
+                    "')",
+                  function(err, res1) {
+                    if (err) {
+                      console.log("error: ", err);
+                      result(null, err);
+                    } else {
+                      let resobj = {
+                      success: true,
+                      status: true,
+                      message: responcecode[1],
+                      oid: res1.insertId
+                      };
 
-                        result(null, resobj);
-                      }
+                      result(null, resobj);
                     }
-                  );
-                } else {
-                  let resobj = {
-                    success: true,
-                    status: false,
-                    message: responcecode[1]
-                  };
+                  }
+                );
+              } else {
+                let resobj = {
+                  success: true,
+                  status: false,
+                  message: responcecode[1],
+                  passwordstatus: passwordstatus,
+                  otpstatus: otpstatus,
+                  genderstatus: genderstatus
+                };
 
-                  result(null, resobj);
-                }
+                result(null, resobj);
               }
             }
+          }
+
           );
         } else {
           let sucobj = true;
