@@ -30,7 +30,7 @@ module.exports = function(app) {
   var homedown = require("../controllers/common/HometownController");
   var makeithub = require("../controllers/common/MakeitHubController");
   var quicksearch = require("../controllers/common/QuickSearchController");
- // var refundstatus = require("../controllers/refund/refundController");
+  var refundstatus = require("../controllers/refund/refundController");
   var refundcoupon = require("../controllers/common/RefundCouponController");
   var admindashboard = require("../controllers/common/admindashboardController");
 
@@ -532,7 +532,7 @@ module.exports = function(app) {
 
   app.route("/admin/makeit/approved").put(salesuser.admin_makeit_approved);
 
- // app.route("/admin/refundlist").get(refundstatus.get_all_refund_list);
+ app.route("/admin/refundlist").get(refundstatus.get_all_refund_list);
 
   app.route("/admin/order/cancel").put(orders.admin_order_cancel);
 
@@ -717,9 +717,6 @@ module.exports = function(app) {
    app.route("/eat/explore").get(quicksearch.eat_explore_store_data);
 
    app.route("/eat/quicksearch").post(quicksearch.eat_explore_quick_search);
-   
-
-   app.route("/eat/order/cancel").put(orders.eat_order_cancel);
 
    app.route("/eat/order/cancel").put(orders.eat_order_cancel);
 

@@ -8,7 +8,6 @@ var master = require("../master");
 var constant = require("../constant.js");
 var Makeituser = require("../../model/makeit/makeitUserModel.js");
 var Notification = require("../../model/common/notificationModel.js");
-var RefundStatus = require("../../model/refund/refundStatusModel");
 var moment = require("moment");
 const Razorpay = require("razorpay");
 var PushConstant = require("../../push/PushConstant.js");
@@ -1836,8 +1835,8 @@ Order.create_customerid_by_razorpay = async function create_customerid_by_razorp
 };
 
 Order.create_refund = function create_refund(refundDetail) {
-  var refund = new RefundStatus(refundDetail);
-  RefundStatus.createRefund(refund, function(err, res) {
+  var refund = new RefundOnline(refundDetail);
+  RefundOnline.createRefund(refund, function(err, res) {
     if (err) return false;
     else return true;
   });
@@ -1860,7 +1859,9 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           var refundDetail = {
             orderid: req.orderid,
             original_amt: orderdetails[0].price,
-            status: 0
+            active_status: 0,
+            userid :orderdetails[0].userid,
+            payment_id:orderdetails[0].transactionid,
           };
           if (
             orderdetails[0].payment_type === "1" &&
@@ -1926,9 +1927,11 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
           result(err, null);
         } else {
           var refundDetail = {
-            orderid: orderdetails[0].orderid,
+            orderid: req.orderid,
             original_amt: orderdetails[0].price,
-            status: 0
+            active_status: 0,
+            userid :orderdetails[0].userid,
+            payment_id:orderdetails[0].transactionid,
           };
           if (
             orderdetails[0].payment_type === "1" &&
