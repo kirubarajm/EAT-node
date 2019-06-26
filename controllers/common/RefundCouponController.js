@@ -32,6 +32,14 @@ exports.read_a_refundcoupon_by_userid = function(req, res) {
   });
 };
 
+exports.updateByRefundCouponId = function(req, res) {
+  RefundCoupon.updateByRefundCouponId(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+
 exports.delete_a_RefundCoupon = function(req, res) {
   RefundCoupon.remove(req.params.rcid, function(err, result) {
     if (err) res.send(err);

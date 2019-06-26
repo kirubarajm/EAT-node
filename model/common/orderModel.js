@@ -47,6 +47,7 @@ var Order = function(order) {
   this.lock_status = order.lock_status || 0;
   this.cancel_by = order.cancel_by || 0;
   this.item_missing = order.item_missing || 0;
+  this.original_price = order.original_price;
 };
 
 Order.createOrder = async function createOrder(req, orderitems, result) {
@@ -1590,6 +1591,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
           var amountdata = res3.result[0].amountdetails;
           req.gst = amountdata.gstcharge;
           req.price = amountdata.grandtotal;
+          req.original_price = amountdata.original_price;
+          req.refund_balance = amountdata.refund_balance;
 
           const res2 = await query(
             "Select * from Address where aid = '" +
@@ -1599,11 +1602,16 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
               "'"
           );
 
+
+          console.log(res2);
+        
           req.cus_address = res2[0].address;
           req.locality = res2[0].locality;
           req.cus_lat = res2[0].lat;
           req.cus_lon = res2[0].lon;
 
+          
+          
           var makeitavailability = await query(
             "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,( 3959 * acos( cos( radians(" +
               res2[0].lat +
@@ -1636,7 +1644,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
             let sucobj = true;
             let status = false;
             let mesobj =
-              "Sorry This kitchen service is not available! for following address";
+              "Sorry This kitchen service is not available! for your following address";
             let resobj = {
               success: sucobj,
               status: status,
@@ -1648,18 +1656,25 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
       }
     });
 
-    function ordercreatecashondelivery(req, orderitems) {
+   function ordercreatecashondelivery(req, orderitems) {
       console.log("ordercreatecashondelivery: ");
       var new_Order = new Order(req);
 
       new_Order.delivery_charge = delivery_charge;
-      sql.query("INSERT INTO Orders set ?", new_Order, function(err, res1) {
+      
+      sql.query("INSERT INTO Orders set ?", new_Order, async function(err, res1) {
         if (err) {
           console.log("error: ", err);
           result(null, err);
         } else {
           var orderid = res1.insertId;
 
+          // if (req.rcid) {  
+          // rcid = req.rcid,
+          // refund_balance =req.rcid.refund_balance,
+          // refund_used_orderid = res1.insertId
+          // var updateid = await RefundCoupon.updateByRefundCouponId(rcid,refund_balance,refund_used_orderid);
+          // }
           for (var i = 0; i < orderitems.length; i++) {
             console.log(orderitems[i].productid);
             var orderitem = {};

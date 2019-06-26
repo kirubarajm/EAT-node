@@ -41,6 +41,7 @@ RefundCoupon.createRefundCoupon = async function createRefundCoupon(req, result)
       req.userid = res[0].userid;
       req.refund_balance =res[0].price;
       req.refundamount =res[0].price;
+      
       sql.query("INSERT INTO Refund_Coupon set ?", req, function(err, res) {
           if (err) {
             result(err, null);
@@ -106,7 +107,7 @@ RefundCoupon.getarefundcoupon_by_userid = function getarefundcoupon_by_userid(us
 
 
 //Once Eatuser use this RefundCoupon - Internal function
-RefundCoupon.updateByRefundCouponId = function(rcid,refund_balance,refund_used_orderid) {
+RefundCoupon.updateByRefundCouponId = function(rcid,refund_balance,refund_used_orderid,result) {
   //active_status = 0;
   //useddate = current date
   var useddate=new Date();

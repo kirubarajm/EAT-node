@@ -7,7 +7,8 @@ const calculate = {
     applink :'https://play.google.com/store/apps/details?id=com.tovo.eat',
     radiuslimit : 6,
     foodpreparationtime:15,
-    onekm:3
+    onekm:3,
+    servicecharge:25
 }
 
 

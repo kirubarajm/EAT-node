@@ -33,6 +33,7 @@ module.exports = function(app) {
   var refundstatus = require("../controllers/refund/refundController");
   var refundcoupon = require("../controllers/common/RefundCouponController");
   var admindashboard = require("../controllers/common/admindashboardController");
+  var Razorpay = require("../controllers/common/RazorpayController");
 
   // todoList Routes
   app
@@ -540,6 +541,8 @@ module.exports = function(app) {
 
   app.route("/admin/dashboard").get(admindashboard.get_all_dashboard_count);
 
+  app.route("/admin/repayment").post(Razorpay.razorpay_refund_payment);
+
 
 
 
@@ -761,5 +764,8 @@ module.exports = function(app) {
   app.route("/admin/order/refund/create/").post(refundcoupon.createRefundCoupon);
   app.route("/admin/order/refund/remove/:rcid").delete(refundcoupon.delete_a_RefundCoupon);
   app.route("/eat/order/refund/getlastcoupon/:userid").get(refundcoupon.read_a_refundcoupon_by_userid);
+
+
+  //Razorpay
 
 };

@@ -3,33 +3,37 @@ var sql = require("../db.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 
-var admindashboardModel = function(refund) {
-  this.orderid = refund.orderid;
-  this.original_amt = refund.original_amt;
-  this.refund_amt = refund.refund_amt ;
-  this.active_status = refund.active_status;
-  this.refund_amt =refund.refund_amt;
-  this.userid =refund.userid;
-  this.payment_id =refund.payment_id;
+var admindashboardModel = function(admindashboard) {
+  // this.orderid = admindashboard.orderid;
+  // this.original_amt = admindashboard.original_amt;
+  // this.refund_amt = admindashboard.refund_amt ;
+  // this.active_status = admindashboard.active_status;
+  // this.refund_amt =admindashboard.refund_amt;
+  // this.userid =admindashboard.userid;
+  // this.payment_id =admindashboard.payment_id;
 };
 
 
-admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_dashboard_count_by_admin(req, result) {
+admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_dashboard_count_by_admin(result) {
   
 
-        var newallocationlist = await query("Select count(aid) as newallocationcount  From Allocation where DATE(booking_date_time) = CURDATE() and status =1"); 
+        var new_sales_appointment_count = await query("Select count(aid) as new_sales_appointment_count  From Allocation where DATE(booking_date_time) = CURDATE() and status =1"); 
      
-        console.log(newallocationlist);
+        var product_approved_count = await query("Select count(productid)as product_approved_count from Product  where delete_status !=1 and active_status !=1 and approved_status != 2  and approved_status != 3 "); 
+   
+        console.log(product_approved_count);
 
 
-        let resobj = {
+        let resobj = {  
             success: true,
             status:true,
-            result: newallocationlist
+            result: product_approved_count
           };
           result(null, resobj);
    
 };
+
+
 
 
 module.exports = admindashboardModel;
