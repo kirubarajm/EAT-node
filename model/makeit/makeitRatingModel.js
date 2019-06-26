@@ -29,11 +29,13 @@ Makeitrating.createRating = async function createRating(new_rating, result) {
       if (err) {
         result(err, null);
       } else {
-        update_allocation(
-          new_rating.makeit_userid,
-          new_rating.sales_emp_id,
-          result
-        );
+        let mesobj = "Rating Update successfully";
+        let resobj = {
+          success: true,
+          status: true,
+          message: mesobj
+        };
+        result(null, resobj);
       }
     });
   } else {
