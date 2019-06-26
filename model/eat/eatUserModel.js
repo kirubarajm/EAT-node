@@ -1412,7 +1412,7 @@ Eatuser.eat_user_post_registration = async function(req, result) {
       let resobj = {
         success: true,
         status: false,
-        message: "Sorry can't create the order due to customerid not yet generate"
+        message: "Sorry can't create customerid format is invalid"
         
       };
     result(null,resobj );

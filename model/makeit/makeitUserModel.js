@@ -871,16 +871,33 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         gstcharge = Math.round(gstcharge);
 
         var grandtotal = +gstcharge + +totalamount + +delivery_charge;
+        var original_price = grandtotal;
 
+        
+      
         if (refundlist) {
-         
+         //get refund amount
+        //  console.log(refundlist[0]);
+        //   if (grandtotal >= refundlist[0].refundamount) {
+        //     var refund_balance = grandtotal - refundlist[0].refundamount;
+        //   }else if(grandtotal < refundlist[0].refundamount){
+        //     var refund_balance = refundlist[0].refundamount - grandtotal;
+        //   }
+  
+
+          //get grandtotal
           grandtotal = grandtotal - refundlist[0].refundamount;
           
           if (grandtotal < 0) grandtotal = 0; 
           calculationdetails.refundamount = refundlist[0].refundamount; 
          
         }
+
+        var refund_balance =0 ;
+       
         calculationdetails.grandtotal = grandtotal;
+        calculationdetails.original_price = original_price;
+        calculationdetails.refund_balance = refund_balance;
         calculationdetails.gstcharge = gstcharge;
         calculationdetails.totalamount = totalamount;
         calculationdetails.delivery_charge = delivery_charge;

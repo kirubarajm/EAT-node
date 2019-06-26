@@ -8,7 +8,6 @@ var RefundOnline = function(refund) {
   this.original_amt = refund.original_amt;
   this.refund_amt = refund.refund_amt ;
   this.active_status = refund.active_status;
-  this.refund_amt =refund.refund_amt;
   this.userid =refund.userid;
   this.payment_id =refund.payment_id;
 
@@ -30,7 +29,7 @@ RefundOnline.createRefund = async function createRefund(req, result) {
         req.active_status = 1;
         req.userid = res[0].userid;
         //req.refund_balance =res[0].price;
-        req.refund_amt =res[0].price;
+        req.original_amt =res[0].price;
         req.payment_id =res[0].transactionid;
         var rc =new RefundOnline(req);
         sql.query("INSERT INTO Refund_Online set ?",rc, function(err, res1) {
@@ -56,7 +55,7 @@ RefundOnline.createRefund = async function createRefund(req, result) {
 };
 
 RefundOnline.get_all_refunds = function get_all_refunds(req, result) {
-  sql.query("select * from Refund_Status", function(err, res) {
+  sql.query("select * from Refund_Online", function(err, res) {
     if (err) result(err, null);
     else {
       let response = {
@@ -73,7 +72,7 @@ RefundOnline.get_unsuccess_refunds = function get_unsuccess_refunds(
   req,
   result
 ) {
-  sql.query("select * from Refund_Status Where status = 0", function(err, res) {
+  sql.query("select * from Refund_Online Where status = 0", function(err, res) {
     if (err) result(err, null);
     else {
       let response = {
@@ -87,7 +86,7 @@ RefundOnline.get_unsuccess_refunds = function get_unsuccess_refunds(
 };
 
 RefundOnline.get_success_refunds = function get_success_refunds(req, result) {
-  sql.query("select * from Refund_Status Where status = 1", function(err, res) {
+  sql.query("select * from Refund_Online Where status = 1", function(err, res) {
     if (err) result(err, null);
     else {
       let response = {
