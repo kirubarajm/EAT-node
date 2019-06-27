@@ -382,6 +382,7 @@ Salesuser.update_pushid = function(req, result) {
 
     result(null, resobj);
   } else {
+    console.log("staticquery: ", staticquery);
     sql.query(staticquery, function(err, res) {
       if (err) {
         console.log("error: ", err);

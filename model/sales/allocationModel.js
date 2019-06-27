@@ -1,9 +1,8 @@
 "user strict";
 var sql = require("../db.js");
-var Makeituser = require("../../model/makeit/makeitUserModel.js");
-var moment = require("moment");
 var Notification = require("../../model/common/notificationModel.js");
-
+const util = require("util");
+const query = util.promisify(sql.query).bind(sql);
 
 //Task object constructor
 var Allocation = function(allocation) {
@@ -47,15 +46,17 @@ Allocation.createAllocation = function createAllocation(req, result) {
   });
 };
 
-Allocation.updateAllocation = function updateAllocation(req, result) {
+Allocation.updateAllocation = async function updateAllocation(req, result) {
+  var allocation_data=await Allocation.getAllocationDataByMakeit(req.makeit_userid,req.aid);
   sql.query(
-    "update Allocation set sales_emp_id = ?, assignedby = ?, assign_date = ?, status = ? where makeit_userid = ?",
+    "update Allocation set sales_emp_id = ?, assignedby = ?, assign_date = ?, status = ? where makeit_userid = ? and aid = ? ",
     [
       req.sales_emp_id,
       req.assignedby,
       new Date(),
       req.status,
-      req.makeit_userid
+      req.makeit_userid,
+      req.aid
     ],
     function(err, res) {
       if (err) {
@@ -70,6 +71,7 @@ Allocation.updateAllocation = function updateAllocation(req, result) {
               console.log("error: ", err);
               result(err, null);
             } else {
+              Notification.sales_PushNotification(req.sales_emp_id,req.makeit_userid,allocation_data.booking_date_time,req.status);
               let sucobj = true;
               let message = "Appointment assign successfully";
               let resobj = {
@@ -85,6 +87,11 @@ Allocation.updateAllocation = function updateAllocation(req, result) {
     }
   );
 };
+
+Allocation.getAllocationDataByMakeit = async function getAllocationDataByMakeit(mk_userId,aid) {
+  var res=await query("Select * from Allocation where makeit_userid="+mk_userId+" and aid ="+aid);
+  return res[0];
+}
 
 Allocation.getAllocationById = function getAllocationById(userId, result) {
   sql.query("Select * from Allocation where aid = ? ", userId, function(

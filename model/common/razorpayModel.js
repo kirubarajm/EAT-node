@@ -62,15 +62,13 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
   Razorpay.razorpay_refund_payment_by_paymentid = async function razorpay_refund_payment_by_paymentid(req,result) {
     
     const servicecharge = constant.servicecharge;
-    
+    var amount = 0;
     if (req.cancel_by&& req.cancel_by===1) {
-       var amount= req.amount - servicecharge;
+        amount= req.amount - servicecharge;
     }else{
-        var amount= req.amount;
+        amount= req.amount;
     }
-    // instance.payments. refund(req.paymentid, {
-    // amount: 10,
-
+    
     instance.payments.refund(req.paymentid, {
     amount: amount,
     notes: {
@@ -83,7 +81,7 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     sql.query(updatequery, function (err, res) {
         if(err) {
             console.log("error: ", err);
-              result(null, err);
+              result(err, null);
            }
          else{   
          
@@ -102,13 +100,13 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     }); 
 
   }).catch((error) => {
-    console.error(error)
+    console.error('error-->',error)
     let resobj = {
         success: true,
         status: false,
         result: error
     };
-    result(null, resobj);
+    result(resobj,null);
     // error
   })
 };

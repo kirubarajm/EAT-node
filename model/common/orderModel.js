@@ -1874,7 +1874,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           var refundDetail = {
             orderid: req.orderid,
             original_amt: orderdetails[0].price,
-            active_status: 0,
+            active_status: 1,
             userid :orderdetails[0].userid,
             payment_id:orderdetails[0].transactionid,
           };
@@ -1944,7 +1944,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
           var refundDetail = {
             orderid: req.orderid,
             original_amt: orderdetails[0].price,
-            active_status: 0,
+            active_status: 1,
             userid :orderdetails[0].userid,
             payment_id:orderdetails[0].transactionid,
           };
@@ -2014,9 +2014,11 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
           result(err, null);
         } else {
           var refundDetail = {
-            orderid: orderdetails[0].orderid,
+            orderid: req.orderid,
             original_amt: orderdetails[0].price,
-            status: 0
+            active_status: 1,
+            userid :orderdetails[0].userid,
+            payment_id:orderdetails[0].transactionid,
           };
           if (
             orderdetails[0].payment_type === "1" &&
