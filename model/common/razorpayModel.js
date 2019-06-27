@@ -61,8 +61,13 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
   // Partial refund for a payment
   Razorpay.razorpay_refund_payment_by_paymentid = async function razorpay_refund_payment_by_paymentid(req,result) {
     
+    const onlinerefunddetails = await query("select * from Refund_Online where  rs_id ="+req.rs_id+"");
     const servicecharge = constant.servicecharge;
     
+    if (onlinerefunddetails[0].active_status===1) {
+      
+    
+
     if (req.cancel_by&& req.cancel_by===1) {
        var amount= req.amount - servicecharge;
     }else{
@@ -70,15 +75,17 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     }
     // instance.payments. refund(req.paymentid, {
     // amount: 10,
-
+    var refund_amt = amount
     instance.payments.refund(req.paymentid, {
-    amount: amount,
+      //amount values convert to paisa
+    amount: amount * 100,
     notes: {
       note1: 'Refund amount'
     }
   }).then((data) => {
+    console.log(data);
     // success
-    updatequery = "update Refund_Online set active_status= 0,refund_amt = '"+data.amount+"',payment_id='"+data.id+"' where rs_id ='" + req.rs_id + "'"
+    updatequery = "update Refund_Online set active_status= 0,refund_amt = '"+refund_amt+"',payment_id='"+data.id+"' where rs_id ='" + req.rs_id + "'"
     
     sql.query(updatequery, function (err, res) {
         if(err) {
@@ -110,7 +117,20 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     };
     result(null, resobj);
     // error
-  })
+  })}else if (onlinerefunddetails[0].active_status===0) {
+    
+    var  message = "Sorry your refund amount has been already refunded!"
+          
+              let sucobj=true;
+              let resobj = {  
+                success: sucobj,
+                status:false,
+                message:message,
+                result:onlinerefunddetails,
+                }; 
+  
+             result(null, resobj);
+  }
 };
 
   module.exports = Razorpay;

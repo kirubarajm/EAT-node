@@ -100,10 +100,7 @@ Allocation.getAllocationById = function getAllocationById(userId, result) {
   });
 };
 
-Allocation.getAllocationBySalesEmpId = function getAllocationBySalesEmpId(
-  userid,
-  result
-) {
+Allocation.getAllocationBySalesEmpId = function getAllocationBySalesEmpId( userid,result) {
   //  sql.query("Select * from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = ? ", userId, function (err, res) {
 
   sql.query(
@@ -206,5 +203,29 @@ Allocation.update_a_followupstatus = function(req, result) {
     }
   });
 };
+
+
+
+Allocation.getHistoryBySalesEmpId = function getHistoryBySalesEmpId( userid,result) {
+  //  sql.query("Select * from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = ? ", userId, function (err, res) {
+
+ var  historyquery = "Select alc.aid,alc.sales_emp_id,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.branch_name,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where  alc.sales_emp_id = 5 and alc.status !=0 order by alc.info_completed_ts";
+  sql.query(historyquery,function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+        let status = res.length===0?false:true;
+        let resobj = {
+          success: true,
+          status:status,
+          result: res
+        };
+        result(null, resobj);
+      }
+    }
+  );
+};
+
 
 module.exports = Allocation;

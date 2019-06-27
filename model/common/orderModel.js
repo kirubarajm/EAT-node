@@ -1588,12 +1588,15 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
         if (res3.status != true) {
           result(null, res3);
         } else {
-          console.log(res3);
+         
           var amountdata = res3.result[0].amountdetails;
           req.gst = amountdata.gstcharge;
           req.price = amountdata.grandtotal;
+          var refundcoupon = {};
           req.original_price = amountdata.original_price;
           req.refund_balance = amountdata.refund_balance;
+        
+       
 
           const res2 = await query(
             "Select * from Address where aid = '" +
@@ -1603,15 +1606,12 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
               "'"
           );
 
-
-          console.log(res2);
         
           req.cus_address = res2[0].address;
           req.locality = res2[0].locality;
           req.cus_lat = res2[0].lat;
           req.cus_lon = res2[0].lon;
 
-          
           
           var makeitavailability = await query(
             "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,( 3959 * acos( cos( radians(" +
@@ -1631,8 +1631,6 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
           if (makeitavailability[0].distance <= 6 && eta <= 60) {
             var distancetime = Math.round(eta) + "mins";
 
-            console.log(makeitavailability[0].distance);
-            console.log(distancetime);
 
             if (req.payment_type === 0) {
               console.log("cash on delivery");
@@ -1670,12 +1668,12 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
         } else {
           var orderid = res1.insertId;
 
-          // if (req.rcid) {  
-          // rcid = req.rcid,
-          // refund_balance =req.rcid.refund_balance,
-          // refund_used_orderid = res1.insertId
-          // var updateid = await RefundCoupon.updateByRefundCouponId(rcid,refund_balance,refund_used_orderid);
-          // }
+          if (req.rcid) {  
+       
+          var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(req.rcid,req.refund_balance,res1.insertId);
+          
+          }
+          
           for (var i = 0; i < orderitems.length; i++) {
             console.log(orderitems[i].productid);
             var orderitem = {};
@@ -1689,6 +1687,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
               if (err) result.send(err);
             });
           }
+          
           Notification.orderMakeItPushNotification(
             orderid,
             req.makeit_user_id,

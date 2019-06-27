@@ -162,3 +162,41 @@ exports.admin_phoneno_verified = function(req, res) {
     res.json(user);
   });
 };
+
+
+
+exports.Moveituser_send_otp_byphone = function(req, res) {
+  if (
+    !req.body.phoneno 
+  ) {
+    res
+      .status(400)
+      .send({
+        error: true,
+        message: "Please provide phoneno"
+      });
+  } else {
+    Moveituser.Moveituser_send_otp_byphone(req.body, function(err, result) {
+      if (err) res.send(err);
+      res.json(result);
+    });
+  }
+};
+
+exports.Moveituserotpverification = function(req, res) {
+  if (
+    !req.body.phoneno 
+  ) {
+    res
+      .status(400)
+      .send({
+        error: true,
+        message: "Please provide phoneno"
+      });
+  } else {
+    Moveituser.Moveituser_otp_verification(req.body, function(err, result) {
+      if (err) res.send(err);
+      res.json(result);
+    });
+  }
+};

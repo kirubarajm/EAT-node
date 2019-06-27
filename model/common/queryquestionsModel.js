@@ -6,7 +6,7 @@ var QueryQuestions = function(queryquestions) {
   this.question = queryquestions.question;
   this.type = queryquestions.type;
   this.userid = queryquestions.userid;
-  this.admin_read = queryquestions.admin_read || 0;
+  this.admin_read = queryquestions.admin_read || 1;
   // this.created_at = new Date();
 };
 

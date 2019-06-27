@@ -872,28 +872,27 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
         var grandtotal = +gstcharge + +totalamount + +delivery_charge;
         var original_price = grandtotal;
-
-        
-      
+       
         if (refundlist) {
-         //get refund amount
-        //  console.log(refundlist[0]);
-        //   if (grandtotal >= refundlist[0].refundamount) {
-        //     var refund_balance = grandtotal - refundlist[0].refundamount;
-        //   }else if(grandtotal < refundlist[0].refundamount){
-        //     var refund_balance = refundlist[0].refundamount - grandtotal;
-        //   }
+        // get refund amount 
+          if (grandtotal >= refundlist[0].refundamount) {
+            
+            var refund_balance = 0 ;
+          }else if(grandtotal < refundlist[0].refundamount){
+          
+            var refund_balance = refundlist[0].refundamount - grandtotal;
+          }
   
 
-          //get grandtotal
+          //get price 
           grandtotal = grandtotal - refundlist[0].refundamount;
           
+          //if grandtotal is lesser then 0 define grandtotal is 0
           if (grandtotal < 0) grandtotal = 0; 
-          calculationdetails.refundamount = refundlist[0].refundamount; 
-         
-        }
+          calculationdetails.refundamount = refundlist[0].refundamount;
+           }
 
-        var refund_balance =0 ;
+        
        
         calculationdetails.grandtotal = grandtotal;
         calculationdetails.original_price = original_price;

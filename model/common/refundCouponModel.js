@@ -107,23 +107,31 @@ RefundCoupon.getarefundcoupon_by_userid = function getarefundcoupon_by_userid(us
 
 
 //Once Eatuser use this RefundCoupon - Internal function
-RefundCoupon.updateByRefundCouponId = function(rcid,refund_balance,refund_used_orderid,result) {
+RefundCoupon.updateByRefundCouponId = async function(rcid,refund_balance,refund_used_orderid,result) {
   //active_status = 0;
   //useddate = current date
   var useddate=new Date();
-  
-  sql.query(
+  console.log(rcid);
+
+  return await query(
     "UPDATE Refund_Coupon SET active_status=0,refund_used_date_time=?, refund_used_orderid=?, refund_balance=? WHERE rcid = ?",
-    [useddate,refund_used_orderid,refund_balance,rcid],
-    function(err, res) {
-      if (err) {
-        console.log("error: ", err);
-        result(null, err);
-      } else {
-        result(null, res);
-      }
-    }
-  );
+    [useddate,refund_used_orderid,refund_balance,rcid]);
+  // sql.query(
+  //   "UPDATE Refund_Coupon SET active_status=0,refund_used_date_time=?, refund_used_orderid=?, refund_balance=? WHERE rcid = ?",
+  //   [useddate,refund_used_orderid,refund_balance,rcid],
+  //   function(err, res) {
+  //     if (err) {
+  //       console.log("error: ", err);
+        
+  //     } else {
+  //       let resobj = {
+  //         success: true,
+  //         result: res
+  //       };
+  //       result(null, resobj);
+  //     }
+  //   }
+  // );
 };
 
 

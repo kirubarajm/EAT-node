@@ -186,3 +186,40 @@ exports.add_a_pushid = function(req, res) {
     res.json(user);
   });
 };
+
+
+exports.Salesuser_send_otp_byphone = function(req, res) {
+  if (
+    !req.body.phoneno 
+  ) {
+    res
+      .status(400)
+      .send({
+        error: true,
+        message: "Please provide phoneno"
+      });
+  } else {
+    Salesuser.Salesuser_send_otp_byphone(req.body, function(err, result) {
+      if (err) res.send(err);
+      res.json(result);
+    });
+  }
+};
+
+exports.sales_user_otp_verification = function(req, res) {
+  if (
+    !req.body.phoneno 
+  ) {
+    res
+      .status(400)
+      .send({
+        error: true,
+        message: "Please provide phoneno"
+      });
+  } else {
+    Salesuser.sales_user_otpverification(req.body, function(err, result) {
+      if (err) res.send(err);
+      res.json(result);
+    });
+  }
+};

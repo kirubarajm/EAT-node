@@ -33,7 +33,7 @@ exports.read_a_refundcoupon_by_userid = function(req, res) {
 };
 
 exports.updateByRefundCouponId = function(req, res) {
-  RefundCoupon.updateByRefundCouponId(req.body, function(err, result) {
+  RefundCoupon.updateByRefundCouponId(req.body.rcid,req.body.refund_balance,req.body.refund_used_orderid, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });

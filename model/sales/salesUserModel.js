@@ -1,5 +1,6 @@
 "user strict";
 var sql = require("../db.js");
+var request = require("request");
 
 //Task object constructor
 var Salesuser = function(salesuser) {
@@ -66,7 +67,7 @@ Salesuser.createUser = function createUser(newUser, result) {
 };
 
 Salesuser.getUserById = function getUserById(userId, result) {
-  sql.query("Select * from Sales_QA_employees where id = ? ", userId, function(
+  sql.query("Select id,name,address,phoneno,job_type,email,referalcode,localityid,id_proof,add_proof,birth_cer,pushid_android from Sales_QA_employees where id = ? ", userId, function(
     err,
     res
   ) {
@@ -401,4 +402,125 @@ Salesuser.update_pushid = function(req, result) {
   }
 };
 
+
+
+Salesuser.Salesuser_send_otp_byphone = function Salesuser_send_otp_byphone(newUser,result) {
+  sql.query(
+    "Select * from Sales_QA_employees where phoneno = '" + newUser.phoneno + "'",
+    function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+        if (res.length == 0) {
+          var OTP = Math.floor(Math.random() * 90000) + 10000;
+
+          var otpurl =
+          "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
+          newUser.phoneno +
+          "&senderId=EATHOM&message=Your EAT App OTP is " +
+          OTP +
+          ". Note: Please DO NOT SHARE this OTP with anyone.";
+
+
+          console.log(otpurl);
+          request({
+            method: "GET",
+            rejectUnauthorized: false,
+            url: otpurl
+          },
+          function(error, response, body) {
+            if (error) {
+              console.log("error: ", err);
+              result(null, err);
+            } else {
+              console.log(response.statusCode, body);
+              var responcecode = body.split("#");
+              
+              if (responcecode[0] === "0") {
+                sql.query("insert into Otp(phone_number,apptype,otp)values('" +newUser.phoneno +"',4,'" +OTP +"')",
+                  function(err, res1) {
+                    if (err) {
+                      console.log("error: ", err);
+                      result(null, err);
+                    } else {
+                      let resobj = {
+                      success: true,
+                      status: true,
+                      message: responcecode[1],
+                      oid: res1.insertId
+                      };
+
+                      result(null, resobj);
+                    }
+                  }
+                );
+              } else {
+                let resobj = {
+                  success: true,
+                  status: false,
+                  message: responcecode[1]
+                };
+
+                result(null, resobj);
+              }
+            }
+          }
+
+          );
+        } else {
+          let sucobj = true;
+          let message =
+            "Following user already Exist! Please check it mobile number";
+          let resobj = {
+            success: sucobj,
+            status: false,
+            message: message,
+            result:res
+          };
+
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+
+
+Salesuser.sales_user_otpverification = function sales_user_otpverification( req,result) {
+
+  sql.query("Select * from Otp where oid = '" + req.oid + "'", function( err,res) {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {
+      //  console.log(res[0].otp);
+      if (res[0].otp == req.otp) {
+     
+                let resobj = {
+                  success: true,
+                  status: true,
+                  message: "OTP verified successfully"
+                };
+
+                result(null, resobj);
+              
+      } else {
+        console.log(res[0]);
+        console.log("OTP FAILED");
+        let message = "OTP is not valid!, Try once again";
+        let sucobj = true;
+
+        let resobj = {
+          success: sucobj,
+          status: false,
+          message: message
+        };
+
+        result(null, resobj);
+      }
+    }
+  });
+};
 module.exports = Salesuser;

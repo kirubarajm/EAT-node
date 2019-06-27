@@ -543,12 +543,23 @@ module.exports = function(app) {
 
   app.route("/admin/repayment").post(Razorpay.razorpay_refund_payment);
 
+  app.route("/admin/sales/sendotp").post(salesuser.Salesuser_send_otp_byphone);
+
+  app.route("/admin/sales/otpverification").post(salesuser.sales_user_otp_verification);
+
+  app.route("/admin/moveituser/sendotp").post(moveituser.Moveituser_send_otp_byphone);
+
+  app.route("/admin/moveituser/otpverification").post(moveituser.Moveituserotpverification);
+
 
 
 
 
   // Orders API
   app.route("/orders/ordercreate").post(orders.eatuser_order_create);
+
+
+
 
   //Sales API
   app.route("/sales/makeit/followupstatus").put(allocation.update_a_followupstatus);
@@ -574,6 +585,7 @@ module.exports = function(app) {
   app.route("/sales/makeitdocument/:makeit_userid").get(salesuser.get_makeit_user_document);
   app.route("/sales/makeitkitchens/:makeit_userid").get(salesuser.get_makeit_kitchen_document);
   app.route("/sales/rating/:makeit_userid").get(salesuser.get_sales_makeit_rating);
+  app.route("/sales/history/:userid").get(allocation.list_all_history_by_salesempid);
 
 
 
@@ -727,6 +739,8 @@ module.exports = function(app) {
    app.route("/eat/order/cancel").put(orders.eat_order_cancel);
 
    app.route("/eat/refund/:userid").get(refundcoupon.read_a_refundcoupon_by_userid);
+
+   app.route("/eat/refundupdate").put(refundcoupon.updateByRefundCouponId);
 
   
 

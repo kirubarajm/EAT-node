@@ -94,3 +94,22 @@ exports.update_a_followupstatus = function(req, res) {
   });
 }
 };
+
+
+exports.list_all_history_by_salesempid = function(req, res) {
+  if (!req.params.userid) {
+    res
+      .status(400)
+      .send({ error: true,status:false, message: "Please provide sales_emp_id" });
+  } else {
+  Allocation.getHistoryBySalesEmpId(req.params.userid, function(
+    err,
+    allocation
+  ) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", allocation);
+    res.send(allocation);
+  });
+}
+};
