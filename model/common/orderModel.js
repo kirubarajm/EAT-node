@@ -1563,6 +1563,11 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
   orderitems,
   result
 ) {
+
+
+
+
+  
   // try {
   console.log("read_a_proceed_to_pay: ");
 
@@ -1687,7 +1692,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
               if (err) result.send(err);
             });
           }
-          
+
           Notification.orderMakeItPushNotification(
             orderid,
             req.makeit_user_id,
