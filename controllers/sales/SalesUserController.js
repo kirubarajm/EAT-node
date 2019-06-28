@@ -207,15 +207,10 @@ exports.Salesuser_send_otp_byphone = function(req, res) {
 };
 
 exports.sales_user_otp_verification = function(req, res) {
-  if (
-    !req.body.phoneno 
-  ) {
-    res
-      .status(400)
-      .send({
-        error: true,
-        message: "Please provide phoneno"
-      });
+  if (!req.body.oid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide oid " });
+  } else if (!req.body.otp) {
+    res.status(400).send({ error: true,status:false, message: "Please provide otp" });
   } else {
     Salesuser.sales_user_otpverification(req.body, function(err, result) {
       if (err) res.send(err);

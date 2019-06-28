@@ -184,15 +184,11 @@ exports.Moveituser_send_otp_byphone = function(req, res) {
 };
 
 exports.Moveituserotpverification = function(req, res) {
-  if (
-    !req.body.phoneno 
-  ) {
-    res
-      .status(400)
-      .send({
-        error: true,
-        message: "Please provide phoneno"
-      });
+  
+  if (!req.body.oid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide oid " });
+  } else if (!req.body.otp) {
+    res.status(400).send({ error: true,status:false, message: "Please provide otp" });
   } else {
     Moveituser.Moveituser_otp_verification(req.body, function(err, result) {
       if (err) res.send(err);

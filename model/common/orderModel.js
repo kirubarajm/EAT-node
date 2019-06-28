@@ -1306,10 +1306,15 @@ Order.eatcreateOrder = async function eatcreateOrder(
   }
 };
 
-Order.online_order_place_conformation = function(order_place, result) {
+Order.online_order_place_conformation = async function(order_place, result) {
   var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
   if (order_place.payment_status === 1) {
+
+      if (order_place.refund_balance) {
+        
+        var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(order_place.rcid,order_place.refund_balance,order_place.orderid);
+      }
     var query =
       "update Orders set payment_status = '" +
       order_place.payment_status +
@@ -1322,6 +1327,8 @@ Order.online_order_place_conformation = function(order_place, result) {
       "' ";
     var deletequery =
       "delete from Lock_order where orderid ='" + order_place.orderid + "' ";
+
+
 
     sql.query(query, function(err, res1) {
       if (err) {
@@ -1557,16 +1564,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(
   );
 };
 
-Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
-  req,
-  orderitems,
-  result
-) {
-
-
-
-
-  
+Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay( req,orderitems,result) {
   // try {
   console.log("read_a_proceed_to_pay: ");
 
@@ -1581,10 +1579,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
   //  console.log(res);
 
   if (res.length === 0) {
-    Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(
-      err,
-      res3
-    ) {
+    Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(err,res3) {
       if (err) {
         result(err, null);
       } else {
@@ -1592,8 +1587,9 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
         if (res3.status != true) {
           result(null, res3);
         } else {
-         
+           console.log(res3.result[0].amountdetails);
           var amountdata = res3.result[0].amountdetails;
+         
           req.gst = amountdata.gstcharge;
           req.price = amountdata.grandtotal;
           var refundcoupon = {};
@@ -1661,10 +1657,11 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
 
    function ordercreatecashondelivery(req, orderitems) {
       console.log("ordercreatecashondelivery: ");
+      
       var new_Order = new Order(req);
 
       new_Order.delivery_charge = delivery_charge;
-      
+   //   console.log(new_Order);
       sql.query("INSERT INTO Orders set ?", new_Order, async function(err, res1) {
         if (err) {
           console.log("error: ", err);
@@ -1715,7 +1712,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
       const userinfo = await query(
         "Select * from User where userid = '" + req.userid + "'"
       );
-
+      
+    ///  console.log(req);
       var customerid = userinfo[0].razer_customerid;
 
       if (!userinfo[0].razer_customerid) {
@@ -1748,7 +1746,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
           var orderid = res1.insertId;
 
           for (var i = 0; i < orderitems.length; i++) {
-            console.log(orderitems[i].productid);
+          //  console.log(orderitems[i].productid);
             var orderitem = {};
             orderitem.orderid = orderid;
             orderitem.productid = orderitems[i].productid;
@@ -1784,6 +1782,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
             message: mesobj,
             price: new_Order.price,
             razer_customerid: customerid,
+            refund_balance: req.refund_balance,
             orderid: orderid
           };
 

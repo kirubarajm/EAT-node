@@ -264,11 +264,11 @@ exports.makeit_user_send_otp = function(req, res) {
 
 exports.makeit_otp_verification = function(req, res) {
   if (!req.body.oid) {
-    res.status(400).send({ error: true, message: "Please provide oid" });
+    res.status(400).send({ error: true,status:false, message: "Please provide oid" });
   } else if (!req.body.phoneno) {
     res
       .status(400)
-      .send({ error: true, message: "Please provide phone_number" });
+      .send({ error: true, status:false,message: "Please provide phone_number" });
   } else {
     Makeituser.makeit_user_otpverification(req.body, function(err, user) {
       if (err) res.send(err);
