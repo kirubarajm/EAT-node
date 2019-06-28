@@ -10,7 +10,7 @@ var Allocation = function(allocation) {
   this.sales_emp_id = allocation.sales_emp_id;
   this.assign_date = allocation.assign_date;
   this.assignedby = allocation.assignedby;
-  this.status = allocation.status;
+  this.status = allocation.status ||0;
   // this.created_at = new Date();
   this.booking_date_time = allocation.booking_date_time;
 };

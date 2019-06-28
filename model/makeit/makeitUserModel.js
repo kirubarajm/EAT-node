@@ -842,6 +842,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     res1[0].amount = amount;
     res1[0].cartquantity = orderitems[i].quantity;
     totalamount = totalamount + amount;
+  //  console.log("test"+res1[0]);
   //  if product is availablity to push into product details
     productdetails.push(res1[0]);
   }
@@ -849,14 +850,14 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var query1 =
     "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid="+req.userid +" left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +req.makeit_user_id;
 
-  sql.query(query1, async function(err, res1) {
+  sql.query(query1, async function(err, res2) {
     if (err) {
       console.log("error: ", err);
       result(err, null);
     } else {
-      for (let i = 0; i < res1.length; i++) {
-        if (res1[i].cuisines) {
-          res1[i].cuisines = JSON.parse(res1[i].cuisines);
+      for (let i = 0; i < res2.length; i++) {
+        if (res2[i].cuisines) {
+          res2[i].cuisines = JSON.parse(res2[i].cuisines);
         }
       }
 
@@ -865,7 +866,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
       var refundlist = await query("Select * From Refund_Coupon where rcid = '" +req.rcid+"' and active_status = 1"); 
       }
 
-      if (res1.length !== 0) {
+      if (res2.length !== 0) {
         var gstcharge = (totalamount / 100) * gst;
 
         gstcharge = Math.round(gstcharge);
@@ -893,17 +894,18 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
            }
 
         
-       
         calculationdetails.grandtotal = grandtotal;
         calculationdetails.original_price = original_price;
         calculationdetails.refund_balance = refund_balance;
         calculationdetails.gstcharge = gstcharge;
         calculationdetails.totalamount = totalamount;
         calculationdetails.delivery_charge = delivery_charge;
-        res1[0].amountdetails = calculationdetails;
-        res1[0].item = productdetails;
-        res1[0].ordercount = ordercount;
-       // console.log(res1);
+//console.log(calculationdetails);
+        res2[0].amountdetails = calculationdetails;
+        res2[0].item = productdetails;
+        res2[0].ordercount = ordercount;
+        console.log(res2[0]);
+       
         let resobj = {
           success: true,
           status: isAvaliableItem
@@ -911,7 +913,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
         if (!isAvaliableItem)
           resobj.message = tempmessage.slice(0, -1) + " is not avaliable";
-         (resobj.result = res1), result(null, resobj);
+         (resobj.result = res2), result(null, resobj);
         } else {
         let sucobj = true;
         let status = false;

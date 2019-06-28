@@ -64,11 +64,10 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     const onlinerefunddetails = await query("select * from Refund_Online where  rs_id ="+req.rs_id+"");
     const servicecharge = constant.servicecharge;
     
-    if (onlinerefunddetails[0].active_status===1) {
+    if (onlinerefunddetails[0].active_status === 1) {
       
-    
-
-    if (req.cancel_by&& req.cancel_by===1) {
+      ///cancel by ===1 is eat user cancel amount detect
+    if (req.cancel_by&& req.cancel_by === 1 ) {
         amount= req.amount - servicecharge;
     }else{
         amount= req.amount;
