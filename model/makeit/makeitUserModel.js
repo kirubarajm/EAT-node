@@ -196,7 +196,7 @@ Makeituser.getAllUser = function getAllUser(result) {
 Makeituser.getAllUserByAppointment = function getAllUserByAppointment(result) {
   //  sql.query("Select * from MakeitUser where appointment_status=1 order by created_at DESC", function (err, res) {
   sql.query(
-    " Select * from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1",
+    " Select alc.*,mu.address,mu.brandname,mu.email,mu.flatno,mu.appointment_status,mu.name,mu.phoneno,mu.pincode,mu.userid from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1",
     function(err, res) {
       if (err) {
         console.log("error: ", err);

@@ -24,7 +24,7 @@ RefundStatus.createRefund = function createRefund(refund, result) {
 };
 
 RefundStatus.get_all_refunds = function get_all_refunds(req, result) {
-  sql.query("select * from Refund_Status", function(err, res) {
+  sql.query("select rf.*,ors.cancel_by,ors.item_missing from Refund_Online rf left join Orders as ors on ors.orderid = rf.orderid", function(err, res) {
     if (err) result(err, null);
     else {
       let response = {
@@ -41,7 +41,7 @@ RefundStatus.get_unsuccess_refunds = function get_unsuccess_refunds(
   req,
   result
 ) {
-  sql.query("select * from Refund_Status Where status = 0", function(err, res) {
+  sql.query("select * from Refund_Online Where status = 0", function(err, res) {
     if (err) result(err, null);
     else {
       let response = {
@@ -55,7 +55,7 @@ RefundStatus.get_unsuccess_refunds = function get_unsuccess_refunds(
 };
 
 RefundStatus.get_success_refunds = function get_success_refunds(req, result) {
-  sql.query("select * from Refund_Status Where status = 1", function(err, res) {
+  sql.query("select * from Refund_Online Where status = 1", function(err, res) {
     if (err) result(err, null);
     else {
       let response = {

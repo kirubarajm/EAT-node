@@ -69,9 +69,9 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     
 
     if (req.cancel_by&& req.cancel_by===1) {
-       var amount= req.amount - servicecharge;
+        amount= req.amount - servicecharge;
     }else{
-        var amount= req.amount;
+        amount= req.amount;
     }
     // instance.payments. refund(req.paymentid, {
     // amount: 10,
@@ -90,7 +90,7 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     sql.query(updatequery, function (err, res) {
         if(err) {
             console.log("error: ", err);
-              result(null, err);
+              result(err, null);
            }
          else{   
          
@@ -109,13 +109,13 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     }); 
 
   }).catch((error) => {
-    console.error(error)
+    console.error('error-->',error)
     let resobj = {
         success: true,
         status: false,
         result: error
     };
-    result(null, resobj);
+    result(resobj,null);
     // error
   })}else if (onlinerefunddetails[0].active_status===0) {
     
