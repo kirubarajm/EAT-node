@@ -477,13 +477,15 @@ module.exports = function(app) {
 
   app.route("/admin/cartdetails").post(makeituser.admin_check_cartdetails);
 
-  app.route("/admin/querylist").post(queryquestion.read_a_question);
+  app.route("/admin/querylist").post(queryquestion.read_a_question_byadmin);
 
-  app.route("/admin/queryreplies/:aid").get(queryanswer.read_a_replies);
+  app.route("/admin/queryreplies/:qid").get(queryanswer.read_a_replies);
 
   app.route("/admin/queryanswer").post(queryanswer.create_a_answer);
 
   app.route("/admin/queryread").put(queryquestion.update_read_query_by_admin);
+
+  app.route("/admin/query/userlist/:type").get(queryquestion.get_user_list_by_type);
 
   app.route("/admin/orderpickupstatus").put(orders.order_pickup_status);
 

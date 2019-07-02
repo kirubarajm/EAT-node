@@ -36,6 +36,13 @@ exports.read_a_question = function(req, res) {
   });
 };
 
+exports.read_a_question_byadmin = function(req, res) {
+  QueryQuestions.read_a_question_id_by_admin(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
 exports.update_a_faq = function(req, res) {
   QueryQuestions.updateById(req.params.id, new Faq(req.body), function(
     err,
@@ -55,6 +62,14 @@ exports.delete_a_faq = function(req, res) {
 
 exports.update_read_query_by_admin = function(req, res) {
   QueryQuestions.update_read_answer_by_admin(req.body, function(err, faq) {
+    if (err) res.send(err);
+    res.json(faq);
+  });
+};
+
+exports.get_user_list_by_type = function(req, res) {
+  console.log(req.params.type);
+  QueryQuestions.get_user_list_by_type(req.params.type, function(err, faq) {
     if (err) res.send(err);
     res.json(faq);
   });

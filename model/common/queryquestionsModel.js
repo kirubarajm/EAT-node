@@ -2,6 +2,8 @@
 var sql = require("../db.js");
 var QueryAnswer = require("../../model/common/queryanswerModel");
 var moment = require("moment");
+const util = require("util");
+const query = util.promisify(sql.query).bind(sql);
 //Task object constructor
 var QueryQuestions = function(queryquestions) {
   this.question = queryquestions.question;
@@ -40,19 +42,20 @@ QueryQuestions.read_a_question_id = function read_a_question_id(req, result) {
   }
 
   query = query + "GROUP BY qqs.qid ORDER BY qa.created_at desc";
-
+  
   console.log(query);
 
-  sql.query(query, function(err, res) {
+  sql.query(query,async function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = true;
+
+    
       let resobj = {
-        sucobj: sucobj,
-        result: res
-      };
+        success: true,
+        status:true,
+        result: res}
       result(null, resobj);
     }
   });
@@ -69,6 +72,81 @@ QueryQuestions.read_a_question_id = function read_a_question_id(req, result) {
   //     var errorCode = 402;
   // }
 };
+
+
+
+QueryQuestions.read_a_question_id_by_admin = function read_a_question_id_by_admin(req, result) {
+  var query =
+    "SELECT qqs.* ,SUM(CASE WHEN qa.admin_read = 0 THEN 1 ELSE 0 END) AS admin_un_read_count FROM Query_questions AS qqs LEFT JOIN Query_answers AS qa ON (qqs.qid = qa.qid)";
+  if (req.type) {
+    query = query + "WHERE qqs.type='" + req.type + "'";
+  }
+  if (req.userid) {
+    query = query + " and qqs.userid='" + req.userid + "'";
+  }
+
+  query = query + "GROUP BY qqs.qid ORDER BY admin_un_read_count desc,qqs.created_at desc,qqs.admin_read";
+  
+  console.log(query);
+
+  sql.query(query,async function(err, res) {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {
+
+    
+
+      let resobj = {
+        success: true,
+        status:true,
+        result: res}
+      result(null, resobj);
+    }
+  });
+};
+
+QueryQuestions.get_user_list_by_type = function get_user_list_by_type(type, result) {
+ 
+  if (type < 5) {
+ var type  = parseInt(type)
+
+  if (type === 1) {
+   var query =  "Select  mk.name, mk.email, mk.phoneno, mk.brandname,qqs.userid,count(qqs.qid) as count from Query_questions AS qqs left JOIN MakeitUser AS mk ON qqs.userid = mk.userid where admin_read = 0 and qqs.type='"+type+"' ";
+  } else if (type === 2) {
+    var query =  "Select mu.name,mu.email,mu.phoneno,qqs.userid,count(qqs.qid) as count from Query_questions AS qqs left JOIN MoveitUser AS mu ON qqs.userid = mu.userid where admin_read = 0 and qqs.type ='"+type+"' ";
+  }else if (type === 3) {
+    var query =  "Select se.name,se.email,se.phoneno,se.id,count(qqs.qid) as count from Query_questions AS qqs left JOIN Sales_QA_employees AS se ON qqs.userid = se.id where admin_read = 0 and qqs.type ='"+type+"' ";
+  }else if (type === 4) {
+    var query =  "Select us.name,us.email,us.phoneno,us.userid,count(qqs.qid) as count from Query_questions AS qqs left JOIN User AS us ON qqs.userid = us.userid where admin_read = 0 and qqs.type='"+type+"' ";
+  }
+ 
+    query = query + "group by qqs.userid ORDER BY count desc,qqs.created_at desc,qqs.admin_read";
+
+  console.log(query);
+
+  sql.query(query,async function(err, res) {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {
+      let resobj = {
+        success: true,
+        status:true,
+        result: res}
+      result(null, resobj);
+    }
+  });
+}else{
+  let resobj = {
+    success: true,
+    status:false,
+    message:"Sorry there is no user type is exist!"
+  }
+  result(null, resobj);
+}
+}
+
 
 QueryQuestions.getFaqByType = function getFaqById(id, result) {
   sql.query("Select * from Query_questions where type = ? ", id, function(
@@ -154,50 +232,65 @@ QueryQuestions.getAllFaqbyid = function getAllFaqByid(id, result) {
 
 QueryQuestions.update_read_answer_by_admin = function(req, result) {
   var temp = 0;
-  var qidlist = req.qidlist;
+ // var qidlist = req.qidlist;
   //var date = Date.now();
 
   var date = moment().format("YYYY-MM-DD HH:mm:ss");
 
   // console.log();
 
-  for (let i = 0; i < qidlist.length; i++) {
-    var query =
-      "UPDATE Query_questions SET admin_read = 0, updated_at = '" +
-      date +
-      "' WHERE qid = '" +
-      qidlist[i].qid +
-      "'";
+  // for (let i = 0; i < qidlist.length; i++) {
+    var qusquery ="UPDATE Query_questions SET admin_read = 1, updated_at = '"+date+"' WHERE qid = '" +req.qid +"'";
 
     //  console.log(query);
-    sql.query(query, function(err, res) {
+    sql.query(qusquery, function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
+      }else{
+        var ansreadquery ="UPDATE Query_answers SET admin_read = 1, updated_at = '"+date +"' WHERE qid = '"+req.qid +"'"; 
+
+        sql.query(ansreadquery, function(err, res1) {
+          if (err) {
+            console.log("error: ", err);
+            result(null, err);
+          }else{
+          
+            let message = "readed successfully";
+            let resobj = {
+              success: true,
+              message: message,
+              status: true
+            };
+    
+        result(null, resobj);
+          }
+        });
+       
       }
     });
 
-    temp++;
-  }
+  //   temp++;
+  // }
 
-  if (temp === qidlist.length) {
-    let sucobj = true;
-    let message = "readed successfully";
-    let resobj = {
-      success: sucobj,
-      message: message
-    };
+  // if (temp === qidlist.length) {
+  //   let sucobj = true;
+  //   let message = "readed successfully";
+  //   let resobj = {
+  //     success: sucobj,
+  //     message: message
+  //   };
 
-    result(null, resobj);
-  } else {
-    let sucobj = true;
-    let message = "not yet be read";
-    let resobj = {
-      success: sucobj,
-      message: message
-    };
+  //   result(null, resobj);
+  // } else {
+  //   let sucobj = true;
+  //   let message = "not yet be read";
+  //   let resobj = {
+  //     success: sucobj,
+  //     message: message
+  //   };
 
-    result(null, resobj);
-  }
+  //   result(null, resobj);
+  // }
 };
 module.exports = QueryQuestions;
