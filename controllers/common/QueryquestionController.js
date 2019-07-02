@@ -52,3 +52,10 @@ exports.delete_a_faq = function(req, res) {
     res.json({ message: "Faq successfully deleted" });
   });
 };
+
+exports.update_read_query_by_admin = function(req, res) {
+  QueryQuestions.update_read_answer_by_admin(req.body, function(err, faq) {
+    if (err) res.send(err);
+    res.json(faq);
+  });
+};

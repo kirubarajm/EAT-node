@@ -58,6 +58,7 @@ exports.read_a_answer_count = function(req, res) {
   });
 };
 
+
 exports.read_a_masters = function(req, res) {
   QueryAnswer.read_a_masters(req.params, function(err, faq) {
     if (err) res.send(err);

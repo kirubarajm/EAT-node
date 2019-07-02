@@ -483,6 +483,8 @@ module.exports = function(app) {
 
   app.route("/admin/queryanswer").post(queryanswer.create_a_answer);
 
+  app.route("/admin/queryread").put(queryquestion.update_read_query_by_admin);
+
   app.route("/admin/orderpickupstatus").put(orders.order_pickup_status);
 
   app

@@ -42,7 +42,7 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
         var  new_makeit_cancel_order_count = await query("Select count(orderid) as new_makeit_cancel_order_count from Orders where moveit_user_id = 0 and orderstatus = 7 and cancel_by = 2 and DATE(created_at) = CURDATE()"); 
         countlist.new_order_count  = new_makeit_cancel_order_count;
         //unapproved kitchen list
-        var  admin_unapproved_kitchen_count = await query("Select count(userid) as userid from MakeitUser where ka_status = 1");
+        var  admin_unapproved_kitchen_count = await query("Select count(userid) as userid from MakeitUser where ka_status = 1 and virtualkey=0 ");
         countlist.admin_unapproved_kitchen_count  = admin_unapproved_kitchen_count;
         console.log(countlist);
 

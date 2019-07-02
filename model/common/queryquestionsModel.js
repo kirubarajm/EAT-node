@@ -1,12 +1,13 @@
 "user strict";
 var sql = require("../db.js");
 var QueryAnswer = require("../../model/common/queryanswerModel");
+var moment = require("moment");
 //Task object constructor
 var QueryQuestions = function(queryquestions) {
   this.question = queryquestions.question;
   this.type = queryquestions.type;
   this.userid = queryquestions.userid;
-  this.admin_read = queryquestions.admin_read || 1;
+  this.admin_read = queryquestions.admin_read || 0;
   // this.created_at = new Date();
 };
 
@@ -150,4 +151,53 @@ QueryQuestions.getAllFaqbyid = function getAllFaqByid(id, result) {
   });
 };
 
+
+QueryQuestions.update_read_answer_by_admin = function(req, result) {
+  var temp = 0;
+  var qidlist = req.qidlist;
+  //var date = Date.now();
+
+  var date = moment().format("YYYY-MM-DD HH:mm:ss");
+
+  // console.log();
+
+  for (let i = 0; i < qidlist.length; i++) {
+    var query =
+      "UPDATE Query_questions SET admin_read = 0, updated_at = '" +
+      date +
+      "' WHERE qid = '" +
+      qidlist[i].qid +
+      "'";
+
+    //  console.log(query);
+    sql.query(query, function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(null, err);
+      }
+    });
+
+    temp++;
+  }
+
+  if (temp === qidlist.length) {
+    let sucobj = true;
+    let message = "readed successfully";
+    let resobj = {
+      success: sucobj,
+      message: message
+    };
+
+    result(null, resobj);
+  } else {
+    let sucobj = true;
+    let message = "not yet be read";
+    let resobj = {
+      success: sucobj,
+      message: message
+    };
+
+    result(null, resobj);
+  }
+};
 module.exports = QueryQuestions;
