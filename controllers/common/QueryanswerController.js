@@ -19,18 +19,18 @@ exports.list_all_faqbytype = function(req, res) {
 };
 
 exports.create_a_answer = function(req, res) {
-  var new_faq = new QueryAnswer(req.body);
-  console.log(new_faq);
+  var new_ans = new QueryAnswer(req.body);
+  console.log(new_ans);
   //handles null error
 
-  QueryAnswer.createanswer(new_faq, function(err, faq) {
+  QueryAnswer.createanswer(new_ans, function(err, new_ans) {
     if (err) res.send(err);
-    res.json(faq);
+    res.json(new_ans);
   });
 };
 
 exports.read_a_replies = function(req, res) {
-  QueryAnswer.read_a_replies_id(req.params.aid, function(err, faq) {
+  QueryAnswer.read_a_replies_id(req.params.qid, function(err, faq) {
     if (err) res.send(err);
     res.json(faq);
   });
@@ -57,6 +57,7 @@ exports.read_a_answer_count = function(req, res) {
     res.json(result);
   });
 };
+
 
 exports.read_a_masters = function(req, res) {
   QueryAnswer.read_a_masters(req.params, function(err, faq) {

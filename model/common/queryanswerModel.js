@@ -13,7 +13,7 @@ var QueryAnswer = function(queryanswer) {
   this.adminid = queryanswer.adminid;
   this.userid = queryanswer.userid || 0;
   this.user_read = queryanswer.user_read || 0;
-  this.admin_read = queryanswer.admin_read || 1;
+  this.admin_read = queryanswer.admin_read || 0;
   //  this.created_at = new Date();
 };
 
@@ -37,10 +37,10 @@ QueryAnswer.createanswer = function createanswer(req, result) {
   });
 };
 
-QueryAnswer.read_a_replies_id = function read_a_replies_id(aid, result) {
+QueryAnswer.read_a_replies_id = function read_a_replies_id(qid, result) {
   sql.query(
     "Select * from Query_answers where qid = ? order by aid asc",
-    aid,
+    qid,
     function(err, res) {
       if (err) {
         console.log("error: ", err);

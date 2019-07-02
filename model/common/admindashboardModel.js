@@ -29,11 +29,10 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
       
         countlist.product_approved_count  = product_approved_count[0].count;
         //new  new queries
-        var  new_queries_count = await query("Select count(qid) as count from Query_questions where admin_read = 1 "); 
-
+        var  new_queries_count = await query("Select count(qid) as count from Query_questions where admin_read = 0 "); 
         countlist.new_queries_count  = new_queries_count[0].count;
           //new_replies_count
-        var  new_replies_count = await query("Select count(aid) as count from Query_answers where user_read = 1 or admin_read=1"); 
+        var  new_replies_count = await query("Select count(aid) as count from Query_answers where admin_read=0"); 
         countlist.new_replies_count  = new_replies_count[0].count;
         //new order count
         var  new_order_count = await query("Select count(orderid) as count from Orders where moveit_user_id = 0 and orderstatus = 0  and cancel_by = 0"); 
@@ -42,7 +41,7 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
         var  new_makeit_cancel_order_count = await query("Select count(orderid) as count from Orders where moveit_user_id = 0 and orderstatus = 7 and cancel_by = 2 and DATE(created_at) = CURDATE()"); 
         countlist.new_order_count  = new_makeit_cancel_order_count[0].count;
         //unapproved kitchen list
-        var  admin_unapproved_kitchen_count = await query("Select count(userid) as userid from MakeitUser where ka_status = 1");
+        var  admin_unapproved_kitchen_count = await query("Select count(userid) as userid from MakeitUser where ka_status = 1 and virtualkey=0");
         countlist.admin_unapproved_kitchen_count  = admin_unapproved_kitchen_count[0].userid;
         console.log(countlist);
 

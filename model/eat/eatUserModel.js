@@ -1202,6 +1202,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                   } else {
                     let resobj = {
                       success: true,
+                     status: true,
                       // message:mesobj,
                       passwordstatus: passwordstatus,
                       otpstatus: true,
@@ -1322,7 +1323,7 @@ Eatuser.edit_eat_users = function(req, result) {
 Eatuser.checkLogin = function checkLogin(req, result) {
   var reqs = [req.phoneno, req.password];
   sql.query(
-    "Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey from User where phoneno = ? and password = ?",
+    "Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid from User where phoneno = ? and password = ?",
     reqs,
     function(err, res) {
       if (err) {
