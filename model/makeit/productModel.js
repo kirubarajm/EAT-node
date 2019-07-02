@@ -321,24 +321,11 @@ Product.admin_list_all_product = function admin_list_all_product(req, result) {
     "Select * from Product where makeit_userid = '" +
     req.makeit_userid +
     "' and delete_status !=1";
-
-  console.log(req.approved_status);
-
-  if (req.search && req.approved_status === undefined) {
-    console.log("search ");
-    query = query + " and product_name LIKE  '%" + req.search + "%'";
-  } else if (req.search === undefined && req.approved_status !== undefined) {
-    console.log("approved_status ");
-    query = query + " and approved_status = '" + req.approved_status + "'";
-  } else if (req.search !== undefined && req.approved_status !== undefined) {
-    console.log("search and approved_status ");
-    query =
-      query +
-      " and approved_status = '" +
-      req.approved_status +
-      "' and product_name LIKE  '%" +
-      req.search +
-      "%'";
+  if(req.approved_status){
+    query = query +" and approved_status = '" +req.approved_status+ "'";
+  }
+  if (req.search) {
+    query =query +"' and product_name LIKE  '%" + req.search +"%'";
   }
 
   console.log(query);
@@ -370,10 +357,9 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
       } else {
         if (res[0].approved_status === 1 && req.quantity>=4) {
           let resobj = {
-            success: sucobj,
+            success: true,
             status: false,
-            message:
-              "Sorry Product live limit is exitded.only set 3."
+            message:"Sorry Product live limit is exitded.only set 3."
           };
           result(null, resobj);
         }else if (res[0].approved_status !== 0) {
@@ -385,10 +371,9 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
                 console.log("error: ", err);
                 result(null, err);
               } else {
-                let sucobj = true;
                 let message = "Quantity added successfully";
                 let resobj = {
-                  success: sucobj,
+                  success: true,
                   message: message
                 };
                 result(null, resobj);
@@ -397,9 +382,8 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
           );
          } else if (res[0].approved_status == 0) {
           console.log("product live");
-          let sucobj = true;
           let resobj = {
-            success: sucobj,
+            success: true,
             status: false,
             message:
               "Sorry Product not yet approved, You can't quantity increase"
@@ -700,7 +684,7 @@ Product.productview_by_productid = function productview_by_productid(
 ) {
   const items = [];
   sql.query(
-    " select pd.*,mk.brandname,mk.name as makeit_name,mk.phoneno as makeit_phoneno,mk.address as makeit_address,mk.locality,mk.verified_status as makeit_verified from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid where productid = " + req.productid + "",
+    " select pd.*,JSON_OBJECT('userid',mk.userid,'name',mk.name,'phoneno',mk.phoneno,'email',mk.email,'address',mk.address,'lat',mk.lat,'lon',mk.lon,'brandName',mk.brandName,'localityid',mk.localityid,'virtualkey',mk.virtualkey) as makeitdetail from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid where productid = " + req.productid + "",
     function(err, res) {
       if (err) {
         console.log("error: ", err);
@@ -720,6 +704,7 @@ Product.productview_by_productid = function productview_by_productid(
                 items.push(res1[i]);
               }
 
+              res[0].makeitdetail = JSON.parse(res[0].makeitdetail);
               res[0].items = items;
               let sucobj = true;
               let resobj = {
