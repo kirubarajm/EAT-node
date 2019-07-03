@@ -759,7 +759,7 @@ module.exports = function(app) {
 
   app.route("/queryanswer").post(queryanswer.create_a_answer);
 
-  app.route("/queryreplies/:aid").get(queryanswer.read_a_replies);
+  app.route("/queryreplies/:qid").get(queryanswer.read_a_replies);
 
   app.route("/repliesread").put(queryanswer.update_read_answer);
 

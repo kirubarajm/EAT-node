@@ -862,6 +862,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
       }
 
       //refund 
+      console.log(req.rcid);
       if (req.rcid) { 
       var refundlist = await query("Select * From Refund_Coupon where rcid = '" +req.rcid+"' and active_status = 1"); 
       }

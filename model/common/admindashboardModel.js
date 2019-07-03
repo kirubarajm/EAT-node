@@ -43,6 +43,10 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
         //unapproved kitchen list
         var  admin_unapproved_kitchen_count = await query("Select count(userid) as userid from MakeitUser where ka_status = 1 and virtualkey=0");
         countlist.admin_unapproved_kitchen_count  = admin_unapproved_kitchen_count[0].userid;
+
+         //kitchen virtual order count
+         var  kitchen_virtual_order_count = await query("Select count(userid) as userid from MakeitUser where ka_status = 1 and virtualkey=0");
+         countlist.admin_unapproved_kitchen_count  = admin_unapproved_kitchen_count[0].userid;
         console.log(countlist);
 
 

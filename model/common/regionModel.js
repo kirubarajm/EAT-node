@@ -4,6 +4,13 @@ var sql = require("../db.js");
 //Task object constructor
 var Region = function(region) {
   this.regionname = region.regionname;
+  this.stateid=region.stateid;
+  this.lat=region.lat;
+  this.lon=region.lon;
+  this.region_image=region.region_image;
+  this.region_title=region.region_title;
+  this.region_content=region.region_content;
+  this.region_detail_image=region.region_detail_image;
   // this.created_at = new Date();
 };
 

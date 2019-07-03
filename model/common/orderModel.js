@@ -1415,10 +1415,7 @@ Order.online_order_place_conformation = async function(order_place, result) {
   }
 };
 
-Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(
-  req,
-  result
-) {
+Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(req,result) {
   const orderdetails = await query(
     "select * from Orders where userid ='" +
       req.userid +

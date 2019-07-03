@@ -57,7 +57,7 @@ exports.creat_a_appointment = function(req, res) {
   if (!req.body.makeit_userid) {
     res
       .status(400)
-      .send({ error: true, message: "Please makeit_userid/date_time" });
+      .send({ error: true,status:false, message: "Please makeit_userid/date_time" });
   } else {
     Allocation.createAllocation(new_allocation, function(err, user) {
       if (err) res.send(err);

@@ -892,7 +892,7 @@ Product.admin_list_all__unapproval_product = function admin_list_all__unapproval
   console.log(req);
 
   var query =
-    "Select pd.*,mk.brandname,mk.name as makeit_name from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid  where delete_status !=1 and active_status !=1";
+    "Select pd.*,mk.brandname,mk.name as makeit_name from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid  where delete_status !=1 ";
 
   query =query +" and approved_status = '"+req.approved_status +"' order by created_at desc";
   console.log(query);
