@@ -559,6 +559,34 @@ const master = [
                 "read_description": 'read'
             }
         ]
+    }, {
+        'kitchenmembertype': [{
+                "kitchenmembertypeid": 1,
+                "kitchenmembertype": "Gold"
+            },
+            {
+                "kitchenmembertypeid": 2,
+                "kitchenmembertype": "Silver"
+            },
+            {
+                "kitchenmembertypeid": 3,
+                "kitchenmembertype": "bronze"
+            }
+        ]
+    },{
+        'kitchenimagetype': [{
+                "kitchenimagetypeid": 1,
+                "kitchenimagetype": "Signature"
+            },
+            {
+                "kitchenmembertypeid": 2,
+                "kitchenmembertype": "kitchen-info"
+            },
+            {
+                "kitchenmembertypeid": 3,
+                "kitchenmembertype": "Specialities Food"
+            }
+        ]
     }
 
 ]
