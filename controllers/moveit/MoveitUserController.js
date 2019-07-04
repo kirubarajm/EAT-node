@@ -2,6 +2,7 @@
 
 var Moveituser = require("../../model/moveit/moveitUserModel.js");
 var MoveitRatingForMakeit = require("../../model/moveit/moveitRatingForMakeitModel");
+var MoveitFireBase =require("../../push/Moveit_SendNotification")
 
 exports.list_all_user = function(req, res) {
   Moveituser.getAllUser(function(err, user) {
@@ -130,6 +131,20 @@ exports.moveit_quality_checklist = function(req, res) {
 
 exports.read_a_hub_details = function(req, res) {
   Moveituser.get_a_hub_navigation(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+exports.setGeoLocation = function(req, res) {
+  MoveitFireBase.geoFireInsert(req.body.id,req.body.geoLocation,function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+exports.getGeoLocation = function(req, res) {
+  MoveitFireBase.geoFireGetKeyByGeo(req.body.geoLocation,6,function(err, user) {
     if (err) res.send(err);
     res.json(user);
   });

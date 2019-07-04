@@ -78,7 +78,8 @@ module.exports = function(app) {
   app.route("/moveit/login").post(moveituser.checklogin);
 
   app.route("/moveit/hub").post(moveituser.read_a_hub_details);
-
+  app.route("/moveit/setlocation").post(moveituser.setGeoLocation);
+  app.route("/moveit/getlocation").post(moveituser.getGeoLocation);
   //Routes for makeit users
 
   app

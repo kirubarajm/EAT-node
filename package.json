@@ -19,6 +19,7 @@
     "express-routes-versioning": "^1.0.1",
     "file-system": "^2.2.2",
     "firebase-admin": "^8.0.0",
+    "geofire": "^5.0.1",
     "jsonfile": "^5.0.0",
     "jsonwebtoken": "^8.5.1",
     "moment": "^2.24.0",
