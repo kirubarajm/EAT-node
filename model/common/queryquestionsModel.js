@@ -248,6 +248,7 @@ QueryQuestions.update_read_answer_by_admin = function(req, result) {
         console.log("error: ", err);
         result(null, err);
       }else{
+        
         var ansreadquery ="UPDATE Query_answers SET admin_read = 1, updated_at = '"+date +"' WHERE qid = '"+req.qid +"'"; 
 
         sql.query(ansreadquery, function(err, res1) {

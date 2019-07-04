@@ -41,6 +41,8 @@ var Makeituser = function(makeituser) {
   this.img4 = makeituser.img4;
   this.gender=makeituser.gender;
   this.food_type=makeituser.food_type;
+  this.member_type=makeituser.member_type;
+  this.about=makeituser.about;
 
 };
 
@@ -578,7 +580,7 @@ Makeituser.all_order_list = function(result) {
 };
 
 Makeituser.appointment_info = function(makeit_id,result) {
-  var query = "select alc.status,alc.booking_date_time,su.name as sales_name from Allocation as alc left join Sales_QA_employees as su on su.id=alc.sales_emp_id where alc.makeit_userid='"+makeit_id+"'";
+  var query = "select alc.status,alc.booking_date_time,su.name as sales_name from Allocation as alc left join Sales_QA_employees as su on su.id=alc.sales_emp_id where alc.makeit_userid='"+makeit_id+"' order by aid desc";
 
   sql.query(query, function(err, res) {
     if (err) {

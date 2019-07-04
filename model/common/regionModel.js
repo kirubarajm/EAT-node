@@ -8,9 +8,13 @@ var Region = function(region) {
   this.lat=region.lat;
   this.lon=region.lon;
   this.region_image=region.region_image;
-  this.region_title=region.region_title;
-  this.region_content=region.region_content;
+  this.slider_title=region.slider_title;
+  this.slider_content=region.slider_content;
   this.region_detail_image=region.region_detail_image;
+  this.special_dish_img=region.special_dish_img;
+  this.identity_img=region.identity_img;
+  this.tagline=region.tagline;
+  this.specialities_food_content=region.specialities_food_content;
   // this.created_at = new Date();
 };
 

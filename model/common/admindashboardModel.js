@@ -25,7 +25,7 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
 
         countlist.new_sales_appointment_count  = new_sales_appointment_count[0].count;
         //new product count
-        var product_approved_count = await query("Select count(productid) as count from Product  where delete_status !=1 and active_status !=1 and approved_status != 2  and approved_status != 3 "); 
+        var product_approved_count = await query("Select count(productid) as count from Product  where delete_status !=1  and approved_status != 2  and approved_status != 3 "); 
       
         countlist.product_approved_count  = product_approved_count[0].count;
         //new  new queries

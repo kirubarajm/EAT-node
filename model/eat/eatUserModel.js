@@ -327,7 +327,7 @@ Eatuser.get_eat_makeit_product_list = function(req, result) {
       req.lon +
       "') ) + sin( radians('" +
       req.lat +
-      "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+      "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid)) AS productlist,JSON_ARRAYAGG(JSON_OBJECT('img_url', mi.img_url)) AS specialitems from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  left join Makeit_images mi on mk.userid = mi.makeitid and mi.type =3 left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
       req.eatuserid +
       "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
       req.eatuserid +
@@ -368,6 +368,7 @@ Eatuser.get_eat_makeit_product_list = function(req, result) {
         for (let i = 0; i < res.length; i++) {
           if (res[i].productlist) {
             res[i].productlist = JSON.parse(res[i].productlist);
+            res[i].specialitems = JSON.parse(res[i].specialitems);
 
             res[i].distance = res[i].distance.toFixed(2);
             //15min Food Preparation time , 3min 1 km
@@ -982,9 +983,190 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
            }
            });   
    };
+/********************************************************************/
+// this working code please don't remove this code. i just commanded due to login flow change 04-07-2019
+//  Eatuser.eatuser_login = function eatuser_login(newUser, result) { 
+     
+//   var OTP = Math.floor(Math.random() * 90000) + 10000;
+   
+//   var passwordstatus = false;
+//   var otpstatus = false;
+//   var genderstatus = false;
+//   var otptemp = 0;
+//   var otpurl =
+//     "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
+//     newUser.phoneno +
+//     "&senderId=EATHOM&message=Your EAT App OTP is " +
+//     OTP +
+//     ". Note: Please DO NOT SHARE this OTP with anyone.";
+
+//   // var otpurl = "https://www.google.com/";
+
+//   sql.query("Select * from User where phoneno = '" + newUser.phoneno + "'",function(err, res) {
+//       if (err) {
+//         console.log("error: ", err);
+//         result(err, null);
+//       } else {
+//         console.log(res);
+//         if (res.length === 0) {
+//           console.log("validate password");
+
+//           request({
+//               method: "GET",
+//               rejectUnauthorized: false,
+//               url: otpurl
+//             },
+//             function(error, response, body) {
+//               if (error) {
+//                 console.log("error: ", err);
+//                 result(null, err);
+//               } else {
+//                 console.log(response.statusCode, body);
+//                 var responcecode = body.split("#");
+//                 console.log(responcecode);
+
+//                 if (responcecode[0] === "0") {
+//                   sql.query(
+//                     "insert into Otp(phone_number,apptype,otp)values('" +
+//                       newUser.phoneno +
+//                       "',4,'" +
+//                       OTP +
+//                       "')",
+//                     function(err, res1) {
+//                       if (err) {
+//                         console.log("error: ", err);
+//                         result(null, err);
+//                       } else {
+//                         let resobj = {
+//                           success: true,
+//                           status: true,
+//                           message: responcecode[1],
+//                           passwordstatus: passwordstatus,
+//                           otpstatus: otpstatus,
+//                           genderstatus: genderstatus,
+//                           oid: res1.insertId
+//                         };
+
+//                         result(null, resobj);
+//                       }
+//                     }
+//                   );
+//                 } else {
+//                   let resobj = {
+//                     success: true,
+//                     status: false,
+//                     message: responcecode[1],
+//                     passwordstatus: passwordstatus,
+//                     otpstatus: otpstatus,
+//                     genderstatus: genderstatus
+//                   };
+
+//                   result(null, resobj);
+//                 }
+//               }
+//             }
+//           );
+//         } else {
+//           console.log(res);
+//              //eat login password validate condition commanded 04-07-2019
+//           // if (res[0].password !== "" && res[0].password !== null) {
+//           //   passwordstatus = true;
+//           //   otpstatus = true;
+//           //   genderstatus = true;
+//           // }
+
+//           if (
+//             res[0].gender !== "" &&
+//             res[0].gender !== null &&
+//             res[0].name !== "" &&
+//             res[0].name !== null
+//           ) {
+//             genderstatus = true;
+//             // otpstatus = true;
+//           }
+
+//           if (passwordstatus === false) {
+//             request(
+//               {
+//                 method: "GET",
+//                 rejectUnauthorized: false,
+//                 url: otpurl
+//               },
+//               function(error, response, body) {
+//                 if (error) {
+//                   console.log("error: ", err);
+//                   result(null, err);
+//                 } else {
+//                   console.log(response.statusCode, body);
+//                   var responcecode = body.split("#");
+//                   console.log(responcecode[0]);
+
+//                   if (responcecode[0] === "0") {
+//                     sql.query(
+//                       "insert into Otp(phone_number,apptype,otp)values('" +
+//                         newUser.phoneno +
+//                         "',4,'" +
+//                         OTP +
+//                         "')",
+//                       function(err, res1) {
+//                         if (err) {
+//                           console.log("error: ", err);
+//                           result(null, err);
+//                         } else {
+//                           let resobj = {
+//                             success: true,
+//                             status: true,
+//                             message: responcecode[1],
+//                             passwordstatus: passwordstatus,
+//                             otpstatus: otpstatus,
+//                             genderstatus: genderstatus,
+//                             oid: res1.insertId
+//                           };
+
+//                           result(null, resobj);
+//                         }
+//                       }
+//                     );
+//                   } else {
+//                     let resobj = {
+//                       success: true,
+//                       status: false,
+//                       message: responcecode[1],
+//                       passwordstatus: passwordstatus,
+//                       otpstatus: otpstatus,
+//                       genderstatus: genderstatus,
+//                       userid: res[0].userid,
+//                       oid: res1.insertId
+//                     };
+
+//                     result(null, resobj);
+//                   }
+//                 }
+//               }
+//             );
+//           } else {
+//             let sucobj = true;
+//             let resobj = {
+//               success: sucobj,
+//               status: true,
+//               passwordstatus: passwordstatus,
+//               otpstatus: otpstatus,
+//               genderstatus: genderstatus,
+//               userid: res[0].userid
+//             };
+
+//             result(null, resobj);
+//           }
+//         }
+//       }
+//     }
+//   );
+// };
+
+/********************************************************************/
 
 
- Eatuser.eatuser_login = function eatuser_login(newUser, result) { 
+Eatuser.eatuser_login = function eatuser_login(newUser, result) { 
      
   var OTP = Math.floor(Math.random() * 90000) + 10000;
    
@@ -1001,9 +1183,7 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
 
   // var otpurl = "https://www.google.com/";
 
-  sql.query(
-    "Select * from User where phoneno = '" + newUser.phoneno + "'",
-    function(err, res) {
+  sql.query("Select * from User where phoneno = '" + newUser.phoneno + "'",function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(err, null);
@@ -1069,12 +1249,12 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
           );
         } else {
           console.log(res);
-
-          if (res[0].password !== "" && res[0].password !== null) {
-            passwordstatus = true;
-            otpstatus = true;
-            genderstatus = true;
-          }
+             //eat login password validate condition commanded 04-07-2019
+          // if (res[0].password !== "" && res[0].password !== null) {
+          //   passwordstatus = true;
+          //   otpstatus = true;
+          //   genderstatus = true;
+          // }
 
           if (
             res[0].gender !== "" &&
@@ -1103,13 +1283,7 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
                   console.log(responcecode[0]);
 
                   if (responcecode[0] === "0") {
-                    sql.query(
-                      "insert into Otp(phone_number,apptype,otp)values('" +
-                        newUser.phoneno +
-                        "',4,'" +
-                        OTP +
-                        "')",
-                      function(err, res1) {
+                    sql.query("insert into Otp(phone_number,apptype,otp)values('" +newUser.phoneno +"',4,'" +OTP +"')",function(err, res1) {
                         if (err) {
                           console.log("error: ", err);
                           result(null, err);
@@ -1164,6 +1338,8 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
   );
 };
 
+
+
 Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
   var otp = 0;
   var passwordstatus = false;
@@ -1181,9 +1357,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
 
       if (res[0].otp == req.otp) {
         console.log("OTP VALID");
-        sql.query(
-          "Select * from User where phoneno = '" + req.phoneno + "'",
-          function(err, res1) {
+        sql.query("Select * from User where phoneno = '" + req.phoneno + "'",function(err, res1) {
             if (err) {
               console.log("error: ", err);
               result(err, null);
@@ -1216,35 +1390,28 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                 });
               } else {
                 //let message = "Following user already Exist!, Please check it Phone number" ;
-                if (res1[0].password !== "" && res1[0].password !== null) {
-                  passwordstatus = true;
-                  otpstatus = true;
-                  genderstatus = true;
-                }
 
-                if (
-                  res1[0].gender !== "" &&
-                  res1[0].gender !== null &&
-                  res1[0].name !== "" &&
-                  res1[0].name !== null
-                ) {
+                //eat login password validate condition commanded 04-07-2019
+                // if (res1[0].password !== "" && res1[0].password !== null) {
+                //   passwordstatus = true;
+                //   otpstatus = true;
+                //   genderstatus = true;
+                // }
+
+                if (res1[0].gender !== "" &&res1[0].gender !== null &&res1[0].name !== "" &&res1[0].name !== null) {
                   genderstatus = true;
                   otpstatus = true;
                 }
 
-                console.log(res1[0].userid);
-                sql.query(
-                  "Select * from Address where userid = '" +
-                    res1[0].userid +
-                    "' and address_default = 1 and delete_status=0",
-                  function(err, res3) {
+              //  console.log(res1[0].userid);
+                sql.query("Select * from Address where userid = '" +res1[0].userid+"' and address_default = 1 and delete_status=0",function(err, res3) {
                     if (err) {
                       console.log("error: ", err);
                       result(err, null);
                     } else {
                       responce = [];
 
-                      console.log(res3.length);
+                     // console.log(res3.length);
                       if (res3.length !== 0) {
                         responce.push(res3[0]);
                       }
@@ -1256,6 +1423,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                         otpstatus: otpstatus,
                         genderstatus: genderstatus,
                         userid: res1[0].userid,
+                        regionid:res1[0].regionid,
                         result: responce
                       };
 
@@ -1399,12 +1567,12 @@ Eatuser.eat_user_post_registration = async function(req, result) {
 
   const userinfo = await query("Select * from User where userid = '" +req.userid +"'");
 
-  console.log(userinfo[0].razer_customerid);
+ // console.log(userinfo[0].razer_customerid);
   var customerid = userinfo[0].razer_customerid
 
   req.name= userinfo[0].name;
   req.phoneno= userinfo[0].phoneno;
-  console.log(req);
+  //console.log(req);
   if (!userinfo[0].razer_customerid) {
     
   var customerid = await Eatuser.create_customerid_by_razorpay(req);
@@ -1421,8 +1589,6 @@ Eatuser.eat_user_post_registration = async function(req, result) {
   }
   }
 
-
-
   for (const [key, value] of Object.entries(req)) {
     console.log(`${key} ${value}`);
 
@@ -1434,7 +1600,7 @@ Eatuser.eat_user_post_registration = async function(req, result) {
 
   var staticquery =
     staticquery + column.slice(0, -1) + " where userid = " + req.userid;
-  console.log(staticquery);
+ 
   sql.query(staticquery, [new Date()], function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -1692,6 +1858,113 @@ Eatuser.get_eat_region_makeit_list = function get_eat_region_makeit_list(req,res
   });
 };
 
+
+/***** ***************************************************/ 
+
+//Don't remove this code flow has been change so commanded 04-07-2019
+
+
+
+// Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_makeit_list_by_eatuserid (req,result) {
+
+//   var foodpreparationtime = constant.foodpreparationtime;
+//   var onekm = constant.onekm;
+//   var radiuslimit=constant.radiuslimit;
+
+   
+//   const userinfo = await query("select regionid from User where userid= "+req.eatuserid+"");
+
+//   if (userinfo.length !==0) {
+    
+//   if (req.regionid < 1 || req.regionid ===undefined) {
+//       var getregionquery = "select lat,lon,regionid from Region where regionid = (select regionid from User where userid= "+req.eatuserid+")";
+//     }else{
+//       var getregionquery = "select lat,lon,regionid from Region where regionid = "+req.regionid+"";
+//     }
+//     //var getregionquery = "select lat,lon,regionid from  Region where regionid = (select regionid from User where userid= '"+req.eatuserid+"')";
+
+//     sql.query(getregionquery, function (err, res1) {
+//         if (err) {
+//             console.log("error: ", err);
+//             result(err, null);
+//         }
+//         else {
+               
+//                 var getregionlistquery = "select *,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(lat)) ) ) AS distance from Region  group by regionid  order by distance ASC";
+
+//                 sql.query(getregionlistquery, async function (err, res2) {
+//                     if (err) {
+//                         console.log("error: ", err);
+//                         result(err, null);
+//                     }
+//                     else {
+                     
+//                         var temparray = [];
+//                       //  res2.forEach(function(v){ delete v.distance});
+//                         let limit = 3;
+//                         for (let i = 0; i < res2.length; i++) {
+
+                     
+//                        var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,mk.member_type,mk.about,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and mk.ka_status = 2 and pt.approved_status=2 and  pt.quantity != 0 and pt.delete_status !=1  GROUP BY pt.productid   HAVING distance <="+radiuslimit+" ORDER BY distance";
+//                         //console.log(nearbyregionquery);
+//                           let kitchenlist = await query(nearbyregionquery);
+//                           var kitchendetaillist=[];
+//                           var kitchencount = kitchenlist.length>limit?limit:kitchenlist.length;
+//                           res2[i].kitchencount = kitchenlist.length;
+//                          // console.log('kloop'+kitchencount);
+                            
+//                             if (kitchenlist.length  !==0) {
+
+//                                 for (let j = 0; j < kitchencount; j++) {
+//                                   //  console.log('loop'+kitchencount);
+//                                   //  var eta = 15 + (3 * kitchenlist[j].distance) ;\
+//                                   var eta = foodpreparationtime + (onekm  * kitchenlist[j].distance);
+//                                     //15min Food Preparation time , 3min 1 km
+                                    
+//                                     kitchenlist[j].eta =   Math.round(eta) +" mins" ;
+//                                     if (kitchenlist[j].cuisines) {
+//                                         kitchenlist[j].cuisines = JSON.parse(kitchenlist[j].cuisines)
+//                                        }
+//                                        kitchendetaillist.push(kitchenlist[j]);
+                                    
+//                                 }
+
+//                                 res2[i].kitchenlist=kitchendetaillist;
+
+//                                 temparray.push(res2[i]);
+//                             }
+                            
+//                         }
+
+                
+//                             let sucobj = true;
+//                             let resobj = {
+//                                 success: sucobj,
+//                                 status:true,
+//                                 result:temparray
+//                             };
+                
+//                             result(null, resobj);
+//                     }
+
+//                 });
+//         }
+//   });
+// }else{
+
+//   let sucobj = true;
+//   let resobj = {
+//       success: sucobj,
+//       status:false,
+//       message:"Sorry following user not found!"
+//   };
+
+//   result(null, resobj);
+// }
+// };
+
+/***** ***************************************************/ 
+
 Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_makeit_list_by_eatuserid (req,result) {
 
   var foodpreparationtime = constant.foodpreparationtime;
@@ -1717,7 +1990,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
         }
         else {
                
-                var getregionlistquery = "select regionid,regionname,region_image,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(lat)) ) ) AS distance from Region  group by regionid  order by distance ASC";
+                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( lat ) )  * cos( radians( lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(lat)) ) ) AS distance from Region re join State st on re.stateid=st.stateid  group by re.regionid  order by distance ASC";
 
                 sql.query(getregionlistquery, async function (err, res2) {
                     if (err) {
@@ -1732,11 +2005,13 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
                         for (let i = 0; i < res2.length; i++) {
 
                      
-                       var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and mk.ka_status = 2 and pt.approved_status=2 and  pt.quantity != 0 and pt.delete_status !=1  GROUP BY pt.productid   HAVING distance <="+radiuslimit+" ORDER BY distance";
+                       var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,mk.member_type,mk.about,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and mk.ka_status = 2 and pt.approved_status=2 and  pt.quantity != 0 and pt.delete_status !=1  GROUP BY pt.productid   HAVING distance <="+radiuslimit+" ORDER BY distance";
                         //console.log(nearbyregionquery);
                           let kitchenlist = await query(nearbyregionquery);
                           var kitchendetaillist=[];
-                          var kitchencount = kitchenlist.length>limit?limit:kitchenlist.length;
+                          //this code is important
+                         // var kitchencount = kitchenlist.length>limit?limit:kitchenlist.length;
+                         var kitchencount = kitchenlist.length
                           res2[i].kitchencount = kitchenlist.length;
                          // console.log('kloop'+kitchencount);
                             
@@ -1789,6 +2064,8 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
   result(null, resobj);
 }
 };
+
+
 
 Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen_list_show_more (req,result) {
     

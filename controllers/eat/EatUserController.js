@@ -245,11 +245,14 @@ exports.eat_user_post_registration = function(req, res) {
     res
       .status(400)
       .send({ error: true, status: false, message: "Please provide email" });
-  } else if (!req.body.password) {
-    res
-      .status(400)
-      .send({ error: true, status: false, message: "Please provide password" });
-  } else {
+  }
+  //commanded 04-07-2019
+  //  else if (!req.body.password) {
+  //   res
+  //     .status(400)
+  //     .send({ error: true, status: false, message: "Please provide password" });
+  // }
+   else {
     Eatuser.eat_user_post_registration(req.body, function(err, user) {
       if (err) res.send(err);
       res.json(user);
