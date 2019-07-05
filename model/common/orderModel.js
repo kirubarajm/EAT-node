@@ -1576,6 +1576,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay( req,orderite
   //  console.log(res);
 
   if (res.length === 0) {
+    
     Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(err,res3) {
       if (err) {
         result(err, null);
@@ -1970,11 +1971,30 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
   }
 };
 
+
 Order.makeit_order_accept = async function makeit_order_accept(req, result) {
-  sql.query(
-    "UPDATE Orders SET orderstatus = 1 WHERE orderid ='" + req.orderid + "'",
-    async function(err, res) {
-      if (err) {
+ 
+  const orderdetails = await query( "select * from Orders where orderid ='" + req.orderid + "'");
+  
+  // d.setHours(d.getHours() + 5);
+  if (orderdetails.length !==0) {
+    
+  
+    console.log(orderdetails[0].orderstatus);
+  if (orderdetails[0].orderstatus < 1) {
+    
+  
+  var orderaccepttime = moment()
+    .add(0, 'seconds')
+    .add(15, 'minutes')
+    .format("YYYY-MM-DD HH:mm:ss");
+ // deliverytime.setMinutes(transaction_time.getMinutes() + 15);
+  
+
+  updatequery = "UPDATE Orders SET orderstatus = 1 ,makeit_expected_preparing_time= '"+orderaccepttime+"' WHERE orderid ='" + req.orderid + "'";
+  console.log(updatequery)
+  sql.query(updatequery,async function(err, res) {
+    if (err) {
         result(err, null);
       } else {
         await Notification.orderEatPushNotification(
@@ -1991,6 +2011,38 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
       }
     }
   );
+  }else if(orderdetails[0].orderstatus==1){
+
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry your order already received"
+    };
+    result(null, response);
+  }else if(orderdetails[0].orderstatus==7){
+
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry your order was cancelled"
+    };
+    result(null, response);
+  }else{
+    let response = {
+      success: true,
+      status: false,
+      message: "order id not found Please check"
+    };
+    result(null, response);
+  }
+}else{
+  let response = {
+    success: true,
+    status: false,
+    message: "Sorry your order already received"
+  };
+  result(null, response);
+}
 };
 
 Order.admin_order_cancel = async function admin_order_cancel(req, result) {
