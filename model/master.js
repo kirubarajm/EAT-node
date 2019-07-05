@@ -256,11 +256,11 @@ const master = [
     {
         'liveproductstatus': [{
                 "active_statusid": 0,
-                "active_status": "removelivepeoduct"
+                "active_status": "removeliveproduct"
             },
             {
                 "active_statusid": 1,
-                "active_status": "movelivepeoduct"
+                "active_status": "moveliveproduct"
             }
         ]
     },
@@ -585,6 +585,9 @@ const master = [
             {
                 "kitchenmembertypeid": 3,
                 "kitchenmembertype": "Specialities Food"
+            },{
+                "kitchenmembertypeid": 4,
+                "kitchenmembertype": "kitchendmenuimges"
             }
         ]
     }

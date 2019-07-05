@@ -43,6 +43,7 @@ var Makeituser = function(makeituser) {
   this.food_type=makeituser.food_type;
   this.member_type=makeituser.member_type;
   this.about=makeituser.about;
+  this.virutal_rating_count=makeituser.virutal_rating_count;
 
 };
 
@@ -870,6 +871,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
       }
 
       if (res2.length !== 0) {
+
+        
+    //    if (refundlist) {
+
         var gstcharge = (totalamount / 100) * gst;
 
         gstcharge = Math.round(gstcharge);
@@ -894,7 +899,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           //if grandtotal is lesser then 0 define grandtotal is 0
           if (grandtotal < 0) grandtotal = 0; 
           calculationdetails.refundamount = refundlist[0].refundamount;
-           }
+        }
 
         
         calculationdetails.grandtotal = grandtotal;
@@ -917,6 +922,21 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         if (!isAvaliableItem)
           resobj.message = tempmessage.slice(0, -1) + " is not avaliable";
          (resobj.result = res2), result(null, resobj);
+        // }else{
+
+        //   let sucobj = true;
+        //   let status = false;
+        //   message = "Sorry your coupon is not valid!";
+        //   let resobj = {
+        //     success: sucobj,
+        //     status: status,
+        //     message: message
+        //   };
+  
+        //   result(null, resobj);
+
+        // }
+        
         } else {
         let sucobj = true;
         let status = false;

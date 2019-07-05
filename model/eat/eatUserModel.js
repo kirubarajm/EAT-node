@@ -313,21 +313,21 @@ Eatuser.get_eat_makeit_list = function(req, result) {
   );
 };
 
-Eatuser.get_eat_makeit_product_list = function(req, result) {
+Eatuser.get_eat_makeit_product_list = async function(req, result) {
 
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
   var radiuslimit=constant.radiuslimit;
   var Images=[];
   if (req.eatuserid) {
-    var query =
-      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.img2,mk.img3,mk.img4,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+    var productquery =
+      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +
       "') ) + sin( radians('" +
       req.lat +
-      "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid)) AS productlist,JSON_ARRAYAGG(JSON_OBJECT('img_url', mi.img_url)) AS specialitems from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  left join Makeit_images mi on mk.userid = mi.makeitid and mi.type =3 left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+      "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
       req.eatuserid +
       "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
       req.eatuserid +
@@ -335,7 +335,7 @@ Eatuser.get_eat_makeit_product_list = function(req, result) {
       req.makeit_userid +
       " and mk.ka_status = 2 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1 ";
   } else {
-    var query =
+    var productquery =
       "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.img2,mk.img3,mk.img4,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
@@ -348,27 +348,26 @@ Eatuser.get_eat_makeit_product_list = function(req, result) {
   }
 
   if (req.vegtype === 0) {
-    query = query +" and pt.vegtype = 0";
+    productquery = productquery +" and pt.vegtype = 0";
   }
-  console.log(query);
+  console.log(productquery);
   
-  sql.query(query, function(err, res) {
+  sql.query(productquery, async function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(err, null);
     } else {
       console.log(res[0].productlist);
-        if(res[0].makeitimg) Images.push(res[0].makeitimg);
-        if(res[0].img2) Images.push(res[0].img2);
-        if(res[0].img3) Images.push(res[0].img3);
-        if(res[0].img4) Images.push(res[0].img4);
-        if(Images.length!==0) res[0].images=Images;
+        // if(res[0].makeitimg) Images.push(res[0].makeitimg);
+        // if(res[0].img2) Images.push(res[0].img2);
+        // if(res[0].img3) Images.push(res[0].img3);
+        // if(res[0].img4) Images.push(res[0].img4);
+        // if(Images.length!==0) res[0].images=Images;
 
       if (res[0].makeituserid !== null && res[0].productlist !== null) {
         for (let i = 0; i < res.length; i++) {
           if (res[i].productlist) {
             res[i].productlist = JSON.parse(res[i].productlist);
-            res[i].specialitems = JSON.parse(res[i].specialitems);
 
             res[i].distance = res[i].distance.toFixed(2);
             //15min Food Preparation time , 3min 1 km
@@ -379,18 +378,33 @@ Eatuser.get_eat_makeit_product_list = function(req, result) {
             res[i].eta = Math.round(eta) + " mins";
           }
         }
-        let sucobj = true;
+
+        const specialitems = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 3 limit 4");
+        const kitcheninfoimage = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 2 limit 4");
+        const kitchenmenuimage = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 4 limit 4");
+        const kitchensignature = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 1 limit 1");
+        const foodbadge  = await query("select mbm.id,mb.url as badges from Makeit_badges_mapping mbm join  Makeit_badges mb on mbm.id = mb.id where mbm.makeit_id="+req.makeit_userid+"");
+       // var special = await query("select * from Makeit_images ");
+        res[0].specialitems=specialitems;
+        res[0].kitcheninfoimage=kitcheninfoimage;
+        res[0].kitchenmenuimage=kitchenmenuimage;
+        res[0].kitchensignature=kitchensignature;
+        res[0].foodbadge=foodbadge
+
+   // let sucobj = true;
         let resobj = {
-          success: sucobj,
+          success: true,
+          status:true,
           result: res
         };
 
         result(null, resobj);
       } else {
-        let sucobj = true;
+       
         let message = "There is no product available!";
         let resobj = {
-          success: sucobj,
+          success: true,
+          status:false,
           message: message
         };
 
@@ -1343,6 +1357,7 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
 Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
   var otp = 0;
   var passwordstatus = false;
+  var emailstatus = false;
   var otpstatus = false;
   var genderstatus = false;
 
@@ -1379,6 +1394,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                      status: true,
                       // message:mesobj,
                       passwordstatus: passwordstatus,
+                      emailstatus:emailstatus,
                       otpstatus: true,
                       genderstatus: genderstatus,
                       userid: res2.insertId,
@@ -1397,6 +1413,12 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                 //   otpstatus = true;
                 //   genderstatus = true;
                 // }
+
+
+                if (res1[0].email !== "" && res1[0].email !== null) {
+                  emailstatus = true;
+            
+                }
 
                 if (res1[0].gender !== "" &&res1[0].gender !== null &&res1[0].name !== "" &&res1[0].name !== null) {
                   genderstatus = true;
@@ -1420,6 +1442,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                         success: true,
                         status: true,
                         passwordstatus: passwordstatus,
+                        emailstatus:emailstatus,
                         otpstatus: otpstatus,
                         genderstatus: genderstatus,
                         userid: res1[0].userid,
