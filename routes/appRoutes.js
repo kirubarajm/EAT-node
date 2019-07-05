@@ -80,6 +80,7 @@ module.exports = function(app) {
   app.route("/moveit/hub").post(moveituser.read_a_hub_details);
   app.route("/moveit/setlocation").post(moveituser.setGeoLocation);
   app.route("/moveit/getlocation").post(moveituser.getGeoLocation);
+  
   //Routes for makeit users
 
   app
@@ -392,6 +393,8 @@ module.exports = function(app) {
   app.route("/admin/appointments").get(makeituser.list_all_appointment);
 
   app.route("/admin/appointment/assign").post(allocation.create_a_allocation);
+
+  app.route("/admin/moveit/nearbyuser").post(moveituser.getNearByMoveit);
 
   app
     .route("/admin/eatuser/:userid")

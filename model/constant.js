@@ -8,7 +8,8 @@ const calculate = {
     radiuslimit : 6,
     foodpreparationtime:15,
     onekm:3,
-    servicecharge:25
+    servicecharge:25,
+    makeit_nearby_moveit_radius:4 // in kilometers
 }
 
 
