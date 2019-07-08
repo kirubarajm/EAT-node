@@ -327,7 +327,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
       req.lon +
       "') ) + sin( radians('" +
       req.lat +
-      "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+      "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid', pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
       req.eatuserid +
       "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
       req.eatuserid +
@@ -383,12 +383,17 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
         const kitcheninfoimage = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 2 limit 4");
         const kitchenmenuimage = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 4 limit 4");
         const kitchensignature = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 1 limit 1");
+        
         const foodbadge  = await query("select mbm.id,mb.url as badges from Makeit_badges_mapping mbm join  Makeit_badges mb on mbm.id = mb.id where mbm.makeit_id="+req.makeit_userid+"");
        // var special = await query("select * from Makeit_images ");
         res[0].specialitems=specialitems;
         res[0].kitcheninfoimage=kitcheninfoimage;
         res[0].kitchenmenuimage=kitchenmenuimage;
-        res[0].kitchensignature=kitchensignature;
+        res[0].kitchensignature =null
+        if (kitchensignature.length !== 0) {
+          res[0].kitchensignature=kitchensignature[0].img_url ;
+        }
+       
         res[0].foodbadge=foodbadge
 
    // let sucobj = true;

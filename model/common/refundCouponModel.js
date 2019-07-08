@@ -30,18 +30,22 @@ RefundCoupon.createRefundCoupon = async function createRefundCoupon(req, result)
   console.log(orderrefunddetails.length);
   if (orderrefunddetails.length===0) {
    
-  sql.query("Select userid,price from Orders where orderid=? ",[req.orderid], function(err, res) {
+  sql.query("Select userid,price,refund_amount from Orders where orderid=? ",[req.orderid], function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(null, err);
     } else {
       console.log(res);
+      var price = res[0].price;
+      var refundamount = res[0].refund_amount;
       req.rcoupon ="Refund"+res[0].price;
       req.active_status = 1;
       req.userid = res[0].userid;
-      req.refund_balance =res[0].price;
-      req.refundamount =res[0].price;
-      
+      req.refund_balance = price + refundamount;
+      req.refundamount =price + refundamount;
+     // refundamount = price + refundamount;
+      console.log(req.refund_balance);
+      console.log(req.refundamount);
       sql.query("INSERT INTO Refund_Coupon set ?", req, function(err, res) {
           if (err) {
             result(err, null);
@@ -90,7 +94,7 @@ RefundCoupon.getAllrefundcoupon_by_activstatus = function getAllrefundcoupon_by_
 //For EAT user to show in Order page
 RefundCoupon.getarefundcoupon_by_userid = function getarefundcoupon_by_userid(userid,result) {
   console.log("userid: ", userid);
-  sql.query("Select * from Refund_Coupon where userid=? and active_status=1 ORDER BY created_at DESC limit 5",[userid], function(err, res) {
+  sql.query("Select * from Refund_Coupon where userid=? and active_status=1 ORDER BY created_at DESC ",[userid], function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(null, err);

@@ -385,7 +385,7 @@ exports.makeit_order_accept = function(req, res) {
    });
  }
 };
-
+//refund creation
 exports.eat_order_missing = function(req, res) {
   
   if (!req.body.orderid) {
@@ -395,6 +395,21 @@ exports.eat_order_missing = function(req, res) {
  }
   else {
    Order.eat_order_missing_byuserid(req.body, function(err, ordercancel) {
+     if (err) res.send(err);
+     res.send(ordercancel);
+   });
+ }
+};
+
+
+exports.makeit_order_missing = function(req, res) {
+  if (!req.body.orderid) {
+   res
+     .status(400)
+     .send({ error: true, status: false, message: "Please provide orderid" });
+ }
+  else {
+   Order.order_missing_by_makeit(req.body, function(err, ordercancel) {
      if (err) res.send(err);
      res.send(ordercancel);
    });

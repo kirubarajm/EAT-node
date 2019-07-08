@@ -6,6 +6,7 @@ const query = util.promisify(sql.query).bind(sql);
 var request = require("request");
 //var OrderModel = require("../../model/common/orderModel");
 var Cusinemakeit = require("../../model/makeit/cusinemakeitModel");
+var MakeitImages = require("../../model/makeit/makeitImagesModel");
 
 //Task object constructor
 var Makeituser = function(makeituser) {
@@ -478,7 +479,7 @@ Makeituser.orderlistbyuserid = function(id, result) {
     var query =
       "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid WHERE makeit_user_id  = '" +
       id +
-      "' and   DATE(ors.ordertime) = CURDATE() group by orderid order by orderid  desc";
+      "' and  ors.orderstatus !=0 and DATE(ors.ordertime) = CURDATE() group by orderid order by orderid  desc";
   } else {
     var query = "select * from Orders order by orderid desc";
   }
@@ -866,6 +867,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
       //refund 
       console.log(req.rcid);
+      var refund_amount = 0
       if (req.rcid) { 
       var refundlist = await query("Select * From Refund_Coupon where rcid = '" +req.rcid+"' and active_status = 1"); 
       }
@@ -881,21 +883,24 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
         var grandtotal = +gstcharge + +totalamount + +delivery_charge;
         var original_price = grandtotal;
-       
+        
         if (refundlist) {
         // get refund amount 
+        refund_amount = refundlist[0].refundamount;
           if (grandtotal >= refundlist[0].refundamount) {
             
             var refund_balance = 0 ;
+           
           }else if(grandtotal < refundlist[0].refundamount){
           
             var refund_balance = refundlist[0].refundamount - grandtotal;
+            
           }
   
 
           //get price 
           grandtotal = grandtotal - refundlist[0].refundamount;
-          
+     
           //if grandtotal is lesser then 0 define grandtotal is 0
           if (grandtotal < 0) grandtotal = 0; 
           calculationdetails.refundamount = refundlist[0].refundamount;
@@ -1034,24 +1039,26 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
 
   try {
   var removecuisines = req.removecuisines || [];
+  var kitcheninfoimage = req.kitcheninfoimage || [];
   cuisinesstatus = false;
   removecuisinesstatus = false;
   var column = "";
   var editquery ="";
- 
-
+  
+//get regionid using homedown id
   if(req.hometownid){
     const hometown = await query("Select * from Hometown where hometownid="+ req.hometownid);
     console.log(hometown);
     req.regionid=hometown[0].regionid;
     };
  
-   
+   //mailid ,password/phone numer can't be edit check validation
   if (req.email || req.password || req.phoneno) {
-    let sucobj = true;
+ 
     let message = "You can't to be Edit email / password/ phoneno";
     let resobj = {
-      success: sucobj,
+      success: true,
+      status:false,
       message: message
     };
     result(null, resobj);
@@ -1064,16 +1071,15 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
               key !== "cuisines" &&
               key !== "region" &&
               key !== "rating" &&
-              key !== "removecuisines" 
+              key !== "removecuisines"&&
+              key !== "kitcheninfoimage" 
             ) {
               column = column + key + "='" + value + "',";
             } else if (key === "rating") {
               column = column + key + "= " + value + ",";
             }
           }
-
-
-        
+    
           editquery=staticquery + column.slice(0, -1) + " where userid = " + req.userid;
 
             console.log("query: ", editquery);
@@ -1092,10 +1098,7 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
                   for (let i = 0; i < cuisines.length; i++) {
                     var new_cuisine = new Cusinemakeit(cuisines[i]);
                     new_cuisine.makeit_userid = req.userid;
-                    Cusinemakeit.createCusinemakeit(new_cuisine, function(
-                      err,
-                      res2
-                    ) {
+                    Cusinemakeit.createCusinemakeit(new_cuisine, function(err,res2) {
                       if (err) {
                         console.log("error: ", err);
                         result(err, null);
@@ -1106,8 +1109,10 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
                   }
                 }
               }
+             
               if (removecuisines.length !== 0) {
                 removecuisinesstatus = true;
+                
 
                 for (let i = 0; i < removecuisines.length; i++) {
                   var new_cid = removecuisines[i].cid;
@@ -1117,17 +1122,34 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
                       console.log("error: ", err);
                       result(err, null);
                     } else {
-                      remove_temp++;
+                     // remove_temp++;
                     }
                   });
                 }
               }
 
-              let sucobj = true;
+              if (kitcheninfoimage.length !== 0) {
+                kitcheninfoimagestatus = true;
+                
+
+                for (let i = 0; i < kitcheninfoimage.length; i++) {
+                  var new_kitcheninfoimage = new MakeitImages(kitcheninfoimage[i]);
+                  new_kitcheninfoimage.makeitid = req.userid;
+                    MakeitImages.createMakeitImages(new_kitcheninfoimage, function(err,createMakeitImages) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        //cuisines_temp++;
+                      }
+                    });
+                }
+              }
+             
               let message = "Updated successfully";
 
               let resobj = {
-                success: sucobj,
+                success: true,
                 status: true,
                 message: message
               };
