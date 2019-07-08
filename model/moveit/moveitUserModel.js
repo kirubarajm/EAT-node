@@ -2,6 +2,8 @@
 var sql = require('../db.js');
 var request = require("request");
 var Documentmoveit = require('../../model/common/documentsMoveitModel.js');
+var MoveitFireBase =require("../../push/Moveit_SendNotification")
+var Constant =require("../constant")
 
 //Task object constructor
 var Moveituser = function (moveituser) {
@@ -276,13 +278,17 @@ Moveituser.update_online_status = function (req, result) {
 Moveituser.get_a_hub_navigation = function get_a_hub_navigation(req, result) {
     sql.query("select userid,name,mh.* from MoveitUser mu join Moveit_hubs mh on mh.moveithub_id=mu.moveit_hub where mu.userid  = ? ", req.userid, function (err, res) {
         if (err) {
-            console.log("error: ", err);
-            result(err, null);
+          let error = {
+            success: true,
+            status:false,
+        };
+            result(error, null);
         }
         else {
             let sucobj = true;
             let resobj = {
                 success: sucobj,
+                status:true,
                 result: res
             };
 
@@ -290,6 +296,42 @@ Moveituser.get_a_hub_navigation = function get_a_hub_navigation(req, result) {
 
         }
     });
+};
+
+Moveituser.get_a_nearby_moveit = async function get_a_location_user(req, result) {
+  MoveitFireBase.geoFireGetKeyByGeo(req.geoLocation,Constant.makeit_nearby_moveit_radius,function(err, make_it_id) {
+    if (err) {
+      let error = {
+        success: true,
+        status:false,
+    };
+        result(error, null);
+    }
+    else{
+      var query= "select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid IN ("+make_it_id+") and userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status= 1 ORDER BY FIELD(userid,"+make_it_id+")";
+     // console.log("query-->"+query);
+      if (req.search) {
+        query = query + " and name LIKE  '%" + req.search + "%'";
+    }
+      sql.query(query, function (err, res) {
+          if (err) {
+            let error = {
+              success: true,
+              status:false,
+          };
+              result(error, null);
+          }
+          else {
+              let resobj = {
+                  success: true,
+                  status:true,
+                  result: res
+              };
+              result(null, resobj);
+          }
+      });
+    }
+  });
 };
 
 

@@ -13,7 +13,7 @@ function initializeAppName() {
       },
       "move-it-app"
     );
-    var firebaseRef = Move_it.database().ref();
+    var firebaseRef = Move_it.database().ref('location');
     geoFire = new geoFires.GeoFire(firebaseRef);
     
   }else{
@@ -37,20 +37,57 @@ exports.geoFireInsert= function(id,geoLocation,result){
 }
 }
 
-exports.geoFireGetKeyByGeo= async function(geoLocation,radius,result){
+async function onGetKeyEntered(){
+  var make_it_id=[];
+   geoQuery.on("key_entered", function(key, location, distance) {
+    //console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+    make_it_id.push(key)
+  });
+
+  
+  return make_it_id;
+}
+
+exports.geoFireGetKeyByGeo= function(geoLocation,radius,result){
   initializeAppName();
-  var make_it_id=[]
+  //console.log("geoLocation-->"+geoLocation);
+  var make_it_id=[];
   var geoQuery = geoFire.query({
     center: geoLocation,
     radius: radius
   });
   
-  var onKeyEnteredRegistration = await geoQuery.on("key_entered", function(key, location, distance) {
+  var onKeyEnteredRegistration = geoQuery.on("key_entered", function(key, location, distance) {
     console.log(key + " entered query at " + location + " (" + distance + " km from center)");
     make_it_id.push(key);
   });
-  console.log('geoQuery-->'+onKeyEnteredRegistration);
-  result(null,onKeyEnteredRegistration);
+
+  var onReadyRegistration = geoQuery.on("ready", function() {
+    console.log("GeoQuery has loaded and fired all other events for initial data-->"+make_it_id);
+    result(null,make_it_id);
+    geoQuery.cancel();
+  });
+}
+
+exports.geoFireGetKeyByGeoMakeit= function(geoLocation,radius){
+  initializeAppName();
+  var make_it_id=[];
+  var geoQuery = geoFire.query({
+    center: geoLocation,
+    radius: radius
+  });
+  
+  var onKeyEnteredRegistration = geoQuery.on("key_entered", function(key, location, distance) {
+    console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+    make_it_id.push(key);
+  });
+
+  var onReadyRegistration = geoQuery.on("ready", function() {
+    console.log("GeoQuery has loaded and fired all other events for initial data-->"+make_it_id);
+    geoQuery.cancel();
+    return make_it_id;
+  });
+  return make_it_id;
 }
 
 exports.sendNotificationAndroid = function(
