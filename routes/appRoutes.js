@@ -564,6 +564,8 @@ module.exports = function(app) {
   app.route("/admin/moveituser/sendotp").post(moveituser.Moveituser_send_otp_byphone);
 
   app.route("/admin/moveituser/otpverification").post(moveituser.Moveituserotpverification);
+
+  app.route("/admin/makeit/createimages").post(MakeitImages.create_a_MakeitImages);
  
 
 

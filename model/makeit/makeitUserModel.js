@@ -7,6 +7,7 @@ var request = require("request");
 //var OrderModel = require("../../model/common/orderModel");
 var Cusinemakeit = require("../../model/makeit/cusinemakeitModel");
 var MakeitImages = require("../../model/makeit/makeitImagesModel");
+var MakeitBadges = require("../../model/makeit/makeitbadgesmappingModel");
 
 //Task object constructor
 var Makeituser = function(makeituser) {
@@ -124,7 +125,7 @@ Makeituser.createUser = function createUser(newUser, result) {
   );
 };
 
-Makeituser.getUserById = function getUserById(userId, result) {
+Makeituser.getUserById = async function getUserById(userId, result) {
   //var query1 = "select mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey from MakeitUser as mu join Documents_Sales as ds on mu.userid = ds.makeit_userid join Documents as st on ds.docid = st.docid where mu.userid = '"+userId+"'";
   //var query1 = "Select * from MakeitUser where userid = '" + userId + "'";
 // JSON_OBJECT('img1',mk.img1,'img2',mk.img2,'img3',mk.img3,'img4',mk.img4) As Images
@@ -132,7 +133,7 @@ Makeituser.getUserById = function getUserById(userId, result) {
     "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img1, mk.img2,mk.img3,mk.img4,mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mkh.makeithub_id,mkh.makeithub_name, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
     userId +
     "'";
-  sql.query(query1, function(err, res) {
+  sql.query(query1,async function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -142,6 +143,26 @@ Makeituser.getUserById = function getUserById(userId, result) {
           res[i].cuisines = JSON.parse(res[i].cuisines);
         }
       }
+
+      const specialitems = await query("select img_url,type from Makeit_images where makeitid="+userId+" and type = 3 limit 4");
+      const kitcheninfoimage = await query("select img_url,type from Makeit_images where makeitid="+userId+" and type = 2 limit 4");
+      const kitchenmenuimage = await query("select img_url,type from Makeit_images where makeitid="+userId+" and type = 4 limit 4");
+      const kitchensignature = await query("select img_url,type from Makeit_images where makeitid="+userId+" and type = 1 limit 1");
+      
+      const foodbadge  = await query("select mbm.id,mb.url as badges from Makeit_badges_mapping mbm join  Makeit_badges mb on mbm.id = mb.id where mbm.makeit_id="+userId+"");
+     
+      const images = await query("select st.url,st.docid,st.type from Documents_Sales as ds join Documents as st on ds.docid = st.docid where ds.makeit_userid = '" +userId +"'");
+      // var special = await query("select * from Makeit_images ");
+      res[0].specialitems=specialitems;
+      res[0].kitcheninfoimage=kitcheninfoimage;
+      res[0].kitchenmenuimage=kitchenmenuimage;
+      res[0].kitchensignature =null
+      if (kitchensignature.length !== 0) {
+        res[0].kitchensignature=kitchensignature[0].img_url ;
+      }
+     
+      res[0].foodbadge=foodbadge
+      res[0].gallery = images;
 
       sql.query(
         "select st.url,st.docid,st.type from Documents_Sales as ds join Documents as st on ds.docid = st.docid where ds.makeit_userid = '" +
@@ -1039,12 +1060,19 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
 
   try {
   var removecuisines = req.removecuisines || [];
+  var removeimages = req.removeimages || [];
   var kitcheninfoimage = req.kitcheninfoimage || [];
+  var kitchenmenuimges = req.kitchenmenuimges || [];
+  var Specialitiesfood = req.Specialitiesfood || [];
+  var Signature = req.Signature || [];
+  var badges = req.badges || [];
+  var removebadges = req.removebadges || [];
+
   cuisinesstatus = false;
   removecuisinesstatus = false;
   var column = "";
   var editquery ="";
-  
+  console.log(removeimages[0]);
 //get regionid using homedown id
   if(req.hometownid){
     const hometown = await query("Select * from Hometown where hometownid="+ req.hometownid);
@@ -1072,7 +1100,13 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
               key !== "region" &&
               key !== "rating" &&
               key !== "removecuisines"&&
-              key !== "kitcheninfoimage" 
+              key !== "kitcheninfoimage" &&
+              key !== "kitchenmenuimges"&&
+              key !== "Specialitiesfood"&&
+              key !== "Signature"&&
+              key !== "removeimages"&&
+              key !== "badges"&&
+              key !== "removebadges"
             ) {
               column = column + key + "='" + value + "',";
             } else if (key === "rating") {
@@ -1128,6 +1162,34 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
                 }
               }
 
+              if (removeimages.length !== 0) {
+                removeimagesstatus = true;
+
+                  MakeitImages.remove(removeimages, function(err, res3) {
+                    if (err) {
+                      console.log("error: ", err);
+                      result(err, null);
+                    } else {
+                     // remove_temp++;
+                    }
+                  });
+                
+              }
+
+              if (removebadges.length !== 0) {
+                removebadgesstatus = true;
+
+                MakeitBadges.remove(removebadges, function(err, res3) {
+                    if (err) {
+                      console.log("error: ", err);
+                      result(err, null);
+                    } else {
+                     // remove_temp++;
+                    }
+                  });
+                
+              }
+
               if (kitcheninfoimage.length !== 0) {
                 kitcheninfoimagestatus = true;
                 
@@ -1145,7 +1207,84 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
                     });
                 }
               }
+
+
+              if (kitchenmenuimges.length !== 0) {
+                kitchenmenuimgesstatus = true;
+                
+
+                for (let i = 0; i < kitchenmenuimges.length; i++) {
+                  var new_kitchenmenuimges = new MakeitImages(kitchenmenuimges[i]);
+                  new_kitchenmenuimges.makeitid = req.userid;
+                    MakeitImages.createMakeitImages(new_kitchenmenuimges, function(err,createMakeitImages) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        //cuisines_temp++;
+                      }
+                    });
+                }
+              }
              
+
+              if (Specialitiesfood.length !== 0) {
+                Specialitiesfoodstatus = true;
+                
+
+                for (let i = 0; i < Specialitiesfood.length; i++) {
+                  var new_Specialitiesfood = new MakeitImages(Specialitiesfood[i]);
+                  new_Specialitiesfood.makeitid = req.userid;
+                    MakeitImages.createMakeitImages(new_Specialitiesfood, function(err,createMakeitImages) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        //cuisines_temp++;
+                      }
+                    });
+                }
+              }
+             
+
+              if (Signature.length !== 0) {
+                Signaturestatus = true;
+                
+
+                for (let i = 0; i < Signature.length; i++) {
+                  var new_Signature = new MakeitImages(Signature[i]);
+                  new_Signature.makeitid = req.userid;
+                    MakeitImages.createMakeitImages(new_Signature, function(err,createMakeitImages) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        //cuisines_temp++;
+                      }
+                    });
+                }
+              }
+
+              if (badges.length !== 0) {
+                badgesstatus = true;
+                
+
+                for (let i = 0; i < badges.length; i++) {
+                  var new_badges = new MakeitBadges(badges[i]);
+                  new_badges.makeit_id = req.userid;
+                  MakeitBadges.createMakeitBadges(new_badges, function(err,createMakeitImages) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        //cuisines_temp++;
+                      }
+                    });
+                }
+              }
+
+
+
               let message = "Updated successfully";
 
               let resobj = {
