@@ -48,6 +48,9 @@ var Order = function(order) {
   this.cancel_by = order.cancel_by || 0;
   this.item_missing = order.item_missing || 0;
   this.original_price = order.original_price;
+  this.refund_amount = order.refund_amount;
+  this.discount_amount = order.discount_amount;
+  
 };
 
 Order.createOrder = async function createOrder(req, orderitems, result) {
@@ -1101,11 +1104,7 @@ Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
 Order.orderlistbyeatuser = async function(req, result) {
   var orderitem = [];
 
-  sql.query(
-    "select * from Orders where userid ='" +
-      req.userid +
-      "' and orderstatus = 6",
-    function(err, res) {
+  sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus = 6",function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
@@ -1129,9 +1128,9 @@ Order.orderlistbyeatuser = async function(req, result) {
           var query =
             "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" +
             req.userid +
-            "' and ors.orderstatus = 6 group by ors.orderid ";
+            "' and ors.orderstatus = 6 group by ors.orderid order by ors.orderid desc";
 
-          console.log(query);
+          
           sql.query(query, async function(err, res1) {
             if (err) {
               console.log("error: ", err);
@@ -1587,12 +1586,15 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
         } else {
           console.log(res3.result[0].amountdetails);
           var amountdata = res3.result[0].amountdetails;
-
+          console.log(amountdata.refundamount);
           req.gst = amountdata.gstcharge;
           req.price = amountdata.grandtotal;
           var refundcoupon = {};
           req.original_price = amountdata.original_price;
           req.refund_balance = amountdata.refund_balance;
+          req.refund_amount = amountdata.refundamount;
+        
+       
 
           const res2 = await query(
             "Select * from Address where aid = '" +
@@ -1962,7 +1964,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
           let response = {
             success: true,
             status: true,
-            message: "order canceled successfully."
+            message: "Sorry order is not taken kitchen!"
           };
           result(null, response);
         }
@@ -2041,6 +2043,53 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
     result(null, response);
   }
 };
+
+
+Order.order_missing_by_makeit = async function order_missing_by_makeit(req, result) {
+  const orderdetails = await query(
+    "select * from Orders where orderid ='" + req.orderid + "'"
+  );
+  if (orderdetails[0].orderstatus === 8) {
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! order already canceled."
+    };
+    result(null, response);
+  } else {
+    sql.query("UPDATE Orders SET orderstatus = 8,cancel_by = 2 WHERE orderid ='" +req.orderid +"'",async function(err, res) {
+        if (err) {
+          result(err, null);
+        } else {
+          var refundDetail = {
+            orderid: req.orderid,
+            original_amt: orderdetails[0].price,
+            active_status: 1,
+            userid :orderdetails[0].userid,
+            payment_id:orderdetails[0].transactionid,
+          };
+          if (
+            orderdetails[0].payment_type === "1" &&
+            orderdetails[0].payment_status === 1
+          )
+            await Order.create_refund(refundDetail);
+          await Notification.orderEatPushNotification(
+            req.orderid,
+            null,
+            PushConstant.pageidOrder_Cancel
+          );
+          let response = {
+            success: true,
+            status: true,
+            message: "Sorry order is not taken kitchen!"
+          };
+          result(null, response);
+        }
+      }
+    );
+  }
+};
+
 
 Order.admin_order_cancel = async function admin_order_cancel(req, result) {
   const orderdetails = await query(

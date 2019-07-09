@@ -34,6 +34,7 @@ module.exports = function(app) {
   var refundcoupon = require("../controllers/common/RefundCouponController");
   var admindashboard = require("../controllers/common/admindashboardController");
   var Razorpay = require("../controllers/common/RazorpayController");
+  var MakeitImages = require("../controllers/makeit/MakeitImagesController");
 
   // todoList Routes
   app
@@ -255,10 +256,10 @@ module.exports = function(app) {
 
   app.route("/makeit/orders").get(makeituser.all_order_list);
 
-
   app.route("/makeit/orders/listbydate").post(makeituser.all_order_list_bydate);
 
   app.route("/makeit/orders/:id").get(makeituser.orderlist);
+
   app.route("/makeit/ordershistory/:id").get(makeituser.orderhistory);
  // app.route("/vorders/:orderid").get(makeituser.orderview);
 
@@ -357,6 +358,11 @@ module.exports = function(app) {
     app.route("/makeit/appoinmentinfo/:makeit_userid").get(makeituser.appointment_info);
     app.route("/makeit/order/cancel").put(orders.makeit_order_cancel);
     app.route("/makeit/order/accept").put(orders.makeit_order_accept);
+    app.route("/makeit/order/missing").put(orders.makeit_order_missing);
+ 
+
+
+
 
   /*Admin Api*/
   app.route("/admin/eatuser/add").post(eatuser.create_a_eatuser);
@@ -558,7 +564,7 @@ module.exports = function(app) {
   app.route("/admin/moveituser/sendotp").post(moveituser.Moveituser_send_otp_byphone);
 
   app.route("/admin/moveituser/otpverification").post(moveituser.Moveituserotpverification);
-
+ 
 
 
 
