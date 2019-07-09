@@ -588,10 +588,10 @@ const master = [
             },
             {
                 "kitchenmembertypeid": 3,
-                "kitchenmembertype": "Specialities Food"
+                "kitchenmembertype": "SpecialitiesFood"
             },{
                 "kitchenmembertypeid": 4,
-                "kitchenmembertype": "kitchendmenuimges"
+                "kitchenmembertype": "kitchenmenuimges"
             }
         ]
     }

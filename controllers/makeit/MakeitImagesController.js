@@ -11,14 +11,14 @@ exports.list_all_MakeitImages= function(req, res) {
   });
 };
 
-exports.create_a_menuitem = function(req, res) {
-  var newMakeitImages = new MakeitImages(req.body);
-  console.log(new_menuitem);
+exports.create_a_MakeitImages = function(req, res) {
+  // var newMakeitImages = new MakeitImages(req.body);
+  // console.log(newMakeitImages);
   //handles null error
-  if (!newMakeitImages.makeitid) {
+  if (!req.body.makeitid) {
     res.status(400).send({ error: true,status:false, message: "Please provide makeitid" });
   } else {
-    MakeitImages.createMakeitImages(newMakeitImages, function(err, MakeitImages) {
+    MakeitImages.createMakeitImages(req.body, function(err, MakeitImages) {
       if (err) res.send(err);
       res.json(MakeitImages);
     });
