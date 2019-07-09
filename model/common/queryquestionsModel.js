@@ -112,13 +112,13 @@ QueryQuestions.get_user_list_by_type = function get_user_list_by_type(type, resu
  var type  = parseInt(type)
 
   if (type === 1) {
-   var query =  "Select  mk.name, mk.email, mk.phoneno, mk.brandname,qqs.userid,count(qqs.qid) as count from Query_questions AS qqs left JOIN MakeitUser AS mk ON qqs.userid = mk.userid where admin_read = 0 and qqs.type='"+type+"' ";
+   var query =  "Select  mk.name, mk.email, mk.phoneno, mk.brandname,qqs.userid,SUM(qqs.admin_read = 0) as count from Query_questions AS qqs left JOIN MakeitUser AS mk ON qqs.userid = mk.userid where qqs.type='"+type+"' ";
   } else if (type === 2) {
-    var query =  "Select mu.name,mu.email,mu.phoneno,qqs.userid,count(qqs.qid) as count from Query_questions AS qqs left JOIN MoveitUser AS mu ON qqs.userid = mu.userid where admin_read = 0 and qqs.type ='"+type+"' ";
+    var query =  "Select mu.name,mu.email,mu.phoneno,qqs.userid,SUM(qqs.admin_read = 0) as count from Query_questions AS qqs left JOIN MoveitUser AS mu ON qqs.userid = mu.userid where qqs.type ='"+type+"' ";
   }else if (type === 3) {
-    var query =  "Select se.name,se.email,se.phoneno,se.id,count(qqs.qid) as count from Query_questions AS qqs left JOIN Sales_QA_employees AS se ON qqs.userid = se.id where admin_read = 0 and qqs.type ='"+type+"' ";
+    var query =  "Select se.name,se.email,se.phoneno,se.id,SUM(qqs.admin_read = 0) as count from Query_questions AS qqs left JOIN Sales_QA_employees AS se ON qqs.userid = se.id where qqs.type ='"+type+"' ";
   }else if (type === 4) {
-    var query =  "Select us.name,us.email,us.phoneno,us.userid,count(qqs.qid) as count from Query_questions AS qqs left JOIN User AS us ON qqs.userid = us.userid where admin_read = 0 and qqs.type='"+type+"' ";
+    var query =  "Select us.name,us.email,us.phoneno,us.userid,SUM(qqs.admin_read = 0) as count from Query_questions AS qqs left JOIN User AS us ON qqs.userid = us.userid where qqs.type='"+type+"' ";
   }
  
     query = query + "group by qqs.userid ORDER BY count desc,qqs.created_at desc,qqs.admin_read";

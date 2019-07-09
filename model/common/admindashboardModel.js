@@ -35,19 +35,22 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
         var  new_replies_count = await query("Select count(aid) as count from Query_answers where admin_read=0"); 
         countlist.new_replies_count  = new_replies_count[0].count;
         //new order count
-        var  new_order_count = await query("Select count(orderid) as count from Orders where moveit_user_id = 0 and orderstatus = 0  and cancel_by = 0"); 
+        var  new_order_count = await query("Select count(orderid) as count from Orders where moveit_user_id = 0 and orderstatus = 0  and cancel_by = 0 and DATE(created_at) = CURDATE()"); 
         countlist.new_order_count  = new_order_count[0].count;
         //makeit order count
         var  new_makeit_cancel_order_count = await query("Select count(orderid) as count from Orders where moveit_user_id = 0 and orderstatus = 7 and cancel_by = 2 and DATE(created_at) = CURDATE()"); 
-        countlist.new_order_count  = new_makeit_cancel_order_count[0].count;
+        countlist.order_cancel_count  = new_makeit_cancel_order_count[0].count;
         //unapproved kitchen list
-        var  admin_unapproved_kitchen_count = await query("Select count(userid) as userid from MakeitUser where ka_status = 1 and virtualkey=0");
-        countlist.admin_unapproved_kitchen_count  = admin_unapproved_kitchen_count[0].userid;
+        var  admin_unapproved_kitchen_count = await query("Select count(userid) as count from MakeitUser where ka_status = 1 and virtualkey=0");
+        countlist.admin_unapproved_kitchen_count  = admin_unapproved_kitchen_count[0].count;
 
          //kitchen virtual order count
-         var  kitchen_virtual_order_count = await query("Select count(userid) as userid from MakeitUser where ka_status = 1 and virtualkey=0");
-         countlist.admin_unapproved_kitchen_count  = admin_unapproved_kitchen_count[0].userid;
+         var  kitchen_virtual_order_count = await query("Select count(orderid) as count from Orders ors left join MakeitUser mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and ors.orderstatus = 0 and ors.cancel_by = 0 and DATE(ors.created_at) = CURDATE() and mk.virtualkey=1");
+         countlist.virtual_kitchen_order_count  = kitchen_virtual_order_count[0].count;
         console.log(countlist);
+
+        var  refund_user_count = await query("Select count(rs_id) as count from Refund_Online where active_status=1");
+        countlist.refund_user_count  = refund_user_count[0].count;
 
 
         let resobj = {  
