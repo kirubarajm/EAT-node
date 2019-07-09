@@ -15,47 +15,32 @@ var RefundOnline = function(refund) {
 
 RefundOnline.createRefund = async function createRefund(req, result) {
 
-    const orderrefunddetails = await query("select * from Refund_Online where orderid ='" + req.orderid + "' and active_status=1");
-    console.log(orderrefunddetails.length);
-    if (orderrefunddetails.length===0) {
-     
-    sql.query("Select userid,price from Orders where orderid=? ",[req.orderid], function(err, res) {
-      if (err) {
-        console.log("error: ", err);
-        result(null, err);
-      } else {
-        console.log(res);
-        req.rcoupon ="Refund"+res[0].price;
-        req.active_status = 1;
-        req.userid = res[0].userid;
-        //req.refund_balance =res[0].price;
-        req.original_amt =res[0].price;
-        req.payment_id =res[0].transactionid;
-        var rc =new RefundOnline(req);
-        sql.query("INSERT INTO Refund_Online set ?",rc, function(err, res1) {
-            if (err) result(err, null);
-            else {
-            let response = {
-                success: true,
-                status: true
-            };
-            result(null, response);
-            }
-        });
-};
-});
+  const orderrefunddetails = await query("select * from Refund_Online where orderid ='" + req.orderid + "' and active_status=1");
+  console.log(orderrefunddetails.length);
+  if (orderrefunddetails.length===0) {
+    sql.query("INSERT INTO Refund_Online set ?",req, function(err, res1) {
+      if (err) result(true, null);
+      else {
+      let response = {
+          success: true,
+          status: true
+      };
+      result(null, true);
+      }
+  });
+  
 }else{
-    let resobj = {
-      success: true,
-      status:false,
-      message: "Sorry Refund online Already exist for following order! Please check once again"
-    };
-    result(null, resobj);
-  }
+  let resobj = {
+    success: true,
+    status:false,
+    message: "Sorry Refund online Already exist for following order! Please check once again"
+  };
+  result(resobj,null);
+}
 };
 
 RefundOnline.get_all_refunds = function get_all_refunds(req, result) {
-  sql.query("select rf.*,ors.cancel_by,ors.item_missing from Refund_Online rf left join Orders as ors on ors.orderid = rf.orderid order by active_status DESC", function(err, res) {
+  sql.query("select rf.*,ors.cancel_by,ors.item_missing from Refund_Online rf left join Orders as ors on ors.orderid = rf.orderid order by active_status DESC,created_at DESC", function(err, res) {
     if (err) result(err, null);
     else {
       let response = {
