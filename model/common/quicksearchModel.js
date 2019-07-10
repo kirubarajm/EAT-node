@@ -218,6 +218,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
           let sucobj = true;
           let resobj = {
             success: sucobj,
+            status:true,
             result: res
           };
   

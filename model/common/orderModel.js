@@ -50,7 +50,8 @@ var Order = function(order) {
   this.original_price = order.original_price;
   this.refund_amount = order.refund_amount;
   this.discount_amount = order.discount_amount;
-  
+  this.address_title = order.address_title;
+  this.locality_name = order.locality_name;
 };
 
 Order.createOrder = async function createOrder(req, orderitems, result) {
@@ -1001,7 +1002,7 @@ Order.orderviewbyeatuser = function(req, result) {
         } else {
           // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
           sql.query(
-            "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid =" +
+            "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality,'address_title',ad.address_title) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid join Address ad on ad.userid=us.userid where ors.orderid =" +
               req.orderid +
               " ",
             function(err, res) {
@@ -1573,10 +1574,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
   //  console.log(res);
 
   if (res.length === 0) {
-    Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(
-      err,
-      res3
-    ) {
+    Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(err,res3) {
       if (err) {
         result(err, null);
       } else {
@@ -1596,18 +1594,14 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
         
        
 
-          const res2 = await query(
-            "Select * from Address where aid = '" +
-              req.aid +
-              "' and userid = '" +
-              req.userid +
-              "'"
-          );
+          const res2 = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
 
           req.cus_address = res2[0].address;
           req.locality = res2[0].locality;
           req.cus_lat = res2[0].lat;
           req.cus_lon = res2[0].lon;
+          req.address_title = res2[0].address_title;
+          req.locality_name = res2[0].locality;
 
           var makeitavailability = await query(
             "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,( 3959 * acos( cos( radians(" +
