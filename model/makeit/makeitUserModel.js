@@ -144,22 +144,22 @@ Makeituser.getUserById = async function getUserById(userId, result) {
         }
       }
 
-      const specialitems = await query("select img_url,type from Makeit_images where makeitid="+userId+" and type = 3 limit 4");
-      const kitcheninfoimage = await query("select img_url,type from Makeit_images where makeitid="+userId+" and type = 2 limit 4");
-      const kitchenmenuimage = await query("select img_url,type from Makeit_images where makeitid="+userId+" and type = 4 limit 4");
-      const kitchensignature = await query("select img_url,type from Makeit_images where makeitid="+userId+" and type = 1 limit 1");
+      const specialitems = await query("select img_id,img_url,type from Makeit_images where makeitid="+userId+" and type = 3 limit 4");
+      const kitcheninfoimage = await query("select img_id,img_url,type from Makeit_images where makeitid="+userId+" and type = 2 limit 4");
+      const kitchenmenuimage = await query("select img_id,img_url,type from Makeit_images where makeitid="+userId+" and type = 4 limit 4");
+      const Signature = await query("select img_id,img_url,type from Makeit_images where makeitid="+userId+" and type = 1 limit 1");
       
-      const foodbadge  = await query("select mbm.id,mb.url as badges from Makeit_badges_mapping mbm join  Makeit_badges mb on mbm.id = mb.id where mbm.makeit_id="+userId+"");
+      const foodbadge  = await query("select mbm.id,mbm.id,mb.url as badges from Makeit_badges_mapping mbm join  Makeit_badges mb on mbm.id = mb.id where mbm.makeit_id="+userId+"");
      
       const images = await query("select st.url,st.docid,st.type from Documents_Sales as ds join Documents as st on ds.docid = st.docid where ds.makeit_userid = '" +userId +"'");
       // var special = await query("select * from Makeit_images ");
-      res[0].specialitems=specialitems;
+      res[0].Specialitiesfood=specialitems;
       res[0].kitcheninfoimage=kitcheninfoimage;
       res[0].kitchenmenuimage=kitchenmenuimage;
-      res[0].kitchensignature =null
-      if (kitchensignature.length !== 0) {
-        res[0].kitchensignature=kitchensignature[0].img_url ;
-      }
+      // res[0].Signature =[]
+      // if (Signature.length !== 0) {
+        res[0].Signature=Signature ;
+     // }
      
       res[0].foodbadge=foodbadge
       res[0].gallery = images;
@@ -1062,7 +1062,7 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
   var removecuisines = req.removecuisines || [];
   var removeimages = req.removeimages || [];
   var kitcheninfoimage = req.kitcheninfoimage || [];
-  var kitchenmenuimges = req.kitchenmenuimges || [];
+  var kitchenmenuimage = req.kitchenmenuimage || [];
   var Specialitiesfood = req.Specialitiesfood || [];
   var Signature = req.Signature || [];
   var badges = req.badges || [];
@@ -1101,7 +1101,7 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
               key !== "rating" &&
               key !== "removecuisines"&&
               key !== "kitcheninfoimage" &&
-              key !== "kitchenmenuimges"&&
+              key !== "kitchenmenuimage"&&
               key !== "Specialitiesfood"&&
               key !== "Signature"&&
               key !== "removeimages"&&
@@ -1193,7 +1193,7 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
               if (kitcheninfoimage.length !== 0) {
                 kitcheninfoimagestatus = true;
                 
-
+                console.log("kitchenmenuimage:2 ");
                 for (let i = 0; i < kitcheninfoimage.length; i++) {
                   var new_kitcheninfoimage = new MakeitImages(kitcheninfoimage[i]);
                   new_kitcheninfoimage.makeitid = req.userid;
@@ -1209,14 +1209,17 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
               }
 
 
-              if (kitchenmenuimges.length !== 0) {
-                kitchenmenuimgesstatus = true;
+              if (kitchenmenuimage.length !== 0) {
+                kitchenmenuimagestatus = true;
                 
+    
+                console.log("kitchenmenuimage:4 ");
 
-                for (let i = 0; i < kitchenmenuimges.length; i++) {
-                  var new_kitchenmenuimges = new MakeitImages(kitchenmenuimges[i]);
-                  new_kitchenmenuimges.makeitid = req.userid;
-                    MakeitImages.createMakeitImages(new_kitchenmenuimges, function(err,createMakeitImages) {
+                for (let i = 0; i < kitchenmenuimage.length; i++) {
+                  console.log("kitchenmenuimage: ", kitchenmenuimage[i]);
+                  var new_kitchenmenuimage = new MakeitImages(kitchenmenuimage[i]);
+                  new_kitchenmenuimage.makeitid = req.userid;
+                    MakeitImages.createMakeitImages(new_kitchenmenuimage, function(err,createMakeitImages) {
                       if (err) {
                         console.log("error: ", err);
                         result(err, null);
@@ -1231,7 +1234,7 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
               if (Specialitiesfood.length !== 0) {
                 Specialitiesfoodstatus = true;
                 
-
+                console.log("kitchenmenuimage:3 ");
                 for (let i = 0; i < Specialitiesfood.length; i++) {
                   var new_Specialitiesfood = new MakeitImages(Specialitiesfood[i]);
                   new_Specialitiesfood.makeitid = req.userid;
@@ -1250,7 +1253,7 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
               if (Signature.length !== 0) {
                 Signaturestatus = true;
                 
-
+                console.log("kitchenmenuimage:1 ");
                 for (let i = 0; i < Signature.length; i++) {
                   var new_Signature = new MakeitImages(Signature[i]);
                   new_Signature.makeitid = req.userid;

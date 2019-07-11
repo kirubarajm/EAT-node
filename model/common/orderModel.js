@@ -1406,14 +1406,8 @@ Order.online_order_place_conformation = async function(order_place, result) {
   }
 };
 
-Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(
-  req,
-  result
-) {
-  const orderdetails = await query(
-    "select * from Orders where userid ='" +
-      req.userid +
-      "' and orderstatus = 6  and payment_status = 1 order by orderid desc limit 1"
+Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(req,result) {
+  const orderdetails = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus = 6  and payment_status = 1 order by orderid desc limit 1"
   );
 
   if (orderdetails) {
@@ -1430,12 +1424,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(
       }
     }
   }
-  sql.query(
-    "select * from Orders where userid ='" +
-      req.userid +
-      "' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",
-    //and (lock_status = 0 or lock_status = 1) and  payment_status =0
-    function(err, res) {
+  sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
@@ -1453,10 +1442,9 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(
           result(null, resobj);
         } else {
           if (res[0].payment_type === "0") {
-            var liveorderquery =
-              "Select distinct ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +
-              req.userid +
-              " and ors.orderstatus < 6  and payment_status !=2 ";
+
+            var liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
+           
             console.log(liveorderquery);
             sql.query(liveorderquery, function(err, res1) {
               if (err) {
@@ -1493,14 +1481,9 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(
                 result(null, resobj);
               }
             });
-          } else if (
-            res[0].payment_type === "1" &&
-            res[0].payment_status === 1
-          ) {
-            liveorderquery =
-              "Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +
-              req.userid +
-              "' and ors.orderstatus < 6 and payment_status !=2 group by pt.productid";
+          } else if (res[0].payment_type === "1" && res[0].payment_status === 1) {
+
+            liveorderquery ="Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 group by pt.productid";
             sql.query(liveorderquery, function(err, res1) {
               if (err) {
                 console.log("error: ", err);
@@ -1525,6 +1508,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(
                     res1[i].items = items.item;
                   }
                 }
+
                 let sucobj = true;
                 let resobj = {
                   success: sucobj,
@@ -1555,21 +1539,13 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(
   );
 };
 
-Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(
-  req,
-  orderitems,
-  result
-) {
+Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
   // try {
   console.log("read_a_proceed_to_pay: ");
 
   const delivery_charge = constant.deliverycharge;
   // var res = await Order.live_order_list_byeatuserid(req,responce);
-  const res = await query(
-    "select * from Orders where userid ='" +
-      req.userid +
-      "' and orderstatus < 6  and payment_status !=2"
-  );
+  const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
   //and (lock_status = 0 or lock_status = 1) and  payment_status = 0
   //  console.log(res);
 
@@ -2134,22 +2110,12 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
   }
 };
 
-Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(
-  req,
-  result
-) {
-  const orderdetails = await query(
-    "select * from Orders where orderid ='" + req.orderid + "'"
-  );
+Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req,result) {
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
   console.log(orderdetails);
   if (orderdetails) {
     if (orderdetails[0].orderstatus === 6) {
-      sql.query(
-        "UPDATE Orders SET item_missing = 1,item_missing_reason='" +
-          req.item_missing_reason +
-          "' WHERE orderid ='" +
-          req.orderid +
-          "'",
+      sql.query("UPDATE Orders SET item_missing = 1,item_missing_reason='" +req.item_missing_reason +"' WHERE orderid ='" +req.orderid +"'",
           async function(err, res1) {
           if (err) {
             result(err, null);
@@ -2197,7 +2163,14 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(
           }
         }
       );
-    } else {
+    } else if(orderdetails[0].orderstatus === 7){
+      let response = {
+        success: true,
+        status: false,
+        message: "Following order canceled"
+      };
+      result(null, response);
+    }else {
       let response = {
         success: true,
         status: false,

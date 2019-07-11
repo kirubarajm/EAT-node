@@ -35,6 +35,7 @@ module.exports = function(app) {
   var admindashboard = require("../controllers/common/admindashboardController");
   var Razorpay = require("../controllers/common/RazorpayController");
   var MakeitImages = require("../controllers/makeit/MakeitImagesController");
+  var Stories = require("../controllers/common/StoryController");
 
   // todoList Routes
   app
@@ -754,6 +755,8 @@ module.exports = function(app) {
    app.route("/eat/refund/:userid").get(refundcoupon.read_a_refundcoupon_by_userid);
 
    app.route("/eat/refundupdate").put(refundcoupon.updateByRefundCouponId);
+   
+   app.route("/eat/stories").get(Stories.list_all_Stories);
 
   
 

@@ -594,6 +594,40 @@ const master = [
                 "kitchenmembertype": "kitchenmenuimges"
             }
         ]
+    },
+    {
+        'mediatype': [{
+                "mediatypetypeid": 1,
+                "mediatype": "image"
+            },
+            {
+                "mediatypetypeid": 2,
+                "mediatype": "video"
+            }
+        ]
+    },
+    {
+        'positiontype': [{
+                "positiontypeid": 1,
+                "positiontype": "top"
+            },
+            {
+                "positiontypeid": 2,
+                "positiontype": "bottom"
+            },
+            {
+                "positiontypeid": 3,
+                "positiontype": "center"
+            },
+            {
+                "positiontypeid": 4,
+                "positiontype": "center-right"
+            },
+            {
+                "positiontypeid": 5,
+                "positiontype": "center-left"
+            },
+        ]
     }
 
 ]

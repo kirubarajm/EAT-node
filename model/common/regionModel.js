@@ -58,6 +58,7 @@ Region.read_a_question_id = function read_a_question_id(req, result) {
       let sucobj = true;
       let resobj = {
         sucobj: sucobj,
+        status:true,
         result: res
       };
       result(null, resobj);
