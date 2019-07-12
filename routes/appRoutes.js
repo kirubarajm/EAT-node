@@ -1,7 +1,7 @@
 "use strict";
 module.exports = function(app) {
   //forever start server.js
-
+  var routesVersioning = require('express-routes-versioning')();
   var todoList = require("../controllers/appController");
   var eatuser = require("../controllers/eat/EatUserController");
   var moveituser = require("../controllers/moveit/MoveitUserController");
@@ -740,7 +740,10 @@ module.exports = function(app) {
 
    app.route("/eat/region/kitchenlist").post(eatuser.eat_region_list_sort_filter);
 
-   app.route("/eat/regionlist").post(eatuser.eat_region_list);
+   app.route("/eat/regionlist").post(routesVersioning({
+    "2.0.0": eatuser.eat_region_list2,
+    "1.0.0": eatuser.eat_region_list
+ }));
    
    app.route("/eat/kitche/showmore").post(eatuser.eat_region_kitchen_showmore);
 
