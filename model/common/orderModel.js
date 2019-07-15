@@ -1140,27 +1140,28 @@ Order.orderlistbyeatuser = async function(req, result) {
               result(null, err);
             } else {
 
-                history_list = [];
-              // res1 = Array.prototype.concat.apply([], res1);
-              history_list.push(res1[0]);
-               console.log(history_list.length);
-              for (let i = 0; i < res1.length; i++) {
-                if (res1[i].userdetail) {
+                 history_list = [];
+              //  res1 = Array.prototype.concat.apply([], res1);
+               history_list.push(res1[0]);
+               history_list = Array.prototype.concat.apply([], history_list);
+              //  console.log(history_list.length);
+              for (let i = 0; i < history_list.length; i++) {
+                if (history_list[i].userdetail) {
                   console.log("res1[0].userdetail");
-                  res1[i].userdetail = JSON.parse(res1[i].userdetail);
+                  history_list[i].userdetail = JSON.parse(history_list[i].userdetail);
                 }
 
-                if (res1[i].makeitdetail) {
-                  res1[i].makeitdetail = JSON.parse(res1[i].makeitdetail);
+                if (history_list[i].makeitdetail) {
+                  history_list[i].makeitdetail = JSON.parse(history_list[i].makeitdetail);
                 }
 
-                if (res1[i].moveitdetail) {
-                  res1[i].moveitdetail = JSON.parse(res1[i].moveitdetail);
+                if (history_list[i].moveitdetail) {
+                  history_list[i].moveitdetail = JSON.parse(history_list[i].moveitdetail);
                 }
 
-                if (res1[i].items) {
-                  var items = JSON.parse(res1[i].items);
-                  res1[i].items = items;
+                if (history_list[i].items) {
+                  var items = JSON.parse(history_list[i].items);
+                  history_list[i].items = items;
                 }
               }
 
@@ -1168,7 +1169,7 @@ Order.orderlistbyeatuser = async function(req, result) {
               let resobj = {
                 success: sucobj,
                 status: true,
-                result: res1
+                result: history_list
               };
 
               result(null, resobj);
@@ -1567,9 +1568,9 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
         if (res3.status != true) {
           result(null, res3);
         } else {
-          console.log(res3.result[0].amountdetails);
+         // console.log(res3.result[0].amountdetails);
           var amountdata = res3.result[0].amountdetails;
-          console.log(amountdata.refundamount);
+         // console.log(amountdata.refundamount);
           req.gst = amountdata.gstcharge;
           req.price = amountdata.grandtotal;
           var refundcoupon = {};
@@ -1578,7 +1579,6 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
           req.refund_amount = amountdata.refundamount;
         
        
-
           const res2 = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
 
           req.cus_address = res2[0].address;
@@ -1636,10 +1636,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
 
       new_Order.delivery_charge = delivery_charge;
       //   console.log(new_Order);
-      sql.query("INSERT INTO Orders set ?", new_Order, async function(
-        err,
-        res1
-      ) {
+      sql.query("INSERT INTO Orders set ?", new_Order, async function(err,res1) {
         if (err) {
           console.log("error: ", err);
           result(null, err);
@@ -1688,9 +1685,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
     }
 
     async function ordercreateonline(req, orderitems) {
-      const userinfo = await query(
-        "Select * from User where userid = '" + req.userid + "'"
-      );
+    const userinfo = await query("Select * from User where userid = '" + req.userid + "'");
 
       ///  console.log(req);
       var customerid = userinfo[0].razer_customerid;
@@ -1714,10 +1709,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
       new_Order.delivery_charge = delivery_charge;
       new_Order.lock_status = 1;
 
-      sql.query("INSERT INTO Orders set ?", new_Order, async function(
-        err,
-        res1
-      ) {
+      sql.query("INSERT INTO Orders set ?", new_Order, async function(err,res1) {
         if (err) {
           console.log("error: ", err);
           result(null, err);

@@ -854,32 +854,54 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   // To check product availablity 
   for (let i = 0; i < orderitems.length; i++) {
 
-    const res1 = await query("Select pt.*,cu.cuisinename From Product pt join Cuisine cu on cu.cuisineid = pt.cuisine where productid = '" +orderitems[i].productid+"'");
+    //this code commanded due to ruunning procedure call 15-07-2019
+  //  const res1 = await query("Select pt.*,cu.cuisinename From Product pt join Cuisine cu on cu.cuisineid = pt.cuisine where productid = '" +orderitems[i].productid+"'");
+    
+ var cart_product_availability_list = 'call cart_product_availability_list(?)';
 
-    if (res1[0].quantity < orderitems[i].quantity) {
-      res1[0].availablity = false;
-      tempmessage = tempmessage + res1[0].product_name + ",";
+      sql.query(cart_product_availability_list,[orderitems[i].productid],function (err, res1) {
+        if (err){
+          console.log("error: ", err);
+          result(null, err);
+        }
+        cart_product_availability = [];
+       // })
+       cart_product_availability.push(res1[0]);
+       cart_product_availability = Array.prototype.concat.apply([], cart_product_availability);
+        
+ 
+       console.log("cart res1"+cart_product_availability[0].quantity);
+    if (cart_product_availability[0].quantity < orderitems[i].quantity) {
+      cart_product_availability[0].availablity = false;
+      tempmessage = tempmessage + cart_product_availability[0].product_name + ",";
       isAvaliableItem = false;
     } else {
-      res1[0].availablity = true;
+      cart_product_availability[0].availablity = true;
     }
-    amount = res1[0].price * orderitems[i].quantity;
-    res1[0].amount = amount;
-    res1[0].cartquantity = orderitems[i].quantity;
+    amount = cart_product_availability[0].price * orderitems[i].quantity;
+    cart_product_availability[0].amount = amount;
+    cart_product_availability[0].cartquantity = orderitems[i].quantity;
     totalamount = totalamount + amount;
-  //  console.log("test"+res1[0]);
+ 
   //  if product is availablity to push into product details
-    productdetails.push(res1[0]);
+    productdetails.push(cart_product_availability[0]);
+  })
   }
  // This query is to get the makeit details and cuisine details
-  var query1 =
-    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid="+req.userid +" left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +req.makeit_user_id;
+  // var query1 =
+  //   "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid="+req.userid +" left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +req.makeit_user_id;
 
-  sql.query(query1, async function(err, res2) {
+  var query1 = 'call cart_makeituser_details(?,?)';
+  
+  sql.query(query1,[req.userid,req.makeit_user_id],async function(err, cart_makeituser_details) {
     if (err) {
       console.log("error: ", err);
       result(err, null);
     } else {
+     var res2 = [];
+      res2.push(cart_makeituser_details[0]);
+      res2 = Array.prototype.concat.apply([], res2);
+
       for (let i = 0; i < res2.length; i++) {
         if (res2[i].cuisines) {
           res2[i].cuisines = JSON.parse(res2[i].cuisines);
@@ -907,7 +929,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         
         if (refundlist) {
         // get refund amount 
-        refund_amount = refundlist[0].refundamount;
+         refund_amount = refundlist[0].refundamount;
           if (grandtotal >= refundlist[0].refundamount) {
             
             var refund_balance = 0 ;
@@ -948,20 +970,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         if (!isAvaliableItem)
           resobj.message = tempmessage.slice(0, -1) + " is not avaliable";
          (resobj.result = res2), result(null, resobj);
-        // }else{
-
-        //   let sucobj = true;
-        //   let status = false;
-        //   message = "Sorry your coupon is not valid!";
-        //   let resobj = {
-        //     success: sucobj,
-        //     status: status,
-        //     message: message
-        //   };
-  
-        //   result(null, resobj);
-
-        // }
+       
         
         } else {
         let sucobj = true;

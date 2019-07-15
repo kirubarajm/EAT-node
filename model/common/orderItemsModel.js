@@ -46,10 +46,7 @@ Orderitems.createOrderitems = function createOrderitems(order_item, res) {
   });
 };
 
-Orderitems.createOrderitemsonline = function createOrderitemsonline(
-  order_item,
-  res
-) {
+Orderitems.createOrderitemsonline = function createOrderitemsonline(order_item,res) {
   sql.query("INSERT INTO OrderItem set ?", order_item, function(err, result) {
     if (err) {
       console.log("error: ", err);
