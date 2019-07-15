@@ -6,9 +6,7 @@ var Makeitapproved = require("../../model/makeit/makeitApprovedModel.js");
 
 exports.list_all_user = function(req, res) {
   Salesuser.getAllUser(function(err, user) {
-    console.log("controller");
     if (err) res.send(err);
-    console.log("res", user);
     res.send(user);
   });
 };
@@ -159,10 +157,17 @@ exports.get_kitchen_info = function(req, res) {
 };
 
 exports.salesSearch = function(req, res) {
+  console.log("salesSearch_V1");
   Salesuser.getAllsalesSearch(req.body, function(err, user) {
-    console.log("controller");
     if (err) res.send(err);
-    console.log("res", user);
+    res.send(user);
+  });
+};
+
+exports.salesSearch_V2 = function(req, res) {
+  console.log("salesSearch_V2");
+  Salesuser.getAllsalesSearch(req.body, function(err, user) {
+    if (err) res.send(err);
     res.send(user);
   });
 };
