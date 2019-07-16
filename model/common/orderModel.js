@@ -205,13 +205,13 @@ Order.updateOrderStatus = function updateOrderStatus(req, result) {
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
-            PushConstant.pageidOrder_Accept
+            PushConstant.Pageid_eat_order_accept
           );
         } else if (req.orderstatus === PushConstant.masteridOrder_Pickedup) {
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
-            PushConstant.pageidOrder_Pickedup
+            PushConstant.Pageid_eat_order_pickedup
           );
         }
 
@@ -629,7 +629,7 @@ Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveit
               await Notification.orderEatPushNotification(
                 req.orderid,
                 null,
-                PushConstant.pageidOrder_Pickedup
+                PushConstant.Pageid_eat_order_pickedup
               );
               let sucobj = true;
               let message = "Order Pickedup successfully";
@@ -684,7 +684,7 @@ Order.order_delivery_status_by_moveituser = function(req, result) {
                   await Notification.orderEatPushNotification(
                     req.orderid,
                     null,
-                    PushConstant.pageidOrder_Delivered
+                    PushConstant.Pageid_eat_order_delivered
                   );
                   result(null, resobj);
                 }
@@ -1078,8 +1078,8 @@ Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
     case 1:
       trackingDetail.message1 = "Your order has been received";
       trackingDetail.message2 = "Preparing.. With love, Your MOM";
-      trackingDetail.message3 =
-        "Mr." + moveit_name + " is on his way to pickup";
+      trackingDetail.message3 = moveit_name?
+        "Mr." + moveit_name + " is on his way to pickup":"Delivery partner is awaiting the order";
       break;
 
     case 2:
@@ -1087,8 +1087,8 @@ Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
     case 4:
       trackingDetail.message1 = "Your order has been received";
       trackingDetail.message2 = "Your MOM has packed your food";
-      trackingDetail.message3 =
-        "Mr." + moveit_name + " is on his way to pickup";
+      trackingDetail.message3 =moveit_name?
+      "Mr." + moveit_name + " is on his way to pickup":"Delivery partner is awaiting the order";
       break;
 
     case 5:
@@ -1973,7 +1973,7 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
-            PushConstant.pageidOrder_Accept
+            PushConstant.Pageid_eat_order_accept
           );
           let response = {
             success: true,

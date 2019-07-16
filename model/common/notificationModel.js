@@ -37,7 +37,7 @@ Notification.orderEatPushNotification = async function(
   }
   var data = null;
   switch (pageid) {
-    case PushConstant.pageidOrder_Post:
+    case PushConstant.Pageid_eat_order_post:
       data = {
         title: "Order Post",
         message: "Hi! your Order posted successful.Your OrderID is#" + orderid,
@@ -47,7 +47,7 @@ Notification.orderEatPushNotification = async function(
       };
       break;
 
-    case PushConstant.pageidOrder_Accept:
+    case PushConstant.Pageid_eat_order_accept:
       data = {
         title: "Order Accecpt",
         message:
@@ -58,7 +58,7 @@ Notification.orderEatPushNotification = async function(
       };
       break;
 
-    case PushConstant.pageidOrder_Pickedup:
+    case PushConstant.Pageid_eat_order_pickedup:
       data = {
         title: "Order Picked up",
         message: "Hi! your Order Picked up.Please wait your food reaced soon.",
@@ -68,7 +68,7 @@ Notification.orderEatPushNotification = async function(
       };
       break;
 
-    case PushConstant.pageidOrder_Reached:
+    case PushConstant.Pageid_eat_order_reached:
       data = {
         title: "Order Near to me",
         message: "Hi! your Order Waiting.Please picked up",
@@ -78,7 +78,7 @@ Notification.orderEatPushNotification = async function(
       };
       break;
 
-    case PushConstant.pageidOrder_Delivered:
+    case PushConstant.Pageid_eat_order_delivered:
       data = {
         title: "Order Delivered",
         message: "Hi! your Order Delivered successful",
@@ -96,6 +96,7 @@ Notification.orderEatPushNotification = async function(
         app: "Eat",
         notification_type: "1"
       };
+      
       break;
   }
   if (data == null) return;
@@ -329,29 +330,34 @@ Notification.queries_answers_PushNotification = async function(
   var userTable = "";
   var FCM_Obj = null;
   var appname = "";
-  if ((type = 1)) {
+  var pageid="0";
+  if ((type === 1)) {
     userTable = "MakeitUser";
     FCM_Obj = FCM_Makeit;
     appname = "Makeit";
-  } else if ((type = 2)) {
+    pageid ="4";
+  } else if ((type === 2)) {
     userTable = "MoveitUser";
     FCM_Obj = FCM_Moveit;
     appname = "Moveit";
-  } else if ((type = 3)) {
+    pageid ="4";
+  } else if ((type === 3)) {
     userTable = "Sales_QA_employees";
     FCM_Obj = FCM_Sales;
     appname = "Sales";
-  } else if ((type = 4)) {
+    pageid ="4";
+  } else if ((type === 4)) {
     userTable = "User";
     FCM_Obj = FCM_EAT;
     appname = "Eat";
+    pageid =""+PushConstant.Pageid_eat_query_replay;
   }
 
   var data = null;
   data = {
     title: "Queries Replied",
     message: answer,
-    pageid: "4", //Need to change depends on type
+    pageid:pageid, //Need to change depends on type
     app: appname,
     notification_type: "1"
   };
@@ -359,7 +365,9 @@ Notification.queries_answers_PushNotification = async function(
   Userdetails = await query(
     "SELECT * FROM " + userTable + " where userid = " + userid
   );
+  console.log("kkk---"+userTable+"---userid--"+userid);
   if (Userdetails && Userdetails[0].pushid_android && data) {
+    console.log("kkk---"+Userdetails[0].pushid_android+"---userid--"+userid);
     FCM_Obj.sendNotificationAndroid(Userdetails[0].pushid_android, data);
   }
 };

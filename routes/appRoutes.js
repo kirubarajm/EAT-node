@@ -10,6 +10,10 @@ module.exports = function(app) {
   var master = require("../controllers/common/MastersController");
   var homedown = require("../controllers/common/HometownController");
   var makeithub = require("../controllers/common/MakeitHubController");
+  var faq = require("../controllers/common/FaqController");
+  var allocation = require("../controllers/sales/AllocationController");
+  var documents = require("../controllers/common/DocumentsController");
+  var product = require("../controllers/makeit/ProductController");
   // Masters
   app.route("/masters/regionlist").get(routesVersioning({"1.0.0":region.list_all_region}));
   app.route("/masters/homedownlist").get(routesVersioning({"1.0.0":homedown.list_all_homedown}));
@@ -30,6 +34,47 @@ module.exports = function(app) {
   app.route("/queryreplies/:qid").get(routesVersioning({"1.0.0":queryanswer.read_a_replies}));
   app.route("/repliesread").put(routesVersioning({"1.0.0":queryanswer.update_read_answer}));
   app.route("/masters").get(routesVersioning({"1.0.0":master.read_a_masters}));
+
+ // Others
+  app.route("/faqs/:id").get(routesVersioning({"1.0.0":faq.list_all_faqbytype}));
+  app.route("/faq")
+    .get(routesVersioning({"1.0.0":faq.list_all_faq}))
+    .post(routesVersioning({"1.0.0":faq.create_a_faq}));
+  app
+    .route("/faq/:id")
+    .get(routesVersioning({"1.0.0":faq.read_a_faq}))
+    .put(routesVersioning({"1.0.0":faq.update_a_faq}))
+    .delete(routesVersioning({"1.0.0":faq.delete_a_faq}));
+    //Documents
+  app
+  .route("/documents")
+  .get(routesVersioning({"1.0.0":documents.list_all_documents}))
+  .post(routesVersioning({"1.0.0":documents.create_a_documents}));
+app
+  .route("/documents/:id")
+  .get(routesVersioning({"1.0.0":documents.read_a_documents}))
+  .put(routesVersioning({"1.0.0":documents.update_a_documents}))
+  .delete(routesVersioning({"1.0.0":documents.delete_a_documents}));
+app.route("/vproduct").get(routesVersioning({"1.0.0":product.list_all_virtual_product}));
+app.route("/product/:id")
+  .get(routesVersioning({"1.0.0":product.read_a_product}))
+  .put(routesVersioning({"1.0.0":product.update_a_product}))
+  .delete(routesVersioning({"1.0.0":product.delete_a_product}));
+
+app
+  .route("/allocation")
+  .get(routesVersioning({"1.0.0":allocation.list_all_allocation}))
+  .post(routesVersioning({"1.0.0":allocation.create_a_allocation}));
+
+app
+  .route("/allocation/:id")
+  .get(routesVersioning({"1.0.0":allocation.read_a_allocation}))
+  .put(routesVersioning({"1.0.0":allocation.update_a_allocation}))
+  .delete(routesVersioning({"1.0.0":allocation.delete_a_allocation}));
+
+app
+  .route("/allocation/salesempid/:id")
+  .get(routesVersioning({"1.0.0":allocation.list_all_allocation_by_salesempid}));
 
   // Eat
   // app.route("/eat/products").post(routesVersioning({"1.0.0": eatuser.eat_makeit_product_list}));

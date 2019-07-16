@@ -58,4 +58,20 @@ app.route("/eat/refund/:userid").get(routesVersioning({"1.0.0":refundcoupon.read
 app.route("/eat/refundupdate").put(routesVersioning({"1.0.0":refundcoupon.updateByRefundCouponId}));
 app.route("/eat/stories").get(routesVersioning({"1.0.0":Stories.list_all_Stories}));
 app.route("/eat/order/refund/getlastcoupon/:userid").get(routesVersioning({"1.0.0":refundcoupon.read_a_refundcoupon_by_userid}));
+app.route("/eatusers").get(routesVersioning({"1.0.0":eatuser.list_all_eatuser})).post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
+app.route("/eatusers/:userid").get(routesVersioning({"1.0.0":eatuser.read_a_user})).put(routesVersioning({"1.0.0":eatuser.update_a_user}));
+app.route("/favforeatusers/:id").get(routesVersioning({"1.0.0":fav.list_all_fav_eatusers}));
+app
+    .route("/fav")
+    .get(routesVersioning({"1.0.0":fav.list_all_fav}))
+    .post(routesVersioning({"1.0.0":fav.create_a_fav}));
+
+  app.route("/fav/:id")
+    .get(routesVersioning({"1.0.0":fav.read_a_fav}))
+    .put(routesVersioning({"1.0.0":fav.update_a_fav}))
+    .delete(routesVersioning({"1.0.0":fav.delete_a_fav}));
+
+  app.route("/orders/ordercreate").post(routesVersioning({"1.0.0":orders.eatuser_order_create}));
+//.delete(eatuser.delete_a_user);
+
 }

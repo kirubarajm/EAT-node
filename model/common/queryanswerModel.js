@@ -17,7 +17,7 @@ var QueryAnswer = function(queryanswer) {
   //  this.created_at = new Date();
 };
 
-QueryAnswer.createanswer = function createanswer(req, result) {
+QueryAnswer.createanswer = function createanswer(req, qtype,result) {
   console.log(req);
   sql.query("INSERT INTO Query_answers set ?", req, function(err, res) {
     if (err) {
@@ -31,7 +31,8 @@ QueryAnswer.createanswer = function createanswer(req, result) {
         status: true,
         message: message
       };
-      Notification.queries_answers_PushNotification(req.userid,req.qid,req.answer,req.type);
+      if(qtype)
+      Notification.queries_answers_PushNotification(req.userid,req.qid,req.answer,qtype);
       result(null, resobj);
     }
   });

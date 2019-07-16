@@ -21,9 +21,10 @@ exports.list_all_faqbytype = function(req, res) {
 exports.create_a_answer = function(req, res) {
   var new_ans = new QueryAnswer(req.body);
   console.log(new_ans);
+  console.log("new_ans",req.body.qtype);
   //handles null error
 
-  QueryAnswer.createanswer(new_ans, function(err, new_ans) {
+  QueryAnswer.createanswer(new_ans, req.body.qtype,function(err, new_ans) {
     if (err) res.send(err);
     res.json(new_ans);
   });
