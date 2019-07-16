@@ -9,6 +9,7 @@ var routesVersioning = require('express-routes-versioning')();
   var orderrating = require("../controllers/common/OrderratingController");
   var quicksearch = require("../controllers/common/QuickSearchController");
   var refundcoupon = require("../controllers/common/RefundCouponController");
+  var coupon = require("../controllers/common/CouponController");
   var Stories = require("../controllers/common/StoryController");
   var feedback = require("../controllers/common/EatfeedbackController");
 
@@ -58,4 +59,5 @@ app.route("/eat/refund/:userid").get(routesVersioning({"1.0.0":refundcoupon.read
 app.route("/eat/refundupdate").put(routesVersioning({"1.0.0":refundcoupon.updateByRefundCouponId}));
 app.route("/eat/stories").get(routesVersioning({"1.0.0":Stories.list_all_Stories}));
 app.route("/eat/order/refund/getlastcoupon/:userid").get(routesVersioning({"1.0.0":refundcoupon.read_a_refundcoupon_by_userid}));
+app.route("/eat/coupon/:userid").get(routesVersioning({"1.0.0":coupon.get_all_coupons_by_userid}));
 }
