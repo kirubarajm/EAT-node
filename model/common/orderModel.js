@@ -1577,7 +1577,6 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
           req.original_price = amountdata.original_price;
           req.refund_balance = amountdata.refund_balance;
           req.refund_amount = amountdata.refundamount;
-          req.discount_amount = amountdata.coupon_discount_amount;
         
        
           const res2 = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");

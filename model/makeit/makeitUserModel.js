@@ -843,211 +843,149 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var delivery_charge = constant.deliverycharge;
   const productdetails = [];
   var totalamount = 0;
-  var product_orginal_price = 0;
   var amount = 0;
   var isAvaliableItem = true;
   var calculationdetails = {};
-  var couponstatus = false;
-  var refundcouponstatus = false;
 
   var orderlist = await query("Select * From Orders where userid = '" +req.userid+"' and orderstatus = 6");
   var ordercount = orderlist.length;
 
 
-                  for (let i = 0; i < orderitems.length; i++) {
+  // To check product availablity 
+  for (let i = 0; i < orderitems.length; i++) {
 
-                    const res1 = await query("Select pt.*,cu.cuisinename From Product pt join Cuisine cu on cu.cuisineid = pt.cuisine where productid = '" +orderitems[i].productid+"'");
-
-                    if (res1[0].quantity < orderitems[i].quantity) {
-
-                          res1[0].availablity = false;
-                          tempmessage = tempmessage + res1[0].product_name + ",";
-                          isAvaliableItem = false;
-
-                    } else {
-
-                          res1[0].availablity = true;
-                      
-                    }
-
-                    amount = res1[0].price * orderitems[i].quantity;
-                    res1[0].amount = amount;
-                    res1[0].cartquantity = orderitems[i].quantity;
-                    totalamount = totalamount + amount;
-                  
-                  //  if product is availablity to push into product details
-                    productdetails.push(res1[0]);
-                  } 
-
-
-              // This query is to get the makeit details and cuisine details
-            var query1 ="Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid="+req.userid +" left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +req.makeit_user_id;
-
-            // var query1 = 'call cart_makeituser_details(?,?)';
-  
-            sql.query(query1,[req.userid,req.makeit_user_id],async function(err, res2) {
-              if (err) {
-                console.log("error: ", err);
-                result(err, null);
-              } else {
-              //  var res2 = [];
-              // res2.push(cart_makeituser_details[0]);
-                //res2 = Array.prototype.concat.apply([], res2);
-
-                for (let i = 0; i < res2.length; i++) {
-                  if (res2[i].cuisines) {
-                    res2[i].cuisines = JSON.parse(res2[i].cuisines);
-                  }
-                }
-
-                //refund 
-                console.log(req.rcid);
-                var refund_amount = 0
-                var refundlist = [];
-                if (req.rcid) { 
-
-                 refundlist = await query("Select * From Refund_Coupon where rcid = '" +req.rcid+"' and active_status = 1"); 
-                
-              }
-
-
-
-                //coupon
-
-                if (req.cid) {
-
-                  var couponlist = await query("Select * From Coupon where cid = '" +req.cid+"' and active_status = 1"); 
-                  
-                  if (couponlist.length != 0) {
-
-                    var maxdiscount = couponlist[0].maxdiscount;
-                    var numberoftimes = couponlist[0].numberoftimes;
-                    var discount_percent = couponlist[0].discount_percent;
-  
-                    var CouponsUsedlist = await query("Select * From CouponsUsed where cid = '" +req.cid+"'"); 
-  
-                    var couponusedcount = CouponsUsedlist.length;
-                  }
-                
-                }
-
-
-                if (res2.length !== 0) {
-
-                  var refund_coupon_adjustment = 0;
-                  var coupon_discount_amount = 0;
-              //    if (refundlist) {
-
-                  var gstcharge = (totalamount / 100) * gst;
-
-                  gstcharge = Math.round(gstcharge);
-
-                  product_orginal_price = totalamount;
+    //this code commanded due to ruunning procedure call 15-07-2019
+  //  const res1 = await query("Select pt.*,cu.cuisinename From Product pt join Cuisine cu on cu.cuisineid = pt.cuisine where productid = '" +orderitems[i].productid+"'");
     
-                  var original_price = +gstcharge + +product_orginal_price + +delivery_charge;
+ var cart_product_availability_list = 'call cart_product_availability_list(?)';
 
+      sql.query(cart_product_availability_list,[orderitems[i].productid],function (err, res1) {
+        if (err){
+          console.log("error: ", err);
+          result(null, err);
+        }
+        cart_product_availability = [];
+       // })
+       cart_product_availability.push(res1[0]);
+       cart_product_availability = Array.prototype.concat.apply([], cart_product_availability);
+        
+ 
+       console.log("cart res1"+cart_product_availability[0].quantity);
+    if (cart_product_availability[0].quantity < orderitems[i].quantity) {
+      cart_product_availability[0].availablity = false;
+      tempmessage = tempmessage + cart_product_availability[0].product_name + ",";
+      isAvaliableItem = false;
+    } else {
+      cart_product_availability[0].availablity = true;
+    }
+    amount = cart_product_availability[0].price * orderitems[i].quantity;
+    cart_product_availability[0].amount = amount;
+    cart_product_availability[0].cartquantity = orderitems[i].quantity;
+    totalamount = totalamount + amount;
+ 
+  //  if product is availablity to push into product details
+    productdetails.push(cart_product_availability[0]);
+  })
+  }
+ // This query is to get the makeit details and cuisine details
+  // var query1 =
+  //   "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid="+req.userid +" left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +req.makeit_user_id;
+
+  var query1 = 'call cart_makeituser_details(?,?)';
   
-                  if (refundlist.length !== 0) {
+  sql.query(query1,[req.userid,req.makeit_user_id],async function(err, cart_makeituser_details) {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {
+     var res2 = [];
+      res2.push(cart_makeituser_details[0]);
+      res2 = Array.prototype.concat.apply([], res2);
 
-                    refundcouponstatus = true;
-                    // get refund amount 
-                       refund_amount = refundlist[0].refundamount;
+      for (let i = 0; i < res2.length; i++) {
+        if (res2[i].cuisines) {
+          res2[i].cuisines = JSON.parse(res2[i].cuisines);
+        }
+      }
 
-                      if (totalamount >= refundlist[0].refundamount) {
-                        
-                        var refund_balance = 0 ;
+      //refund 
+      console.log(req.rcid);
+      var refund_amount = 0
+      if (req.rcid) { 
+      var refundlist = await query("Select * From Refund_Coupon where rcid = '" +req.rcid+"' and active_status = 1"); 
+      }
 
-                        refund_coupon_adjustment = refundlist[0].refundamount;
-                      
-                      }else if(totalamount < refundlist[0].refundamount){
-                      
-                        var refund_balance = refundlist[0].refundamount - totalamount;
+      if (res2.length !== 0) {
 
-                        refund_coupon_adjustment = totalamount;
-                      }
-              
-                      
+        
+    //    if (refundlist) {
+
+        var gstcharge = (totalamount / 100) * gst;
+
+        gstcharge = Math.round(gstcharge);
+
+        var grandtotal = +gstcharge + +totalamount + +delivery_charge;
+        var original_price = grandtotal;
+        
+        if (refundlist) {
+        // get refund amount 
+         refund_amount = refundlist[0].refundamount;
+          if (grandtotal >= refundlist[0].refundamount) {
+            
+            var refund_balance = 0 ;
+           
+          }else if(grandtotal < refundlist[0].refundamount){
+          
+            var refund_balance = refundlist[0].refundamount - grandtotal;
+            
+          }
   
-                      //get price 
-                      totalamount = totalamount - refundlist[0].refundamount;
-                
-                      //if grandtotal is lesser then 0 define grandtotal is 0
-                      if (totalamount < 0) totalamount = 0; 
-                      calculationdetails.refundamount = refundlist[0].refundamount;
-                  }
-                   
 
+          //get price 
+          grandtotal = grandtotal - refundlist[0].refundamount;
+     
+          //if grandtotal is lesser then 0 define grandtotal is 0
+          if (grandtotal < 0) grandtotal = 0; 
+          calculationdetails.refundamount = refundlist[0].refundamount;
+        }
 
-                  if (couponusedcount <= numberoftimes) {
-                        
-                    var discount_amount = (totalamount / 100) * discount_percent;
+        
+        calculationdetails.grandtotal = grandtotal;
+        calculationdetails.original_price = original_price;
+        calculationdetails.refund_balance = refund_balance;
+        calculationdetails.gstcharge = gstcharge;
+        calculationdetails.totalamount = totalamount;
+        calculationdetails.delivery_charge = delivery_charge;
+//console.log(calculationdetails);
+        res2[0].amountdetails = calculationdetails;
+        res2[0].item = productdetails;
+        res2[0].ordercount = ordercount;
+        console.log(res2[0]);
+       
+        let resobj = {
+          success: true,
+          status: isAvaliableItem
+        };
 
-                    if (discount_amount >= maxdiscount) {
+        if (!isAvaliableItem)
+          resobj.message = tempmessage.slice(0, -1) + " is not avaliable";
+         (resobj.result = res2), result(null, resobj);
+       
+        
+        } else {
+        let sucobj = true;
+        let status = false;
+        message = "There is no data available!, Kindly check the Makeituser id";
+        let resobj = {
+          success: sucobj,
+          status: status,
+          message: message
+        };
 
-                      discount_amount = maxdiscount;
-
-                    }
-
-
-                    
-                    if (totalamount >= discount_amount) {
-                        
-                      couponstatus = true;
-
-                      var refund_balance = 0 ;
-
-                      totalamount = totalamount - discount_amount;
-                      coupon_discount_amount = discount_amount;
-                    
-                    }
-                   
-                  }
-
-                      var grandtotal = +gstcharge + +totalamount + +delivery_charge;
-                      
-                  
-                 
-                  calculationdetails.grandtotal = grandtotal;
-                  calculationdetails.original_price = original_price;
-                  calculationdetails.refund_balance = refund_balance;
-                  calculationdetails.gstcharge = gstcharge;
-                  calculationdetails.delivery_charge = delivery_charge;
-                  calculationdetails.refund_coupon_adjustment = refund_coupon_adjustment;
-                  calculationdetails.product_orginal_price = product_orginal_price;
-                  calculationdetails.totalamount = totalamount;
-                  calculationdetails.couponstatus = couponstatus;
-                  calculationdetails.refundcouponstatus=refundcouponstatus;
-                  calculationdetails.coupon_discount_amount = coupon_discount_amount;
-                  //console.log(calculationdetails);
-                  res2[0].amountdetails = calculationdetails;
-                  res2[0].item = productdetails;
-                  res2[0].ordercount = ordercount;
-                 // console.log(res2[0]);
-                
-                  let resobj = {
-                    success: true,
-                    status: isAvaliableItem
-                  };
-
-                  if (!isAvaliableItem)
-                    resobj.message = tempmessage.slice(0, -1) + " is not avaliable";
-                  (resobj.result = res2), result(null, resobj);
-                
-                  
-                  } else {
-                  let sucobj = true;
-                  let status = false;
-                  message = "There is no data available!, Kindly check the Makeituser id";
-                  let resobj = {
-                    success: sucobj,
-                    status: status,
-                    message: message
-                  };
-
-                  result(null, resobj);
-                }
-              }
-            });
+        result(null, resobj);
+      }
+    }
+  });
 };
 
 
