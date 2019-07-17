@@ -47,3 +47,18 @@ exports.get_all_coupons_by_userid = function(req, res) {
     res.json(result);
   });
 };
+
+
+exports.coupons_code_validate = function(req, res) {
+  if (!req.body.userid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide userid" });
+  }else if (!req.body.coupon_name) {
+    res.status(400).send({ error: true,status:false, message: "Please provide coupon_name" });
+  }
+  else {
+  Coupon.coupons_validate_by_userid(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
+};

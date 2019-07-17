@@ -901,7 +901,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                 }
 
                 //refund 
-                console.log(req.rcid);
+              //  console.log(req.rcid);
                 var refund_amount = 0
                 var refundlist = [];
                 if (req.rcid) { 
@@ -981,6 +981,8 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                   if (couponusedcount <= numberoftimes) {
                         
                     var discount_amount = (totalamount / 100) * discount_percent;
+
+                    discount_amount = Math.round(discount_amount)
 
                     if (discount_amount >= maxdiscount) {
 

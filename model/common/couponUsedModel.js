@@ -4,15 +4,40 @@ var sql = require("../db.js");
 
 var CouponUsed = function(couponused) {
   this.cid = couponused.cid;
-  this.ordercost =couponused.ordercost;
+  this.order_cost =couponused.order_cost;
   this.after_discount_cost =couponused.after_discount_cost;
   this.orderid =couponused.orderid;
   this.userid =couponused.userid;
-  this.active_status = couponused.active_status;
+
 }
 
 
-Coupon.CheckCoupon = function CheckCoupon(cid,userid,orderCost) {
+
+
+CouponUsed.createCouponUsed= function createCouponUsed(req, result) {
+  //need to add item missing contion
+   console.log(req);
+   
+       sql.query("INSERT INTO CouponsUsed set ?", req, function(err, res) {
+           if (err) {
+             result(err, null);
+           } else {
+
+            var cuid = res.insertId;
+             let sucobj = true;
+             let message = "Coupon created successfully";
+             let resobj = {
+               success: sucobj,
+               cuid: cuid
+             };
+             result(null, resobj);
+           }
+         });
+       
+ };
+ 
+
+CouponUsed.CheckCoupon = function CheckCoupon(cid,userid,orderCost) {
     var discount_cost=0;
     if(cid==1) 
     {
@@ -21,7 +46,7 @@ Coupon.CheckCoupon = function CheckCoupon(cid,userid,orderCost) {
 };
   
 //cid=1
-Coupon.firstOrderCoupon = function firstOrderCoupon(orderCost,userid,cid) {
+CouponUsed.firstOrderCoupon = function firstOrderCoupon(orderCost,userid,cid) {
     //Number of coupons- 5 per user
     //Max discount - 100 inr
     //10 percent per order
@@ -56,3 +81,5 @@ Coupon.firstOrderCoupon = function firstOrderCoupon(orderCost,userid,cid) {
       });
   };
   
+
+  module.exports = CouponUsed;

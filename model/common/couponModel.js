@@ -99,7 +99,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
 
   Coupon.get_coupons_by_userid = function get_coupons_by_userid(userid,result) {
 
-    sql.query("Select * from Coupon where active_status= 1 limit 1", async function(err, res) {
+    sql.query("Select * from Coupon where active_status= 1 and expiry_date > NOW() limit 1", async function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
@@ -151,6 +151,59 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
               success: true,
               status:false,
               message: "Sorry there is no coupon"
+            };
+            result(null, resobj);
+          }  
+      }
+    });
+  };
+
+
+  Coupon.coupons_validate_by_userid = async function coupons_validate_by_userid(req,result) {
+
+    sql.query("Select * from Coupon where active_status= 1 and coupon_name = '"+req.coupon_name+"' and expiry_date > NOW() limit 1", async function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(null, err);
+      } else {
+
+          if (res.length !== 0 ) {
+            
+            sql.query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? ",[req.userid,res[0].cid], function(err, couponinfo) {
+              if (err) {
+                result(err, null);
+              } else {
+                  if(couponinfo[0].cnt<res[0].numberoftimes)
+                  {
+                    
+
+                    let resobj = {
+                      success: true,
+                      status:true,
+                      result: res
+                    };
+                    result(null, resobj);
+                  }
+                  else
+                  {
+              
+                  let message = "Already Coupons used at maximum number of times";
+                  let resobj = {
+                    success:true,
+                    status: false,
+                    message: message
+                  };
+                  result(null, resobj);
+                  }
+              }
+            });
+            
+          }else{
+
+            let resobj = {
+              success: true,
+              status:false,
+              message: "Sorry coupon is not Valid !"
             };
             result(null, resobj);
           }  

@@ -13,6 +13,7 @@ const Razorpay = require("razorpay");
 var PushConstant = require("../../push/PushConstant.js");
 var RefundCoupon = require("../../model/common/refundCouponModel");
 var RefundOnline = require("../../model/common/refundonlineModel");
+var CouponUsed = require("../../model/common/couponUsedModel");
 
 var instance = new Razorpay({
   key_id: "rzp_test_3cduMl5T89iR9G",
@@ -52,6 +53,7 @@ var Order = function(order) {
   this.discount_amount = order.discount_amount;
   this.address_title = order.address_title;
   this.locality_name = order.locality_name;
+  this.cancel_reason = order.cancel_reason;
 };
 
 Order.createOrder = async function createOrder(req, orderitems, result) {
@@ -1311,6 +1313,29 @@ Order.online_order_place_conformation = async function(order_place, result) {
   var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
   if (order_place.payment_status === 1) {
+
+    if (order_place.cid) {
+
+      const orderdetailsquery = "select * from Orders where orderid ='" +order_place.orderid +"'";
+
+      sql.query(orderdetailsquery, async function(err, orderdetails) {
+        if (err) {
+          console.log("error: ", err);
+          result(err, null);
+        }
+        
+        var new_createCouponUsed = new CouponUsed(order_place); 
+      new_createCouponUsed.after_discount_cost = orderdetails[0].price
+      new_createCouponUsed.order_cost = orderdetails[0].original_price
+      new_createCouponUsed.userid = orderdetails[0].userid
+    
+       CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
+         if (err) result.send(err);
+       });
+      });
+       
+     }
+
     if (order_place.refund_balance) {
       var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(
         order_place.rcid,
@@ -1417,16 +1442,13 @@ Order.online_order_place_conformation = async function(order_place, result) {
 };
 
 Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(req,result) {
-  const orderdetails = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus = 6  and payment_status = 1 order by orderid desc limit 1"
-  );
+
+  const orderdetails = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus = 6  and payment_status = 1 order by orderid desc limit 1");
 
   if (orderdetails) {
     for (let i = 0; i < orderdetails.length; i++) {
-      const orderratingdetails = await query(
-        "select * from Order_rating where orderid ='" +
-          orderdetails[i].orderid +
-          "'"
-      );
+
+      const orderratingdetails = await query("select * from Order_rating where orderid ='" +orderdetails[i].orderid +"'");
       orderdetails[i].rating = true;
 
       if (orderratingdetails.length === 0) {
@@ -1578,7 +1600,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
           req.refund_balance = amountdata.refund_balance;
           req.refund_amount = amountdata.refundamount;
           req.discount_amount = amountdata.coupon_discount_amount;
-        
+          req.after_discount_cost = amountdata.grandtotal;
+          req.order_cost   = amountdata.original_price;
        
           const res2 = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
 
@@ -1636,7 +1659,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
       var new_Order = new Order(req);
 
       new_Order.delivery_charge = delivery_charge;
-      //   console.log(new_Order);
+      
       sql.query("INSERT INTO Orders set ?", new_Order, async function(err,res1) {
         if (err) {
           console.log("error: ", err);
@@ -1644,12 +1667,20 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
         } else {
           var orderid = res1.insertId;
 
+
+            if (req.cid) {
+   
+             var new_createCouponUsed = new CouponUsed(req); 
+             new_createCouponUsed.orderid = res1.insertId;
+           
+              CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
+                if (err) result.send(err);
+              });
+            
+            }
+
           if (req.rcid) {
-            var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(
-              req.rcid,
-              req.refund_balance,
-              res1.insertId
-            );
+            var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(req.rcid,req.refund_balance,res1.insertId);
           }
 
           for (var i = 0; i < orderitems.length; i++) {
@@ -1833,13 +1864,13 @@ Order.create_refund = function create_refund(refundDetail) {
 };
 
 Order.eat_order_cancel = async function eat_order_cancel(req, result) {
-  const orderdetails = await query(
-    "select * from Orders where orderid ='" + req.orderid + "'"
-  );
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
   if (orderdetails[0].orderstatus < 5) {
     sql.query(
-      "UPDATE Orders SET orderstatus = 7,cancel_by = 1 WHERE orderid ='" +
+      "UPDATE Orders SET orderstatus = 7,cancel_by = 1.cancel_reason= '" +
+      req.cancel_reason +
+      "' WHERE orderid ='" +
         req.orderid +
         "'",
       async function(err, res) {

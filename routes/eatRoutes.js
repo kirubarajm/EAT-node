@@ -12,6 +12,7 @@ var routesVersioning = require('express-routes-versioning')();
   var coupon = require("../controllers/common/CouponController");
   var Stories = require("../controllers/common/StoryController");
   var feedback = require("../controllers/common/EatfeedbackController");
+  var collection = require("../controllers/common/CollectionController");
 
 // Eat
 app.route("/eat/products").post(routesVersioning({"1.0.0": eatuser.eat_makeit_product_list}));
@@ -74,5 +75,8 @@ app
 
   app.route("/orders/ordercreate").post(routesVersioning({"1.0.0":orders.eatuser_order_create})).delete(routesVersioning({"1.0.0":eatuser.delete_a_user}));
 
-app.route("/eat/coupon/:userid").get(routesVersioning({"1.0.0":coupon.get_all_coupons_by_userid}));
+  app.route("/eat/coupon/:userid").get(routesVersioning({"1.0.0":coupon.get_all_coupons_by_userid}));
+  
+  app.route("/eat/coupon/validate").post(routesVersioning({"1.0.0":coupon.coupons_code_validate}));
+  app.route("/eat/collection").get(routesVersioning({"1.0.0":collection.list_all_collection}));
 }
