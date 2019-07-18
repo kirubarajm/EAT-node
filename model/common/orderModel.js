@@ -1868,11 +1868,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
 
   if (orderdetails[0].orderstatus < 5) {
     sql.query(
-      "UPDATE Orders SET orderstatus = 7,cancel_by = 1.cancel_reason= '" +
-      req.cancel_reason +
-      "' WHERE orderid ='" +
-        req.orderid +
-        "'",
+      "UPDATE Orders SET orderstatus = 7,cancel_by = 1,cancel_reason= '" +req.cancel_reason +"' WHERE orderid ='" +req.orderid +"'",
       async function(err, res) {
         if (err) {
           result(err, null);

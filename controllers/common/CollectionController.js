@@ -41,8 +41,8 @@ exports.delete_a_collection = function(req, res) {
   });
 };
 
-exports.get_all_collection_by_userid = function(req, res) {
-    Collection.get_collection_by_userid(req.body, function(err, result) {
+exports.get_all_collection_by_cid= function(req, res) {
+    Collection.get_all_collection_by_cid(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });

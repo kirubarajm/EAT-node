@@ -79,4 +79,5 @@ app
   
   app.route("/eat/coupon/validate").post(routesVersioning({"1.0.0":coupon.coupons_code_validate}));
   app.route("/eat/collection").get(routesVersioning({"1.0.0":collection.list_all_collection}));
+  app.route("/eat/collectiondetails").post(routesVersioning({"1.0.0":collection.get_all_collection_by_cid}));
 }

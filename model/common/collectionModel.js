@@ -112,6 +112,56 @@ Collection.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
   };
 
 
+  Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,result) {
+    sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(null, err);
+      } else {
 
+          var productlist = res[0].query;
+
+          console.log(productlist);
+
+          sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
+            if (err) {
+              console.log("error: ", err);
+              result(null, err);
+            } else {
+              
+              for (let i = 0; i < res1.length; i++) {
+                
+                if (req.cid === 1) {
+                  res1[i].productlist =JSON.parse(res1[i].productlist)
+                }
+                console.log(res1[i].distance);
+                res1[i].distance = res1[i].distance.toFixed(2);
+                //15min Food Preparation time , 3min 1 km
+               // console.log(res1[i].distance);
+              // var  eta = 15 + (3 * res[i].distance);
+              //   res1[i].eta = Math.round(eta) + " mins";
+
+
+                if (res1[i].cuisines) {
+                  res1[i].cuisines = JSON.parse(res1[i].cuisines);
+                }
+              
+            }
+
+
+              let sucobj = "true";
+              let resobj = {
+                success: sucobj,
+                result: res1
+              };
+              result(null, resobj);
+
+            }
+
+          });
+      
+      }
+    });
+  };
 
 module.exports = Collection;
