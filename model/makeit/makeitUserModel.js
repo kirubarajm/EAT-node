@@ -1007,7 +1007,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
                       var grandtotal = +gstcharge + +totalamount + +delivery_charge;
                       
-                  
+                          console.log(gstcharge);
                  
                   calculationdetails.grandtotal = grandtotal;
                   calculationdetails.original_price = original_price;

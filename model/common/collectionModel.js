@@ -38,7 +38,7 @@ Collection.createCoupon = function createCoupon(req, result) {
 
 
 Collection.list_all_active_collection = function list_all_active_collection(req,result) {
-  sql.query("Select * from Collections where active_status=1", function(err, res) {
+  sql.query("Select cid,name,active_status,category,img_url,heading,subheading,created_at from Collections where active_status=1", function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(null, err);
@@ -49,7 +49,7 @@ Collection.list_all_active_collection = function list_all_active_collection(req,
         let resobj = {
           success: true,
           status:true,
-          result: res
+          collection: res
         };
         result(null, resobj);
        } else {
@@ -131,7 +131,7 @@ Collection.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
               
               for (let i = 0; i < res1.length; i++) {
                 
-                if (req.cid === 1) {
+                if (req.cid === 1 || req.cid === 5) {
                   res1[i].productlist =JSON.parse(res1[i].productlist)
                 }
                 console.log(res1[i].distance);
@@ -149,9 +149,9 @@ Collection.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
             }
 
 
-              let sucobj = "true";
               let resobj = {
-                success: sucobj,
+                success: true,
+                status:true,
                 result: res1
               };
               result(null, resobj);

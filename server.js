@@ -2,12 +2,12 @@ const express = require("express"),
   app = express(),
   bodyParser = require("body-parser");
 
+
+
 port = process.env.PORT || 3000;
 var cors = require("cors");
 
-//   for (var k in VERSIONS) {
-//     app.use(VERSIONS[k], require('./routes' + VERSIONS[k]));
-// }
+
 
 app.listen(port);
 const fileUpload = require("express-fileupload");

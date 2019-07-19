@@ -3,6 +3,8 @@ var sql = require('../db.js');
 var constant = require('../constant.js');
 var request = require('request');
 const util = require('util');
+let jwt = require('jsonwebtoken');
+let config = require('../config.js');
 const CronJob = require('cron').CronJob;
 const Razorpay = require("razorpay");
 var instance = new Razorpay({
@@ -1386,18 +1388,25 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                 var new_user = new Eatuser(req);
                 new_user.otp_status = 1;
 
-                sql.query("INSERT INTO User set ?", new_user, function(
-                  err,
-                  res2
-                ) {
+                sql.query("INSERT INTO User set ?", new_user, function(err,res2) {
                   if (err) {
                     console.log("error: ", err);
                     result(null, err);
                   } else {
+
+                    let token = jwt.sign({username: req.phoneno},
+                      config.secret
+                      // ,
+                      // { //expiresIn: '24h' // expires in 24 hours
+                      // }
+                     );
+
                     let resobj = {
                       success: true,
-                     status: true,
+                       status: true,
                       // message:mesobj,
+                      message: 'Authentication successful!',
+                      token: token,
                       passwordstatus: passwordstatus,
                       emailstatus:emailstatus,
                       otpstatus: true,

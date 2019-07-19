@@ -1,6 +1,6 @@
 "use strict";
 module.exports = function(app) {
-var routesVersioning = require('express-routes-versioning')();
+  var routesVersioning = require('express-routes-versioning')();
   var eatuser = require("../controllers/eat/EatUserController");
   var makeituser = require("../controllers/makeit/MakeitUserController");
   var fav = require("../controllers/eat/FavController");
@@ -13,6 +13,11 @@ var routesVersioning = require('express-routes-versioning')();
   var Stories = require("../controllers/common/StoryController");
   var feedback = require("../controllers/common/EatfeedbackController");
   var collection = require("../controllers/common/CollectionController");
+  let jwt = require('jsonwebtoken');
+  let config = require('../model/config.js');
+  let middleware = require('../model/middleware.js');
+
+
 
 // Eat
 app.route("/eat/products").post(routesVersioning({"1.0.0": eatuser.eat_makeit_product_list}));
@@ -73,11 +78,10 @@ app
     .put(routesVersioning({"1.0.0":fav.update_a_fav}))
     .delete(routesVersioning({"1.0.0":fav.delete_a_fav}));
 
-  app.route("/orders/ordercreate").post(routesVersioning({"1.0.0":orders.eatuser_order_create})).delete(routesVersioning({"1.0.0":eatuser.delete_a_user}));
-
-  app.route("/eat/coupon/:userid").get(routesVersioning({"1.0.0":coupon.get_all_coupons_by_userid}));
-  
-  app.route("/eat/coupon/validate").post(routesVersioning({"1.0.0":coupon.coupons_code_validate}));
-  app.route("/eat/collection").get(routesVersioning({"1.0.0":collection.list_all_collection}));
-  app.route("/eat/collectiondetails").post(routesVersioning({"1.0.0":collection.get_all_collection_by_cid}));
+app.route("/orders/ordercreate").post(routesVersioning({"1.0.0":orders.eatuser_order_create})).delete(routesVersioning({"1.0.0":eatuser.delete_a_user}));
+app.route("/eat/coupon/:userid").get(routesVersioning({"1.0.0":coupon.get_all_coupons_by_userid}));
+app.route("/eat/coupon/validate").post(routesVersioning({"1.0.0":coupon.coupons_code_validate}));
+app.route("/eat/collection").get(routesVersioning({"1.0.0":collection.list_all_collection}));
+//app.route("/eat/collection").get(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection}));
+app.route("/eat/collectiondetails").post(routesVersioning({"1.0.0":collection.get_all_collection_by_cid}));
 }
