@@ -101,8 +101,10 @@ Notification.orderEatPushNotification = async function(
   }
   if (data == null) return;
   const user = await Notification.getEatUserDetail(userid);
-  if (user && user.pushid_android) {
-    FCM_EAT.sendNotificationAndroid(user.pushid_android, data);
+  var pushid = user.pushid_android || user.pushid_ios
+  console.log("pushid-->",pushid+""+data)
+  if (user && pushid) {
+    FCM_EAT.sendNotificationAndroid(pushid, data);
   }
 };
 

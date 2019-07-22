@@ -27,9 +27,15 @@ exports.sendNotificationAndroid = function(
     priority: "high",
     timeToLive: 60 * 60 * 24 // 1 day
   };
-
+ // dat.content_available = '1';
   var payload = {
-    data: dat
+    data: dat,
+    notification: {
+      title: dat.title,
+      body: dat.message, // <= CHANGE
+      sound : "default"
+    }
   };
+  console.log("token-->",token+""+payload.data);
   EAT.messaging().sendToDevice(token, payload, options);
 };
