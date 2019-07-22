@@ -1452,6 +1452,13 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                         responce.push(res3[0]);
                       }
 
+                      let token = jwt.sign({username: req.phoneno},
+                        config.secret
+                        // ,
+                        // { //expiresIn: '24h' // expires in 24 hours
+                        // }
+                       );
+
                       let resobj = {
                         success: true,
                         status: true,
@@ -1459,6 +1466,8 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                         emailstatus:emailstatus,
                         otpstatus: otpstatus,
                         genderstatus: genderstatus,
+                        message: 'Authentication successful!',
+                        token: token,
                         userid: res1[0].userid,
                         regionid:res1[0].regionid || 0,
                         result: responce
@@ -1611,6 +1620,7 @@ Eatuser.eat_user_post_registration = async function(req, result) {
   req.phoneno= userinfo[0].phoneno;
   //console.log(req);
   if (!userinfo[0].razer_customerid) {
+    
     
   var customerid = await Eatuser.create_customerid_by_razorpay(req);
   console.log("customerid:----- ", customerid); 

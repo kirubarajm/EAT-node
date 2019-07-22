@@ -48,15 +48,16 @@ const master = [
             {
                 "sortid": 2,
                 "sortname": "Top rated"
-            },
-            {
-                "sortid": 3,
-                "sortname": "low to high"
-            },
-            {
-                "sortid": 4,
-                "sortname": "high to low"
-            },
+             }
+             //,
+            // {
+            //     "sortid": 3,
+            //     "sortname": "low to high"
+            // },
+            // {
+            //     "sortid": 4,
+            //     "sortname": "high to low"
+            // },
         ]
     },
 
