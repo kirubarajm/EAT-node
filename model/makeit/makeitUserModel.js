@@ -874,7 +874,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                     res1[0].amount = amount;
                     res1[0].cartquantity = orderitems[i].quantity;
                     totalamount = totalamount + amount;
-                  
+                  console.log(totalamount);
                   //  if product is availablity to push into product details
                     productdetails.push(res1[0]);
                   } 
@@ -913,18 +913,20 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
 
                 //coupon
+              
 
                 if (req.cid) {
 
                   var couponlist = await query("Select * From Coupon where cid = '" +req.cid+"' and active_status = 1"); 
-                  
+                  console.log(couponlist.length);
+                 
                   if (couponlist.length != 0) {
 
                     var maxdiscount = couponlist[0].maxdiscount;
                     var numberoftimes = couponlist[0].numberoftimes;
                     var discount_percent = couponlist[0].discount_percent;
   
-                    var CouponsUsedlist = await query("Select * From CouponsUsed where cid = '" +req.cid+"'"); 
+                    var CouponsUsedlist = await query("Select * From CouponsUsed where cid = '" +req.cid+"' and userid = '"+req.userid+"'"); 
   
                     var couponusedcount = CouponsUsedlist.length;
                   }
@@ -937,47 +939,9 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                   var refund_coupon_adjustment = 0;
                   var coupon_discount_amount = 0;
               //    if (refundlist) {
-
-                  var gstcharge = (totalamount / 100) * gst;
-
-                  gstcharge = Math.round(gstcharge);
-
-                  product_orginal_price = totalamount;
-    
-                  var original_price = +gstcharge + +product_orginal_price + +delivery_charge;
-
-  
-                  if (refundlist.length !== 0) {
-
-                    refundcouponstatus = true;
-                    // get refund amount 
-                       refund_amount = refundlist[0].refundamount;
-
-                      if (totalamount >= refundlist[0].refundamount) {
-                        
-                        var refund_balance = 0 ;
-
-                        refund_coupon_adjustment = refundlist[0].refundamount;
-                      
-                      }else if(totalamount < refundlist[0].refundamount){
-                      
-                        var refund_balance = refundlist[0].refundamount - totalamount;
-
-                        refund_coupon_adjustment = totalamount;
-                      }
-              
-                      
-  
-                      //get price 
-                      totalamount = totalamount - refundlist[0].refundamount;
                 
-                      //if grandtotal is lesser then 0 define grandtotal is 0
-                      if (totalamount < 0) totalamount = 0; 
-                      calculationdetails.refundamount = refundlist[0].refundamount;
-                  }
-                   
-
-
+                  product_orginal_price = totalamount;
+                
                   if (couponusedcount <= numberoftimes) {
                         
                     var discount_amount = (totalamount / 100) * discount_percent;
@@ -991,6 +955,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                     }
 
 
+                  
                     
                     if (totalamount >= discount_amount) {
                         
@@ -1005,9 +970,52 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                    
                   }
 
-                      var grandtotal = +gstcharge + +totalamount + +delivery_charge;
+
+                  
+                  var gstcharge = (totalamount / 100) * gst;
+
+                  gstcharge = Math.round(gstcharge);
+    
+                  var original_price = +gstcharge + +product_orginal_price + +delivery_charge;
+
+                  var grandtotal = +gstcharge + +totalamount + +delivery_charge;
+
+                  if (refundlist.length !== 0) {
+
+                    refundcouponstatus = true;
+                    // get refund amount 
+                       refund_amount = refundlist[0].refundamount;
+
+                      if (grandtotal >= refundlist[0].refundamount) {
+                        
+                        var refund_balance = 0 ;
+
+                        refund_coupon_adjustment = refundlist[0].refundamount;
                       
-                          console.log(gstcharge);
+                      }else if(grandtotal < refundlist[0].refundamount){
+                      
+                        var refund_balance = refundlist[0].refundamount - grandtotal;
+
+                        refund_coupon_adjustment = grandtotal;
+                      }
+              
+                      
+  
+                      //get price 
+                      grandtotal = grandtotal - refundlist[0].refundamount;
+                
+                      //if grandtotal is lesser then 0 define grandtotal is 0
+                      if (grandtotal < 0) grandtotal = 0; 
+                      calculationdetails.refundamount = refundlist[0].refundamount;
+                  }
+                   
+
+                   
+               
+
+                      
+                      
+                        //  console.log(gstcharge);
                  
                   calculationdetails.grandtotal = grandtotal;
                   calculationdetails.original_price = original_price;

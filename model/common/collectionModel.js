@@ -122,7 +122,12 @@ Collection.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
           var productlist = res[0].query;
 
           console.log(productlist);
-
+         
+          console.log(req.eatuserid);
+          console.log(req.lat);
+          console.log(req.lon); 
+ 
+        
           sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
             if (err) {
               console.log("error: ", err);

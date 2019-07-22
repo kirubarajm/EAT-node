@@ -1863,6 +1863,8 @@ Order.create_refund = function create_refund(refundDetail) {
   });
 };
 
+
+
 Order.eat_order_cancel = async function eat_order_cancel(req, result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
@@ -1880,11 +1882,28 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             userid: orderdetails[0].userid,
             payment_id: orderdetails[0].transactionid
           };
-          if (
-            orderdetails[0].payment_type === "1" &&
-            orderdetails[0].payment_status === 1
-          )
-            await Order.create_refund(refundDetail);
+
+          console.log(refundDetail);
+
+        ///  if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1)
+          //  await Order.create_refund(refundDetail);
+                  
+    
+
+                    if (orderdetails[0].payment_type === "0") {
+                      var rc = new RefundCoupon(req);
+                      RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+                        if (err) {
+                          result(err, null);
+                        } 
+                      });
+                    } else if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1) {
+                      // var rc =new RefundOnline(req);
+                   
+                      await RefundOnline.createRefund(refundDetail);
+                        
+                    }
+
           await Notification.orderMakeItPushNotification(
             req.orderid,
             null,
@@ -2169,10 +2188,7 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
                   }
                 }
               });
-            } else if (
-              orderdetails[0].payment_type === "1" &&
-              orderdetails[0].payment_status === 1
-            ) {
+            } else if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1) {
               // var rc =new RefundOnline(req);
               var refundDetail = {
                 orderid: req.orderid,
