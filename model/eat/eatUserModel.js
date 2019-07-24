@@ -1624,11 +1624,13 @@ Eatuser.eat_user_post_registration = async function(req, result) {
     
   var customerid = await Eatuser.create_customerid_by_razorpay(req);
   console.log("customerid:----- ", customerid); 
-  if (!customerid) {
+  if (customerid === 400) {
       let resobj = {
         success: true,
         status: false,
-        message: "Sorry can't create customerid format is invalid"
+       // message: "Sorry can't create customerid format is invalid"
+       message: "Customer already exists for the merchant!"
+        
         
       };
     result(null,resobj );
@@ -2182,14 +2184,14 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
           sql.query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ", function(err, customerupdate) {
            if (err) {
             console.log("error: ", err);
-            //  return false;
+              return false;
            } 
           });
           console.log("cuId:----- ", cuId);
           return cuId;
           }).catch((error) => {
             console.log("error: ", error);
-            return false;
+            return error.statusCode;
           })
     
     
