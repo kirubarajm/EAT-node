@@ -10,7 +10,7 @@ module.exports = function(app) {
 // Moveit
 app.route("/moveit/faqs/:id").get(routesVersioning({"1.0.0":faq.list_all_faqbytype}));
 app.route("/moveit/onlinestatus").put(routesVersioning({"1.0.0":moveituser.moveit_live_status}));
-app.route("/moveit/orders/:moveit_user_id").get(routesVersioning({"1.0.0":orders.orderlist_by_moveit_userid}));
+app.route("/moveit/orders/:moveit_user_id").get(routesVersioning({"1.0.0":orders.orderlist_by_moveit_userid,"2.0.0":orders.orderlist_by_moveit_userid_V2}));
 app.route("/moveit/vorders/:orderid").get(routesVersioning({"1.0.0":orders.orderview}));
 app.route("/moveit/orderpickupstatus").put(routesVersioning({"1.0.0":orders.order_pickup_status}));
 app.route("/moveit/orderdeliverystatus").put(routesVersioning({"1.0.0":orders.order_delivery_status}));

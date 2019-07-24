@@ -19,9 +19,11 @@ const PushConstant={
     pageidMoveit_Order_Assigned:1,
     pageidMoveit_Order_Cancel:2,
     pageidMoveit_Order_Prepared:3,
+    pageidMoveit_Replies:4,
 
     pageidMakeit_Order_Post:1,
     pageidMakeit_Order_Cancel:2,
+    pageidMakeit_Replies:4,
 
 };
 

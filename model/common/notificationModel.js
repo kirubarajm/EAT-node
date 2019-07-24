@@ -101,11 +101,14 @@ Notification.orderEatPushNotification = async function(
   }
   if (data == null) return;
   const user = await Notification.getEatUserDetail(userid);
-  var pushid = user.pushid_android || user.pushid_ios
-  console.log("pushid-->",pushid+""+data)
-  if (user && pushid) {
-    FCM_EAT.sendNotificationAndroid(pushid, data);
+  if (user && user.pushid_android) {
+    FCM_EAT.sendNotificationAndroid(user.pushid_android, data);
   }
+
+  if (user && user.pushid_ios) {
+    FCM_EAT.sendNotificationAndroid(user.pushid_ios, data);
+  }
+
 };
 
 Notification.orderMakeItPushNotification = async function(
@@ -333,23 +336,28 @@ Notification.queries_answers_PushNotification = async function(
   var FCM_Obj = null;
   var appname = "";
   var pageid="0";
+  var ID="";
   if ((type === 1)) {
     userTable = "MakeitUser";
+    ID= "userid";
     FCM_Obj = FCM_Makeit;
     appname = "Makeit";
-    pageid ="4";
+    pageid =""+PushConstant.pageidMakeit_Replies;
   } else if ((type === 2)) {
     userTable = "MoveitUser";
+    ID= "userid";
     FCM_Obj = FCM_Moveit;
     appname = "Moveit";
-    pageid ="4";
+    pageid =""+PushConstant.pageidMoveit_Replies;
   } else if ((type === 3)) {
     userTable = "Sales_QA_employees";
+    ID= "id";
     FCM_Obj = FCM_Sales;
     appname = "Sales";
     pageid ="4";
   } else if ((type === 4)) {
     userTable = "User";
+    ID= "userid";
     FCM_Obj = FCM_EAT;
     appname = "Eat";
     pageid =""+PushConstant.Pageid_eat_query_replay;
@@ -365,11 +373,15 @@ Notification.queries_answers_PushNotification = async function(
   };
 
   Userdetails = await query(
-    "SELECT * FROM " + userTable + " where userid = " + userid
+    "SELECT * FROM " + userTable + " where "+ID+" = " + userid
   );
   console.log("kkk---"+userTable+"---userid--"+userid);
+
+  if (Userdetails && Userdetails[0].pushid_ios) {
+    FCM_EAT.sendNotificationAndroid(Userdetails[0].pushid_ios, data);
+  }
+
   if (Userdetails && Userdetails[0].pushid_android && data) {
-    console.log("kkk---"+Userdetails[0].pushid_android+"---userid--"+userid);
     FCM_Obj.sendNotificationAndroid(Userdetails[0].pushid_android, data);
   }
 };

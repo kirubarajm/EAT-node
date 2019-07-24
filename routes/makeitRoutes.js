@@ -12,7 +12,7 @@ var orders = require("../controllers/common/OrderController");
 app.route("/makeit/orders").get(routesVersioning({"1.0.0":makeituser.all_order_list}));
 app.route("/makeit/orders/listbydate").post(routesVersioning({"1.0.0":makeituser.all_order_list_bydate}));
 app.route("/makeit/orders/:id").get(routesVersioning({"1.0.0":makeituser.orderlist}));
-app.route("/makeit/ordershistory/:id").get(routesVersioning({"1.0.0":makeituser.orderhistory}));
+app.route("/makeit/ordershistory/:id").get(routesVersioning({"1.0.0":makeituser.orderhistory,"2.0.0": makeituser.orderhistory_V2}));
 app.route("/makeit/orderview/:orderid").get(routesVersioning({"1.0.0":makeituser.orderview}));
 app.route("/makeit/orderstatus").put(routesVersioning({"1.0.0":makeituser.orderstatus}));
 app.route("/makeit/lproduct/:makeit_userid").get(routesVersioning({"1.0.0":product.list_all_liveproduct}));

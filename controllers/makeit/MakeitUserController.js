@@ -135,6 +135,15 @@ exports.orderlist = function(req, res) {
 
 exports.orderhistory = function(req, res) {
   console.log(req.params);
+  console.log("V1--> 1.0.0");
+  Makeituser.orderhistorybyuserid(req.params.id, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+exports.orderhistory_V2 = function(req, res) {
+  console.log("V2--> 2.0.0");
   Makeituser.orderhistorybyuserid(req.params.id, function(err, result) {
     if (err) res.send(err);
     res.json(result);
