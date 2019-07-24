@@ -1875,6 +1875,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
         if (err) {
           result(err, null);
         } else {
+          
           var refundDetail = {
             orderid: req.orderid,
             original_amt: orderdetails[0].price,
@@ -1883,7 +1884,6 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             payment_id: orderdetails[0].transactionid
           };
 
-          console.log(refundDetail);
 
         ///  if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1)
           //  await Order.create_refund(refundDetail);
@@ -1898,10 +1898,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
                         } 
                       });
                     } else if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1) {
-                      // var rc =new RefundOnline(req);
-                   
                       await RefundOnline.createRefund(refundDetail);
-                        
                     }
 
           await Notification.orderMakeItPushNotification(
@@ -1909,6 +1906,15 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             null,
             PushConstant.pageidMakeit_Order_Cancel
           );
+
+          if(orderdetails[0]&&orderdetails[0].moveit_user_id){
+            console.log("EAT  Cancel-->"+orderdetails[0].moveit_user_id)
+            await Notification.orderMoveItPushNotification(
+              req.orderid,
+              PushConstant.pageidMoveit_Order_Cancel,
+              null
+            );
+          }
           let response = {
             success: true,
             status: true,
@@ -1979,6 +1985,14 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             null,
             PushConstant.pageidOrder_Cancel
           );
+          if(orderdetails[0]&&orderdetails[0].moveit_user_id){
+            console.log("Makeit  Cancel-->"+orderdetails[0].moveit_user_id)
+            await Notification.orderMoveItPushNotification(
+              req.orderid,
+              PushConstant.pageidMoveit_Order_Cancel,
+              null
+            );
+          }
           let response = {
             success: true,
             status: true,
