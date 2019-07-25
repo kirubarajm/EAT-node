@@ -497,43 +497,43 @@ Makeituser.orderlistbyuserid = function(id, result) {
     var query =
       "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid WHERE makeit_user_id  = '" +
       id +
-      "' and  ors.orderstatus !=0 and DATE(ors.ordertime) = CURDATE() group by orderid order by orderid  desc";
+      "' and  ors.lock_status = 0 and DATE(ors.ordertime) = CURDATE() group by orderid order by orderid  desc";
   } else {
     var query = "select * from Orders order by orderid desc";
   }
 
-  sql.query(query, function(err, res1) {
-    if (err) {
-      console.log("error: ", err);
-      result(null, err);
-    } else {
-      for (let i = 0; i < res1.length; i++) {
-        if (res1[i].userdetail) {
-          res1[i].userdetail = JSON.parse(res1[i].userdetail);
-        }
+        sql.query(query, function(err, res1) {
+          if (err) {
+            console.log("error: ", err);
+            result(null, err);
+          } else {
+            for (let i = 0; i < res1.length; i++) {
+              if (res1[i].userdetail) {
+                res1[i].userdetail = JSON.parse(res1[i].userdetail);
+              }
 
-        if (res1[i].makeitdetail) {
-          res1[i].makeitdetail = JSON.parse(res1[i].makeitdetail);
-        }
-        if (res1[i].moveitdetail) {
-          res1[i].moveitdetail = JSON.parse(res1[i].moveitdetail);
-        }
+              if (res1[i].makeitdetail) {
+                res1[i].makeitdetail = JSON.parse(res1[i].makeitdetail);
+              }
+              if (res1[i].moveitdetail) {
+                res1[i].moveitdetail = JSON.parse(res1[i].moveitdetail);
+              }
 
-        if (res1[i].items) {
-          var items = JSON.parse(res1[i].items);
-          res1[i].items = items;
-        }
-      }
+              if (res1[i].items) {
+                var items = JSON.parse(res1[i].items);
+                res1[i].items = items;
+              }
+            }
 
-      let resobj = {
-        success: true,
-        status:true,
-        result: res1
-      };
+            let resobj = {
+              success: true,
+              status:true,
+              result: res1
+            };
 
-      result(null, resobj);
-    }
-  });
+            result(null, resobj);
+          }
+        });
 };
 
 Makeituser.orderhistorybyuserid = function(id, result) {

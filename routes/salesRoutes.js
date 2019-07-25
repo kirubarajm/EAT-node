@@ -30,4 +30,11 @@ app.route("/sales/registration").post(routesVersioning({"1.0.0":salesuser.create
 app.route("/sales/trainingdocs").get(routesVersioning({"1.0.0":documents.list_all_sales_training_documents}));
 app.route("/sales/tasklist/:id").get(routesVersioning({"1.0.0":allocation.list_all_allocation_by_salesempid,"2.0.0":allocation.list_all_allocation_by_salesempid_V2}));
 
+app.route("/salesusers").post(routesVersioning({"1.0.0":salesuser.create_a_user}));
+app.route("/salesusers").get(routesVersioning({"1.0.0":salesuser.list_all_user}));
+app.route("/salesusers/:userid").get(routesVersioning({"1.0.0":salesuser.read_a_user}));
+app.route("/salesusers/:userid").put(routesVersioning({"1.0.0":salesuser.update_a_user}));
+app.route("/salesusers/:userid").delete(routesVersioning({"1.0.0":salesuser.delete_a_user}));
+
+
 }

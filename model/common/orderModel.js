@@ -1444,7 +1444,7 @@ Order.online_order_place_conformation = async function(order_place, result) {
 
 Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(req,result) {
 
-  const orderdetails = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus = 6  and payment_status = 1 order by orderid desc limit 1");
+  const orderdetails = await query("select ors.*,mk.brandname from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.userid ='" +req.userid +"' and ors.orderstatus = 6  and ors.payment_status = 1 order by ors.orderid desc limit 1");
 
   if (orderdetails) {
     for (let i = 0; i < orderdetails.length; i++) {

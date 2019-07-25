@@ -844,9 +844,7 @@ Product.update_delete_status = function(id, result) {
 };
 
 Product.approve_product_status = function(req, result) {
-  sql.query(
-    " select * from Product where productid = " + req.productid + " ",
-    function(err, res) {
+  sql.query("select * from Product where productid = " + req.productid + " ",function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(err, null);
@@ -927,10 +925,7 @@ Product.approve_product_status = function(req, result) {
   );
 };
 
-Product.admin_list_all__unapproval_product = function admin_list_all__unapproval_product(
-  req,
-  result
-) {
+Product.admin_list_all__unapproval_product = function admin_list_all__unapproval_product(req,result) {
   console.log(req);
 
   var query =
@@ -956,14 +951,9 @@ Product.admin_list_all__unapproval_product = function admin_list_all__unapproval
   });
 };
 
-Product.getAllProductbymakeituserid = function getAllProductbymakeituserid(
-  req,
-  result
-) {
+Product.getAllProductbymakeituserid = function getAllProductbymakeituserid(req,result) {
   sql.query(
-    "Select * from Product where delete_status = 0 and  makeit_userid = '" +
-      req.makeit_userid +
-      "' and approved_status !=3",
+    "Select * from Product where delete_status = 0 and  makeit_userid = '" +req.makeit_userid +"' and approved_status !=3",
     function(err, res) {
       if (err) {
         console.log("error: ", err);

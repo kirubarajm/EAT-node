@@ -349,9 +349,34 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
       " and mk.ka_status = 2 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1";
   }
 
-  if (req.vegtype === 0) {
-    productquery = productquery +" and pt.vegtype = 0";
+  var day = new Date();
+  var currenthour = day.getHours();
+
+//  console.log(currenthour);
+
+  if (currenthour <= 12) {
+
+    productquery = productquery + " and pt.breakfast = 1";
+  //  console.log("breakfast");
+  }else if(currenthour >= 12 && currenthour <= 16){
+
+    productquery = productquery + " and pt.lunch = 1";
+  //  console.log("lunch");
+  }else if( currenthour >= 16 && currenthour <= 23){
+    
+    productquery = productquery + " and pt.dinner = 1";
+  //  console.log("dinner");
   }
+
+  if(req.vegtype === 0) {
+
+    productquery = productquery +" and pt.vegtype = 0";
+
+  }
+
+ 
+  
+
   console.log(productquery);
   
   sql.query(productquery, async function(err, res) {
@@ -359,7 +384,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
       console.log("error: ", err);
       result(err, null);
     } else {
-      console.log(res[0].productlist);
+     
         // if(res[0].makeitimg) Images.push(res[0].makeitimg);
         // if(res[0].img2) Images.push(res[0].img2);
         // if(res[0].img3) Images.push(res[0].img3);
@@ -433,6 +458,8 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
 
   var regionlist = [];
   var cuisinelist = [];
+
+  
 
   if (req.regionlist !== undefined || !req.regionlist !== null) {
     regionlist = req.regionlist;
@@ -917,6 +944,28 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     query = query + "and mk.food_type= 0";
   }
 
+
+  
+  var day = new Date();
+  var currenthour = day.getHours();
+
+//  console.log(currenthour);
+
+  if (currenthour <= 12) {
+
+    query = query + " and pt.breakfast = 1";
+  //  console.log("breakfast");
+  }else if(currenthour >= 12 && currenthour <= 16){
+
+    query = query + " and pt.lunch = 1";
+  //  console.log("lunch");
+  }else if( currenthour >= 16 && currenthour <= 23){
+    
+    query = query + " and pt.dinner = 1";
+  //  console.log("dinner");
+  }
+
+
   if (req.sortid == 1) {
     query = query + " GROUP BY pt.productid HAVING distance <="+radiuslimit+" ORDER BY distance";
   } else if (req.sortid == 2) {
@@ -957,22 +1006,22 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
       result(null, resobj);
     }
 
-    function timeConvert(n) {
-      console.log("minitues calculate");
-      var num = n;
-      var hours = num / 60;
-      var rhours = Math.floor(hours);
-      var minutes = (hours - rhours) * 60;
-      var rminutes = Math.round(minutes);
-      return (
-        eta +
-        " minutes = " +
-        rhours +
-        " hour(s) and " +
-        rminutes +
-        " minute(s)."
-      );
-    }
+    // function timeConvert(n) {
+    //   console.log("minitues calculate");
+    //   var num = n;
+    //   var hours = num / 60;
+    //   var rhours = Math.floor(hours);
+    //   var minutes = (hours - rhours) * 60;
+    //   var rminutes = Math.round(minutes);
+    //   return (
+    //     eta +
+    //     " minutes = " +
+    //     rhours +
+    //     " hour(s) and " +
+    //     rminutes +
+    //     " minute(s)."
+    //   );
+    // }
   });
 };
 
