@@ -58,25 +58,30 @@ Product.createProduct = async function createProduct(
   var Productdetail = await Product.getTotalPrice(itemlist);
   newProduct.price = Productdetail.price;
   newProduct.vegtype = Productdetail.vegtype;
-  sql.query("INSERT INTO Product set ?", newProduct, function(err, res) {
-    if (err) {
-      console.log("error: ", err);
-      result(err, null);
-    } else {
+  
+  sql.beginTransaction(function(err) {
+    if (err) { throw err; }
+    sql.query("INSERT INTO Product set ?", newProduct, function(err, res) {
+      console.log("newProduct--err",err);
+      if (err) { 
+        sql.rollback(function() {
+          result(err, null);
+        });
+      } else {
+     // console.log("res",res.insertId);
       var productid = res.insertId;
-
       for (var i = 0; i < itemlist.length; i++) {
         var product_item = new Productitem(itemlist[i]);
         product_item.productid = productid;
         Productitem.createProductitems(product_item, function(err, result) {
-          if (err) {
-            console.log("error: ", err);
-            result(err, null);
-          } 
+          if (err) { 
+            sql.rollback(function() {
+              throw err;
+            });
+          }  
         });
       }
-
-     
+        
       let mesobj = "Product Created successfully";
       let resobj = {
         success: true,
@@ -84,10 +89,47 @@ Product.createProduct = async function createProduct(
         message: mesobj,
         productid: productid
       };
-
-      result(null, resobj);
-    }
+       sql.commit(function(err) {
+        if (err) { 
+         sql.rollback(function() {
+           result(null, resobj);
+          });
+        }
+        result(null, resobj);
+    });
+  }
   });
+});
+  // sql.query("INSERT INTO Product set ?", newProduct, function(err, res) {
+  //   if (err) {
+  //     console.log("error: ", err);
+  //     result(err, null);
+  //   } else {
+  //     var productid = res.insertId;
+
+  //     for (var i = 0; i < itemlist.length; i++) {
+  //       var product_item = new Productitem(itemlist[i]);
+  //       product_item.productid = productid;
+  //       Productitem.createProductitems(product_item, function(err, result) {
+  //         if (err) {
+  //           console.log("error: ", err);
+  //           result(err, null);
+  //         } 
+  //       });
+  //     }
+
+     
+  //     let mesobj = "Product Created successfully";
+  //     let resobj = {
+  //       success: true,
+  //       status:true,
+  //       message: mesobj,
+  //       productid: productid
+  //     };
+
+  //     result(null, resobj);
+  //   }
+  // });
 };
 
 Product.getProductById = function getProductById(userId, result) {
