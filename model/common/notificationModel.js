@@ -15,8 +15,16 @@ var Notification = function(notification) {
 };
 
 Notification.getPushOrderDetail = async function(orderid) {
-  var orders = await query("SELECT * FROM Orders where orderid = " + orderid);
-  console.log("orders--->" + orders);
+  var orders = await query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'pushid_ios',us.pushid_ios,'pushid_android',us.pushid_android) as userdetail,"+
+    "JSON_OBJECT('userid',ms.userid,'name',ms.name,'brandName',ms.brandName,'virtualkey',ms.virtualkey) as makeitdetail,"+
+    "JSON_OBJECT('userid',mu.userid,'name',mu.name,'Vehicle_no',mu.Vehicle_no) as moveitdetail "+
+    "from Orders as ors "+
+    "left join User as us on ors.userid=us.userid "+
+    "left join MakeitUser ms on ors.makeit_user_id = ms.userid "+
+    "left join MoveitUser mu on mu.userid = ors.moveit_user_id "+
+    "where ors.orderid ='" +orderid +"'"
+  );
+ // console.log("orders--->" +orders[0].userdetail);
   return orders[0];
 };
 
@@ -31,10 +39,11 @@ Notification.orderEatPushNotification = async function(
   userid,
   pageid
 ) {
-  if (!userid) {
-    var orders = await Notification.getPushOrderDetail(orderid);
-    userid = orders.userid;
-  }
+  var orders = await Notification.getPushOrderDetail(orderid);
+  var user = JSON.parse(orders.userdetail);
+  var makeituser = JSON.parse(orders.makeitdetail);
+  var moveituser = JSON.parse(orders.moveitdetail);
+
   var data = null;
   switch (pageid) {
     case PushConstant.Pageid_eat_order_post:
@@ -48,23 +57,26 @@ Notification.orderEatPushNotification = async function(
       break;
 
     case PushConstant.Pageid_eat_order_accept:
+      var mk_username=makeituser.brandName||""
+      mk_username=mk_username?" by "+mk_username :""
       data = {
-        title: "Order Accecpt",
-        message:
-          "Hi! your Order accepted successful.Please wait for some more time",
+        title: "Your order has been accepted"+mk_username,
+        message: "Your order will be delivered in approcimately 30 minutes",
         pageid: "" + pageid,
         app: "Eat",
-        notification_type: "1"
+        notification_type: "2"
       };
       break;
 
     case PushConstant.Pageid_eat_order_pickedup:
+        var mo_username=moveituser.name||""
+        mo_username=mo_username?" by "+mo_username :""
       data = {
-        title: "Order Picked up",
-        message: "Hi! your Order Picked up.Please wait your food reaced soon.",
+        title: "Your order has been picked up"+mo_username,
+        message: "Call our delivery executive for further information.",
         pageid: "" + pageid,
         app: "Eat",
-        notification_type: "1"
+        notification_type: "2"
       };
       break;
 
@@ -89,26 +101,33 @@ Notification.orderEatPushNotification = async function(
       break;
 
     case PushConstant.pageidOrder_Cancel:
+      var  message = "We apologise for the inconvenience caused. Explore our gold members for uninterrupted service. Kindly contact us for for more details.";
+      if(orders.payment_type===1){
+        message = "We apologise for the inconvenience caused. Your payment will be refunded within 2 - 4 working days. Kindly contact us for more details. ";
+      }
+      //COD
+      // Content - We apologise for the inconvenience caused. Explore our gold members for uninterrupted service. Kindly contact us for for more details."
+      //online
+      //Content - We apologise for the inconvenience caused. Your payment will be refunded within 2 - 4 working days. Kindly contact us for more details. "
       data = {
-        title: "Order Cancel",
-        message: "Sorry! your order not accepting.",
+        title: "Your order has been cancelled due to unforeseen circumstances.",
+        message: message,
         pageid: "" + pageid,
         app: "Eat",
-        notification_type: "1"
+        notification_type: "2"
       };
-      
+
       break;
   }
   if (data == null) return;
-  const user = await Notification.getEatUserDetail(userid);
+  //const user = await Notification.getEatUserDetail(userid);
   if (user && user.pushid_android) {
     FCM_EAT.sendNotificationAndroid(user.pushid_android, data);
   }
-
+  console.log("data->", data);
   if (user && user.pushid_ios) {
     FCM_EAT.sendNotificationAndroid(user.pushid_ios, data);
   }
-
 };
 
 Notification.orderMakeItPushNotification = async function(
@@ -278,7 +297,9 @@ Notification.sales_PushNotification = async function(
   allocationTime,
   status
 ) {
-  var makeit_user_detail = await query("SELECT name FROM MakeitUser where userid = " + makeit_userid);
+  var makeit_user_detail = await query(
+    "SELECT name FROM MakeitUser where userid = " + makeit_userid
+  );
   makeit_user_detail = makeit_user_detail[0];
   var data = null;
   var makeit_name = makeit_user_detail.name;
@@ -288,10 +309,10 @@ Notification.sales_PushNotification = async function(
     case 2:
       data = {
         title: "Info session assigned",
-        message: brand_name+" on " + allocationTime,
+        message: brand_name + " on " + allocationTime,
         pageid: "1",
         app: "sales",
-        sales_user_id:""+sales_userid,
+        sales_user_id: "" + sales_userid,
         makeit_name: "" + makeit_name,
         brand_name: "" + brand_name,
         allocationTime: "" + allocationTime,
@@ -306,7 +327,7 @@ Notification.sales_PushNotification = async function(
         message: brand_name + " on " + allocationTime,
         pageid: "1",
         app: "sales",
-        sales_user_id:""+sales_userid,
+        sales_user_id: "" + sales_userid,
         makeit_name: "" + makeit_name,
         brand_name: "" + brand_name,
         allocationTime: "" + allocationTime,
@@ -316,11 +337,10 @@ Notification.sales_PushNotification = async function(
       break;
   }
   var Salesuser = await query(
-    "SELECT pushid_android FROM Sales_QA_employees where id = " +
-      sales_userid
+    "SELECT pushid_android FROM Sales_QA_employees where id = " + sales_userid
   );
   if (Salesuser && Salesuser[0].pushid_android && data) {
-    console.log("sales user-->"+Salesuser[0].pushid_android)
+    console.log("sales user-->" + Salesuser[0].pushid_android);
     FCM_Sales.sendNotificationAndroid(Salesuser[0].pushid_android, data);
   }
 };
@@ -335,47 +355,47 @@ Notification.queries_answers_PushNotification = async function(
   var userTable = "";
   var FCM_Obj = null;
   var appname = "";
-  var pageid="0";
-  var ID="";
-  if ((type === 1)) {
+  var pageid = "0";
+  var ID = "";
+  if (type === 1) {
     userTable = "MakeitUser";
-    ID= "userid";
+    ID = "userid";
     FCM_Obj = FCM_Makeit;
     appname = "Makeit";
-    pageid =""+PushConstant.pageidMakeit_Replies;
-  } else if ((type === 2)) {
+    pageid = "" + PushConstant.pageidMakeit_Replies;
+  } else if (type === 2) {
     userTable = "MoveitUser";
-    ID= "userid";
+    ID = "userid";
     FCM_Obj = FCM_Moveit;
     appname = "Moveit";
-    pageid =""+PushConstant.pageidMoveit_Replies;
-  } else if ((type === 3)) {
+    pageid = "" + PushConstant.pageidMoveit_Replies;
+  } else if (type === 3) {
     userTable = "Sales_QA_employees";
-    ID= "id";
+    ID = "id";
     FCM_Obj = FCM_Sales;
     appname = "Sales";
-    pageid ="4";
-  } else if ((type === 4)) {
+    pageid = "4";
+  } else if (type === 4) {
     userTable = "User";
-    ID= "userid";
+    ID = "userid";
     FCM_Obj = FCM_EAT;
     appname = "Eat";
-    pageid =""+PushConstant.Pageid_eat_query_replay;
+    pageid = "" + PushConstant.Pageid_eat_query_replay;
   }
 
   var data = null;
   data = {
     title: "Queries Replied",
     message: answer,
-    pageid:pageid, //Need to change depends on type
+    pageid: pageid, //Need to change depends on type
     app: appname,
     notification_type: "1"
   };
 
   Userdetails = await query(
-    "SELECT * FROM " + userTable + " where "+ID+" = " + userid
+    "SELECT * FROM " + userTable + " where " + ID + " = " + userid
   );
-  console.log("kkk---"+userTable+"---userid--"+userid);
+  console.log("kkk---" + userTable + "---userid--" + userid);
 
   if (Userdetails && Userdetails[0].pushid_ios) {
     FCM_EAT.sendNotificationAndroid(Userdetails[0].pushid_ios, data);
