@@ -44,8 +44,7 @@ RefundCoupon.createRefundCoupon = async function createRefundCoupon(req, result)
       req.refund_balance = price + refundamount;
       req.refundamount =price + refundamount;
      // refundamount = price + refundamount;
-      console.log(req.refund_balance);
-      console.log(req.refundamount);
+  
       sql.query("INSERT INTO Refund_Coupon set ?", req, function(err, res) {
           if (err) {
             result(err, null);

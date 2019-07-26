@@ -465,3 +465,28 @@ exports.eat_order_cancel = function(req, res) {
     });
   }
 };
+
+
+
+exports.eat_app_version_check = function(req, res) {
+  // if (!req.body.vid) {
+  //   res
+  //     .status(400)
+  //     .send({ error: true, status: false, message: "Please provide lat" });
+  // } else if (!req.body.lon) {
+  //   res
+  //     .status(400)
+  //     .send({ error: true, status: false, message: "Please provide lan" });
+  // }else if (!req.body.eatuserid) {
+  //   res
+  //     .status(400)
+  //     .send({ error: true, status: false, message: "Please provide eatuserid" });
+  // } else {
+  Eatuser.eat_app_version_check_vid(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+//}
+};

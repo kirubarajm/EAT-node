@@ -1899,6 +1899,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
                         } 
                       });
                     } else if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1) {
+
                       await RefundOnline.createRefund(refundDetail);
                     }
 
@@ -1950,9 +1951,8 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
 };
 
 Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
-  const orderdetails = await query(
-    "select * from Orders where orderid ='" + req.orderid + "'"
-  );
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
+
   if (orderdetails[0].orderstatus === 7) {
     let response = {
       success: true,
@@ -1961,11 +1961,9 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
     };
     result(null, response);
   } else {
-    sql.query(
-      "UPDATE Orders SET orderstatus = 7,cancel_by = 2 WHERE orderid ='" +
-        req.orderid +
-        "'",
-      async function(err, res) {
+    sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 2 WHERE orderid ='" +req.orderid +"'",
+    
+    async function(err, res) {
         if (err) {
           result(err, null);
         } else {
@@ -1976,12 +1974,10 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             userid: orderdetails[0].userid,
             payment_id: orderdetails[0].transactionid
           };
-          if (
-            orderdetails[0].payment_type === "1" &&
-            orderdetails[0].payment_status === 1
-          )
+          
+          if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1)
             await Order.create_refund(refundDetail);
-          await Notification.orderEatPushNotification(
+             await Notification.orderEatPushNotification(
             req.orderid,
             null,
             PushConstant.pageidOrder_Cancel
@@ -2247,4 +2243,46 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
     result(null, response);
   }
 };
+
+
+Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
+
+  console.log(req);
+
+  var waitinglistquery = "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid WHERE  ors.orderstatus=0 and ors.lock_status = 0  and ors.created_at < (DATE_SUB(CURDATE(), interval 6 minute)) group by ors.orderid order by ors.orderid  desc";
+
+  sql.query(waitinglistquery, function(err,res1) {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {
+      for (let i = 0; i < res1.length; i++) {
+        if (res1[i].userdetail) {
+          res1[i].userdetail = JSON.parse(res1[i].userdetail);
+        }
+
+        if (res1[i].makeitdetail) {
+          res1[i].makeitdetail = JSON.parse(res1[i].makeitdetail);
+        }
+       
+
+        if (res1[i].items) {
+          var items = JSON.parse(res1[i].items);
+          res1[i].items = items;
+        }
+      }
+      let resobj = {
+        success: true,
+        status:true,
+        result: res1
+      };
+
+      result(null, resobj);
+    }
+    
+  });
+};
+
+
+
 module.exports = Order;

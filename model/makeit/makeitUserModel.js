@@ -4,6 +4,7 @@ var constant = require("../constant.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 var request = require("request");
+var moment = require("moment");
 //var OrderModel = require("../../model/common/orderModel");
 var Cusinemakeit = require("../../model/makeit/cusinemakeitModel");
 var MakeitImages = require("../../model/makeit/makeitImagesModel");
@@ -494,8 +495,10 @@ Makeituser.orderviewbymakeituser = function(req, result) {
 
 Makeituser.orderlistbyuserid = function(id, result) {
   if (id) {
+
+
     var query =
-      "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid WHERE makeit_user_id  = '" +
+      "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid WHERE ors.makeit_user_id  = '" +
       id +
       "' and  ors.lock_status = 0 and DATE(ors.ordertime) = CURDATE() group by orderid order by orderid  desc";
   } else {
@@ -646,10 +649,9 @@ Makeituser.all_order_list_bydate = function(req, result) {
 };
 
 Makeituser.orderstatusbyorderid = function(req, result) {
-  sql.query(
-    "UPDATE Orders SET orderstatus = ? WHERE orderid = ?",
-    [req.orderstatusid, req.orderid],
-    async function(err, res) {
+
+  var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
+  sql.query("UPDATE Orders SET orderstatus = ?,makeit_actual_preparing_time='"+transaction_time+"' WHERE orderid = ?",[req.orderstatusid, req.orderid],async function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
