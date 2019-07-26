@@ -565,9 +565,9 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
         console.log("error: ", err);
         result(null, err);
       } else {
-        console.log(res[0].active_status);
+        console.log(res[0].active_status+"--cc--"+res[0].approved_status);
 
-        if (res[0].active_status == 0) {
+        if (res[0].approved_status === 1 ||res[0].active_status == 0) {
           var Productdetail = await Product.getTotalPrice(items);
           req.price = Productdetail.price;
           req.vegtype = Productdetail.vegtype;
@@ -726,7 +726,7 @@ Product.productview_by_productid = function productview_by_productid(
 ) {
   const items = [];
   sql.query(
-    " select pd.*,JSON_OBJECT('userid',mk.userid,'name',mk.name,'phoneno',mk.phoneno,'email',mk.email,'address',mk.address,'lat',mk.lat,'lon',mk.lon,'brandName',mk.brandName,'localityid',mk.localityid,'virtualkey',mk.virtualkey) as makeitdetail from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid where productid = " + req.productid + "",
+    " select pd.*,JSON_OBJECT('userid',mk.userid,'name',mk.name,'phoneno',mk.phoneno,'email',mk.email,'address',mk.address,'lat',mk.lat,'lon',mk.lon,'brandName',mk.brandName,'localityid',mk.localityid,'virtualkey',mk.virtualkey,'ka_status',mk.ka_status) as makeitdetail from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid where productid = " + req.productid + "",
     function(err, res) {
       if (err) {
         console.log("error: ", err);
@@ -851,7 +851,6 @@ Product.approve_product_status = function(req, result) {
       } else {
         console.log(res.length);
         if (res.length !== 0) {
-          if (res[0].active_status === 0) {
             if (res[0].approved_status === 1|| res[0].approved_status === 4) {
               var query =
                 "UPDATE Product SET approved_time = ?,approved_status = " +
@@ -899,18 +898,7 @@ Product.approve_product_status = function(req, result) {
 
               result(null, resobj);
             }
-          } else if (res[0].active_status == 1) {
-            console.log("test");
-            let sucobj = true;
-            let resobj = {
-              success: sucobj,
-              status: false,
-              message: "Product is live now"
-            };
-
-            result(null, resobj);
-          }
-        } else {
+          } else {
           let sucobj = true;
           let resobj = {
             success: sucobj,
