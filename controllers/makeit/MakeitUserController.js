@@ -12,6 +12,24 @@ exports.list_all_user = function(req, res) {
   });
 };
 
+exports.createnewUser_Admin = function(req, res) {
+  var new_user = new Makeituser(req.body);
+  new_user.ka_status =1;
+  //handles null error
+  if (!new_user.name) {
+    res.status(400).send({ error: true, message: "Please provide name " });
+  } else if (!new_user.phoneno) {
+    res.status(400).send({ error: true, message: "Please provide phoneno" });
+  } else if (!new_user.password) {
+    res.status(400).send({ error: true, message: "Please provide password" });
+  } else {
+    Makeituser.createUser(new_user, function(err, user) {
+      if (err) res.send(err);
+      res.json(user);
+    });
+  }
+}
+
 exports.create_a_user = function(req, res) {
   var new_user = new Makeituser(req.body);
 

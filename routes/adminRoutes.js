@@ -36,7 +36,7 @@ app.route("/admin/orders/unassign").get(routesVersioning({"1.0.0":orders.un_assi
 app.route("/admin/product").post(routesVersioning({"1.0.0":product.admin_list_all_product}));
 app.route("/admin/makeitusers").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers}));
 app.route("/admin/unapproved/makeitlist").post(routesVersioning({"1.0.0":makeituser.admin_makeit_unapproved_list}));
-app.route("/admin/makeituser/add").post(routesVersioning({"1.0.0":makeituser.create_a_user}));
+app.route("/admin/makeituser/add").post(routesVersioning({"1.0.0":makeituser.createnewUser_Admin}));
 app.route("/admin/salesuser/add").post(routesVersioning({"1.0.0":salesuser.create_a_user}));
 app.route("/admin/moveituser/add").post(routesVersioning({"1.0.0":moveituser.create_a_user}));
 app.route("/admin/appointments").get(routesVersioning({"1.0.0":makeituser.list_all_appointment}));

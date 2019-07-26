@@ -43,7 +43,7 @@ var Makeituser = function(makeituser) {
   this.member_type=makeituser.member_type;
   this.about=makeituser.about;
   this.virutal_rating_count=makeituser.virutal_rating_count;
-
+  this.ka_status = makeituser.ka_status || 0;
 };
 
 Makeituser.createUser = function createUser(newUser, result) {
@@ -750,7 +750,7 @@ Makeituser.get_admin_list_all_makeitusers = function(req, result) {
 };
 
 Makeituser.admin_get_unapproved_makeitlist = function(req, result) {
-  var query = "select * from MakeitUser where ka_status=1 and virtualkey=0";
+  var query = "select * from MakeitUser where ka_status=1";
   var searchquery = " and name LIKE  '%" + req.search + "%' OR us.brandname LIKE '%" + req.search +"%'";
    if (req.search) {
     query = query + searchquery;
