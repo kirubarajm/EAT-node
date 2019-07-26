@@ -428,3 +428,11 @@ exports.makeit_order_missing = function(req, res) {
    });
  }
 };
+
+
+exports.order_waiting_list_by_admin = function(req, res) {
+  Order.get_order_waiting_list(req.params, function(err, waitinglist) {
+    if (err) res.send(err);
+    res.send(waitinglist);
+  });
+};

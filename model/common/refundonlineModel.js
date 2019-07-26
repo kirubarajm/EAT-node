@@ -21,11 +21,13 @@ RefundOnline.createRefund = async function createRefund(req, result) {
     sql.query("INSERT INTO Refund_Online set ?",req, function(err, res1) {
       if (err) result(true, null);
       else {
+
       let response = {
           success: true,
-          status: true
+          status: true,
+          message : "refund online created successfully"
       };
-      result(null, true);
+      result(null, response);
       }
   });
   

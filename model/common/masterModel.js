@@ -6,8 +6,8 @@ var masters = require("../master.js");
 masters.read_a_masters = function read_a_masters(req, result) {
   console.log(masters[0]);
   let resobj = {
-    // success:success,
-
+     success:true,
+     status:true,
     result: masters
   };
   result(null, resobj);

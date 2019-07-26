@@ -6,6 +6,7 @@ const util = require('util');
 let jwt = require('jsonwebtoken');
 let config = require('../config.js');
 const CronJob = require('cron').CronJob;
+var moment = require("moment");
 const Razorpay = require("razorpay");
 var instance = new Razorpay({
     key_id: 'rzp_test_3cduMl5T89iR9G',
@@ -349,10 +350,10 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
       " and mk.ka_status = 2 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1";
   }
 
-  var day = new Date();
-  var currenthour = day.getHours();
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+  var currenthour  = moment(day).format("HH");
 
-//  console.log(currenthour);
+  console.log(currenthour);
 
   if (currenthour <= 12) {
 
@@ -1028,6 +1029,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
 Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
    
     var applink = constant.applink;
+    var refferalcontent = constant.refferalcontent;
 
        sql.query("select referalcode from User where userid = '"+req.userid+"' " , function (err, res) {
    
@@ -1036,15 +1038,15 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
                result(err, null);
            }
            else{
-               
-            res[0].applink = "https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3D"+res[0].referalcode+"%26utm_campaign%3Dreferral";
-
-           // https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3Deat001%26utm_campaign%3Dreferral
-           // console.log("TEST: ",  referralcode);
+              
+          //  res[0].applink = "https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3D"+res[0].referalcode+"%26utm_campaign%3Dreferral";
+          console.log("res[0].referalcode: ", res[0].referalcode);
+          res[0].applink = refferalcontent+" "+ applink +". Use Refferal Code :"+ res[0].referalcode
               
           
                let resobj = {  
                success: true,
+               status: true,
                result: res
                }; 
    
@@ -2308,6 +2310,38 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       });
     };
 
+
+
+
+    Eatuser.eat_app_version_check_vid= async function eat_app_version_check_vid(req,result) { 
+ 
+      var updatestatus = {};
+      var versionstatus = false;
+      var eatforceupdatestatus =false;
+
+      var eatversioncode = constant.eatversioncode;
+      var eatforceupdate = constant.eatforceupdate;
+      
+
+      if (req.eatversioncode < eatversioncode) {
+        
+        versionstatus = true;
+        eatforceupdatestatus = true;
+      }
+
+      updatestatus.versionstatus = versionstatus;
+      updatestatus.eatforceupdate = eatforceupdatestatus;
+
+          let resobj = {
+              success: true,
+              status:true,
+              result:updatestatus
+          };
+    
+          result(null, resobj);
+
+    
+    };
 
  
 module.exports = Eatuser;
