@@ -63,127 +63,235 @@ var Order = function(order) {
 };
 
 Order.createOrder = async function createOrder(req, orderitems, result) {
-  // console.log(req);
   try {
-    var tempmessage = "";
-    var newOrder = [];
-    const productquantity = [];
-    const delivery_charge = constant.deliverycharge;
-
-    const res = await query(
-      "select * from Orders where orderstatus < 6 and lock_status = 0 and userid= '" +
+    const res = await query( "select * from Orders where orderstatus < 6 and lock_status = 0 and userid= '" +
         req.userid +
         "'"
     );
-
     if (res.length == 0) {
-      Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(
-        err,
-        res3
-      ) {
+      Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(err,res3) {
         if (err) {
           result(err, null);
         } else {
-          // console.log(res3.status);
           if (res3.status != true) {
             result(null, res3);
           } else {
             var amountdata = res3.result[0].amountdetails;
+            var address_data = await query("Select * from Address where aid = '" + req.aid + "'");
+            req.cus_address = address_data[0].address;
+            req.locality = address_data[0].locality;
+            req.cus_lat = address_data[0].lat;
+            req.cus_lon = address_data[0].lon;
+
             req.gst = amountdata.gstcharge;
             req.price = amountdata.grandtotal;
-
-            const res2 = await query(
-              "Select * from Address where aid = '" + req.aid + "'"
-            );
-            // console.log(res2);
-            req.cus_address = res2[0].address;
-            req.locality = res2[0].locality;
-            req.cus_lat = res2[0].lat;
-            req.cus_lon = res2[0].lon;
-
-            if (req.payment_type === 0) {
-              ordercreatecashondelivery(req, res3.result[0].item);
-              console.log("cash on delivery");
-            } else if (req.payment_type === 1) {
-              console.log("cash on online");
-              ordercreatecashondelivery(req, res3.result[0].item);
+            
+           Order.OrderInsert(req, res3.result[0].item,false,function(err,res){
+            if (err) {
+              result(err, null);
+            } else {
+              result(null, res);
             }
+           });
+           //ordercreatecashondelivery(req, res3.result[0].item);
           }
         }
       });
-
-      function ordercreatecashondelivery(req, orderitems) {
-        console.log("ordercreatecashondelivery:");
-        var new_Order = new Order(req);
-        new_Order.delivery_charge = delivery_charge;
-
-        console.log(new_Order);
-        console.log(orderitems);
-
-        sql.query("INSERT INTO Orders set ?", new_Order, async function(
-          err,
-          res1
-        ) {
-          if (err) {
-            console.log("error: ", err);
-            result(null, err);
-          } else {
-            var orderid = res1.insertId;
-
-            for (var i = 0; i < orderitems.length; i++) {
-              console.log(orderitems[i].productid);
-              var orderitem = {};
-              orderitem.orderid = orderid;
-              orderitem.productid = orderitems[i].productid;
-              orderitem.quantity = orderitems[i].cartquantity;
-              orderitem.price = orderitems[i].price;
-              var items = new Orderitem(orderitem);
-              Orderitem.createOrderitems(items, function(err, res2) {
-                if (err) result.send(err);
-              });
-            }
-            await Notification.orderMakeItPushNotification(
-              orderid,
-              req.makeit_user_id,
-              PushConstant.pageidMakeit_Order_Post
-            );
-
-            let sucobj = true;
-            let status = true;
-            let mesobj = "Order Created successfully";
-            let resobj = {
-              success: sucobj,
-              status: status,
-              message: mesobj,
-              orderid: orderid
-            };
-            result(null, resobj);
-          }
-        });
-      }
     } else {
-      let sucobj = true;
-      let status = false;
-      let mesobj =
-        "Already you have one order, So please try once delivered exiting order";
       let resobj = {
-        success: sucobj,
-        status: status,
-        message: mesobj
+        success: true,
+        status: false,
+        message: "Already you have one order, So please try once delivered exiting order"
       };
-      result(null, resobj);
+      result(resobj,null);
     }
   } catch (error) {
-    var errorCode = 402;
+    let resobj = {
+      success: true,
+      status: false,
+      errorCode: 402
+    };
+    result(resobj, null);
+  }
+};
+
+Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
+  const delivery_charge = constant.deliverycharge;
+  const res = await query("select count(*) as count from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
+  if (res[0].count === 0) {
+    const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
+    console.log("address_data-->",address_data);
+    if(address_data.length===0) {
+      let resobj = {
+                success: true,
+                status: false,
+                message: "Sorry your slected address wrong.Please select correct address."
+              };
+              result(null, resobj);
+      }else{
+          var makeitavailability = await query(
+            "Select distinct mk.userid,mk.lat,mk.lon,( 3959 * acos( cos( radians(" +
+            address_data[0].lat +
+              ") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians(" +
+              address_data[0].lon +
+              ") ) + sin( radians(" +
+              address_data[0].lat +
+              ") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk where mk.userid ='" +
+              req.makeit_user_id +
+              "' and mk.appointment_status = 3 and mk.verified_status = 1 and mk.ka_status = 2"
+          );
+           var eta = 15 + 3 * makeitavailability[0].distance;
+           //15min Food Preparation time , 3min 1 km
+           if (makeitavailability[0].distance > constant.radiuslimit && eta >constant.eat_delivery_min) {
+                    let resobj = {
+                      success: true,
+                      status: false,
+                      message:  "Sorry this kitchen service is not available! for your following address"
+                    };
+                    result(null, resobj);
+           }else{
+            Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(err,res3) {
+              if (err) {
+                result(err, null);
+              } else {
+                if (res3.status != true) {
+                  result(null, res3);
+                } else {
+                  var amountdata = res3.result[0].amountdetails;
+        
+                  req.original_price = amountdata.original_price;
+                  req.refund_balance = amountdata.refund_balance;
+                  req.refund_amount = amountdata.refundamount;
+                  req.discount_amount = amountdata.coupon_discount_amount;
+                  req.after_discount_cost = amountdata.grandtotal;
+                  req.order_cost   = amountdata.original_price;
+                  req.gst = amountdata.gstcharge;
+                  req.price = amountdata.grandtotal;
+        
+                  req.cus_address = address_data[0].address;
+                  req.locality = address_data[0].locality;
+                  req.cus_lat = address_data[0].lat;
+                  req.cus_lon = address_data[0].lon;
+                  req.address_title = address_data[0].address_title;
+                  req.locality_name = address_data[0].locality;
+                    if (req.payment_type === 0) {
+                      Order.OrderInsert(req, res3.result[0].item,true,function(err,res){
+                        if (err) {
+                          result(err, null);
+                        } else {
+                          result(null, res);
+                        }
+                      });
+                      //ordercreatecashondelivery(req, res3.result[0].item);
+                    } else if (req.payment_type === 1) {
+                      ordercreateonline(req, res3.result[0].item);
+                    }
+                }
+              }
+            });
+           }
+      }
+
+    async function ordercreateonline(req, orderitems) {
+    const userinfo = await query("Select * from User where userid = '" + req.userid + "'");
+
+      ///  console.log(req);
+      var customerid = userinfo[0].razer_customerid;
+
+      if (!userinfo[0].razer_customerid) {
+        var customerid = await Order.create_customerid_by_razorpay(userinfo);
+        // console.log("customerid:----- ", customerid);
+        // if (!customerid) {
+        //   let resobj = {
+        //     success: true,
+        //     status: false,
+        //     message:
+        //       "Sorry can't create the order due to customerid not yet generate"
+        //   };
+        //   result(null, resobj);
+        //   return;
+        // }
+        if (customerid === 400) {
+          let resobj = {
+            success: true,
+            status: false,
+           // message: "Sorry can't create customerid format is invalid"
+           message: "Customer already exists for the merchant!"
+          };
+        result(null,resobj );
+        return
+      }
+      }
+
+      var new_Order = new Order(req);
+      new_Order.delivery_charge = delivery_charge;
+      new_Order.lock_status = 1;
+
+      sql.query("INSERT INTO Orders set ?", new_Order, async function(err,res1) {
+        if (err) {
+          console.log("error: ", err);
+          result(null, err);
+        } else {
+          var orderid = res1.insertId;
+
+          for (var i = 0; i < orderitems.length; i++) {
+            //  console.log(orderitems[i].productid);
+            var orderitem = {};
+            orderitem.orderid = orderid;
+            orderitem.productid = orderitems[i].productid;
+            orderitem.quantity = orderitems[i].cartquantity;
+            orderitem.price = orderitems[i].price;
+            var items = new Orderitem(orderitem);
+
+            var orderitemlock = {};
+            orderitemlock.productid = orderitems[i].productid;
+            orderitemlock.quantity = orderitems[i].cartquantity;
+            orderitemlock.orderid = orderid;
+            orderitemlock = new Orderlock(orderitemlock);
+
+            orderitemlock.orderid = orderid;
+
+            Orderitem.createOrderitems(items, function(err, res2) {
+              if (err) result.send(err);
+            });
+
+            Orderlock.lockOrderitems(orderitemlock, function(
+              err,
+              orderlockresponce
+            ) {
+              if (err) result.send(err);
+            });
+          }
+
+          let mesobj = "Order Created successfully";
+          let sucobj = true;
+          let resobj = {
+            success: sucobj,
+            status: true,
+            message: mesobj,
+            price: new_Order.price,
+            razer_customerid: customerid,
+            refund_balance: req.refund_balance,
+            orderid: orderid
+          };
+
+          result(null, resobj);
+        }
+      });
+    }
+  } else {
     let sucobj = true;
     let status = false;
+    let mesobj =
+      "Already you have one order, So please try once delivered exiting order";
     let resobj = {
       success: sucobj,
       status: status,
-      errorCode: errorCode
+      message: mesobj
     };
     result(null, resobj);
   }
+  
 };
 
 Order.getOrderById = function getOrderById(orderid, result) {
@@ -1555,253 +1663,6 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
   );
 };
 
-Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
-  // try {
-  console.log("read_a_proceed_to_pay: ");
-
-  const delivery_charge = constant.deliverycharge;
-  // var res = await Order.live_order_list_byeatuserid(req,responce);
-  const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
-  //and (lock_status = 0 or lock_status = 1) and  payment_status = 0
-  //  console.log(res);
-
-  if (res.length === 0) {
-    Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(err,res3) {
-      if (err) {
-        result(err, null);
-      } else {
-        console.log(res3.status);
-        if (res3.status != true) {
-          result(null, res3);
-        } else {
-         // console.log(res3.result[0].amountdetails);
-          var amountdata = res3.result[0].amountdetails;
-         // console.log(amountdata.refundamount);
-          req.gst = amountdata.gstcharge;
-          req.price = amountdata.grandtotal;
-          var refundcoupon = {};
-          req.original_price = amountdata.original_price;
-          req.refund_balance = amountdata.refund_balance;
-          req.refund_amount = amountdata.refundamount;
-          req.discount_amount = amountdata.coupon_discount_amount;
-          req.after_discount_cost = amountdata.grandtotal;
-          req.order_cost   = amountdata.original_price;
-       
-          const res2 = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
-
-          req.cus_address = res2[0].address;
-          req.locality = res2[0].locality;
-          req.cus_lat = res2[0].lat;
-          req.cus_lon = res2[0].lon;
-          req.address_title = res2[0].address_title;
-          req.locality_name = res2[0].locality;
-
-          var makeitavailability = await query(
-            "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,( 3959 * acos( cos( radians(" +
-              res2[0].lat +
-              ") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians(" +
-              res2[0].lon +
-              ") ) + sin( radians(" +
-              res2[0].lat +
-              ") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  where mk.userid ='" +
-              req.makeit_user_id +
-              "' and mk.appointment_status = 3 and mk.verified_status = 1 and mk.ka_status = 2"
-          );
-
-          var eta = 15 + 3 * makeitavailability[0].distance;
-          //15min Food Preparation time , 3min 1 km
-
-          if (makeitavailability[0].distance <= 6 && eta <= 60) {
-            var distancetime = Math.round(eta) + "mins";
-
-            if (req.payment_type === 0) {
-              console.log("cash on delivery");
-              ordercreatecashondelivery(req, res3.result[0].item);
-            } else if (req.payment_type === 1) {
-              console.log("cash on online");
-              ordercreateonline(req, res3.result[0].item);
-            }
-          } else {
-            let sucobj = true;
-            let status = false;
-            let mesobj =
-              "Sorry This kitchen service is not available! for your following address";
-            let resobj = {
-              success: sucobj,
-              status: status,
-              message: mesobj
-            };
-            result(null, resobj);
-          }
-        }
-      }
-    });
-
-    function ordercreatecashondelivery(req, orderitems) {
-      console.log("ordercreatecashondelivery: ");
-
-      var new_Order = new Order(req);
-
-      new_Order.delivery_charge = delivery_charge;
-      
-      sql.query("INSERT INTO Orders set ?", new_Order, async function(err,res1) {
-        if (err) {
-          console.log("error: ", err);
-          result(null, err);
-        } else {
-          var orderid = res1.insertId;
-
-
-            if (req.cid) {
-   
-             var new_createCouponUsed = new CouponUsed(req); 
-             new_createCouponUsed.orderid = res1.insertId;
-           
-              CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
-                if (err) result.send(err);
-              });
-            
-            }
-
-          if (req.rcid) {
-            var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(req.rcid,req.refund_balance,res1.insertId);
-          }
-
-          for (var i = 0; i < orderitems.length; i++) {
-            console.log(orderitems[i].productid);
-            var orderitem = {};
-            orderitem.orderid = orderid;
-            orderitem.productid = orderitems[i].productid;
-            orderitem.quantity = orderitems[i].cartquantity;
-            orderitem.price = orderitems[i].price;
-            var items = new Orderitem(orderitem);
-
-            Orderitem.createOrderitems(items, function(err, res2) {
-              if (err) result.send(err);
-            });
-          }
-
-          Notification.orderMakeItPushNotification(
-            orderid,
-            req.makeit_user_id,
-            PushConstant.pageidMakeit_Order_Post
-          );
-          let sucobj = true;
-          let status = true;
-          let mesobj = "Order Created successfully";
-          let resobj = {
-            success: sucobj,
-            status: status,
-            message: mesobj,
-            orderid: orderid
-          };
-          result(null, resobj);
-        }
-      });
-    }
-
-    async function ordercreateonline(req, orderitems) {
-    const userinfo = await query("Select * from User where userid = '" + req.userid + "'");
-
-      ///  console.log(req);
-      var customerid = userinfo[0].razer_customerid;
-
-      if (!userinfo[0].razer_customerid) {
-        var customerid = await Order.create_customerid_by_razorpay(userinfo);
-        // console.log("customerid:----- ", customerid);
-        if (!customerid) {
-          let resobj = {
-            success: true,
-            status: false,
-            message:
-              "Sorry can't create the order due to customerid not yet generate"
-          };
-          result(null, resobj);
-          return;
-        }
-      }
-
-      var new_Order = new Order(req);
-      new_Order.delivery_charge = delivery_charge;
-      new_Order.lock_status = 1;
-
-      sql.query("INSERT INTO Orders set ?", new_Order, async function(err,res1) {
-        if (err) {
-          console.log("error: ", err);
-          result(null, err);
-        } else {
-          var orderid = res1.insertId;
-
-          for (var i = 0; i < orderitems.length; i++) {
-            //  console.log(orderitems[i].productid);
-            var orderitem = {};
-            orderitem.orderid = orderid;
-            orderitem.productid = orderitems[i].productid;
-            orderitem.quantity = orderitems[i].cartquantity;
-            orderitem.price = orderitems[i].price;
-            var items = new Orderitem(orderitem);
-
-            var orderitemlock = {};
-            orderitemlock.productid = orderitems[i].productid;
-            orderitemlock.quantity = orderitems[i].cartquantity;
-            orderitemlock.orderid = orderid;
-            orderitemlock = new Orderlock(orderitemlock);
-
-            orderitemlock.orderid = orderid;
-
-            Orderitem.createOrderitems(items, function(err, res2) {
-              if (err) result.send(err);
-            });
-
-            Orderlock.lockOrderitems(orderitemlock, function(
-              err,
-              orderlockresponce
-            ) {
-              if (err) result.send(err);
-            });
-          }
-
-          let mesobj = "Order Created successfully";
-          let sucobj = true;
-          let resobj = {
-            success: sucobj,
-            status: true,
-            message: mesobj,
-            price: new_Order.price,
-            razer_customerid: customerid,
-            refund_balance: req.refund_balance,
-            orderid: orderid
-          };
-
-          result(null, resobj);
-        }
-      });
-    }
-  } else {
-    let sucobj = true;
-    let status = false;
-    let mesobj =
-      "Already you have one order, So please try once delivered exiting order";
-    let resobj = {
-      success: sucobj,
-      status: status,
-      message: mesobj
-    };
-    result(null, resobj);
-  }
-  // } catch (error) {
-  //   var errorCode = 402;
-  //   let sucobj = true;
-  //   let status = false;
-  //   let resobj = {
-  //     success: sucobj,
-  //     status: status,
-  //     errorCode: errorCode
-  //   };
-  //   result(null, resobj);
-  // }
-};
-
 Order.create_customerid_by_razorpay = async function create_customerid_by_razorpay(
   userinfo
 ) {
@@ -1826,7 +1687,7 @@ Order.create_customerid_by_razorpay = async function create_customerid_by_razorp
         function(err, customerupdate) {
           if (err) {
             console.log("error: ", err);
-            //  return false;
+            return false;
           }
         }
       );
@@ -1835,7 +1696,8 @@ Order.create_customerid_by_razorpay = async function create_customerid_by_razorp
     })
     .catch(error => {
       console.log("error: ", error);
-      return false;
+      //return false;
+      return error.statusCode;
     });
 };
 
@@ -2227,7 +2089,7 @@ Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
 
   console.log(req);
 
-  var waitinglistquery = "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid WHERE  ors.orderstatus=0 and ors.lock_status = 0  and ors.created_at < (DATE_SUB(CURDATE(), interval 6 minute)) group by ors.orderid order by ors.orderid  desc";
+  var waitinglistquery = "SELECT ors.orderid,ors.ordertime,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail from Orders as ors left join MakeitUser ms on ors.makeit_user_id = ms.userid WHERE  ors.orderstatus=0 and ors.lock_status = 0  and ors.created_at < (DATE_SUB(CURDATE(), interval 6 minute)) group by ors.orderid order by ors.orderid  desc";
 
   sql.query(waitinglistquery, function(err,res1) {
     if (err) {
@@ -2235,18 +2097,8 @@ Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
       result(err, null);
     } else {
       for (let i = 0; i < res1.length; i++) {
-        if (res1[i].userdetail) {
-          res1[i].userdetail = JSON.parse(res1[i].userdetail);
-        }
-
         if (res1[i].makeitdetail) {
           res1[i].makeitdetail = JSON.parse(res1[i].makeitdetail);
-        }
-       
-
-        if (res1[i].items) {
-          var items = JSON.parse(res1[i].items);
-          res1[i].items = items;
         }
       }
       let resobj = {
@@ -2261,6 +2113,77 @@ Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
   });
 };
 
+Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,result) {
+  var new_Order = new Order(req);
+  new_Order.delivery_charge = constant.deliverycharge;
+  sql.beginTransaction(function(err) {
+    if (err) { throw err; }
+    sql.query("INSERT INTO Orders set ?", new_Order, async function(err, res1) {
+      if (err) { 
+        sql.rollback(function() {
+          result.send(err);
+        });
+      }else{
+        var orderid = res1.insertId;
+        for (var i = 0; i < orderitems.length; i++) {
+          var orderitem = {};
+          orderitem.orderid = orderid;
+          orderitem.productid = orderitems[i].productid;
+          orderitem.quantity = orderitems[i].cartquantity;
+          orderitem.price = orderitems[i].price;
+          var items = new Orderitem(orderitem);
+          Orderitem.createOrderitems(items, function(err, res2) {
+            //if (err) result.send(err);
+            if (err) { 
+              sql.rollback(function() {
+                result.send(err);
+              });
+            }
+          });
+        }
 
+        if(isMobile){
+          if (req.cid) {
+            var new_createCouponUsed = new CouponUsed(req); 
+            new_createCouponUsed.orderid = res1.insertId;
+            CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
+               //if (err) result.send(err);
+               if (err) { 
+                sql.rollback(function() {
+                  result.send(err);
+                });
+              }
+             });
+           }
+
+
+         if (req.rcid) {
+           var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(req.rcid,req.refund_balance,res1.insertId);
+         }
+        }
+
+        let resobj = {
+          success: true,
+          status: true,
+          message: "Order Created successfully",
+          orderid: orderid
+        };
+        sql.commit(async function(err) {
+          if (err) { 
+            sql.rollback(function() {
+              result.send(err);
+            });
+          }
+          await Notification.orderMakeItPushNotification(
+            orderid,
+            req.makeit_user_id,
+            PushConstant.pageidMakeit_Order_Post
+          );
+          result(null, resobj);
+        });
+      }
+    });
+  });
+}
 
 module.exports = Order;

@@ -117,7 +117,7 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     let resobj = {
         success: true,
         status: false,
-        message:"Sorry! Payment not captured."
+        message:error.description//"Sorry! Payment not captured."
         //result: error
     };
     result(resobj,null);
