@@ -858,13 +858,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                     const res1 = await query("Select pt.*,cu.cuisinename From Product pt join Cuisine cu on cu.cuisineid = pt.cuisine where productid = '" +orderitems[i].productid+"'");
 
                     if (res1[0].quantity < orderitems[i].quantity) {
-
                           res1[0].availablity = false;
                           tempmessage = tempmessage + res1[0].product_name + ",";
                           isAvaliableItem = false;
-
                     } else {
-
                           res1[0].availablity = true;
                       
                     }

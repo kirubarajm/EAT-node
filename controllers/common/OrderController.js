@@ -12,13 +12,7 @@ exports.list_all_product = function(req, res) {
 };
 
 exports.eatuser_order_create = function(req, res) {
-  var new_Order = new Order(req.body);
-  //console.log(new_Order);
-
   var order_item = req.body.orderitems;
-  //console.log(order_item);
-  //console.log(new_Order);
-  //handles null error
   if (!req.body.aid) {
     res
       .status(400)

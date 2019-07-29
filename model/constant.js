@@ -12,7 +12,8 @@ const calculate = {
     servicecharge:25,
     makeit_nearby_moveit_radius:4, // in kilometers
     eatversioncode : 1,
-    eatforceupdate : 1
+    eatforceupdate : 1,
+    eat_delivery_min:60
 }
 
 
