@@ -873,7 +873,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                     res1[0].amount = amount;
                     res1[0].cartquantity = orderitems[i].quantity;
                     totalamount = totalamount + amount;
-                  console.log(totalamount);
+                //  console.log(totalamount);
                   //  if product is availablity to push into product details
                     productdetails.push(res1[0]);
                   } 
@@ -1008,12 +1008,6 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                       calculationdetails.refundamount = refundlist[0].refundamount;
                   }
                    
-
-                   
-               
-
-                      
-                      
                         //  console.log(gstcharge);
                  
                   calculationdetails.grandtotal = grandtotal;
@@ -1025,14 +1019,69 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                   calculationdetails.product_orginal_price = product_orginal_price;
                   calculationdetails.totalamount = totalamount;
                   calculationdetails.couponstatus = couponstatus;
-                  calculationdetails.refundcouponstatus=refundcouponstatus;
+                  calculationdetails.refundcouponstatus = refundcouponstatus;
                   calculationdetails.coupon_discount_amount = coupon_discount_amount;
+
+                  var cartdetails = [];
+                  var totalamountinfo = {};
+                  var couponinfo = {};
+                  var gstinfo = {};
+                  var deliverychargeinfo = {};
+                  var refundinfo = {};
+                  var grandtotalinfo = {};
+
+                  if (totalamount) {
+                  totalamountinfo.title = "Total Amount";
+                  totalamountinfo.totalamount = totalamount;
+                  totalamountinfo.status = true;
+                  cartdetails.push(totalamountinfo);
+                  }
+                  
+                  if (couponstatus) {
+                    couponinfo.title = "Coupon adjustment",
+                    couponinfo.coupon_discount_amount = coupon_discount_amount,
+                    couponinfo.status = true;
+                    cartdetails.push(couponinfo);
+                  }
+                  
+
+                  if (gstcharge) {
+                    gstinfo.title = "GST charge",
+                    gstinfo.gstcharge = gstcharge,
+                    gstinfo.status = true;
+                    cartdetails.push(gstinfo);
+                  }
+
+                  if (delivery_charge) {
+                    deliverychargeinfo.title = "Delivery charge",
+                    deliverychargeinfo.delivery_charge = delivery_charge,
+                    deliverychargeinfo.status = true;
+                    cartdetails.push(deliverychargeinfo);
+                  }
+
+                  if (refundcouponstatus) {
+                    refundinfo.title = "Refund adjustment",
+                    refundinfo.refund_coupon_adjustment = refund_coupon_adjustment,
+                    refundinfo.status = true;
+                    cartdetails.push(refundinfo);
+                  }
+            
+                  if (grandtotal) {
+                    grandtotalinfo.title = "Grand total",
+                    grandtotalinfo.grandtotal = grandtotal,
+                    grandtotalinfo.status = true;
+                    cartdetails.push(grandtotalinfo);
+                  }
+
+
                   //console.log(calculationdetails);
                   res2[0].amountdetails = calculationdetails;
                   res2[0].item = productdetails;
                   res2[0].ordercount = ordercount;
+                  res2[0].cartdetails = cartdetails;
                  // console.log(res2[0]);
-                
+               //  res2.push(cartdetails);
+
                   let resobj = {
                     success: true,
                     status: isAvaliableItem

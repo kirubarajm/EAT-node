@@ -15,10 +15,16 @@ var RefundCoupon = require("../../model/common/refundCouponModel");
 var RefundOnline = require("../../model/common/refundonlineModel");
 var CouponUsed = require("../../model/common/couponUsedModel");
 
+// var instance = new Razorpay({
+//   key_id: "rzp_test_3cduMl5T89iR9G",
+//   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
+// });
+
+
 var instance = new Razorpay({
-  key_id: "rzp_test_3cduMl5T89iR9G",
-  key_secret: "BSdpKV1M07sH9cucL5uzVnol"
-});
+  key_id: 'rzp_live_BLJVf00DRLWexs',
+  key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
+})
 
 const query = util.promisify(sql.query).bind(sql);
 
@@ -458,6 +464,8 @@ Order.get_all_vorders = function get_all_vorders(req, result) {
 };
 
 Order.order_assign = function order_assign(req, result) {
+  var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+  console.log(assign_time);
   sql.query(
     "Select online_status,pushid_android,pushid_ios From MoveitUser where userid= '" +
       req.moveit_user_id +
@@ -472,7 +480,7 @@ Order.order_assign = function order_assign(req, result) {
         if (online_status == 1) {
           sql.query(
             "UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",
-            [req.moveit_user_id, new Date(), req.orderid],
+            [req.moveit_user_id, assign_time, req.orderid],
             async function(err, res2) {
               if (err) {
                 console.log("error: ", err);
@@ -553,46 +561,15 @@ Order.orderviewbymoveituser = function(orderid, result) {
   );
 };
 
-Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveituser(
-  req,
-  kitchenqualitylist,
-  result
-) {
-  var date;
-  date = new Date();
-  date =
-    date.getUTCFullYear() +
-    "-" +
-    ("00" + (date.getUTCMonth() + 1)).slice(-2) +
-    "-" +
-    ("00" + date.getUTCDate()).slice(-2) +
-    " " +
-    ("00" + date.getUTCHours()).slice(-2) +
-    ":" +
-    ("00" + date.getUTCMinutes()).slice(-2) +
-    ":" +
-    ("00" + date.getUTCSeconds()).slice(-2);
+Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveituser( req,kitchenqualitylist,result) {
+  var order_pickup_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  var twentyMinutesLater = new Date();
-  twentyMinutesLater.setMinutes(twentyMinutesLater.getMinutes() + 20);
+  var twentyMinutesLater = moment()
+        .add(0, "seconds")
+        .add(20, "minutes")
+        .format("YYYY-MM-DD HH:mm:ss");
 
-  twentyMinutesLater =
-    twentyMinutesLater.getUTCFullYear() +
-    "-" +
-    ("00" + (twentyMinutesLater.getUTCMonth() + 1)).slice(-2) +
-    "-" +
-    ("00" + twentyMinutesLater.getUTCDate()).slice(-2) +
-    " " +
-    ("00" + twentyMinutesLater.getUTCHours()).slice(-2) +
-    ":" +
-    ("00" + twentyMinutesLater.getUTCMinutes()).slice(-2) +
-    ":" +
-    ("00" + twentyMinutesLater.getUTCSeconds()).slice(-2);
-
-  sql.query("Select * from Orders where orderid = ?", [req.orderid], function(
-    err,
-    res1
-  ) {
+  sql.query("Select * from Orders where orderid = ?", [req.orderid], function(err,res1) {
     if (err) {
       console.log("error: ", err);
       result(null, err);
@@ -618,7 +595,7 @@ Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveit
           "UPDATE Orders SET orderstatus = ? ,moveit_reached_time = ?,moveit_expected_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
           [
             req.orderstatus,
-            new Date(),
+            order_pickup_time,
             twentyMinutesLater,
             req.orderid,
             req.moveit_userid
@@ -637,6 +614,7 @@ Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveit
               let message = "Order Pickedup successfully";
               let resobj = {
                 success: sucobj,
+                status:true,
                 message: message
               };
               result(null, resobj);
@@ -657,6 +635,8 @@ Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveit
 };
 
 Order.order_delivery_status_by_moveituser = function(req, result) {
+
+  var order_delivery_time = moment().format("YYYY-MM-DD HH:mm:ss");
   sql.query(
     "Select * from Orders where orderid = ? and moveit_user_id = ?",
     [req.orderid, req.moveit_user_id],
@@ -669,7 +649,7 @@ Order.order_delivery_status_by_moveituser = function(req, result) {
           if (res1[0].payment_status === 1) {
             sql.query(
               "UPDATE Orders SET orderstatus = ?,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
-              [req.orderstatus, new Date(), req.orderid, req.moveit_user_id],
+              [req.orderstatus, order_delivery_time, req.orderid, req.moveit_user_id],
               async function(err, res) {
                 if (err) {
                   console.log("error: ", err);
@@ -681,6 +661,7 @@ Order.order_delivery_status_by_moveituser = function(req, result) {
                   let resobj = {
                     success: sucobj,
                     message: message,
+                    status:true,
                     orderdeliverystatus: orderdeliverystatus
                   };
                   await Notification.orderEatPushNotification(
@@ -698,6 +679,7 @@ Order.order_delivery_status_by_moveituser = function(req, result) {
             let message = "Payment not yet paid!";
             let resobj = {
               success: sucobj,
+              status:false,
               message: message,
               orderdeliverystatus: orderdeliverystatus
             };
@@ -709,7 +691,8 @@ Order.order_delivery_status_by_moveituser = function(req, result) {
           let message = "Please check your moveit_user details!";
           let resobj = {
             success: sucobj,
-            message: message
+            message: message,
+            status:false
           };
 
           result(null, resobj);
@@ -2016,13 +1999,8 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
         .add(15, "minutes")
         .format("YYYY-MM-DD HH:mm:ss");
       // deliverytime.setMinutes(transaction_time.getMinutes() + 15);
-
-      updatequery =
-        "UPDATE Orders SET orderstatus = 1 ,makeit_expected_preparing_time= '" +
-        orderaccepttime +
-        "' WHERE orderid ='" +
-        req.orderid +
-        "'";
+      console.log(orderaccepttime);
+      updatequery ="UPDATE Orders SET orderstatus = 1 ,makeit_expected_preparing_time= '" + orderaccepttime +"' WHERE orderid ='" +req.orderid +"'";
       console.log(updatequery);
       sql.query(updatequery, async function(err, res) {
         if (err) {

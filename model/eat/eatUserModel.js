@@ -8,11 +8,15 @@ let config = require('../config.js');
 const CronJob = require('cron').CronJob;
 var moment = require("moment");
 const Razorpay = require("razorpay");
-var instance = new Razorpay({
-    key_id: 'rzp_test_3cduMl5T89iR9G',
-    key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
-  })
+// var instance = new Razorpay({
+//     key_id: 'rzp_test_3cduMl5T89iR9G',
+//     key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
+//   })
 
+var instance = new Razorpay({
+  key_id: 'rzp_live_BLJVf00DRLWexs',
+  key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
+})
 
 const query = util.promisify(sql.query).bind(sql);
 
@@ -355,6 +359,9 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
 
   console.log(currenthour);
 
+  var indiaTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
+   indiaTime = new Date(indiaTime);
+   console.log(indiaTime);
   if (currenthour <= 12) {
 
     productquery = productquery + " and pt.breakfast = 1";

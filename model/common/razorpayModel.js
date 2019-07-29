@@ -4,10 +4,15 @@ const util = require("util");
 const Rpay = require("razorpay");
 var constant = require("../constant.js");
 
+// var instance = new Rpay({
+//     key_id: "rzp_test_3cduMl5T89iR9G",
+//     key_secret: "BSdpKV1M07sH9cucL5uzVnol"
+//   });
+
 var instance = new Rpay({
-    key_id: "rzp_test_3cduMl5T89iR9G",
-    key_secret: "BSdpKV1M07sH9cucL5uzVnol"
-  });
+  key_id: 'rzp_live_BLJVf00DRLWexs',
+  key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
+})
 
   const query = util.promisify(sql.query).bind(sql);
 
