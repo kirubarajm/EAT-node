@@ -627,7 +627,7 @@ Order.getUnassignorders = function getUnassignorders(result) {
   /// Select * from Orders as ors left join User as us on ors.userid=us .userid where ors.moveit_status = '0';
   // sql.query("Select * from Orders where moveit_status = '0' ", function (err, res) {
   sql.query(
-    "Select us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and ors.orderstatus <= 3 and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE()",
+    "Select us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and ors.orderstatus <= 3 and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2",
     function(err, res) {
       if (err) {
         console.log("error: ", err);
