@@ -890,11 +890,7 @@ Makeituser.update_makeit_followup_status = function(
 };
 
 //cart details for ear user
-Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid(
-  req,
-  orderitems,
-  result
-) {
+Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid(req,orderitems,result) {
   var tempmessage = "";
   var gst = constant.gst;
   var delivery_charge = constant.deliverycharge;
@@ -1037,6 +1033,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         
 
         //  console.log(gstcharge);
+        calculationdetails.grandtotaltitle = "Grand Total";
         calculationdetails.grandtotal = grandtotal;
         calculationdetails.original_price = original_price;
         calculationdetails.refund_balance = refund_balance;
@@ -1048,6 +1045,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         calculationdetails.couponstatus = couponstatus;
         calculationdetails.refundcouponstatus = refundcouponstatus;
         calculationdetails.coupon_discount_amount = coupon_discount_amount;
+        
 
         var cartdetails = [];
         var totalamountinfo = {};
@@ -1058,38 +1056,38 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         var grandtotalinfo = {};
 
           totalamountinfo.title = "Total Amount";
-          totalamountinfo.totalamount = totalamount;
+          totalamountinfo.charges = totalamount;
           totalamountinfo.status = true;
           cartdetails.push(totalamountinfo);
 
           if (couponstatus) {
             couponinfo.title = "Coupon adjustment";
-            couponinfo.coupon_discount_amount = coupon_discount_amount;
+            couponinfo.charges = coupon_discount_amount;
             couponinfo.status = true;
             cartdetails.push(couponinfo);
           }
 
           gstinfo.title = "GST charge";
-          gstinfo.gstcharge = gstcharge;
+          gstinfo.charges = gstcharge;
           gstinfo.status = true;
           cartdetails.push(gstinfo);
 
           deliverychargeinfo.title = "Delivery charge";
-          deliverychargeinfo.delivery_charge = delivery_charge;
+          deliverychargeinfo.charges = delivery_charge;
           deliverychargeinfo.status = true;
           cartdetails.push(deliverychargeinfo);
 
           if (refundcouponstatus) {
             refundinfo.title = "Refund adjustment";
-            refundinfo.refund_coupon_adjustment = refund_coupon_adjustment;
+            refundinfo.charges = refund_coupon_adjustment;
             refundinfo.status = true;
             cartdetails.push(refundinfo);
           }
 
-          grandtotalinfo.title = "Grand total";
-          grandtotalinfo.grandtotal = grandtotal;
-          grandtotalinfo.status = true;
-          cartdetails.push(grandtotalinfo);
+          // grandtotalinfo.title = "Grand total";
+          // grandtotalinfo.grandtotal = grandtotal;
+          // grandtotalinfo.status = true;
+          // cartdetails.push(grandtotalinfo);
 
         
         res2[0].amountdetails = calculationdetails;

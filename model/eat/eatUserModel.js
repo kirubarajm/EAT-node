@@ -99,9 +99,10 @@ Eatuser.getUserById = function getUserById(userId, result) {
         console.log("error: ", err);
         result(err, null);
       } else {
-        let sucobj = true;
+      
         let resobj = {
-          success: sucobj,
+          success: true,
+          status:true,
           result: res
         };
 
@@ -328,7 +329,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
   var Images=[];
   if (req.eatuserid) {
     var productquery =
-      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.virutal_rating_count as rating_count,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +

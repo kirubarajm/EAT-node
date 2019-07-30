@@ -1124,15 +1124,18 @@ Order.orderviewbyeatuser = function(req, result) {
                   res1[0].items = items.item;
                 }
 
-                if (res1[0].ordertime) {
-                  var deliverytime = new Date(res1[0].ordertime);
-
-                  // d.setHours(d.getHours() + 5);
-                  deliverytime.setMinutes(deliverytime.getMinutes() + 15);
-
+                if (res1[0].order_assigned_time) {
+                  
+                   // +20 min add with moveit order assign time
+                  var deliverytime = moment(res1[0].order_assigned_time)
+                  .add(0, "seconds")
+                  .add(20, "minutes")
+                  .format("YYYY-MM-DD HH:mm:ss");
+                  console.log(deliverytime);
+                 
                   res1[0].deliverytime = deliverytime;
                 }
-
+                
                 console.log("res[0].orderstatus:-- ", res1[0].orderstatus);
                 res1[0].trackingstatus = Order.orderTrackingDetail(
                   res1[0].orderstatus,
@@ -1140,11 +1143,10 @@ Order.orderviewbyeatuser = function(req, result) {
                 );
                 //}
 
-                let sucobj = true;
-                let status = true;
+            
                 let resobj = {
-                  success: sucobj,
-                  status: status,
+                  success: true,
+                  status: true,
                   result: res1
                 };
 
@@ -1731,12 +1733,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           };
 
 
-        ///  if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1)
-          //  await Order.create_refund(refundDetail);
-                  
-    
-
-                    if (orderdetails[0].payment_type === "0") {
+              if (orderdetails[0].payment_type === "0") {
                       var rc = new RefundCoupon(req);
                       RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
                         if (err) {
@@ -1746,6 +1743,26 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
                     } else if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1) {
 
                       await RefundOnline.createRefund(refundDetail);
+                    }
+
+                    var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+                    
+                    console.log(orderitemdetails);
+                    for (let i = 0; i < orderitemdetails.length; i++) {
+                      var productquantityadd =
+                        "update Product set quantity = quantity+" +
+                        orderitemdetails[i].quantity +
+                        " where productid =" +
+                        orderitemdetails[i].productid +
+                        "";
+        
+                      sql.query(productquantityadd, function(err, res2) {
+                        if (err) {
+                          console.log("error: ", err);
+                          result(null, err);
+                        } else {
+                        }
+                      });
                     }
 
           await Notification.orderMakeItPushNotification(
@@ -1820,6 +1837,28 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             payment_id: orderdetails[0].transactionid
           };
           
+
+          var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+                    
+        
+          for (let i = 0; i < orderitemdetails.length; i++) {
+            var productquantityadd =
+              "update Product set quantity = quantity+" +
+              orderitemdetails[i].quantity +
+              " where productid =" +
+              orderitemdetails[i].productid +
+              "";
+
+            sql.query(productquantityadd, function(err, res2) {
+              if (err) {
+                console.log("error: ", err);
+                result(null, err);
+              } else {
+              }
+            });
+          }
+
+
           if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1)
             await Order.create_refund(refundDetail);
              await Notification.orderEatPushNotification(
