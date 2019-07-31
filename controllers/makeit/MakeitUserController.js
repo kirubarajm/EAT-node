@@ -223,11 +223,16 @@ exports.read_a_cartdetails = function(req, res) {
         status: false,
         message: "Please provide makeit_user_id"
       });
-  } else {
-    Makeituser.read_a_cartdetails_makeitid(req.body, orderitems, function(
-      err,
-      user
-    ) {
+  }else if (!req.body.lat) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lat" });
+  } else if (!req.body.lon) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lan" });
+  }else {
+    Makeituser.read_a_cartdetails_makeitid(req.body, orderitems, function(err,user) {
       if (err) res.send(err);
       res.json(user);
     });

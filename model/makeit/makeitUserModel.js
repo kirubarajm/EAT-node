@@ -892,6 +892,9 @@ Makeituser.update_makeit_followup_status = function(
 //cart details for ear user
 Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid(req,orderitems,result) {
   var tempmessage = "";
+  var makeit_error_message = "";
+  var coupon__error_message = "";
+  var refundcoupon__error_message = "";
   var gst = constant.gst;
   var delivery_charge = constant.deliverycharge;
   const productdetails = [];
@@ -904,22 +907,28 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var refundlist = [];
   var isAvaliableItem = true;
   var calculationdetails = {};
-  var couponstatus = false;
-  var refundcouponstatus = false;
+  var couponstatus = true;
+  var refundcouponstatus = true;
+  var isAvaliablekitchen = true;
+ 
 
-  var orderlist = await query(
-    "Select * From Orders where userid = '" +
-      req.userid +
-      "' and orderstatus >= 6"
-  );
+  var orderlist = await query("Select * From Orders where userid = '" +req.userid +"' and orderstatus >= 6");
   var ordercount = orderlist.length;
+
   for (let i = 0; i < orderitems.length; i++) {
-    const res1 = await query(
-      "Select pt.*,cu.cuisinename From Product pt join Cuisine cu on cu.cuisineid = pt.cuisine where productid = '" +
-        orderitems[i].productid +
-        "'"
-    );
+    const res1 = await query("Select pt.*,cu.cuisinename From Product pt join Cuisine cu on cu.cuisineid = pt.cuisine where productid = '" +orderitems[i].productid +"'");
     if (res1[0].quantity < orderitems[i].quantity) {
+      console.log("quantity");
+      res1[0].availablity = false;
+      tempmessage = tempmessage + res1[0].product_name + ",";
+      isAvaliableItem = false;
+    }else if (res1[0].approved_status != 2) {
+      console.log("approved_status");
+      res1[0].availablity = false;
+      tempmessage = tempmessage + res1[0].product_name + ",";
+      isAvaliableItem = false;
+    }else if (res1[0].delete_status !=0) {
+      console.log("delete_status");
       res1[0].availablity = false;
       tempmessage = tempmessage + res1[0].product_name + ",";
       isAvaliableItem = false;
@@ -935,22 +944,20 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
   // This query is to get the makeit details and cuisine details
   var query1 =
-    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
+    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
     req.userid +
     " left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +
     req.makeit_user_id;
 
   // var query1 = 'call cart_makeituser_details(?,?)';
 
-  sql.query(query1,async function(
-    err,
-    res2
-  ) {
+  sql.query(query1,async function(err,res2) {
     if (err) {
       console.log("error: ", err);
       result(err, null);
     } else {
-      if (res2.length === 0) {
+      console.log(res2);
+      if (res2[0].makeituserid === null) {
         let resobj = {
           success: true,
           status: false,
@@ -958,6 +965,32 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         };
         result(null, resobj);
       }else{
+
+
+        // eat delivery avalibility check
+          var makeitavailability = await query(
+            "Select distinct mk.userid,mk.brandname,mk.lat,mk.lon,( 3959 * acos( cos( radians(" +
+            req.lat +
+              ") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians(" +
+              req.lon +
+              ") ) + sin( radians(" +
+              req.lat +
+              ") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk where mk.userid ='" +
+              req.makeit_user_id +
+              "' and mk.appointment_status = 3 and mk.verified_status = 1 and mk.ka_status = 2"
+          );
+
+  
+        var eta = 15 + 3 * makeitavailability[0].distance;
+          //15min Food Preparation time , 3min 1 km
+          if (makeitavailability[0].distance > constant.radiuslimit && eta > constant.eat_delivery_min) {
+          
+              isAvaliablekitchen = false;
+              makeit_error_message = makeitavailability[0].brandname;
+          }
+
+
+        res2[0].isAvaliablekitchen = isAvaliablekitchen;
         for (let i = 0; i < res2.length; i++) {
           if (res2[i].cuisines) {
             res2[i].cuisines = JSON.parse(res2[i].cuisines);
@@ -972,11 +1005,12 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               req.cid +
               "' and active_status = 1"
           );
-          console.log(couponlist.length);
+        
           if (couponlist.length != 0) {
             var maxdiscount = couponlist[0].maxdiscount;
             var numberoftimes = couponlist[0].numberoftimes;
             var discount_percent = couponlist[0].discount_percent;
+            var minprice_limit = couponlist[0].minprice_limit
             var CouponsUsedlist = await query(
               "Select * From CouponsUsed where cid = '" +
                 req.cid +
@@ -985,18 +1019,41 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                 "'"
             );
             var couponusedcount = CouponsUsedlist.length;
-            if (couponusedcount <= numberoftimes) {
+
+            if (totalamount >=minprice_limit) {
+              
+              minprice_limit_status = true
+
+              if (couponusedcount < numberoftimes) {
+               
               var discount_amount = (totalamount / 100) * discount_percent;
               discount_amount = Math.round(discount_amount);
+                           
               if (discount_amount >= maxdiscount) {
-                discount_amount = maxdiscount;
-              }
+
+                                         discount_amount = maxdiscount;
+                }
+
               if (totalamount >= discount_amount) {
-                couponstatus = true;
+               
                 totalamount = totalamount - discount_amount;
                 coupon_discount_amount = discount_amount;
+              }else{
+                couponstatus = false;
+                coupon__error_message = "coupon amount is too high";
               }
+            }else{
+              couponstatus = false;
+              coupon__error_message = "coupon has been expired";
             }
+            }else{
+              couponstatus = false;
+              coupon__error_message = "Please makeit minimum order values is " + minprice_limit;
+            }
+          }else{
+
+            couponstatus = false;
+              coupon__error_message = "Coupon is not available";
           }
         }
         
@@ -1014,7 +1071,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               "' and active_status = 1"
           );
           if (refundlist.length !== 0) {
-            refundcouponstatus = true;
+          
             // get refund amount
             if (grandtotal >= refundlist[0].refundamount) {
               refund_coupon_adjustment = refundlist[0].refundamount;
@@ -1028,6 +1085,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             //if grandtotal is lesser then 0 define grandtotal is 0
             if (grandtotal < 0) grandtotal = 0;
             calculationdetails.refundamount = refundlist[0].refundamount;
+          }else{
+
+            refundcouponstatus = false;
+            refundcoupon__error_message = "refundcoupon is not available";
           }
         }
         
@@ -1050,10 +1111,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         var gstinfo = {};
         var deliverychargeinfo = {};
         var refundinfo = {};
-        var grandtotalinfo = {};
+        //var grandtotalinfo = {};
 
           totalamountinfo.title = "Total Amount";
-          totalamountinfo.charges = totalamount;
+          totalamountinfo.charges = product_orginal_price;
           totalamountinfo.status = true;
           cartdetails.push(totalamountinfo);
 
@@ -1092,13 +1153,31 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         res2[0].ordercount = ordercount;
         res2[0].cartdetails = cartdetails;
 
+
         let resobj = {
           success: true,
           status: isAvaliableItem
         };
 
-        if (!isAvaliableItem)
+  
+        if (!refundcouponstatus){
+          resobj.message = refundcoupon__error_message;
+          resobj.status = refundcouponstatus
+        }
+    
+        if (!couponstatus){
+          resobj.message = coupon__error_message;
+          resobj.status = couponstatus
+        }
+
+        if (!isAvaliableItem){
           resobj.message = tempmessage.slice(0, -1) + " is not avaliable";
+          resobj.status = isAvaliableItem
+        }
+       if (!isAvaliablekitchen){
+          resobj.message = makeit_error_message.slice(0, -1) + " kitchen service is not available! for your following address";
+          resobj.status = isAvaliablekitchen
+       }
 
           resobj.result = res2; 
           result(null, resobj);
@@ -1107,11 +1186,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   });
 };
 
-Makeituser.admin_check_cartdetails = async function admin_check_cartdetails(
-  req,
-  orderitems,
-  result
-) {
+Makeituser.admin_check_cartdetails = async function admin_check_cartdetails(req,orderitemsresult) {
   var tempmessage = "";
   var gst = constant.gst;
   var delivery_charge = constant.deliverycharge;

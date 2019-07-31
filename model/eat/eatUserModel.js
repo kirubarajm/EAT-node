@@ -383,10 +383,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
 
   }
 
- 
-  
 
-  console.log(productquery);
   
   sql.query(productquery, async function(err, res) {
     if (err) {
@@ -958,7 +955,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
   var day = new Date();
   var currenthour = day.getHours();
 
-//  console.log(currenthour);
+  console.log(currenthour);
 
   if (currenthour <= 12) {
 
@@ -1048,7 +1045,7 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
            else{
               
           //  res[0].applink = "https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3D"+res[0].referalcode+"%26utm_campaign%3Dreferral";
-          console.log("res[0].referalcode: ", res[0].referalcode);
+        //  console.log("res[0].referalcode: ", res[0].referalcode);
           res[0].applink = refferalcontent+" "+ applink +". Use Refferal Code :"+ res[0].referalcode
               
           
@@ -1673,12 +1670,12 @@ Eatuser.eat_user_post_registration = async function(req, result) {
   const userinfo = await query("Select * from User where userid = '" +req.userid +"'");
 
  // console.log(userinfo[0].razer_customerid);
-  var customerid = userinfo[0].razer_customerid
+  var customerid = userinfo[0].razer_customerid;
 
   req.name= userinfo[0].name;
   req.phoneno= userinfo[0].phoneno;
   //console.log(req);
-  if (!userinfo[0].razer_customerid) {
+  if (!customerid) {
     
     
   var customerid = await Eatuser.create_customerid_by_razorpay(req);
@@ -2114,7 +2111,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
 
                      
                        var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,mk.member_type,mk.about,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and mk.ka_status = 2 and pt.approved_status=2 and  pt.quantity != 0 and pt.delete_status !=1  GROUP BY pt.productid   HAVING distance <="+radiuslimit+" ORDER BY distance";
-                        console.log(nearbyregionquery);
+                      //  console.log(nearbyregionquery);
                           let kitchenlist = await query(nearbyregionquery);
                           var kitchendetaillist=[];
                           //this code is important
@@ -2234,9 +2231,10 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       var email = req.email;
       var contact = req.phoneno;
       var notes = "eatuser";
+      var fail_existing  = "1";
       var cuId=false;
     
-      return await instance.customers.create({name, email, contact, notes}).then((data) => {
+      return await instance.customers.create({name, email, contact, notes,fail_existing}).then((data) => {
         cuId=data.id;
         //  const updateforrazer_customerid = await query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ");
        

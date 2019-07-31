@@ -19,11 +19,11 @@ QueryQuestions.createquestions = function createquestions(req, result) {
       console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = true;
-      let message = "Questions created successfully";
+      
       let resobj = {
-        success: sucobj,
-        message: message
+        success: true,
+        status:true,
+        message: "Questions created successfully"
       };
 
       result(null, resobj);
