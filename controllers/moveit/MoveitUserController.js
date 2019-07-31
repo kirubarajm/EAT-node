@@ -151,7 +151,7 @@ exports.getGeoLocation = function(req, res) {
 };
 
 exports.getNearByMoveit = function(req, res) {
-  Moveituser.get_a_nearby_moveit(req.body,function(err, user) {
+  Moveituser.get_a_nearby_moveit_V2(req.body,function(err, user) {
     if (err) res.send(err);
     res.json(user);
   });
