@@ -88,9 +88,10 @@ Region.getAllregion = function getAllregion(result) {
       console.log("error: ", err);
       result(null, err);
     } else {
-      let sucobj = "true";
+     
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);

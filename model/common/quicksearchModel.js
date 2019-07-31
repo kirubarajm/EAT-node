@@ -2,6 +2,7 @@
 var sql = require("../db.js");
 const CronJob = require('cron').CronJob;
 const util = require('util');
+var moment = require("moment");
 
 const query = util.promisify(sql.query).bind(sql);
 var QuickSearch = function(QuickSearch){
@@ -106,8 +107,8 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
        
    // Eatuser.eat_explore_store_data_by_cron =  async function eat_explore_store_data_by_cron(search, result) {
     //console.log('Before job instantiation');
-    const job = new CronJob(' 00 00 00 * * *',async function(search, result) {
-      const d = new Date();
+    const job = new CronJob('0 */30 * * * *',async function(search, result) {
+      const d = moment();
       console.log('At Ten Minutes:', d);
       try {
         const quicksearchquery = await query("Select * from QuickSearch");
@@ -202,7 +203,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
     });
    // console.log('After job instantiation');
     job.start();  
-  //}  
+   
   
   
   QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(req, result) {

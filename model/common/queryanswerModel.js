@@ -44,9 +44,10 @@ QueryAnswer.read_a_replies_id = function read_a_replies_id(qid, result) {
         console.log("error: ", err);
         result(err, null);
       } else {
-        let sucobj = true;
+       
         let resobj = {
-          success: sucobj,
+          success: true,
+          status:true,
           result: res
         };
 
@@ -173,6 +174,7 @@ QueryAnswer.read_a_answer_count = function read_a_answer_count(req, result) {
         let success = true;
         let resobj = {
           success: success,
+          status:true,
           result: res
         };
         result(null, resobj);

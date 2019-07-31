@@ -116,12 +116,13 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
 };
 
 Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
+
   const delivery_charge = constant.deliverycharge;
   const res = await query("select count(*) as count from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
   if (res[0].count === 0) {
     const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
     console.log("address_data-->",address_data);
-    if(address_data.length===0) {
+    if(address_data.length === 0) {
       let resobj = {
                 success: true,
                 status: false,
@@ -129,27 +130,31 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
               };
               result(null, resobj);
       }else{
-          var makeitavailability = await query(
-            "Select distinct mk.userid,mk.lat,mk.lon,( 3959 * acos( cos( radians(" +
-            address_data[0].lat +
-              ") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians(" +
-              address_data[0].lon +
-              ") ) + sin( radians(" +
-              address_data[0].lat +
-              ") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk where mk.userid ='" +
-              req.makeit_user_id +
-              "' and mk.appointment_status = 3 and mk.verified_status = 1 and mk.ka_status = 2"
-          );
-           var eta = 15 + 3 * makeitavailability[0].distance;
-           //15min Food Preparation time , 3min 1 km
-           if (makeitavailability[0].distance > constant.radiuslimit && eta >constant.eat_delivery_min) {
-                    let resobj = {
-                      success: true,
-                      status: false,
-                      message:  "Sorry this kitchen service is not available! for your following address"
-                    };
-                    result(null, resobj);
-           }else{
+          // var makeitavailability = await query(
+          //   "Select distinct mk.userid,mk.lat,mk.lon,( 3959 * acos( cos( radians(" +
+          //   address_data[0].lat +
+          //     ") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians(" +
+          //     address_data[0].lon +
+          //     ") ) + sin( radians(" +
+          //     address_data[0].lat +
+          //     ") ) * sin(radians(mk.lat)) ) ) AS distance from MakeitUser mk where mk.userid ='" +
+          //     req.makeit_user_id +
+          //     "' and mk.appointment_status = 3 and mk.verified_status = 1 and mk.ka_status = 2"
+          // );
+          //  var eta = 15 + 3 * makeitavailability[0].distance;
+          //  //15min Food Preparation time , 3min 1 km
+          //  if (makeitavailability[0].distance > constant.radiuslimit && eta >constant.eat_delivery_min) {
+          //           let resobj = {
+          //             success: true,
+          //             status: false,
+          //             message:  "Sorry this kitchen service is not available! for your following address"
+          //           };
+          //           result(null, resobj);
+          //  }else{
+
+            req.lat = address_data[0].lat;
+            req.lon = address_data[0].lon;
+
             Makeituser.read_a_cartdetails_makeitid(req, orderitems, async function(err,res3) {
               if (err) {
                 result(err, null);
@@ -189,7 +194,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                 }
               }
             });
-           }
+         //  }
       }
 
     async function ordercreateonline(req, orderitems) {
@@ -1124,16 +1129,26 @@ Order.orderviewbyeatuser = function(req, result) {
                   res1[0].items = items.item;
                 }
 
-                if (res1[0].order_assigned_time) {
+                if (res[0].orderstatus >= 3) {
                   
                    // +20 min add with moveit order assign time
-                  var deliverytime = moment(res1[0].order_assigned_time)
+                  var deliverytime = moment(res[0].ordertime)
                   .add(0, "seconds")
                   .add(20, "minutes")
                   .format("YYYY-MM-DD HH:mm:ss");
                   console.log(deliverytime);
                  
                   res1[0].deliverytime = deliverytime;
+                }else{
+
+                  var deliverytime = moment(res[0].ordertime)
+                  .add(0, "seconds")
+                  .add(20, "minutes")
+                  .format("YYYY-MM-DD HH:mm:ss");
+                  console.log(deliverytime);
+                 
+                  res1[0].deliverytime = deliverytime;
+
                 }
                 
                 console.log("res[0].orderstatus:-- ", res1[0].orderstatus);
@@ -1569,7 +1584,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
         } else {
           if (res[0].payment_type === "0") {
 
-            var liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
+            var liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
            
             console.log(liveorderquery);
             sql.query(liveorderquery, function(err, res1) {
@@ -1577,17 +1592,34 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                 console.log("error: ", err);
                 result(null, err);
               } else {
+
+                if (res1[0].orderstatus >= 3) {
+                  
+                  // +20 min add with moveit order assign time
+                 var deliverytime = moment(res[0].ordertime)
+                 .add(0, "seconds")
+                 .add(20, "minutes")
+                 .format("YYYY-MM-DD HH:mm:ss");
+                 console.log(deliverytime);
+                
+                 res1[0].deliverytime = deliverytime;
+               }else{
+
+                 var deliverytime = moment(res[0].ordertime)
+                 .add(0, "seconds")
+                 .add(20, "minutes")
+                 .format("YYYY-MM-DD HH:mm:ss");
+                 console.log(deliverytime);
+                
+                 res1[0].deliverytime = deliverytime;
+
+               }
+
                 for (let i = 0; i < res1.length; i++) {
-                  var deliverytime = new Date(res1[i].ordertime);
-
-                  // d.setHours(d.getHours() + 5);
-                  deliverytime.setMinutes(deliverytime.getMinutes() + 15);
-
-                  res1[i].deliverytime = deliverytime;
-
+             
                   res1[i].distance = res1[i].distance.toFixed(2);
                   //15min Food Preparation time , 3min 1 km
-                  eta = 15 + 3 * res1[i].distance;
+                  eta = 15 + (3 * res1[i].distance);
 
                   res1[i].eta = Math.round(eta) + " mins";
 
@@ -1596,9 +1628,11 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                     res1[i].items = items.item;
                   }
                 }
-                let sucobj = true;
+
+              
+             
                 let resobj = {
-                  success: sucobj,
+                  success: true,
                   status: true,
                   orderdetails: orderdetails,
                   result: res1
@@ -1609,19 +1643,43 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
             });
           } else if (res[0].payment_type === "1" && res[0].payment_status === 1) {
 
-            liveorderquery ="Select ors.orderid,ors.ordertime,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
+            liveorderquery ="Select ors.orderid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
+         
             sql.query(liveorderquery, function(err, res1) {
               if (err) {
                 console.log("error: ", err);
                 result(null, err);
               } else {
+
+                if (res1[0].orderstatus >= 3) {
+                  
+                  // +20 min add with moveit order assign time
+                 var deliverytime = moment(res[0].ordertime)
+                 .add(0, "seconds")
+                 .add(20, "minutes")
+                 .format("YYYY-MM-DD HH:mm:ss");
+                 console.log(deliverytime);
+                
+                 res1[0].deliverytime = deliverytime;
+               }else{
+
+                 var deliverytime = moment(res[0].ordertime)
+                 .add(0, "seconds")
+                 .add(20, "minutes")
+                 .format("YYYY-MM-DD HH:mm:ss");
+                 console.log(deliverytime);
+                
+                 res1[0].deliverytime = deliverytime;
+
+               }
+
                 for (let i = 0; i < res1.length; i++) {
-                  var deliverytime = new Date(res1[i].ordertime);
+                  // var deliverytime = new Date(res1[i].ordertime);
 
-                  // d.setHours(d.getHours() + 5);
-                  deliverytime.setMinutes(deliverytime.getMinutes() + 15);
+                  // // d.setHours(d.getHours() + 5);
+                  // deliverytime.setMinutes(deliverytime.getMinutes() + 15);
 
-                  res1[i].deliverytime = deliverytime;
+                  // res1[i].deliverytime = deliverytime;
 
                   res1[i].distance = res1[i].distance.toFixed(2);
                   //15min Food Preparation time , 3min 1 km
