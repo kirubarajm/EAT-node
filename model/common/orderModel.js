@@ -1554,15 +1554,39 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
 
   const orderdetails = await query("select ors.*,mk.brandname from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.userid ='" +req.userid +"' and ors.orderstatus = 6  and ors.payment_status = 1 order by ors.orderid desc limit 1");
 
+ 
   if (orderdetails) {
-    for (let i = 0; i < orderdetails.length; i++) {
-
-      const orderratingdetails = await query("select * from Order_rating where orderid ='" +orderdetails[i].orderid +"'");
-      orderdetails[i].rating = true;
+  //  for (let i = 0; i < orderdetails.length; i++) {
+    var today = moment();
+   
+    var moveit_actual_delivered_time = moment(orderdetails[0].moveit_actual_delivered_time);
+   
+    var diffMs  = (today - moveit_actual_delivered_time);
+    var diffDays = Math.floor(diffMs / 86400000); 
+    var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
+    var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
+   
+    if (diffDays) {
+      console.log("days"+diffDays);
+      orderdetails[0].showrating = true;
+    }else if(diffHrs){
+      console.log("diffHrs"+diffHrs);
+      orderdetails[0].showrating = true;
+    }else if(diffMins > 30){
+      
+      console.log("diffHrs"+diffMins);
+      orderdetails[0].showrating = true;
+    }else{
+      orderdetails[0].showrating = false;
+      console.log("false");
+    }
+   
+      const orderratingdetails = await query("select * from Order_rating where orderid ='" +orderdetails[0].orderid +"'");
+      orderdetails[0].rating = true;
 
       if (orderratingdetails.length === 0) {
-        orderdetails[i].rating = false;
-      }
+        orderdetails[0].rating = false;
+    //  }
     }
   }
   sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",function(err, res) {
@@ -1775,9 +1799,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
   if (orderdetails[0].orderstatus < 5) {
-    sql.query(
-      "UPDATE Orders SET orderstatus = 7,cancel_by = 1,cancel_reason= '" +req.cancel_reason +"' WHERE orderid ='" +req.orderid +"'",
-      async function(err, res) {
+    sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 1,cancel_reason= '" +req.cancel_reason +"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
         if (err) {
           result(err, null);
         } else {

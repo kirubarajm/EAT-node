@@ -1102,7 +1102,6 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         calculationdetails.product_orginal_price = product_orginal_price;
         calculationdetails.totalamount = totalamount;
         calculationdetails.coupon_discount_amount = coupon_discount_amount;
-<<<<<<< HEAD
         calculationdetails.couponstatus = false;
         calculationdetails.refundcouponstatus = false
 
@@ -1112,8 +1111,6 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         if (req.rcid && refundcouponstatus) {
         calculationdetails.refundcouponstatus = refundcouponstatus;
       }
-=======
->>>>>>> db4315c3ea667b0b0e53193b8541878e81f72f8d
 
         var cartdetails = [];
         var totalamountinfo = {};
