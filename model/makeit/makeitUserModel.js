@@ -1103,10 +1103,16 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         calculationdetails.refund_coupon_adjustment = refund_coupon_adjustment;
         calculationdetails.product_orginal_price = product_orginal_price;
         calculationdetails.totalamount = totalamount;
-        calculationdetails.couponstatus = couponstatus;
-        calculationdetails.refundcouponstatus = refundcouponstatus;
         calculationdetails.coupon_discount_amount = coupon_discount_amount;
-        
+        calculationdetails.couponstatus = false;
+        calculationdetails.refundcouponstatus = false
+
+        if (req.cid && couponstatus) {
+          calculationdetails.couponstatus = couponstatus;
+        }
+        if (req.rcid && refundcouponstatus) {
+        calculationdetails.refundcouponstatus = refundcouponstatus;
+      }
 
         var cartdetails = [];
         var totalamountinfo = {};
@@ -1121,7 +1127,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           totalamountinfo.status = true;
           cartdetails.push(totalamountinfo);
 
-          if (couponstatus) {
+          if (req.cid && couponstatus) {
             couponinfo.title = "Coupon adjustment";
             couponinfo.charges = coupon_discount_amount;
             couponinfo.status = true;
@@ -1138,7 +1144,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           deliverychargeinfo.status = true;
           cartdetails.push(deliverychargeinfo);
 
-          if (refundcouponstatus) {
+          if (req.rcid && refundcouponstatus) {
             refundinfo.title = "Refund adjustment";
             refundinfo.charges = refund_coupon_adjustment;
             refundinfo.status = true;
