@@ -998,7 +998,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         }
         product_orginal_price = totalamount;
 
-        //coupon amount deac
+        //offer coupon amount detection algorithm
         if (req.cid) {
           var couponlist = await query(
             "Select * From Coupon where cid = '" +
@@ -1063,7 +1063,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         var grandtotal = gstcharge+totalamount+delivery_charge;
 
 
-        //refund
+        //refund coupon amount detection algorithm 
         if (req.rcid) {
           refundlist = await query(
             "Select * From Refund_Coupon where rcid = '" +
@@ -1092,8 +1092,6 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           }
         }
         
-
-        
         calculationdetails.grandtotaltitle = "Grand Total";
         calculationdetails.grandtotal = grandtotal;
         calculationdetails.original_price = original_price;
@@ -1104,6 +1102,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         calculationdetails.product_orginal_price = product_orginal_price;
         calculationdetails.totalamount = totalamount;
         calculationdetails.coupon_discount_amount = coupon_discount_amount;
+<<<<<<< HEAD
         calculationdetails.couponstatus = false;
         calculationdetails.refundcouponstatus = false
 
@@ -1113,6 +1112,8 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         if (req.rcid && refundcouponstatus) {
         calculationdetails.refundcouponstatus = refundcouponstatus;
       }
+=======
+>>>>>>> db4315c3ea667b0b0e53193b8541878e81f72f8d
 
         var cartdetails = [];
         var totalamountinfo = {};
