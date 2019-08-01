@@ -135,7 +135,7 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
     }
     else{
 
-      if (res.length === 0) {
+      if (res.length !== 0) {
 
     var staticquery = "UPDATE Menuitem SET ";
     var column = '';
@@ -148,7 +148,7 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
         }
     }
 
-   var  query = staticquery + column.slice(0, -1)  + " ,approved_status = 3 where makeit_userid = " + req.makeit_userid +" and menuitemid = "+req.menuitemid ;
+   var  query = staticquery + column.slice(0, -1)  + " where makeit_userid = " + req.makeit_userid +" and menuitemid = "+req.menuitemid ;
 
     console.log(query);
     sql.query(query, function (err, res) {
@@ -170,10 +170,10 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
         }
 
     });
-  }else{
+      }else{
 
     let sucobj = true;
-    let message = " Sorry Already added product, so you can't edit the menuitem"
+    let message = "No Item found,Sorry you can't edit the item"
     let resobj = {
         success: sucobj,
         status:false,
@@ -208,7 +208,7 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
               // console.log(res2.length);
               // if (res2.length === 1) {
   
-                if (res[0].approved_status == 0 || res[0].approved_status == 3) {
+                if (res[0].approved_status === 0 || res[0].approved_status === 3) {
     
                   var query = "UPDATE Menuitem SET active_status = 1,approved_time= ?,approved_status = "+req.approved_status+",approvedby=0  WHERE menuitemid = "+req.menuitemid+"";
                 sql.query(query, new Date(), function (err, res1) {
@@ -217,10 +217,8 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
                         result(null, err);
                      }
                    else{   
-                   
-                  
                        var  message = "Menuitem approved successfully"
-                    
+                       if(req.approved_status===2) message = "Menuitem rejected successfully"
                         let sucobj=true;
                         let resobj = {  
                           success: sucobj,
@@ -232,7 +230,7 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
                         }
                     }); 
     
-                  }else if(res[0].approved_status == 1){
+                  }else if(res[0].approved_status === 1){
                     
                         let sucobj=true;
                         let resobj = {  
@@ -243,7 +241,7 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
             
                        result(null, resobj);
     
-                  }else if(res[0].approved_status == 2){
+                  }else if(res[0].approved_status === 2){
                     console.log('Menuitem Already rejected');
                         let sucobj=true;
                         let resobj = {  

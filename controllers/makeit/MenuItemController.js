@@ -32,7 +32,7 @@ exports.read_a_menuitem = function(req, res) {
   });
 };
 
-exports.update_a_menuitem = function(req, res) {
+exports.update_a_menuitem_old = function(req, res) {
   Menuitem.updateById(req.params.id, new Menuitem(req.body), function(
     err,
     menuitem

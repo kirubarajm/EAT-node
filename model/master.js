@@ -510,11 +510,27 @@ const master = [
             },
             {
                 "statusid": 3,
-                "description": "Product reject"
+                "description": "Product rejected"
             },
             {
                 "statusid": 4,
                 "description": "Product edit"
+            }
+        ]
+    },
+
+    {
+        'productItemapprovestatus': [{
+                "statusid": 0,
+                "description": "Defult"
+            },
+            {
+                "statusid": 1,
+                "description": "Item approved"
+            },
+            {
+                "statusid": 2,
+                "description": "Item rejected"
             }
         ]
     },

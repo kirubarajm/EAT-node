@@ -21,7 +21,9 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
  
           var countlist = {};
         //makeit allocated count
-        var new_sales_appointment_count = await query("Select count(aid) as count  From Allocation where DATE(booking_date_time) = CURDATE() and status =1"); 
+        // Select alc.*,mu.address,mu.brandname,mu.email,mu.flatno,mu.appointment_status,mu.name,mu.phoneno,mu.pincode,mu.userid from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1
+       // var new_sales_appointment_count = await query("Select count(aid) as count  From Allocation where DATE(booking_date_time) = CURDATE() and status =1"); 
+        var new_sales_appointment_count = await query("Select count(aid) as count from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1"); 
 
         countlist.new_sales_appointment_count  = new_sales_appointment_count[0].count;
         //new product count
