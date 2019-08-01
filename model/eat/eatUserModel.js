@@ -377,13 +377,11 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
   //  console.log("dinner");
   }
 
-  if(req.vegtype === 0) {
-
-    productquery = productquery +" and pt.vegtype = 0";
-
+  if (req.vegtype) {
+    productquery = productquery + " and pt.vegtype= 0";
   }
 
-
+    console.log(productquery);
   
   sql.query(productquery, async function(err, res) {
     if (err) {
@@ -2219,7 +2217,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
          result(null, resobj);
 
      }
- });
+ });  
 };
 
 
@@ -2236,6 +2234,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
     
       return await instance.customers.create({name, email, contact, notes,fail_existing}).then((data) => {
         cuId=data.id;
+        console.log(data);
         //  const updateforrazer_customerid = await query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ");
        
           sql.query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ", function(err, customerupdate) {
