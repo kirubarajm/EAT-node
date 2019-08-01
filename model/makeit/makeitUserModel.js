@@ -890,7 +890,7 @@ Makeituser.update_makeit_followup_status = function(
 };
 
 //cart details for ear user
-Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid(req,orderitems,result) {
+Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid(req,orderitems,isMobile,result) {
   var tempmessage = "";
   var makeit_error_message = "";
   var coupon__error_message = "";
@@ -966,7 +966,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         result(null, resobj);
       }else{
 
-
+        if(isMobile){
         // eat delivery avalibility check
           var makeitavailability = await query(
             "Select distinct mk.userid,mk.brandname,mk.lat,mk.lon,( 3959 * acos( cos( radians(" +
@@ -988,7 +988,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               isAvaliablekitchen = false;
               makeit_error_message = makeitavailability[0].brandname;
           }
-
+        }
 
         res2[0].isAvaliablekitchen = isAvaliablekitchen;
         for (let i = 0; i < res2.length; i++) {
@@ -1193,7 +1193,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   });
 };
 
-Makeituser.admin_check_cartdetails = async function admin_check_cartdetails(req,orderitemsresult) {
+Makeituser.admin_check_cartdetails = async function admin_check_cartdetails(req,orderitems,result) {
   var tempmessage = "";
   var gst = constant.gst;
   var delivery_charge = constant.deliverycharge;

@@ -35,7 +35,7 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
         var  new_replies_count = await query("Select count(aid) as count from Query_answers where admin_read=0"); 
         countlist.new_replies_count  = new_replies_count[0].count;
         //new order count
-        var  new_order_count = await query("Select count(orderid) as count from Orders where moveit_user_id = 0 and orderstatus = 0  and cancel_by = 0 and DATE(created_at) = CURDATE()"); 
+        var  new_order_count = await query("Select count(orderid) as count from Orders where moveit_user_id = 0 and orderstatus = 1 and cancel_by = 0 and lock_status = 0 and DATE(created_at) = CURDATE() and payment_status!=2"); 
         countlist.new_order_count  = new_order_count[0].count;
         //makeit order count
         var  new_makeit_cancel_order_count = await query("Select count(orderid) as count from Orders where moveit_user_id = 0 and orderstatus = 7 and cancel_by = 2 and DATE(created_at) = CURDATE()"); 
