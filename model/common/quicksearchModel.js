@@ -113,13 +113,13 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
       try {
         const quicksearchquery = await query("Select * from QuickSearch");
         if (quicksearchquery.err) {  
-      //     let resobj = {
-      //     success: sucobj,
-      //     status:false,
-      //     result: err
-      //   };
+          let resobj = {
+          success: sucobj,
+          status:false,
+          result: err
+        };
     
-      //   result(null, resobj);
+        result(null, resobj);
       }else{
     
     

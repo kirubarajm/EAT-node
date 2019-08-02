@@ -312,6 +312,99 @@ Order.OrderOnline = async function OrderOnline(req, orderitems,result) {
   });
 }
 
+Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnlineOrder,result) {
+  var new_Order = new Order(req);
+  new_Order.delivery_charge = constant.deliverycharge;
+  sql.beginTransaction(function(err) {
+    if (err) { 
+      sql.rollback(function() {
+        result(err, null);
+      });
+      return;
+    }
+    sql.query("INSERT INTO Orders set ?", new_Order, async function(err, res1) {
+      if (err) { 
+        sql.rollback(function() {
+          result(err, null); //result.send(err);
+        });
+      }else{
+        var orderid = res1.insertId;
+        for (var i = 0; i < orderitems.length; i++) {
+          var orderitem = {};
+          orderitem.orderid = orderid;
+          orderitem.productid = orderitems[i].productid;
+          orderitem.quantity = orderitems[i].cartquantity;
+          orderitem.price = orderitems[i].price;
+          var items = new Orderitem(orderitem);
+
+          if(isOnlineOrder) {
+            var orderitemlock = new Orderlock(orderitem);
+            Orderlock.lockOrderitems(orderitemlock, function(
+              err,
+              orderlockresponce
+            ) {
+              if (err) { 
+                sql.rollback(function() {
+                  result(err, null);
+                });
+              }//result.send(err);
+            });
+          }
+          
+          Orderitem.createOrderitems(items, function(err, res2) {
+            //if (err) result.send(err);
+            if (err) { 
+              sql.rollback(function() {
+                result(err, null);
+              });
+            }
+          });
+        }
+
+        if(isMobile&&!isOnlineOrder){
+          if (req.cid) {
+            var new_createCouponUsed = new CouponUsed(req); 
+            new_createCouponUsed.orderid = res1.insertId;
+            CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
+               //if (err) result.send(err);
+               if (err) { 
+                sql.rollback(function() {
+                  result.send(err);
+                });
+              }
+             });
+           }
+
+
+         if (req.rcid) {
+           var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(req.rcid,req.refund_balance,res1.insertId);
+         }
+        }
+
+        let resobj = {
+          success: true,
+          status: true,
+          message: "Order Created successfully",
+          orderid: orderid
+        };
+        sql.commit(async function(err) {
+          if (err) { 
+            sql.rollback(function() {
+              //result.send(err);
+              result(err, null);
+            });
+          }
+          
+          result(null, resobj);
+        });
+      }
+    });
+  });
+}
+
+
+
+
 Order.getOrderById = function getOrderById(orderid, result) {
   sql.query("Select * from Orders where orderid = ? ", orderid, function(
     err,
@@ -942,50 +1035,25 @@ Order.order_payment_status_by_moveituser = function(req, result) {
 };
 
 Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
-  //  var query = "select * from Orders WHERE moveit_user_id  = '"+moveit_user_id+"'";
-
-  //  var query = "Select ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid where ors.moveit_user_id  = "+moveit_user_id+"";
-  // var query = "Select GROUP_CONCAT(ot.productid) as productid,GROUP_CONCAT(pt.product_name) as product_name,ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid join OrderItem ot on ot.orderid = ors.orderid join Product pt on ot.productid=pt.productid where ors.moveit_user_id ="+moveit_user_id+"";
-  // var query = "Select GROUP_CONCAT('[',(CONCAT('{productid:', ot.productid, ', product_name:',pt.product_name,'}')),']') as products,ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid join OrderItem ot on ot.orderid = ors.orderid join Product pt on ot.productid=pt.productid where ors.moveit_user_id = "+moveit_user_id+"";
-  //var query = "Select concat('[',GROUP_CONCAT(CONCAT('{\"productid\":\"', ot.productid, '\", \"product_name\":\"',pt.product_name,'\"}')),']') items,ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid join OrderItem ot on ot.orderid = ors.orderid join Product pt on ot.productid=pt.productid where ors.moveit_user_id =10";
-  // var query = 'Select concat('[',GROUP_CONCAT(CONCAT('{\'productid\':\'', ot.productid, '\', \'product_name\':\'',pt.product_name,'\'}')),']') items,ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid join OrderItem ot on ot.orderid = ors.orderid join Product pt on ot.productid=pt.productid where ors.moveit_user_id =10';
-
-  //      var query = "Select concat('[',GROUP_CONCAT(CONCAT('{productid:', ot.productid, ', product_name:',pt.product_name,'}')),']') product,ors.orderid,ors.userid,us.name,us.phoneno as cusphoneno,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone from Orders as ors join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid join OrderItem ot on ot.orderid = ors.orderid join Product pt on ot.productid=pt.productid where ors.moveit_user_id ="+moveit_user_id+" and ors.orderstatus =6 ";
-  //      sql.query(query, function (err, res) {
-
-  //       if(err) {
-  //           console.log("error: ", err);
-  //           result(null, err);
-  //       }
-  //       else{
-  //              // var orders = res.map(x =>JSON.stringify(x));
-
-  //         let sucobj=true;
-  //         let resobj = {
-  //           success: sucobj,
-  //           result: res
-  //           };
-
-  //        result(null, resobj);
-  //       }
-  //   });
-
-  try {
+  
+ // try {
     const rows = await query(
       "Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id =" +
         moveit_user_id +
-        " and ors.orderstatus = 6 or ors.orderstatus = 7 order by ors.moveit_actual_delivered_time desc"
+        " and (ors.orderstatus = 6 or ors.orderstatus = 7) order by ors.moveit_actual_delivered_time desc"
     );
 
-    if (rows.length > 0) {
-      console.log("Fetching No of Store Id", rows.length);
-    } else {
-      var res = {
-        result: "Order is not found!"
+    if (rows.length === 0) {
+     
+      let resobj = {
+        success: false,
+        status:false,
+        result: rows
       };
-      result(null, res);
-    }
-
+      result(null, resobj);
+    } else {
+     
+    
     for (let i = 0; i < rows.length; i++) {
       var url =
         "Select ot.productid,pt.product_name,ot.quantity from OrderItem ot join Product pt on ot.productid=pt.productid where ot.orderid = " +
@@ -996,19 +1064,20 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
 
       rows[i].items = products;
     }
-    let sucobj = true;
-    let resobj = {
-      success: sucobj,
-      status:true,
-      result: rows
-    };
+        
+        let resobj = {
+          success: true,
+          status:true,
+          result: rows
+        };
 
     result(null, resobj);
-  } catch (err) {
-    var errorCode = 402;
-
-    result(null, errorCode);
   }
+  // } catch (err) {
+  //   var errorCode = 402;
+
+  //   result(null, errorCode);
+  // }
 };
 
 Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
@@ -1431,144 +1500,15 @@ Order.eatcreateOrder = async function eatcreateOrder(
   }
 };
 
-Order.online_order_place_conformation = async function(order_place, result) {
-  var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  if (order_place.payment_status === 1) {
-
-    if (order_place.cid) {
-
-      const orderdetailsquery = "select * from Orders where orderid ='" +order_place.orderid +"'";
-
-      sql.query(orderdetailsquery, async function(err, orderdetails) {
-        if (err) {
-          console.log("error: ", err);
-          result(err, null);
-        }
-        
-        var new_createCouponUsed = new CouponUsed(order_place); 
-        new_createCouponUsed.after_discount_cost = orderdetails[0].price
-        new_createCouponUsed.order_cost = orderdetails[0].original_price
-        new_createCouponUsed.userid = orderdetails[0].userid
-    
-       CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
-         if (err) result.send(err);
-       });
-      });
-       
-     }
-
-    if (order_place.refund_balance) {
-      var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(
-        order_place.rcid,
-        order_place.refund_balance,
-        order_place.orderid
-      );
-    }
-    var query =
-      "update Orders set payment_status = '" +
-      order_place.payment_status +
-      "', lock_status = 0,transactionid='" +
-      order_place.transactionid +
-      "',transaction_status= 'success', transaction_time= '" +
-      transaction_time +
-      "' WHERE orderid = '" +
-      order_place.orderid +
-      "' ";
-    var deletequery =
-      "delete from Lock_order where orderid ='" + order_place.orderid + "' ";
-
-    sql.query(query, function(err, res1) {
-      if (err) {
-        console.log("error: ", err);
-        result(err, null);
-      } else {
-        sql.query(deletequery, async function(err, deleteres) {
-          if (err) {
-            console.log("error: ", err);
-            result(err, null);
-          } else {
-            await Notification.orderMakeItPushNotification(
-              order_place.orderid,
-              null,
-              PushConstant.pageidMakeit_Order_Post
-            );
-
-            let message = "Your order placed successfully";
-            let sucobj = true;
-            let resobj = {
-              success: sucobj,
-              status: true,
-              message: message
-            };
-            result(null, resobj);
-          }
-        });
-      }
-    });
-  } else if (order_place.payment_status == 2) {
-    var query =
-      "update Orders set payment_status = '" +
-      order_place.payment_status +
-      "',lock_status = 0,transactionid='" +
-      order_place.transactionid +
-      "',transaction_status= 'failed', transaction_time= '" +
-      transaction_time +
-      "' WHERE orderid = '" +
-      order_place.orderid +
-      "' ";
-
-    var releasequantityquery =
-      "select * from Lock_order where orderid ='" + order_place.orderid + "' ";
-
-    sql.query(query, function(err, res1) {
-      if (err) {
-        console.log("error: ", err);
-        result(err, null);
-      } else {
-        sql.query(releasequantityquery, function(err, res2) {
-          if (err) {
-            result(err, null);
-          } else {
-            for (let i = 0; i < res2.length; i++) {
-              var productquantityadd =
-                "update Product set quantity = quantity+" +
-                res2[i].quantity +
-                " where productid =" +
-                res2[i].productid +
-                "";
-
-              sql.query(productquantityadd, function(err, res2) {
-                if (err) {
-                  console.log("error: ", err);
-                  result(null, err);
-                } else {
-                }
-              });
-            }
-
-            let sucobj = true;
-            let message = "Sorry payment not yet be paid following order";
-            let resobj = {
-              success: sucobj,
-              message: message,
-              status: false,
-              orderid: order_place.orderid
-            };
-            result(null, resobj);
-          }
-        });
-      }
-    });
-  }
-};
 
 Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(req,result) {
 
   const orderdetails = await query("select ors.*,mk.brandname from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.userid ='" +req.userid +"' and ors.orderstatus = 6  and ors.payment_status = 1 order by ors.orderid desc limit 1");
 
+  console.log(orderdetails);
  
-  if (orderdetails) {
+  if (orderdetails.length !==0) {
   //  for (let i = 0; i < orderdetails.length; i++) {
     var today = moment();
    
@@ -2248,94 +2188,6 @@ Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
   });
 };
 
-Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnlineOrder,result) {
-  var new_Order = new Order(req);
-  new_Order.delivery_charge = constant.deliverycharge;
-  sql.beginTransaction(function(err) {
-    if (err) { 
-      sql.rollback(function() {
-        result(err, null);
-      });
-      return;
-    }
-    sql.query("INSERT INTO Orders set ?", new_Order, async function(err, res1) {
-      if (err) { 
-        sql.rollback(function() {
-          result(err, null); //result.send(err);
-        });
-      }else{
-        var orderid = res1.insertId;
-        for (var i = 0; i < orderitems.length; i++) {
-          var orderitem = {};
-          orderitem.orderid = orderid;
-          orderitem.productid = orderitems[i].productid;
-          orderitem.quantity = orderitems[i].cartquantity;
-          orderitem.price = orderitems[i].price;
-          var items = new Orderitem(orderitem);
 
-          if(isOnlineOrder) {
-            var orderitemlock = new Orderlock(orderitem);
-            Orderlock.lockOrderitems(orderitemlock, function(
-              err,
-              orderlockresponce
-            ) {
-              if (err) { 
-                sql.rollback(function() {
-                  result(err, null);
-                });
-              }//result.send(err);
-            });
-          }
-          
-          Orderitem.createOrderitems(items, function(err, res2) {
-            //if (err) result.send(err);
-            if (err) { 
-              sql.rollback(function() {
-                result(err, null);
-              });
-            }
-          });
-        }
-
-        if(isMobile&&!isOnlineOrder){
-          if (req.cid) {
-            var new_createCouponUsed = new CouponUsed(req); 
-            new_createCouponUsed.orderid = res1.insertId;
-            CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
-               //if (err) result.send(err);
-               if (err) { 
-                sql.rollback(function() {
-                  result.send(err);
-                });
-              }
-             });
-           }
-
-
-         if (req.rcid) {
-           var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(req.rcid,req.refund_balance,res1.insertId);
-         }
-        }
-
-        let resobj = {
-          success: true,
-          status: true,
-          message: "Order Created successfully",
-          orderid: orderid
-        };
-        sql.commit(async function(err) {
-          if (err) { 
-            sql.rollback(function() {
-              //result.send(err);
-              result(err, null);
-            });
-          }
-          
-          result(null, resobj);
-        });
-      }
-    });
-  });
-}
 
 module.exports = Order;
