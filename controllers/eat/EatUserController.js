@@ -108,6 +108,10 @@ exports.eat_makeit_product_list = function(req, res) {
     res
       .status(400)
       .send({ error: true, status: false, message: "Please provide eatuserid" });
+  }else if (!req.body.vegtype) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide vegtype" });
   } else {
   Eatuser.get_eat_makeit_product_list(req.body, function(err, user) {
     console.log("controller");
