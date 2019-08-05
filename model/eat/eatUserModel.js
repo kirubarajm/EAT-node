@@ -377,7 +377,8 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
   //  console.log("dinner");
   }
 
-  if (req.vegtype) {
+
+  if (req.vegtype === "1") {
     productquery = productquery + " and pt.vegtype= 0";
   }
 
