@@ -49,6 +49,7 @@ Fav.createFav = function createFav(newFav, result) {
                  let message = 'Favourite created successfully';
                 let resobj = {  
                 success: sucobj,
+                status:true,
                 message:message,
                 favid:res.insertId
 
@@ -58,10 +59,11 @@ Fav.createFav = function createFav(newFav, result) {
             }
             });
         }else{
-            let sucobj='true';
+            let sucobj=true;
             let message = 'Already added the Favourite';
            let resobj = {  
            success: sucobj,
+           status:false,
            message:message,
            };
            result(null, resobj);
@@ -123,6 +125,7 @@ Fav.remove = function(id, result){
                  let message = 'Favourite removed successfully';
                 let resobj = {  
                 success: sucobj,
+                status:true,
                 message:message,
 
                 };

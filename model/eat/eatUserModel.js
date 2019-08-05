@@ -805,7 +805,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     console.log("search");
     query =
       query +
-      " where mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 and pt.delete_status !=1 and mk.name like '%" +
+      " where (mk.appointment_status = 3 and mk.ka_status = 2  and mk.verified_status = 1) and (pt.delete_status !=1 and pt.active_status = 1 and pt.approved_status=2 pt.quantity != 0 ) mk.name like '%" +
       req.search +
       "%'";
   } else if (
@@ -939,10 +939,10 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
     regionlist === undefined &&
     cuisinelist === undefined
   ) {
-    console.log("search");
+    console.log("no filters and search");
     query =
       query +
-      " where mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1  and pt.quantity != 0 and pt.delete_status !=1 ";
+      " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1)  and (pt.quantity != 0 and pt.delete_status !=1 and pt.active_status = 1) ";
   }
 
   if (req.vegtype) {
