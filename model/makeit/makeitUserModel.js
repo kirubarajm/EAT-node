@@ -9,6 +9,8 @@ var moment = require("moment");
 var Cusinemakeit = require("../../model/makeit/cusinemakeitModel");
 var MakeitImages = require("../../model/makeit/makeitImagesModel");
 var MakeitBadges = require("../../model/makeit/makeitbadgesmappingModel");
+var PushConstant = require("../../push/PushConstant.js");
+var Notification = require("../../model/common/notificationModel.js");
 
 //Task object constructor
 var Makeituser = function(makeituser) {
@@ -703,9 +705,14 @@ Makeituser.orderstatusbyorderid = function(req, result) {
         console.log("error: ", err);
         result(null, err);
       } else {
-        // await OrderModel.orderMoveItPushNotification(req.orderid,PageidConstant.pageidMoveit_Order_Prepared,null);
+        await Notification.orderEatPushNotification(
+          req.orderid,
+          null,
+          PushConstant.masteridOrder_Prepared
+        );
+        await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Prepared,null);
         let sucobj = true;
-        let mesobj = "Status Update Successfully";
+        let mesobj = "Status Updated Successfully";
         let resobj = {
           success: sucobj,
           status: sucobj,

@@ -15,7 +15,7 @@ var Notification = function(notification) {
 };
 
 Notification.getPushOrderDetail = async function(orderid) {
-  var orders = await query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'pushid_ios',us.pushid_ios,'pushid_android',us.pushid_android) as userdetail,"+
+  var orders = await query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'pushid_ios',us.pushid_ios,'pushid_android',us.pushid_android,'name',us.name) as userdetail,"+
     "JSON_OBJECT('userid',ms.userid,'name',ms.name,'brandName',ms.brandName,'virtualkey',ms.virtualkey) as makeitdetail,"+
     "JSON_OBJECT('userid',mu.userid,'name',mu.name,'Vehicle_no',mu.Vehicle_no) as moveitdetail "+
     "from Orders as ors "+
@@ -60,8 +60,20 @@ Notification.orderEatPushNotification = async function(
       var mk_username=makeituser.brandName||""
       mk_username=mk_username?" by "+mk_username :""
       data = {
-        title: "Your order has been accepted"+mk_username,
+        title: "Your order has been accepted "+mk_username,
         message: "Your order will be delivered in approcimately 30 minutes",
+        pageid: "" + pageid,
+        app: "Eat",
+        notification_type: "2"
+      };
+      break;
+
+      case PushConstant.masteridOrder_Prepared:
+      var mk_username=makeituser.brandName||""
+      mk_username=mk_username?" by "+mk_username :""
+      data = {
+        title: "Your order has been prepared "+mk_username,
+        message: "Your order will be delivered in approcimately 30 minutes.",
         pageid: "" + pageid,
         app: "Eat",
         notification_type: "2"
@@ -72,7 +84,7 @@ Notification.orderEatPushNotification = async function(
         var mo_username=moveituser.name||""
         mo_username=mo_username?" by "+mo_username :""
       data = {
-        title: "Your order has been picked up"+mo_username,
+        title: "Your order has been picked up "+mo_username,
         message: "Call our delivery executive for further information.",
         pageid: "" + pageid,
         app: "Eat",
@@ -181,13 +193,12 @@ Notification.orderMoveItPushNotification = async function(
   move_it_user_detail
 ) {
   const orders = await Notification.getPushOrderDetail(orderid);
-  var Eatuserid = orders.userid;
+  var Eatuserdetail = JSON.parse(orders.userdetail);
   var data = null;
-  var Eatuserdetail = null;
 
   switch (pageid) {
     case PushConstant.pageidMoveit_Order_Assigned:
-      Eatuserdetail = await Notification.getEatUserDetail(Eatuserid);
+     // Eatuserdetail = await Notification.getEatUserDetail(Eatuserid);
       data = {
         title: "Order assign",
         message: "Order Assigned to you. OrderID is#" + orderid,
@@ -202,7 +213,7 @@ Notification.orderMoveItPushNotification = async function(
       break;
 
     case PushConstant.pageidMoveit_Order_Cancel:
-      Eatuserdetail = await Notification.getEatUserDetail(Eatuserid);
+     // Eatuserdetail = await Notification.getEatUserDetail(Eatuserid);
       data = {
         title: "Order Cancel",
         message:
