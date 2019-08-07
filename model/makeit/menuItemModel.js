@@ -127,31 +127,37 @@ Menuitem.get_Menuitem_By_makeitid = function get_Menuitem_By_makeitid(userId, re
 };
 
 Menuitem.update_a_menuitem_makeit_userid = function(req, result){
-
-  sql.query(" select * from Productitem where productid = "+req.menuitemid+" and delete_status = 0", function (err, res) {
+  //console.log("UPDATE: ", req);
+  sql.query(" select * from Menuitem where menuitemid = "+req.menuitemid, function (err, res) {
     if(err) {
         console.log("error: ", err);
-        result(null, err);
-    }
-    else{
+        result(err, null);
+    }else{
 
       if (res.length !== 0) {
 
     var staticquery = "UPDATE Menuitem SET ";
     var column = '';
+    var values =[];
     for (const [key, value] of Object.entries(req)) {
         console.log(`${key} ${value}`);
 
         if (key !== 'menuitemid') {
             // var value = `=${value}`;
-            column = column + key + "='" + value + "',";
+            //column = column + key + "='" + value + "',";
+            column = column + key +" = ?,";
+            values.push(value);
         }
     }
-
-   var  query = staticquery + column.slice(0, -1)  + " where makeit_userid = " + req.makeit_userid +" and menuitemid = "+req.menuitemid ;
-
+    column=column.slice(0, -1)
+    values.push(req.makeit_userid);
+    values.push(req.menuitemid);
+    //values=values.slice(0, -1)
+    console.log("value--->",values)
+   //var  query = staticquery + column  + " where makeit_userid = " + req.makeit_userid +" and menuitemid = "+req.menuitemid ;
+   var  query = staticquery + column  + " where makeit_userid = ? and menuitemid = ?";
     console.log(query);
-    sql.query(query, function (err, res) {
+    sql.query(query, values,function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -172,14 +178,11 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
     });
       }else{
 
-    let sucobj = true;
-    let message = "No Item found,Sorry you can't edit the item"
     let resobj = {
-        success: sucobj,
+        success: true,
         status:false,
-        message: message
+        message: "No Item found,Sorry you can't edit the item"
     };
-
     result(null, resobj);
   }
   }

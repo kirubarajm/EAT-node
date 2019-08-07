@@ -500,8 +500,6 @@ Order.online_order_place_conformation = async function(order_place, result) {
   });
 };
 
-
-
 Order.getOrderById = function getOrderById(orderid, result) {
   sql.query("Select * from Orders where orderid = ? ", orderid, function(
     err,
@@ -747,14 +745,12 @@ Order.get_all_vorders = function get_all_vorders(req, result) {
 
       sql.query(query, function(err, res2) {
         totalcount = res2.length;
-
         let resobj = {
           success: true,
           status: true,
           totalorder: totalcount,
           result: res1
         };
-
         result(null, resobj);
       });
     }
@@ -770,7 +766,7 @@ Order.order_assign = function order_assign(req, result) {
       "' ",
     function(err, res1) {
       if (err) {
-        result(null, err);
+        result(err, null);
       } else {
         var online_status = res1[0].online_status;
         if (online_status == 1) {
@@ -813,16 +809,13 @@ Order.getUnassignorders = function getUnassignorders(result) {
     "Select us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0",
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
-        console.log(res);
-        let sucobj = true;
         let resobj = {
-          success: sucobj,
+          success: true,
+          status:true,
           result: res
         };
-
         result(null, resobj);
       }
     }
@@ -837,21 +830,19 @@ Order.orderviewbymoveituser = function(orderid, result) {
       "'",
     function(err, responce) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err,null);
       } else {
-        let sucobj = true;
         let resobj = {
-          success: sucobj,
+          success: true,
+          status:true,
           res: responce
         };
-
         result(null, resobj);
       }
     }
   );
 };
-
+//////////////
 Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveituser( req,kitchenqualitylist,result) {
   var order_pickup_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -860,10 +851,9 @@ Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveit
         .add(20, "minutes")
         .format("YYYY-MM-DD HH:mm:ss");
 
-  sql.query("Select * from Orders where orderid = ?", [req.orderid], function(err,res1) {
+sql.query("Select * from Orders where orderid = ?", [req.orderid], function(err,res1) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
       for (let i = 0; i < kitchenqualitylist.length; i++) {
         var qualitylist = new MoveitRatingForMakeit(kitchenqualitylist[i]);
@@ -874,14 +864,12 @@ Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveit
         MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck(
           qualitylist,
           function(err, res2) {
-            if (err) result.send(err);
+            if (err) result(err, null);
           }
         );
       }
 
       if (res1[0].moveit_user_id === req.moveit_userid) {
-        //var query = "UPDATE Orders SET orderstatus = '"+req.orderstatus+"' ,moveit_reached_time = '"+new Date()+"',moveit_expected_delivered_time = '"+twentyMinutesLater+"' WHERE orderid = '"+req.orderid+"' and moveit_user_id ='"+req.moveit_userid+"'";
-        // console.log(query);
         sql.query(
           "UPDATE Orders SET orderstatus = ? ,moveit_reached_time = ?,moveit_expected_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
           [
@@ -893,31 +881,27 @@ Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveit
           ],
           async function(err, res2) {
             if (err) {
-              console.log("error: ", err);
-              result(null, err);
+              result(err, null);
             } else {
               await Notification.orderEatPushNotification(
                 req.orderid,
                 null,
                 PushConstant.Pageid_eat_order_pickedup
               );
-              let sucobj = true;
-              let message = "Order Pickedup successfully";
               let resobj = {
-                success: sucobj,
+                success: true,
                 status:true,
-                message: message
+                message: "Order Pickedup successfully"
               };
               result(null, resobj);
             }
           }
         );
       } else {
-        let sucobj = true;
-        let message = "Following order is not assigned to you!";
         let resobj = {
-          success: sucobj,
-          message: message
+          success: true,
+          status:false,
+          message: "Following order is not assigned to you!"
         };
         result(null, resobj);
       }
@@ -1572,8 +1556,6 @@ Order.eatcreateOrder = async function eatcreateOrder(
   }
 };
 
-
-
 Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(req,result) {
 
   const orderdetails = await query("select ors.*,mk.brandname from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.userid ='" +req.userid +"' and ors.orderstatus = 6  and ors.payment_status = 1 order by ors.orderid desc limit 1");
@@ -1821,8 +1803,6 @@ Order.create_refund = function create_refund(refundDetail) {
   });
 };
 
-
-
 Order.eat_order_cancel = async function eat_order_cancel(req, result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
@@ -1972,7 +1952,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
              await Notification.orderEatPushNotification(
             req.orderid,
             null,
-            PushConstant.pageidOrder_Cancel
+            PushConstant.Pageid_eat_order_cancel
           );
           if(orderdetails[0]&&orderdetails[0].moveit_user_id){
             console.log("Makeit  Cancel-->"+orderdetails[0].moveit_user_id)
@@ -2060,7 +2040,6 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
   }
 };
 
-
 Order.order_missing_by_makeit = async function order_missing_by_makeit(req, result) {
   const orderdetails = await query(
     "select * from Orders where orderid ='" + req.orderid + "'"
@@ -2092,7 +2071,7 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
-            PushConstant.pageidOrder_Cancel
+            PushConstant.Pageid_eat_order_cancel
           );
           let response = {
             success: true,
@@ -2105,8 +2084,6 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
     );
   }
 };
-
-
 Order.admin_order_cancel = async function admin_order_cancel(req, result) {
   const orderdetails = await query(
     "select * from Orders where orderid ='" + req.orderid + "'"
@@ -2142,7 +2119,7 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
-            PushConstant.pageidOrder_Cancel
+            PushConstant.Pageid_eat_order_cancel
           );
           let response = {
             success: true,
@@ -2155,7 +2132,6 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
     );
   }
 };
-
 Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req,result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
   console.log(orderdetails);
@@ -2230,8 +2206,6 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
     result(null, response);
   }
 };
-
-
 Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
 
   console.log(req);
@@ -2259,7 +2233,5 @@ Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
     
   });
 };
-
-
 
 module.exports = Order;
