@@ -126,7 +126,9 @@ Menuitem.get_Menuitem_By_makeitid = function get_Menuitem_By_makeitid(userId, re
         });   
 };
 
-Menuitem.update_a_menuitem_makeit_userid = function(req, result){
+Menuitem.
+
+update_a_menuitem_makeit_userid = function(req, result){
 
   sql.query(" select * from Productitem where productid = "+req.menuitemid+" and delete_status = 0", function (err, res) {
     if(err) {
