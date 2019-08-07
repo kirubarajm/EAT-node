@@ -1903,13 +1903,21 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
 Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
-  if (orderdetails[0].orderstatus === 7) {
+  if (orderdetails[0].orderstatus === 7 ) {
     let response = {
       success: true,
       status: false,
       message: "Sorry! order already canceled."
     };
     result(null, response);
+  }else if(orderdetails[0].orderstatus === 5){
+      let response = {
+        success: true,
+        status: false,
+        message: "Sorry! This order has been pickeped."
+      };
+      result(null, response);
+
   } else {
     sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 2 WHERE orderid ='" +req.orderid +"'",
     

@@ -30,19 +30,26 @@ RefundCoupon.createRefundCoupon = async function createRefundCoupon(req, result)
   console.log(orderrefunddetails.length);
   if (orderrefunddetails.length===0) {
    
-  sql.query("Select userid,price,refund_amount from Orders where orderid=? ",[req.orderid], function(err, res) {
+  sql.query("Select userid,price,refund_amount,payment_status,orderstatus,lock_status from Orders where orderid=? ",[req.orderid], function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(null, err);
     } else {
-      console.log(res);
+     
+
       var price = res[0].price;
       var refundamount = res[0].refund_amount;
       req.rcoupon ="Refund"+res[0].price;
       req.active_status = 1;
       req.userid = res[0].userid;
-      req.refund_balance = price + refundamount;
-      req.refundamount =price + refundamount;
+
+      if (res[0].payment_status === 1) {
+        req.refund_balance = price + refundamount;
+        req.refundamount = price + refundamount;
+      }
+
+      req.refund_balance = refundamount;
+      req.refundamount = refundamount;
      // refundamount = price + refundamount;
   
       sql.query("INSERT INTO Refund_Coupon set ?", req, function(err, res) {
