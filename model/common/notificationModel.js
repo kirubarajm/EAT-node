@@ -94,8 +94,8 @@ Notification.orderEatPushNotification = async function(
 
     case PushConstant.Pageid_eat_order_reached:
       data = {
-        title: "Order Near to me",
-        message: "Hi! your Order Waiting.Please picked up",
+        title: "Your order near to me",
+        message: "Your Order Waiting.Please picked up",
         pageid: "" + pageid,
         app: "Eat",
         notification_type: "1"
@@ -105,7 +105,7 @@ Notification.orderEatPushNotification = async function(
     case PushConstant.Pageid_eat_order_delivered:
       data = {
         title: "Order Delivered",
-        message: "Hi! your Order Delivered successful",
+        message: "Hi! your Order Delivered successfully",
         pageid: "" + pageid,
         app: "Eat",
         notification_type: "1"
