@@ -1182,7 +1182,7 @@ Order.orderviewbyadmin = function(req, result) {
         orderDetail.makeitdetail = JSON.parse(orderDetail.makeitdetail);
         orderDetail.moveitdetail = JSON.parse(orderDetail.moveitdetail);
         orderDetail.items = JSON.parse(orderDetail.items);
-  
+        orderDetail.items =orderDetail.items.item;
         let resobj = {
           success: true,
           status:true,
