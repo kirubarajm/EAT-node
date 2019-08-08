@@ -640,9 +640,9 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
     " select * from Product where productid = " + req.productid + "",
     async function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
+        var approved_status= res[0].approved_status===2?4:res[0].approved_status;
         if (res[0].active_status == 0) {
           var Productdetail = await Product.getTotalPrice(items);
           req.price = Productdetail.price;
@@ -684,7 +684,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
           var query =
             staticquery +
             column.slice(0, -1) +
-            " ,approved_status = 4 where productid = " +
+            " ,approved_status = "+approved_status+" where productid = " +
             req.productid;
           console.log(query);
 
