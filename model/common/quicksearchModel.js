@@ -205,7 +205,12 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
     job.start();  
    
   
-  
+    //order is not properly placed online and release product quantity and order release by user.
+   const job1 = new CronJob('*/1 * * * *', function(){
+     
+    });
+    job1.start();
+
   QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(req, result) {
     console.log(req.search);
    var searchquery = "select *, IF(type<3, IF(type=2, 'Kitchan', 'Product'), 'Region') as typename from QuickSearch where name LIKE  '%"+req.search+"%'";
