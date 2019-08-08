@@ -30,7 +30,6 @@ module.exports = function(app) {
 // app.route("/eat/address/").put(routesVersioning({"1.0.0":eatuseraddress.update_a_user_address}));
 // app.route("/eat/addressdelete").put(routesVersioning({"1.0.0":eatuseraddress.update_delete_status}));
 // app.route("/eat/makeituser/:userid").get(routesVersioning({"1.0.0":makeituser.read_a_user}));
-// app.route("/eat/order/add").post(routesVersioning({"1.0.0":orders.eatcreateOrder}));
 // app.route("/eat/orderplace").post(routesVersioning({"1.0.0":orders.online_order_place_conformation}));
 // app.route("/eat/cartdetails").post(routesVersioning({"1.0.0":makeituser.read_a_cartdetails}));
 // app.route("/eat/dishlist").post(routesVersioning({"1.0.0":eatuser.eat_dish_sort_filter}));
@@ -104,7 +103,6 @@ app.route("/eat/addresslist/:aid").get(middleware.checkToken,routesVersioning({"
 app.route("/eat/address/").put(middleware.checkToken,routesVersioning({"1.0.0":eatuseraddress.update_a_user_address}));
 app.route("/eat/addressdelete").put(middleware.checkToken,routesVersioning({"1.0.0":eatuseraddress.update_delete_status}));
 app.route("/eat/makeituser/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":makeituser.read_a_user}));
-app.route("/eat/order/add").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eatcreateOrder}));
 app.route("/eat/orderplace").post(middleware.checkToken,routesVersioning({"1.0.0":orders.online_order_place_conformation}));
 app.route("/eat/cartdetails").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.read_a_cartdetails}));
 app.route("/eat/dishlist").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_dish_sort_filter}));

@@ -500,6 +500,47 @@ Order.online_order_place_conformation = async function(order_place, result) {
   });
 };
 
+Order.create_customerid_by_razorpay = async function create_customerid_by_razorpay(
+  userid
+) {
+  const userinfo = await query("Select * from User where userid = '" + userid + "'");
+  var customerid = userinfo[0].razer_customerid;
+  console.log("customerid-->",customerid);
+  if(customerid) return customerid;
+
+  var name = userinfo[0].name;
+  var email = userinfo[0].email;
+  var contact = userinfo[0].phoneno;
+  var notes = "eatuser";
+  var fail_existing="1";
+  var cuId = false;
+
+
+  return await instance.customers
+    .create({ name, email, contact, notes,fail_existing})
+    .then(data => {
+      cuId = data.id;
+      //  const updateforrazer_customerid = await query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ");
+      sql.query(
+        "UPDATE User SET razer_customerid ='" +
+          data.id +
+          "'  where userid = " +
+          userinfo[0].userid +
+          " ",
+        function(err, customerupdate) {
+          if (err) {
+            return false;
+          }
+        }
+      );
+      return cuId;
+    })
+    .catch(error => {
+      console.log("error: ", error);
+      return false;
+    });
+};
+
 Order.getOrderById = function getOrderById(orderid, result) {
   sql.query("Select * from Orders where orderid = ? ", orderid, function(
     err,
@@ -1293,8 +1334,7 @@ Order.orderlistbyeatuser = async function(req, result) {
           let resobj = {
             success: true,
             status: false,
-            message: "Active order not found!",
-            result: res
+            message: "Active order not found!"
           };
           result(null, resobj);
         } else {
@@ -1308,8 +1348,6 @@ Order.orderlistbyeatuser = async function(req, result) {
             "' and (ors.orderstatus = 6 or orderstatus = 7) group by ors.orderid order by ors.orderid desc";
           
          //var eat_order_history_query = 'CALL eat_order_history(?)';
-         
-          console.log(query);
         //  sql.query(eat_order_history_query,[req.userid], async function(err, res1) {
         sql.query(query, async function(err, res1) {
             if (err) {
@@ -1353,176 +1391,29 @@ Order.orderlistbyeatuser = async function(req, result) {
   );
 };
 
-Order.eatcreateOrder = async function eatcreateOrder(
-  newOrder,
-  orderItems,
-  result
-) {
-  const productquantity = [];
-
-  for (let i = 0; i < orderItems.length; i++) {
-    sql.query(
-      "Select productid,quantity,product_name From Product where productid = '" +
-        orderItems[i].productid +
-        "' and quantity > '" +
-        orderItems[i].quantity +
-        "'",
-      function(err, res) {
-        if (err) {
-          console.log("error: ", err);
-          result(err, null);
-        } else {
-          if (res.length <= 0) {
-            orderItems[i].availablity = false;
-            let sucobj = true;
-            let mesobj =
-              "Productid" +
-              " " +
-              orderItems[i].productid +
-              " quantity is not available";
-            let resobj = {
-              success: sucobj,
-              message: mesobj,
-              orderItems: orderItems
-            };
-            result(null, resobj);
-          } else {
-            orderItems[i].availablity = true;
-            orderItems[i].productquantity = productquantity.push(res);
-
-            console.log(productquantity.length);
-            if (productquantity.length >= orderItems.length) {
-              if (newOrder.payment_type === 0) {
-                ordercreatecashondelivery();
-              } else if (newOrder.payment_type === 1) {
-                ordercreateonline();
-              }
-            }
-          }
-        }
-      }
-    );
-  }
-
-  function ordercreatecashondelivery() {
-    sql.query("INSERT INTO Orders set ?", newOrder, function(err, res1) {
-      if (err) {
-        console.log("error: ", err);
-        result(null, err);
-      } else {
-        var orderid = res1.insertId;
-
-        for (var i = 0; i < orderItems.length; i++) {
-          console.log("order items");
-          var orderitem = new Orderitem(orderItems[i]);
-          orderitem.orderid = orderid;
-
-          Orderitem.createOrderitems(orderitem, function(
-            err,
-            orderitemresponce
-          ) {
-            if (err) result.send(err);
-          });
-        }
-
-        let sucobj = true;
-        let mesobj = "Order Created successfully";
-        let resobj = {
-          success: sucobj,
-          status: true,
-          message: mesobj,
-          orderid: orderid
-        };
-        result(null, resobj);
-      }
-    });
-  }
-
-  function ordercreateonline() {
-    sql.query("INSERT INTO Orders set ?", newOrder, function(err, res1) {
-      if (err) {
-        console.log("error: ", err);
-        res1(null, err);
-      } else {
-        var orderid = res1.insertId;
-
-        for (var i = 0; i < orderItems.length; i++) {
-          var orderitemlock = new Orderlock(orderItems[i]);
-          orderitemlock.orderid = orderid;
-
-          var orderitem = new Orderitem(orderItems[i]);
-          orderitem.orderid = orderid;
-
-          Orderitem.createOrderitems(orderitem, function(
-            err,
-            orderitemresponce
-          ) {
-            if (err) result.send(err);
-          });
-
-          Orderlock.lockOrderitems(orderitemlock, function(
-            err,
-            orderlockresponce
-          ) {
-            if (err) result.send(err);
-          });
-        }
-
-        let sucobj = true;
-        let resobj = {
-          success: sucobj,
-          orderid: orderid
-        };
-        result(null, resobj);
-      }
-    });
-  }
-};
 
 Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(req,result) {
-
   const orderdetails = await query("select ors.*,mk.brandname from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.userid ='" +req.userid +"' and ors.orderstatus = 6  and ors.payment_status = 1 order by ors.orderid desc limit 1");
-
-  console.log(orderdetails);
- 
   if (orderdetails.length !==0) {
-  //  for (let i = 0; i < orderdetails.length; i++) {
+
+    const orderratingdetails = await query("select * from Order_rating where orderid ='" +orderdetails[0].orderid +"'");
+    orderdetails[0].rating = false;
+    orderdetails[0].showrating = false;
+
     var today = moment();
-   
     var moveit_actual_delivered_time = moment(orderdetails[0].moveit_actual_delivered_time);
-   
     var diffMs  = (today - moveit_actual_delivered_time);
     var diffDays = Math.floor(diffMs / 86400000); 
     var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
     var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
-   
-    if (diffDays) {
-      console.log("days"+diffDays);
-      orderdetails[0].showrating = true;
-    }else if(diffHrs){
-      console.log("diffHrs"+diffHrs);
-      orderdetails[0].showrating = true;
-    }else if(diffMins > 30){
-      
-      console.log("diffHrs"+diffMins);
-      orderdetails[0].showrating = true;
-    }else{
-      orderdetails[0].showrating = false;
-      console.log("false");
-    }
-   
-      const orderratingdetails = await query("select * from Order_rating where orderid ='" +orderdetails[0].orderid +"'");
-      orderdetails[0].rating = true;
 
-      if (orderratingdetails.length === 0) {
-        orderdetails[0].rating = false;
-    //  }
-    }
+    if (orderratingdetails.length !== 0) orderdetails[0].rating = true;
+    if (diffDays || diffHrs || diffMins > 30) orderdetails[0].showrating = true;
+
   }
   sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         if (res.length === 0) {
           let sucobj = true;
@@ -1537,10 +1428,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
           result(null, resobj);
         } else {
           if (res[0].payment_type === "0") {
-
             var liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
-           
-            console.log(liveorderquery);
             sql.query(liveorderquery, function(err, res1) {
               if (err) {
                 console.log("error: ", err);
@@ -1677,46 +1565,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
   );
 };
 
-Order.create_customerid_by_razorpay = async function create_customerid_by_razorpay(
-  userid
-) {
-  const userinfo = await query("Select * from User where userid = '" + userid + "'");
-  var customerid = userinfo[0].razer_customerid;
-  console.log("customerid-->",customerid);
-  if(customerid) return customerid;
 
-  var name = userinfo[0].name;
-  var email = userinfo[0].email;
-  var contact = userinfo[0].phoneno;
-  var notes = "eatuser";
-  var fail_existing="1";
-  var cuId = false;
-
-
-  return await instance.customers
-    .create({ name, email, contact, notes,fail_existing})
-    .then(data => {
-      cuId = data.id;
-      //  const updateforrazer_customerid = await query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ");
-      sql.query(
-        "UPDATE User SET razer_customerid ='" +
-          data.id +
-          "'  where userid = " +
-          userinfo[0].userid +
-          " ",
-        function(err, customerupdate) {
-          if (err) {
-            return false;
-          }
-        }
-      );
-      return cuId;
-    })
-    .catch(error => {
-      console.log("error: ", error);
-      return false;
-    });
-};
 
 Order.create_refund = function create_refund(refundDetail) {
   var refund = new RefundOnline(refundDetail);
