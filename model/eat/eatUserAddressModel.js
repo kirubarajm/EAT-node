@@ -53,9 +53,8 @@ EatuserAddress.createUserAddress = function createUserAddress(new_address, resul
                 
         }else{
             
-        
-
-            if (new_address.address_type === 1) {
+    
+          if (new_address.address_type === 1) {
                 var message = "Sorry home address already exist!";
             }else if(new_address.address_type === 2){
                 var message = "Sorry office address already exist!";

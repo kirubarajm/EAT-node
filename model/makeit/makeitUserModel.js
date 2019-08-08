@@ -922,8 +922,25 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var orderlist = await query("Select * From Orders where userid = '" +req.userid +"' and orderstatus >= 6");
   var ordercount = orderlist.length;
 
+
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+  var currenthour  = moment(day).format("HH");
+
+  var productquery="breakfast";
+//  if (currenthour <= 12) {
+//    productquery = " breakfast";
+//  }else
+  if(currenthour >= 12 && currenthour <= 16){
+   productquery =  "lunch";
+   }else if( currenthour >= 16){
+   productquery = "dinner";
+ }
+
+
   for (let i = 0; i < orderitems.length; i++) {
-    const res1 = await query("Select pt.*,cu.cuisinename From Product pt join Cuisine cu on cu.cuisineid = pt.cuisine where productid = '" +orderitems[i].productid +"'");
+
+    const res1 = await query("Select pt.*,cu.cuisinename From Product pt join Cuisine cu on cu.cuisineid = pt.cuisine where pt.productid = '" +orderitems[i].productid +"'  ");
+  
     if (res1[0].quantity < orderitems[i].quantity) {
       console.log("quantity");
       res1[0].availablity = false;
@@ -939,7 +956,17 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
       res1[0].availablity = false;
       tempmessage = tempmessage + res1[0].product_name + ",";
       isAvaliableItem = false;
-    } else {
+    }else if (res1[0].active_status != 1) {
+      console.log("active_status");
+      res1[0].availablity = false;
+      tempmessage = tempmessage + res1[0].product_name + ",";
+      isAvaliableItem = false;
+    }else if (res1[0][productquery] !== 1) {
+      console.log("cycle_status");
+      res1[0].availablity = false;
+      tempmessage = tempmessage + res1[0].product_name + ",";
+      isAvaliableItem = false;
+    }   else {
       res1[0].availablity = true;
     }
     amount = res1[0].price * orderitems[i].quantity;
@@ -948,7 +975,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     totalamount = totalamount + amount;
     productdetails.push(res1[0]);
   }
-
+  console.log(productdetails);
   // This query is to get the makeit details and cuisine details
   var query1 =
     "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +

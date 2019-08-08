@@ -1182,23 +1182,7 @@ Order.orderviewbyadmin = function(req, result) {
         orderDetail.makeitdetail = JSON.parse(orderDetail.makeitdetail);
         orderDetail.moveitdetail = JSON.parse(orderDetail.moveitdetail);
         orderDetail.items = JSON.parse(orderDetail.items);
-        // for (let i = 0; i < res.length; i++) {
-        //   if (res[i].userdetail) {
-        //     res[i].userdetail = JSON.parse(res[i].userdetail);
-        //   }
-
-        //   if (res[i].makeitdetail) {
-        //     res[i].makeitdetail = JSON.parse(res[i].makeitdetail);
-        //   }
-        //   if (res[i].moveitdetail) {
-        //     res[i].moveitdetail = JSON.parse(res[i].moveitdetail);
-        //   }
-
-        //   if (res[i].items) {
-        //     var items = JSON.parse(res[i].items);
-        //     res[i].items = items.item;
-        //   }
-        // }
+  
         let resobj = {
           success: true,
           status:true,
@@ -1411,7 +1395,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
     if (diffDays || diffHrs || diffMins > 30) orderdetails[0].showrating = true;
 
   }
-  sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",function(err, res) {
+  sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and (payment_status !=2 or payment_status !=3) order by orderid desc limit 1",function(err, res) {
       if (err) {
         result(err, null);
       } else {
