@@ -4,7 +4,7 @@
 const calculate = {
     gst     : 10,
     deliverycharge : 2,
-    applink :'https://play.google.com/store/apps/details?id=com.tovo.eat',
+    applink :'https://bit.ly/2TgpVol',
     refferalcontent : 'Welcome to EAT. Click the link to download the EAT app from play store and get Discount.',
     radiuslimit : 6,
     foodpreparationtime:15,
