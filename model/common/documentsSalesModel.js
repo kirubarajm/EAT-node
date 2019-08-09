@@ -11,7 +11,6 @@ var Documentsales = function(documentsales) {
   this.remarks = documentsales.remarks;
   this.sales_userid = documentsales.sales_userid;
   this.makeit_userid = documentsales.makeit_userid;
-  //this.created_at = new Date();
 };
 
 Documentsales.createnewDocument = function createnewDocument(
@@ -25,16 +24,14 @@ Documentsales.createnewDocument = function createnewDocument(
     res1
   ) {
     if (err) {
-      console.log("error: ", err);
-      res(null, err);
+      res(err, null);
     } else {
       var docid = res1.insertId;
-
       for (var i = 0; i < new_documents_list.length; i++) {
         var documentlist = new Documents(new_documents_list[i]);
         documentlist.docid = docid;
         Documents.createnewinfoDocument(documentlist, function(err, result) {
-          if (err) res.send(err);
+          if (err) res(err, null);
         });
       }
 
@@ -47,15 +44,14 @@ Documentsales.createnewDocument = function createnewDocument(
           err,
           result
         ) {
-          if (err) res.send(err);
+          if (err)  res(err, null);
         });
       }
 
-      let sucobj = true;
-      let mesobj = "Document stored successfully";
       let resobj = {
-        success: sucobj,
-        message: mesobj,
+        success: true,
+        status:true,
+        message: "Document stored successfully",
         docid: docid
       };
       res(null, resobj);

@@ -8,26 +8,19 @@ var CouponUsed = function(couponused) {
   this.after_discount_cost =couponused.after_discount_cost;
   this.orderid =couponused.orderid;
   this.userid =couponused.userid;
-
 }
-
-
 
 
 CouponUsed.createCouponUsed= function createCouponUsed(req, result) {
   //need to add item missing contion
-   console.log(req);
-   
        sql.query("INSERT INTO CouponsUsed set ?", req, function(err, res) {
            if (err) {
              result(err, null);
            } else {
-
             var cuid = res.insertId;
-             let sucobj = true;
-             let message = "Coupon created successfully";
              let resobj = {
-               success: sucobj,
+               success: true,
+               status:true,
                cuid: cuid
              };
              result(null, resobj);
@@ -50,11 +43,10 @@ CouponUsed.firstOrderCoupon = function firstOrderCoupon(orderCost,userid,cid) {
     //Number of coupons- 5 per user
     //Max discount - 100 inr
     //10 percent per order
-    
+
     var NumberOfTimes=5;
     var MaxDiscount=100;
     var Percent=10/100;
-
     var discountCost=0;
     sql.query("select COUNT(*) as cnt from CouponUsed where userid=? and cid=? ",[userid,cid], req, function(err, res) {
         if (err) {
@@ -69,17 +61,17 @@ CouponUsed.firstOrderCoupon = function firstOrderCoupon(orderCost,userid,cid) {
             }
             else
             {
-            let sucobj = false;
-            let message = "Already Coupons used at maximum number of times";
+            
             let resobj = {
-              success: sucobj,
-              message: message
+              success: true,
+              status:false,
+              message: "Already Coupons used at maximum number of times"
             };
             result(null, resobj);
             }
         }
       });
-  };
+};
   
 
   module.exports = CouponUsed;

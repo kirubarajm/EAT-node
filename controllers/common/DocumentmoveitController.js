@@ -13,9 +13,7 @@ exports.list_all_documents = function(req, res) {
 
 exports.list_all_sales_training_documents = function(req, res) {
   Documentmoveit.getAllSalesTrainingDocument(function(err, documents) {
-    console.log("controller");
     if (err) res.send(err);
-    console.log("res", documents);
     res.send(documents);
   });
 };

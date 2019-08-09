@@ -114,7 +114,7 @@ Notification.orderEatPushNotification = async function(
 
     case PushConstant.Pageid_eat_order_cancel:
       var  message = "We apologise for the inconvenience caused. Explore our gold members for uninterrupted service. Kindly contact us for for more details.";
-      if(orders.payment_type===1){
+      if(orders.payment_type==="1"){
         message = "We apologise for the inconvenience caused. Your payment will be refunded within 2 - 4 working days. Kindly contact us for more details. ";
       }
       //COD

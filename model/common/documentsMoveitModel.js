@@ -9,7 +9,6 @@ var Documentmoveit = function(documentmoveit) {
   this.vech_rcbook = documentmoveit.vech_rcbook;
   this.photo = documentmoveit.photo;
   this.legal_document = documentmoveit.legal_document;
-  //this.created_at = new Date();
 };
 
 Documentmoveit.createnewDocument = function createnewDocument(
@@ -21,14 +20,12 @@ Documentmoveit.createnewDocument = function createnewDocument(
     res1
   ) {
     if (err) {
-      console.log("error: ", err);
-      res(null, err);
+      result(err, null);
     } else {
-      let sucobj = true;
-      let mesobj = "Moveit document stored successfully";
       let resobj = {
-        success: sucobj,
-        message: mesobj
+        success: true,
+        status :true,
+        message: "Moveit document stored successfully"
       };
       res(null, resobj);
     }
@@ -41,7 +38,6 @@ Documentmoveit.getDocumentById = function getDocumentById(id, result) {
     id,
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
       } else {
         result(null, res);
@@ -52,11 +48,8 @@ Documentmoveit.getDocumentById = function getDocumentById(id, result) {
 Documentmoveit.getAllDocument = function getAllDocument(result) {
   sql.query("Select * from Documents_Moveit", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("User : ", res);
-
       result(null, res);
     }
   });
@@ -67,14 +60,11 @@ Documentmoveit.getAllSalesTrainingDocument = function getAllSalesTrainingDocumen
 ) {
   sql.query("Select * from Documents_Moveit", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("User : ", res);
-
-      let sucobj = "true";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status :true,
         result: res
       };
       result(null, resobj);
@@ -90,8 +80,7 @@ Documentmoveit.updateById = function(id, documents, result) {
     [documents.task, id],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         result(null, res);
       }
@@ -106,45 +95,12 @@ Documentmoveit.remove = function(req, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
       result(null, res);
     }
   });
 };
-
-// Documentsales.remove_s3_sales_doc = function(dname, result){
-//     const fs = require('fs');
-//      const AWS = require('aws-sdk');
-//      const s3 = new AWS.S3({
-//      accessKeyId: AWS_ACCESS_KEY,
-//      secretAccessKey: AWS_SECRET_ACCESS_KEY
-//      });
-
-//           const params = {
-//               Bucket: 'eattovo/upload/sales/makeit', // pass your bucket name
-//               Key: dname // file will be saved as testBucket/contacts.csv
-//           };
-
-//           s3.deleteObjects(params, (err, data) => {
-//             if(err) {
-//                 console.log("error: ", err);
-//                 result(err, null);
-//             }
-//             else{
-//                 //console.log(res.insertId);
-//                 let sucobj='true';
-//                 let message = 'Doucment Deleted successfully';
-//                 let resobj = {
-//                 success: sucobj,
-//                 message:message,
-//                 data:data
-//                 };
-//                 result(null, resobj);
-//             }
-//         })
-//    };
 
 Documentmoveit.getsalesDocumentById = function getsalesDocumentById(
   req,
@@ -155,7 +111,6 @@ Documentmoveit.getsalesDocumentById = function getsalesDocumentById(
     [req.sales_userid, req.makeit_userid],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
       } else {
         result(null, res);

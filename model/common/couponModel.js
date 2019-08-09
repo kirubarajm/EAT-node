@@ -2,7 +2,6 @@
 
 var sql = require("../db.js");
 const util = require('util');
-
 const query = util.promisify(sql.query).bind(sql);
 
 var Coupon = function(coupon) {
@@ -12,17 +11,15 @@ var Coupon = function(coupon) {
 //For Admin
 Coupon.createCoupon = function createCoupon(req, result) {
  //need to add item missing contion
-  console.log("ddd:"+req.orderid);
   req.active_status=0;
       sql.query("INSERT INTO Coupon set ?", req, function(err, res) {
           if (err) {
             result(err, null);
           } else {
-            let sucobj = true;
-            let message = "Coupon created successfully";
             let resobj = {
-              success: sucobj,
-              message: message
+              success: true,
+              status:true,
+              message: "Coupon created successfully"
             };
             result(null, resobj);
           }
@@ -35,12 +32,11 @@ Coupon.createCoupon = function createCoupon(req, result) {
 Coupon.getAllcoupon_by_activstatus = function getAllcoupon_by_activstatus(active_status,result) {
   sql.query("Select * from Coupon where active_status=?",[active_status], function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      let sucobj = "true";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
@@ -52,14 +48,12 @@ Coupon.getAllcoupon_by_activstatus = function getAllcoupon_by_activstatus(active
 Coupon.updateByCouponId = function(cid,active_status) {
   //active_status = 0;
   //useddate = current date
-  var useddate=new Date();
   sql.query(
     "UPDATE Coupon SET active_status=? WHERE cid = ?",
     [active_status, cid],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         result(null, res);
       }
@@ -72,8 +66,7 @@ Coupon.updateByCouponId = function(cid,active_status) {
 Coupon.remove = function(cid, result) {
   sql.query("DELETE FROM Coupon WHERE cid = ? and active_status=1", [cid], function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
       result(null, res);
     }
@@ -83,12 +76,11 @@ Coupon.remove = function(cid, result) {
 Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
     sql.query("Select * from Coupon where active_status=?",[userid], function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
-        let sucobj = "true";
         let resobj = {
-          success: sucobj,
+          success: true,
+          status:true,
           result: res
         };
         result(null, resobj);
@@ -101,12 +93,9 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
 
     sql.query("Select * from Coupon where active_status= 1 and expiry_date > NOW() limit 1", async function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
-
           if (res.length !== 0 ) {
-            
             let resobj = {
               success: true,
               status:true,
@@ -163,20 +152,15 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
 
     sql.query("Select * from Coupon where active_status= 1 and coupon_name = '"+req.coupon_name+"' and expiry_date > NOW() limit 1", async function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
-
           if (res.length !== 0 ) {
-            
             sql.query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? ",[req.userid,res[0].cid], function(err, couponinfo) {
               if (err) {
                 result(err, null);
               } else {
                   if(couponinfo[0].cnt<res[0].numberoftimes)
                   {
-                    
-
                     let resobj = {
                       success: true,
                       status:true,
@@ -186,12 +170,10 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
                   }
                   else
                   {
-              
-                  let message = "Already Coupons used at maximum number of times";
                   let resobj = {
                     success:true,
                     status: false,
-                    message: message
+                    message: "Already Coupons used at maximum number of times"
                   };
                   result(null, resobj);
                   }

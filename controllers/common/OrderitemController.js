@@ -63,10 +63,6 @@ exports.delete_a_product = function(req, res) {
 
 exports.createOrderitemsonline = function(req, res) {
   var order_item = new Orderitems(req.body);
-
-  //console.log(order_item);
-  //console.log(new_Order);
-  //handles null error
   if (!order_item.orderid) {
     res.status(400).send({ error: true, message: "Please provide orderid" });
   } else {
