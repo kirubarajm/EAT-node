@@ -130,7 +130,6 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
   //console.log("UPDATE: ", req);
   sql.query(" select * from Menuitem where menuitemid = "+req.menuitemid, function (err, res) {
     if(err) {
-        console.log("error: ", err);
         result(err, null);
     }else{
 
