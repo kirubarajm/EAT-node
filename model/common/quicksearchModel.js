@@ -183,38 +183,38 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
    
   
     //incomplete online and release product quantity and order release by user.
-   const job1 = new CronJob('*/3 * * * *',async function(){
+  //  const job1 = new CronJob('*/30 * * * *',async function(){
      
-   var res = await query("select * from Orders where lock_status = 1 and payment_type = 1 and orderstatus = 0 and created_at > (NOW() - INTERVAL 10 MINUTE)");
+  //  var res = await query("select * from Orders where lock_status = 1 and payment_type = 1 and orderstatus = 0 and created_at > (NOW() - INTERVAL 10 MINUTE)");
 
-     // console.log("cron for product revert online orders in-complete orders"+res);
-            if (res.length !== 0) {
+  //    // console.log("cron for product revert online orders in-complete orders"+res);
+  //           if (res.length !== 0) {
               
-              for (let i = 0; i < res.length; i++) {
+  //             for (let i = 0; i < res.length; i++) {
                 
-                var lockres = await query("select * from Lock_order where orderid ='"+ res[i].orderid+"' ");
+  //               var lockres = await query("select * from Lock_order where orderid ='"+ res[i].orderid+"' ");
 
-                console.log(lockres);
-                    if (lockres.length !== 0) {
+  //               console.log(lockres);
+  //                   if (lockres.length !== 0) {
                       
-                          for (let j = 0; j < lockres.length; j++) {
+  //                         for (let j = 0; j < lockres.length; j++) {
                             
-                            var productquantityadd = await query("update Product set quantity = quantity+" +lockres[j].quantity +" where productid =" +lockres[j].productid +"");
+  //                           var productquantityadd = await query("update Product set quantity = quantity+" +lockres[j].quantity +" where productid =" +lockres[j].productid +"");
 
-                            var updatequery = await query("update Orders set orderstatus = 8,payment_status= 3 where orderid = '"+res[i].orderid+"'");
+  //                           var updatequery = await query("update Orders set orderstatus = 8,payment_status= 3 where orderid = '"+res[i].orderid+"'");
                          
-                          }
+  //                         }
 
 
-                    }
-              }
+  //                   }
+  //             }
              
 
-            }
+  //           }
 
     
-    });
-    job1.start();
+  //   });
+  //   job1.start();
 
   QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(req, result) {
     console.log(req.search);

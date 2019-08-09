@@ -91,9 +91,10 @@ RefundCoupon.getAllrefundcoupon_by_activstatus = function getAllrefundcoupon_by_
       console.log("error: ", err);
       result(null, err);
     } else {
-      let sucobj = "true";
+ 
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
@@ -112,6 +113,7 @@ RefundCoupon.getarefundcoupon_by_userid = function getarefundcoupon_by_userid(us
      
       let resobj = {
         success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
