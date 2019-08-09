@@ -91,7 +91,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
 
   Coupon.get_coupons_by_userid = function get_coupons_by_userid(userid,result) {
 
-    sql.query("Select * from Coupon where active_status= 1 and expiry_date > NOW() limit 1", async function(err, res) {
+    sql.query("Select * from Coupon where active_status= 1 and expiry_date > NOW() ", async function(err, res) {
       if (err) {
         result(err, null);
       } else {
