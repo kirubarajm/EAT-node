@@ -323,7 +323,7 @@ Makeituser.checkLogin = function checkLogin(req, result) {
           } else {
             let resobj = {
               success: true,
-              message: "Sorry your not a valid user!",
+              message: "Sorry wrong password!",
               status: false
             };
 

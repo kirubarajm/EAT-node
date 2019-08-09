@@ -26,7 +26,7 @@ RefundCoupon.createRefundCoupon = async function createRefundCoupon(req, result)
   //need to add item missing contion
   console.log("ddd:"+req.orderid);
 
-  const orderrefunddetails = await query("select * from Refund_Coupon where orderid ='" + req.orderid + "' and active_status=1");
+  const orderrefunddetails = await query("select * from Refund_Coupon where orderid =" + req.orderid + " and active_status=1");
   console.log(orderrefunddetails.length);
   if (orderrefunddetails.length===0) {
    
@@ -46,10 +46,14 @@ RefundCoupon.createRefundCoupon = async function createRefundCoupon(req, result)
       if (res[0].payment_status === 1) {
         req.refund_balance = price + refundamount;
         req.refundamount = price + refundamount;
+      }else{
+         req.refund_balance = refundamount;
+        req.refundamount = refundamount;
       }
+      console.log("ddd:"+ req.refund_balance);
+      console.log("ddd:"+ req.refundamount);
 
-      req.refund_balance = refundamount;
-      req.refundamount = refundamount;
+     
      // refundamount = price + refundamount;
   
       sql.query("INSERT INTO Refund_Coupon set ?", req, function(err, res) {
