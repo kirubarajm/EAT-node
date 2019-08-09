@@ -12,10 +12,8 @@ var Localities = function(locality) {
 Localities.createLocality = function createLocality(newUser, result) {
   sql.query("INSERT INTO Locality set ?", newUser, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      console.log(res.insertId);
       result(null, res.insertId);
     }
   });
@@ -27,7 +25,6 @@ Localities.getLocalityById = function getLocalityById(id, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
       result(null, res);
@@ -38,11 +35,8 @@ Localities.getLocalityById = function getLocalityById(id, result) {
 Localities.getAllLocality = function getAllLocality(result) {
   sql.query("Select * from Locality", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("User : ", res);
-
       result(null, res);
     }
   });
@@ -54,8 +48,7 @@ Localities.updateById = function(id, locality, result) {
     [locality.task, id],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         result(null, res);
       }
@@ -69,8 +62,7 @@ Localities.remove = function(id, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
       result(null, res);
     }

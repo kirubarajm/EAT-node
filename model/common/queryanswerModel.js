@@ -1,9 +1,7 @@
 "user strict";
 var sql = require("../db.js");
 var masters = require("../master.js");
-var constant = require("../constant.js");
 var Notification = require("../common/notificationModel.js");
-const fs = require("fs");
 
 //Task object constructor
 var QueryAnswer = function(queryanswer) {
@@ -14,22 +12,17 @@ var QueryAnswer = function(queryanswer) {
   this.userid = queryanswer.userid || 0;
   this.user_read = queryanswer.user_read || 0;
   this.admin_read = queryanswer.admin_read || 0;
-  //  this.created_at = new Date();
 };
 
 QueryAnswer.createanswer = function createanswer(req, qtype,result) {
-  console.log(req);
   sql.query("INSERT INTO Query_answers set ?", req, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = true;
-      let message = "replied successfully";
       let resobj = {
-        success: sucobj,
+        success: true,
         status: true,
-        message: message
+        message: "replied successfully"
       };
       if(qtype)
       Notification.queries_answers_PushNotification(req.userid,req.qid,req.answer,qtype);
@@ -41,16 +34,13 @@ QueryAnswer.createanswer = function createanswer(req, qtype,result) {
 QueryAnswer.read_a_replies_id = function read_a_replies_id(qid, result) {
   sql.query("Select * from Query_answers where qid = ? order by aid asc",qid,function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
       } else {
-       
         let resobj = {
           success: true,
           status:true,
           result: res
         };
-
         result(null, resobj);
       }
     }
@@ -60,12 +50,11 @@ QueryAnswer.read_a_replies_id = function read_a_replies_id(qid, result) {
 QueryAnswer.getFaqByType = function getFaqById(id, result) {
   sql.query("Select * from Faq where type = ? ", id, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = "true";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
@@ -76,14 +65,11 @@ QueryAnswer.getFaqByType = function getFaqById(id, result) {
 QueryAnswer.getAllFaq = function getAllFaq(result) {
   sql.query("Select * from Faq", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("Faq : ", res);
-
-      let sucobj = "true";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
@@ -96,8 +82,6 @@ QueryAnswer.update_read_answer = function(req, result) {
   var aidlist = req.aidlist;
   var date = Date.now();
 
-  // console.log();
-
   for (let i = 0; i < aidlist.length; i++) {
     var query =
       "UPDATE Query_answers SET user_read = 1, updated_at = '" +
@@ -106,11 +90,9 @@ QueryAnswer.update_read_answer = function(req, result) {
       aidlist[i].aid +
       "'";
 
-    //  console.log(query);
     sql.query(query, function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       }
     });
 
@@ -118,20 +100,18 @@ QueryAnswer.update_read_answer = function(req, result) {
   }
 
   if (temp === aidlist.length) {
-    let sucobj = true;
-    let message = "readed successfully";
     let resobj = {
-      success: sucobj,
-      message: message
+      success: true,
+      status:true,
+      message: "readed successfully"
     };
 
     result(null, resobj);
   } else {
-    let sucobj = true;
-    let message = "not yet be read";
     let resobj = {
-      success: sucobj,
-      message: message
+      success: true,
+      status:true,
+      message: "not yet be read"
     };
 
     result(null, resobj);
@@ -141,8 +121,7 @@ QueryAnswer.update_read_answer = function(req, result) {
 QueryAnswer.remove = function(id, result) {
   sql.query("DELETE FROM Faq WHERE faqid = ?", [id], function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
       result(null, res);
     }
@@ -152,10 +131,8 @@ QueryAnswer.remove = function(id, result) {
 QueryAnswer.getAllFaqbyid = function getAllFaqByid(id, result) {
   sql.query("Select * from Faq where faqid = ? ", id, function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("Faq : ", res);
       result(null, res);
     }
   });
@@ -168,12 +145,10 @@ QueryAnswer.read_a_answer_count = function read_a_answer_count(req, result) {
       "' and user_read = 0  and type = 0 group by user_read",
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
       } else {
-        let success = true;
         let resobj = {
-          success: success,
+          success: true,
           status:true,
           result: res
         };
@@ -195,7 +170,6 @@ QueryAnswer.read_a_answer_count_by_qid = function read_a_answer_count_by_qid(
       "' group by user_read",
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
       } else {
         result(null, res);
@@ -206,10 +180,9 @@ QueryAnswer.read_a_answer_count_by_qid = function read_a_answer_count_by_qid(
 
 QueryAnswer.read_a_masters = function read_a_masters(req, result) {
   var masterlist = [];
-  console.log(masters[0]);
   let resobj = {
-    // success:success,
-
+    success: true,
+    status:true,
     result: masters
   };
   result(null, resobj);

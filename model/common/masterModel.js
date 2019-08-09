@@ -4,7 +4,6 @@ var masters = require("../master.js");
 //Task object constructor
 
 masters.read_a_masters = function read_a_masters(req, result) {
-  console.log(masters[0]);
   let resobj = {
      success:true,
      status:true,
