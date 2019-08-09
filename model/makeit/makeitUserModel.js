@@ -930,7 +930,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 //  if (currenthour <= 12) {
 //    productquery = " breakfast";
 //  }else
-  if(currenthour >= 12 && currenthour <= 16){
+  if(currenthour >= 12 && currenthour < 16){
    productquery =  "lunch";
    }else if( currenthour >= 16){
    productquery = "dinner";
@@ -1037,7 +1037,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           var couponlist = await query(
             "Select * From Coupon where cid = '" +
               req.cid +
-              "' and active_status = 1"
+              "' and active_status = 1 and expiry_date >= CURDATE()"
           );
         
           if (couponlist.length != 0) {
