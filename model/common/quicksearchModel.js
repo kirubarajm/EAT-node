@@ -105,23 +105,21 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
             }
     }
        
-   // Eatuser.eat_explore_store_data_by_cron =  async function eat_explore_store_data_by_cron(search, result) {
+   // This cron is to running all region and product and makeit to quick search
     //console.log('Before job instantiation');
-    const job = new CronJob('0 */30 * * * *',async function(search, result) {
-      const d = moment();
-      console.log('At Ten Minutes:', d);
+      const job = new CronJob('0 */1 * * * *',async function(search, result) {
+       // console.log("quick search");
       try {
         const quicksearchquery = await query("Select * from QuickSearch");
         if (quicksearchquery.err) {  
           let resobj = {
-          success: sucobj,
+          success: false,
           status:false,
           result: err
         };
     
         result(null, resobj);
       }else{
-    
     
         if (quicksearchquery) {
     
@@ -137,80 +135,59 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
         }
         
         }
-    
-        const productquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct product_name as name,productid as id, 1 from Product where product_name IS NOT NULL and active_status = 1 and quantity != 0  and delete_status !=1 group by product_name");
-    
-      //   if (productquery.err) {  
-      //     let resobj = {
-      //     success: sucobj,
-      //     status:false,
-      //     result: err
-      //   };
-    
-      //   result(null, resobj);
-      // }else{
-    
+
+        var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+        var currenthour  = moment(day).format("HH");
+        var cyclequery = "";
+       
+        if (currenthour < 12) {
+
+          cyclequery = cyclequery + " and pt.breakfast = 1";
+        //  console.log("breakfast");
+        }else if(currenthour >= 12 && currenthour <= 16){
+
+          cyclequery = cyclequery + " and pt.lunch = 1";
+        //  console.log("lunch");
+        }else if( currenthour >= 16){
+          
+          cyclequery = cyclequery + " and pt.dinner = 1";
+        //  console.log("dinner");
+        }
+
+       var proquery = "INSERT INTO QuickSearch (name,id, type) SELECT distinct pt.product_name as name,pt.productid as id, 1 from Product pt join MakeitUser mk on mk.userid = pt.makeit_userid where (pt.product_name IS NOT NULL and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 "+cyclequery+")and(mk.appointment_status = 3 and mk.verified_status = 1)  group by pt.product_name"
+        
+        const productquery = await query(proquery);
     
       //  const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  brandname as name,userid as id, 2 from MakeitUser where (brandname IS NOT NULL and brandname != '') and appointment_status = 3 and verified_status = 1");
-      const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  mk.brandname as name,mk.userid as id, 2 from MakeitUser mk join Product pt on pt.makeit_userid=mk.userid where (mk.brandname IS NOT NULL and brandname != '') and mk.appointment_status = 3 and mk.verified_status = 1 and pt.active_status =1 and pt.quantity != 0  and pt.delete_status !=1 group by mk.userid");
-    
-      //   if (kitchenquery.err) {  
-      //     let resobj = {
-      //     success: sucobj,x
-      //     status:false,
-      //     result: err
-      //   };
-    
-      //   result(null, resobj);
-      // }else{
-    
+        const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  mk.brandname as name,mk.userid as id, 2 from MakeitUser mk join Product pt on pt.makeit_userid=mk.userid where (mk.brandname IS NOT NULL and brandname != '') and mk.appointment_status = 3 and mk.verified_status = 1 and (pt.active_status = 1 and pt.quantity != 0  and pt.delete_status !=1 "+cyclequery+") group by mk.userid");
+   
+ 
         const regionquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct regionname as name,regionid as id, 3 from Region where regionname IS NOT NULL group by regionname");
-    
-      //   if (regionquery.err) {  
-      //     let resobj = {
-      //     success: sucobj,
-      //     status:false,
-      //     result: err
-      //   };
-    
-      //   result(null, resobj);
-      // }else{
-    
-        // let sucobj = true;
-        // let resobj = {
-        //   success: sucobj,
-        //   status:true,
-        //   message:"Quick search updated"
-        // };
-    
-        // result(null, resobj);
+      
       }
     
-    
-    //   }
-    // }
-    // }
       
       } catch (error) {
-        let sucobj = true;
+        
                 let resobj = {
-                  success: sucobj,
-                 // result: res
+                  success: true,
+                  status:false,
+                  result: error
                 };
         
                 result(null, resobj);
               }
-    });
+       });
    // console.log('After job instantiation');
     job.start();  
    
   
     //incomplete online and release product quantity and order release by user.
-   const job1 = new CronJob('*/7 * * * *',async function(){
+   const job1 = new CronJob('*/3 * * * *',async function(){
      
    var res = await query("select * from Orders where lock_status = 1 and payment_type = 1 and orderstatus = 0 and created_at > (NOW() - INTERVAL 10 MINUTE)");
 
-      console.log("cron for product revert online orders in complete orders"+res);
+     // console.log("cron for product revert online orders in-complete orders"+res);
             if (res.length !== 0) {
               
               for (let i = 0; i < res.length; i++) {
@@ -225,12 +202,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
                             var productquantityadd = await query("update Product set quantity = quantity+" +lockres[j].quantity +" where productid =" +lockres[j].productid +"");
 
                             var updatequery = await query("update Orders set orderstatus = 8,payment_status= 3 where orderid = '"+res[i].orderid+"'");
-                          // sql.query(productquantityadd, function(err, res2) {
-                          //   if (err) {
-                          //     result(err, null);
-                          //   }
-                          // });
-                            
+                         
                           }
 
 

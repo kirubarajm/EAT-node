@@ -16,18 +16,16 @@ Fav.createFav = function createFav(newFav, result) {
     var productid = null;
     console.log(newFav);
 
-
-
     if (newFav.makeit_userid && newFav.eatuserid) {
         
         var query = "Select * from Fav where eatuserid = '"+newFav.eatuserid+"' and makeit_userid = '"+newFav.makeit_userid+"'";
 
     }else if(newFav.productid && newFav.eatuserid){
 
-        query = "Select * from Fav where eatuserid = '"+newFav.eatuserid+"' and productid = '"+newFav.productid+"'";
+        var query = "Select * from Fav where eatuserid = '"+newFav.eatuserid+"' and productid = '"+newFav.productid+"'";
     }
      
-    console.log(query);
+  //  console.log(query);
     sql.query(query , function (err, res) {             
         if(err) {
             console.log("error: ", err);
@@ -35,36 +33,34 @@ Fav.createFav = function createFav(newFav, result) {
         }
         else{
            
-            console.log(res[0]);
+           // console.log(res[0]);
             if(res[0] === undefined){
 
-        sql.query("INSERT INTO Fav set ?", newFav, function (err, res) {
-                
-            if(err) {
-                console.log("error: ", err);
-                result(err, null);
-            }
-            else{
-                 let sucobj='true';
-                 let message = 'Favourite created successfully';
-                let resobj = {  
-                success: sucobj,
-                status:true,
-                message:message,
-                favid:res.insertId
+                    sql.query("INSERT INTO Fav set ?", newFav, function (err, res) {
+                            
+                        if(err) {
+                            console.log("error: ", err);
+                            result(err, null);
+                        }
+                        else{
+                          
+                            let resobj = {  
+                            success: true,
+                            status: true,
+                            message:'Favourite created successfully',
+                            favid:res.insertId
+                            };
 
-                };
-                result(null, resobj);
-          
-            }
-            });
+                            result(null, resobj);
+                    
+                        }
+                        });
         }else{
-            let sucobj=true;
-            let message = 'Already added the Favourite';
+           
            let resobj = {  
-           success: sucobj,
+           success: true,
            status:false,
-           message:message,
+           message:"Already added the Favourite"
            };
            result(null, resobj);
         }

@@ -360,22 +360,18 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
 
   console.log(currenthour);
 
-  var indiaTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"});
-   indiaTime = new Date(indiaTime);
-   console.log(indiaTime);
-  if (currenthour <= 12) {
-
+  
+   if (currenthour < 12) {
     productquery = productquery + " and pt.breakfast = 1";
-  //  console.log("breakfast");
-  }else if(currenthour >= 12 && currenthour <= 16){
+   }else if(currenthour >= 12 && currenthour <= 16){
 
-    productquery = productquery + " and pt.lunch = 1";
-  //  console.log("lunch");
-  }else if( currenthour >= 16 && currenthour <= 23){
-    
-    productquery = productquery + " and pt.dinner = 1";
-  //  console.log("dinner");
-  }
+      productquery = productquery + " and pt.lunch = 1";
+
+    }else if( currenthour >= 16){
+
+      productquery = productquery + " and pt.dinner = 1";
+   }
+
 
 
   if (req.vegtype === "1") {

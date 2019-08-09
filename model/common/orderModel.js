@@ -52,9 +52,9 @@ var Order = function(order) {
   this.lock_status = order.lock_status || 0;
   this.cancel_by = order.cancel_by || 0;
   this.item_missing = order.item_missing || 0;
-  this.original_price = order.original_price;
-  this.refund_amount = order.refund_amount;
-  this.discount_amount = order.discount_amount;
+  this.original_price = order.original_price || 0;
+  this.refund_amount = order.refund_amount || 0;
+  this.discount_amount = order.discount_amount || 0;
   this.address_title = order.address_title;
   this.locality_name = order.locality_name;
   this.cancel_reason = order.cancel_reason;
@@ -2060,6 +2060,7 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
             //console.log(orderdetails[0].payment_type);
             if (orderdetails[0].payment_type === "0") {
               var rc = new RefundCoupon(req);
+              console.log(rc);
               RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
                 if (err) {
                   result(err, null);
@@ -2080,12 +2081,13 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
             } else if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1) {
               // var rc =new RefundOnline(req);
               var refundDetail = {
-                orderid: req.orderid,
-                original_amt: orderdetails[0].price,
-                active_status: 1,
-                userid: orderdetails[0].userid,
-                payment_id: orderdetails[0].transactionid
+                orderid : req.orderid,
+                original_amt : orderdetails[0].price,
+                active_status : 1,
+                userid : orderdetails[0].userid,
+                payment_id : orderdetails[0].transactionid
               };
+              console.log(refundDetail);
               await Order.create_refund(refundDetail);
                 let response = {
                   success: true,
