@@ -7,7 +7,6 @@ var AWS_ACCESS_KEY = "AKIAJJQUEYLIU23E63OA";
 var AWS_SECRET_ACCESS_KEY = "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";
 const fs = require("fs");
 const AWS = require("aws-sdk");
-
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 
@@ -46,67 +45,28 @@ Documents.createDocument = function createDocument(newDocument, result) {
   if (Object.keys(newDocument.files).length == 0) {
     return result.status(400).send("No files were uploaded.");
   }
-
-  //console.log(newDocument.body.f);
-
-  let licFile = newDocument.files.lic;
-  var appRoot = process.env.PWD; //"https://s3.ap-south-1.amazonaws.com/eattovo";
-  console.log(appRoot);
-  /*var uploadPath = appRoot + '/uploads/' + newDocument.files.lic.name;
-
-     
-    licFile.mv(uploadPath, function(err) {    
-        if(err) {
-                console.log("error: ", err);
-                result(err, null);
-            }
-            else{
-                result(null, result);
-          
-            }
-    });*/
-
-  // const fs = require('fs');
-  // const AWS = require('aws-sdk');
-  // const s3 = new AWS.S3({
-  // accessKeyId: AWS_ACCESS_KEY,
-  // secretAccessKey: AWS_SECRET_ACCESS_KEY
-  // });
-
   if (newDocument.files.lic) {
     const fileName = newDocument.files.lic.name;
-    console.log(fileName);
     fs.readFile(newDocument.files.lic.path, (err, data) => {
-      if (err) throw err;
-      console.log(data);
+      if (err) {
+        result(err, null);
+        return;
+      }
       const params = {
         Bucket: "eattovo", // pass your bucket name
         Key: fileName, // file will be saved as testBucket/contacts.csv
         Body: newDocument.files.lic
       };
-      s3.upload(params, function(s3Err, data) {
-        if (s3Err) {
-          console.log("error: ", s3Err);
-          result(s3Err, null);
-        } else {
-          result(null, result);
-        }
-        console.log(`File uploaded successfully at ${data.Location}`);
-      });
+      Documents.documentUpload(params,result);
+      // s3.upload(params, function(s3Err, data) {
+      //   if (s3Err) {
+      //     result(s3Err, null);
+      //   } else {
+      //     result(null, result);
+      //   }
+      // });
     });
-  } else console.log("non lic");
-
-  /*  sql.query("INSERT INTO Documents set ?", newUser, function (err, res) {
-                
-                if(err) {
-                    console.log("error: ", err);
-                    result(err, null);
-                }
-                else{
-                    console.log(res.insertId);
-                    result(null, res.insertId);
-                }
-            });    */
+  }
 };
 
 Documents.getDocumentById = function getDocumentById(id, result) {
@@ -115,7 +75,6 @@ Documents.getDocumentById = function getDocumentById(id, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
       result(null, res);
@@ -125,11 +84,8 @@ Documents.getDocumentById = function getDocumentById(id, result) {
 Documents.getAllDocument = function getAllDocument(result) {
   sql.query("Select * from Documents", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("User : ", res);
-
       result(null, res);
     }
   });
@@ -140,14 +96,11 @@ Documents.getAllSalesTrainingDocument = function getAllSalesTrainingDocument(
 ) {
   sql.query("Select * from SalesTraining", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("User : ", res);
-
-      let sucobj = "true";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
@@ -156,15 +109,13 @@ Documents.getAllSalesTrainingDocument = function getAllSalesTrainingDocument(
 };
 
 //create_a_sales_training_documents
-
 Documents.updateById = function(id, documents, result) {
   sql.query(
     "UPDATE MoveitUser SET Documents = ? WHERE docid = ?",
     [documents.task, id],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         result(null, res);
       }
@@ -173,11 +124,9 @@ Documents.updateById = function(id, documents, result) {
 };
 
 Documents.remove = function(id, result) {
-  console.log();
   sql.query("DELETE FROM Documents WHERE docid = ?", [id], function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
       result(null, res);
     }
@@ -195,11 +144,8 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
       null
     );
   }else{
-
-  console.log('cancel-->')
   var fileName = newDocument.files.lic;
   var name = fileName.name;
-
   var name = Date.now() + "-" + name;
 
   const params = {
@@ -210,21 +156,22 @@ Documents.newdocumentupload = function newdocumentupload(newDocument, result) {
     ACL: "public-read"
   };
 
-  s3.upload(params, (err, data) => {
-    if (err) {
-      console.log("error: ", err);
-      result(err, null);
-    } else {
-      let message = "Document uploaded successfully";
-      let resobj = {
-        success: true,
-        status:true,
-        message: message,
-        data: data
-      };
-      result(null, resobj);
-    }
-  });
+  Documents.documentUpload(params,result);
+
+  // s3.upload(params, (err, data) => {
+  //   if (err) {
+  //     result(err, null);
+  //   } else {
+  //     let message = "Document uploaded successfully";
+  //     let resobj = {
+  //       success: true,
+  //       status:true,
+  //       message: message,
+  //       data: data
+  //     };
+  //     result(null, resobj);
+  //   }
+  // });
 }
 };
 
@@ -234,8 +181,7 @@ Documents.createnewDocumentlist = function createnewDocumentlist(
 ) {
   sql.query("INSERT INTO Documents set ?", documentlist, function(err, result) {
     if (err) {
-      console.log("error: ", err);
-      res(null, err);
+      res(err, null);
     }
   });
 };
@@ -253,7 +199,6 @@ Documents.updateNewkitchan = function updateNewkitchan(document, res) {
       "'",
     function(err, result) {
       if (err) {
-        console.log("error: ", err);
         res(null, false);
       } else res(null, true);
     }
@@ -272,14 +217,6 @@ Documents.createnewinfoDocument = async function createnewinfoDocument(
       "' and image_type = '" +
       documentlist.image_type +
       "'"
-  );
-
-  console.log(
-    Documentscount.length +
-      "--doc-id--" +
-      documentlist.docid +
-      "--doc-type--" +
-      documentlist.type
   );
   if (Documentscount.length === 0) {
     var newDocumentsinsert = await query(
@@ -300,10 +237,9 @@ Documents.createnewinfoDocument = async function createnewinfoDocument(
     );
   }
 
-  let sucobj = "true";
-  let message = "Document saved successfully";
   let resobj = {
-    success: sucobj,
+    success: true,
+    status :true,
     message: message
   };
   result(null, resobj);
@@ -315,11 +251,7 @@ Documents.createkitchenImageUpload = async function createkitchenImageUpload(
     var limit =5;
     var kitchenImages = await query("Select * From Documents where docid = '" +docid +"' and type = '"+type+"'");
     var balance =limit-kitchenImages.length;
-    console.log("kitchenImages length: ", kitchanImageList.length);
-    console.log("kitchenImages balance: ", balance);
-
     if(kitchanImageList.length>balance) {
-      console.log("kitchenImages balance: ", balance);
       return false;
     }else {
       for (var i = 0; i < kitchanImageList.length; i++) {
@@ -327,7 +259,6 @@ Documents.createkitchenImageUpload = async function createkitchenImageUpload(
         document.docid = docid;
         await Documents.addNewkitchan(document);
       }
-      console.log("kitchenImages true: ", balance);
       return true;
     }
   
@@ -340,7 +271,6 @@ Documents.deletekitchenImage = async function deletekitchenImage(
   if (documentdeletelist && documentdeletelist.length > 0) {
     var deletedIds = documentdeletelist.toString();
     var deleteQuery = "DELETE From Documents where did IN (" + deletedIds + ")";
-    console.log("Kitachen deleteQuery: ", deleteQuery);
     var kitchenImagedelete = await query(deleteQuery);
     result(null, kitchenImagedelete);
   }
@@ -355,26 +285,18 @@ Documents.remove_document = function(req, result) {
   });
 
   var dname = req.dname;
-
-  //var name = Date.now() + '-' + name
-
   const params = {
     Bucket: "eattovo", // pass your bucket name
     Key: dname // file will be saved as testBucket/contacts.csv
   };
-
-  console.log(params);
-
   s3.deleteObject(params, (err, data) => {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = "true";
-      let message = "Document deleted successfully";
       let resobj = {
-        success: sucobj,
-        message: message,
+        success: true,
+        status :true,
+        message: "Document deleted successfully",
         data: data
       };
       result(null, resobj);
@@ -386,17 +308,13 @@ Documents.newmoveitdocumentupload = function newmoveitdocumentupload(
   newDocument,
   result
 ) {
-  //console.log(newDocument.files.lic); // the uploaded file object
-
   if (Object.keys(newDocument.files).length == 0) {
     return result.status(400).send("No files were uploaded.");
   }
 
   var fileName = newDocument.files.lic;
   var name = fileName.name;
-
   var name = Date.now() + "-" + name;
-
   const params = {
     Bucket: "eattovo/upload/admin/moveit", // pass your bucket name
     Key: name, // file will be saved as testBucket/contacts.csv
@@ -405,39 +323,32 @@ Documents.newmoveitdocumentupload = function newmoveitdocumentupload(
     ACL: "public-read"
   };
 
-  s3.upload(params, (err, data) => {
-    if (err) {
-      console.log("error: ", err);
-      result(err, null);
-    } else {
-      //console.log(res.insertId);
-      let sucobj = "true";
-      let message = "Document uploaded successfully";
-      let resobj = {
-        success: sucobj,
-        message: message,
-        data: data
-      };
-      result(null, resobj);
-    }
-  });
+  // s3.upload(params, (err, data) => {
+  //   if (err) {
+  //     result(err, null);
+  //   } else {
+  //     let resobj = {
+  //       success: true,
+  //       status :true,
+  //       message: "Document uploaded successfully",
+  //       data: data
+  //     };
+  //     result(null, resobj);
+  //   }
+  // });
+  Documents.documentUpload(params,result);
 };
 
 Documents.newsalesdocumentupload = function newsalesdocumentupload(
   newDocument,
   result
 ) {
-  //console.log(newDocument.files.lic); // the uploaded file object
-
   if (Object.keys(newDocument.files).length == 0) {
     return result.status(400).send("No files were uploaded.");
   }
-
   var fileName = newDocument.files.lic;
   var name = fileName.name;
-
   var name = Date.now() + "-" + name;
-
   const params = {
     Bucket: "eattovo/upload/admin/sales", // pass your bucket name
     Key: name, // file will be saved as testBucket/contacts.csv
@@ -446,22 +357,20 @@ Documents.newsalesdocumentupload = function newsalesdocumentupload(
     ACL: "public-read"
   };
 
-  s3.upload(params, (err, data) => {
-    if (err) {
-      console.log("error: ", err);
-      result(err, null);
-    } else {
-      //console.log(res.insertId);
-      let sucobj = "true";
-      let message = "Document uploaded successfully";
-      let resobj = {
-        success: sucobj,
-        message: message,
-        data: data
-      };
-      result(null, resobj);
-    }
-  });
+  // s3.upload(params, (err, data) => {
+  //   if (err) {
+  //     result(err, null);
+  //   } else {
+  //     let resobj = {
+  //       success: true,
+  //       status :true,
+  //       message: "Document uploaded successfully",
+  //       data: data
+  //     };
+  //     result(null, resobj);
+  //   }
+  // });
+  Documents.documentUpload(params,result);
 };
 
 Documents.newmakeitdocumentupload = function newmakeitdocumentupload(
@@ -473,12 +382,9 @@ Documents.newmakeitdocumentupload = function newmakeitdocumentupload(
   if (Object.keys(newDocument.files).length == 0) {
     return result.status(400).send("No files were uploaded.");
   }
-
   var fileName = newDocument.files.lic;
   var name = fileName.name;
-
   var name = Date.now() + "-" + name;
-
   const params = {
     Bucket: "eattovo/upload/admin/makeit", // pass your bucket name
     Key: name, // file will be saved as testBucket/contacts.csv
@@ -486,40 +392,33 @@ Documents.newmakeitdocumentupload = function newmakeitdocumentupload(
     ContentType: "image/jpg",
     ACL: "public-read"
   };
-  console.log("params: ", params.Bucket);
-  s3.upload(params, (err, data) => {
-    if (err) {
-      console.log("error: ", err);
-      result(err, null);
-    } else {
-      //console.log(res.insertId);
-      let sucobj = "true";
-      let message = "Document uploaded successfully";
-      let resobj = {
-        success: sucobj,
-        message: message,
-        data: data
-      };
-      result(null, resobj);
-    }
-  });
+
+  // s3.upload(params, (err, data) => {
+  //   if (err) {
+  //     result(err, null);
+  //   } else {
+  //     let resobj = {
+  //       success: true,
+  //       status :true,
+  //       message: "Document uploaded successfully",
+  //       data: data
+  //     };
+  //     result(null, resobj);
+  //   }
+  // });
+  Documents.documentUpload(params,result);
 };
 
 Documents.makeit_product_upload_a_document = function makeit_product_upload_a_document(
   newDocument,
   result
 ) {
-  //console.log(newDocument.files.lic); // the uploaded file object
-
   if (Object.keys(newDocument.files).length == 0) {
     return result.status(400).send("No files were uploaded.");
   }
-
   var fileName = newDocument.files.lic;
   var name = fileName.name;
-
   var name = Date.now() + "-" + name;
-
   const params = {
     Bucket: "eattovo/upload/admin/makeit/product", // pass your bucket name
     Key: name, // file will be saved as testBucket/contacts.csv
@@ -527,23 +426,36 @@ Documents.makeit_product_upload_a_document = function makeit_product_upload_a_do
     ContentType: "image/jpg",
     ACL: "public-read"
   };
-  console.log("params: ", params.Bucket);
+  // s3.upload(params, (err, data) => {
+  //   if (err) {
+  //     result(err, null);
+  //   } else {
+  //     let resobj = {
+  //       success: true,
+  //       status :true,
+  //       message: "Document uploaded successfully",
+  //       data: data
+  //     };
+  //     result(null, resobj);
+  //   }
+  // });
+  Documents.documentUpload(params,result);
+};
+
+Documents.documentUpload = function documentUpload(params,result) {
   s3.upload(params, (err, data) => {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      //console.log(res.insertId);
-      let sucobj = "true";
-      let message = "Document uploaded successfully";
       let resobj = {
-        success: sucobj,
-        message: message,
+        success: true,
+        status :true,
+        message: "Document uploaded successfully",
         data: data
       };
       result(null, resobj);
     }
   });
-};
+}
 
 module.exports = Documents;

@@ -3,32 +3,20 @@ var sql = require("../db.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 
-var admindashboardModel = function(admindashboard) {
-  // this.orderid = admindashboard.orderid;
-  // this.original_amt = admindashboard.original_amt;
-  // this.refund_amt = admindashboard.refund_amt ;
-  // this.active_status = admindashboard.active_status;
-  // this.refund_amt =admindashboard.refund_amt;
-  // this.userid =admindashboard.userid;
-  // this.payment_id =admindashboard.payment_id;
+var admindashboardModel = function() {
 };
-
 
 admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_dashboard_count_by_admin(result) {
   
   try {
-    
- 
-          var countlist = {};
+      var countlist = {};
         //makeit allocated count
         // Select alc.*,mu.address,mu.brandname,mu.email,mu.flatno,mu.appointment_status,mu.name,mu.phoneno,mu.pincode,mu.userid from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1
        // var new_sales_appointment_count = await query("Select count(aid) as count  From Allocation where DATE(booking_date_time) = CURDATE() and status =1"); 
         var new_sales_appointment_count = await query("Select count(aid) as count from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1"); 
-
         countlist.new_sales_appointment_count  = new_sales_appointment_count[0].count;
         //new product count
         var product_approved_count = await query("Select count(productid) as count from Product  where delete_status !=1  and approved_status != 2  and approved_status != 3 "); 
-      
         countlist.product_approved_count  = product_approved_count[0].count;
         //new  new queries
         var  new_queries_count = await query("Select count(qid) as count from Query_questions where admin_read = 0 "); 
@@ -47,13 +35,11 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
         countlist.admin_unapproved_kitchen_count  = admin_unapproved_kitchen_count[0].count;
 
          //kitchen virtual order count
-         var  kitchen_virtual_order_count = await query("Select count(orderid) as count from Orders ors left join MakeitUser mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and ors.orderstatus = 0 and ors.cancel_by = 0 and DATE(ors.created_at) = CURDATE() and mk.virtualkey=1");
-         countlist.virtual_kitchen_order_count  = kitchen_virtual_order_count[0].count;
-        console.log(countlist);
+        var  kitchen_virtual_order_count = await query("Select count(orderid) as count from Orders ors left join MakeitUser mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and ors.orderstatus = 0 and ors.cancel_by = 0 and DATE(ors.created_at) = CURDATE() and mk.virtualkey=1");
+        countlist.virtual_kitchen_order_count  = kitchen_virtual_order_count[0].count;
 
         var  refund_user_count = await query("Select count(rs_id) as count from Refund_Online where active_status=1");
         countlist.refund_user_count  = refund_user_count[0].count;
-
 
         let resobj = {  
             success: true,
@@ -62,7 +48,6 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
           };
           result(null, resobj);
         } catch (error) {
-
           let resobj = {  
             success: true,
             status:false,

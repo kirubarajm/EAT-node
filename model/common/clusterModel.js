@@ -9,12 +9,11 @@ var Cluster = function(cluster) {
 Cluster.getAllcluster = function getAllcluster(result) {
   sql.query("Select * from Cluster", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      let sucobj = "true";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);

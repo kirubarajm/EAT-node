@@ -137,7 +137,6 @@ exports.makeit_upload_a_documents = function(req, res) {
 
 exports.makeit_product_upload_a_document = function(req, res) {
   var new_documents = new Document(req.body);
- // console.log("new_documents",new_documents);
   if (!new_documents) {
     res
       .status(400)

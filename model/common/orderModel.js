@@ -187,90 +187,6 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
               }
             });
       }
-
-    async function ordercreateonline(req, orderitems) {
-
-      ///  console.log(req);
-
-        var customerid = await Order.create_customerid_by_razorpay(req.userid);
-        // console.log("customerid:----- ", customerid);
-        // if (!customerid) {
-        //   let resobj = {
-        //     success: true,
-        //     status: false,
-        //     message:
-        //       "Sorry can't create the order due to customerid not yet generate"
-        //   };
-        //   result(null, resobj);
-        //   return;
-        // }
-        if (customerid === 400) {
-          let resobj = {
-            success: true,
-            status: false,
-           // message: "Sorry can't create customerid format is invalid"
-           message: "Customer already exists for the merchant!"
-          };
-        result(null,resobj );
-        return
-      }
-
-      var new_Order = new Order(req);
-      new_Order.delivery_charge = delivery_charge;
-      new_Order.lock_status = 1;
-
-      sql.query("INSERT INTO Orders set ?", new_Order, async function(err,res1) {
-        if (err) {
-          console.log("error: ", err);
-          result(null, err);
-        } else {
-          var orderid = res1.insertId;
-
-          for (var i = 0; i < orderitems.length; i++) {
-            //  console.log(orderitems[i].productid);
-            var orderitem = {};
-            orderitem.orderid = orderid;
-            orderitem.productid = orderitems[i].productid;
-            orderitem.quantity = orderitems[i].cartquantity;
-            orderitem.price = orderitems[i].price;
-            var items = new Orderitem(orderitem);
-
-            var orderitemlock = {};
-            orderitemlock.productid = orderitems[i].productid;
-            orderitemlock.quantity = orderitems[i].cartquantity;
-            orderitemlock.orderid = orderid;
-            orderitemlock = new Orderlock(orderitemlock);
-
-            orderitemlock.orderid = orderid;
-
-            Orderitem.createOrderitems(items, function(err, res2) {
-              if (err) result.send(err);
-            });
-
-            Orderlock.lockOrderitems(orderitemlock, function(
-              err,
-              orderlockresponce
-            ) {
-              if (err) result.send(err);
-            });
-          }
-
-          let mesobj = "Order Created successfully";
-          let sucobj = true;
-          let resobj = {
-            success: sucobj,
-            status: true,
-            message: mesobj,
-            price: new_Order.price,
-            razer_customerid: customerid,
-            refund_balance: req.refund_balance,
-            orderid: orderid
-          };
-
-          result(null, resobj);
-        }
-      });
-    }
   } else {
     let sucobj = true;
     let status = false;
@@ -1375,7 +1291,6 @@ Order.orderlistbyeatuser = async function(req, result) {
   );
 };
 
-
 Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(req,result) {
   const orderdetails = await query("select ors.*,mk.brandname from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.userid ='" +req.userid +"' and ors.orderstatus = 6  and ors.payment_status = 1 order by ors.orderid desc limit 1");
   if (orderdetails.length !==0) {
@@ -1400,156 +1315,67 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
         result(err, null);
       } else {
         if (res.length === 0) {
-          let sucobj = true;
-          let message = "Active order not found!";
           let resobj = {
-            success: sucobj,
+            success: true,
             status: false,
-            message: message,
+            message: "Active order not found!",
             orderdetails: orderdetails
-            //result: res
           };
           result(null, resobj);
         } else {
-          if (res[0].payment_type === "0") {
-            var liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
-            sql.query(liveorderquery, function(err, res1) {
-              if (err) {
-                console.log("error: ", err);
-                result(null, err);
-              } else {
-
-                if (res1[0].orderstatus >= 3) {
-                  
-                  // +20 min add with moveit order assign time
-                 var deliverytime = moment(res[0].ordertime)
-                 .add(0, "seconds")
-                 .add(20, "minutes")
-                 .format("YYYY-MM-DD HH:mm:ss");
-                 console.log(deliverytime);
-                
-                 res1[0].deliverytime = deliverytime;
-               }else{
-
-                 var deliverytime = moment(res[0].ordertime)
-                 .add(0, "seconds")
-                 .add(20, "minutes")
-                 .format("YYYY-MM-DD HH:mm:ss");
-                 console.log(deliverytime);
-                
-                 res1[0].deliverytime = deliverytime;
-
-               }
-
-                for (let i = 0; i < res1.length; i++) {
-             
-                  res1[i].distance = res1[i].distance.toFixed(2);
-                  //15min Food Preparation time , 3min 1 km
-                  eta = 15 + (3 * res1[i].distance);
-
-                  res1[i].eta = Math.round(eta) + " mins";
-
-                  if (res1[i].items) {
-                    var items = JSON.parse(res1[i].items);
-                    res1[i].items = items.item;
-                  }
-                }
-
-              
-             
-                let resobj = {
-                  success: true,
-                  status: true,
-                  orderdetails: orderdetails,
-                  result: res1
-                };
-
-                result(null, resobj);
-              }
-            });
-          } else if (res[0].payment_type === "1" && res[0].payment_status === 1) {
-
-            liveorderquery ="Select ors.orderid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
-         
-            sql.query(liveorderquery, function(err, res1) {
-              if (err) {
-                console.log("error: ", err);
-                result(null, err);
-              } else {
-
-                if (res1[0].orderstatus >= 3) {
-                  
-                  // +20 min add with moveit order assign time
-                 var deliverytime = moment(res[0].ordertime)
-                 .add(0, "seconds")
-                 .add(20, "minutes")
-                 .format("YYYY-MM-DD HH:mm:ss");
-                 console.log(deliverytime);
-                
-                 res1[0].deliverytime = deliverytime;
-               }else{
-
-                 var deliverytime = moment(res[0].ordertime)
-                 .add(0, "seconds")
-                 .add(20, "minutes")
-                 .format("YYYY-MM-DD HH:mm:ss");
-                 console.log(deliverytime);
-                
-                 res1[0].deliverytime = deliverytime;
-
-               }
-
-                for (let i = 0; i < res1.length; i++) {
-                  // var deliverytime = new Date(res1[i].ordertime);
-
-                  // // d.setHours(d.getHours() + 5);
-                  // deliverytime.setMinutes(deliverytime.getMinutes() + 15);
-
-                  // res1[i].deliverytime = deliverytime;
-
-                  res1[i].distance = res1[i].distance.toFixed(2);
-                  //15min Food Preparation time , 3min 1 km
-                  eta = 15 + 3 * res1[i].distance;
-
-                  res1[i].eta = Math.round(eta) + " mins";
-
-                  if (res1[i].items) {
-                    var items = JSON.parse(res1[i].items);
-                    res1[i].items = items.item;
-                  }
-                }
-
-                let sucobj = true;
-                let resobj = {
-                  success: sucobj,
-                  status: true,
-                  orderdetails: orderdetails,
-                  result: res1
-                };
-
-                result(null, resobj);
-              }
-            });
-          } else {
-            let sucobj = true;
-            let message = "Active order not found!";
+          var liveorderquer=null;
+          if (res[0].payment_type === "0") liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
+          else if (res[0].payment_type === "1" && res[0].payment_status === 1) liveorderquery ="Select ors.orderid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
+          else {
             let resobj = {
-              success: sucobj,
+              success: true,
               status: false,
-              message: message,
+              message: "Active order not found!",
               orderdetails: orderdetails
-              //result: res
             };
-
             result(null, resobj);
+            return;
           }
+
+          sql.query(liveorderquery, function(err, res1) {
+            if (err) {
+              result(err, null);
+            } else {
+              if (res1[0].orderstatus >= 3) {
+                // +20 min add with moveit order picked up time
+               res1[0].deliverytime = res1[0].moveit_actual_delivered_time;
+             }else{
+               // +20 min add with moveit order posted time
+               var deliverytime = moment(res[0].ordertime)
+               .add(0, "seconds")
+               .add(20, "minutes")
+               .format("YYYY-MM-DD HH:mm:ss");
+               res1[0].deliverytime = deliverytime;
+             }
+              for (let i = 0; i < res1.length; i++) {
+                res1[i].distance = res1[i].distance.toFixed(2);
+                //15min Food Preparation time , 3min 1 km
+                eta = 15 + 3 * res1[i].distance;
+                res1[i].eta = Math.round(eta) + " mins";
+                if (res1[i].items) {
+                  var items = JSON.parse(res1[i].items);
+                  res1[i].items = items.item;
+                }
+              }
+              let resobj = {
+                success: true,
+                status: true,
+                orderdetails: orderdetails,
+                result: res1
+              };
+              result(null, resobj);
+            }
+          });
         }
       }
     }
   );
 };
-
-
 
 Order.create_refund = function create_refund(refundDetail) {
   var refund = new RefundOnline(refundDetail);
@@ -1676,7 +1502,6 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
 
   } else {
     sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 2 WHERE orderid ='" +req.orderid +"'",
-    
     async function(err, res) {
         if (err) {
           result(err, null);
@@ -1688,11 +1513,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             userid: orderdetails[0].userid,
             payment_id: orderdetails[0].transactionid
           };
-          
-
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
-                    
-        
           for (let i = 0; i < orderitemdetails.length; i++) {
             var productquantityadd =
               "update Product set quantity = quantity+" +
@@ -1700,12 +1521,9 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
               " where productid =" +
               orderitemdetails[i].productid +
               "";
-
             sql.query(productquantityadd, function(err, res2) {
               if (err) {
-                console.log("error: ", err);
-                result(null, err);
-              } else {
+                result(err, null);
               }
             });
           }
@@ -1713,7 +1531,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
 
           if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
             await Order.create_refund(refundDetail);
-             await Notification.orderEatPushNotification(
+            await Notification.orderEatPushNotification(
             req.orderid,
             null,
             PushConstant.Pageid_eat_order_cancel
@@ -1728,7 +1546,6 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
         }
 
           if(orderdetails[0]&&orderdetails[0].moveit_user_id){
-            console.log("Makeit  Cancel-->"+orderdetails[0].moveit_user_id)
             await Notification.orderMoveItPushNotification(
               req.orderid,
               PushConstant.pageidMoveit_Order_Cancel,
@@ -1738,7 +1555,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
           let response = {
             success: true,
             status: true,
-            message: "Sorry order is not taken kitchen!"
+            message: "Order canceled successfully."
           };
           result(null, response);
         }
@@ -1754,7 +1571,6 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
 
   // d.setHours(d.getHours() + 5);
   if (orderdetails.length !== 0) {
-    console.log(orderdetails[0].orderstatus);
     if (orderdetails[0].orderstatus < 1) {
       var orderaccepttime = moment()
         .add(0, "seconds")
@@ -1785,7 +1601,7 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
       let response = {
         success: true,
         status: false,
-        message: "Sorry your order already received"
+        message: "Sorry your order already accepted"
       };
       result(null, response);
     } else if (orderdetails[0].orderstatus == 7) {
@@ -1799,7 +1615,7 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
       let response = {
         success: true,
         status: false,
-        message: "order id not found Please check"
+        message: "order not found please check"
       };
       result(null, response);
     }
@@ -1807,7 +1623,7 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
     let response = {
       success: true,
       status: false,
-      message: "Sorry your order already received"
+      message: "order not found please check"
     };
     result(null, response);
   }
@@ -1849,7 +1665,7 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
           let response = {
             success: true,
             status: true,
-            message: "Sorry your order accept time is missing.so this order is auto cancel"
+            message: "Sorry your order accept time is missing.so this order is auto canceled"
           };
           result(null, response);
         }
@@ -1888,7 +1704,7 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
             orderdetails[0].payment_type === "1" &&
             orderdetails[0].payment_status === 1
           )
-            await Order.create_refund(refundDetail);
+          await Order.create_refund(refundDetail);
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
@@ -1907,7 +1723,6 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
 };
 Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req,result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
-  console.log(orderdetails);
   if (orderdetails) {
     if (orderdetails[0].orderstatus === 6) {
       sql.query("UPDATE Orders SET item_missing = 1,item_missing_reason='" +req.item_missing_reason +"' WHERE orderid ='" +req.orderid +"'",
@@ -1923,7 +1738,6 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
                 if (err) {
                   result(err, null);
                 } else {
-                  // console.log(res3.status);
                   if (res2.status != true) {
                     result(null, res2);
                   } else {
@@ -1961,14 +1775,14 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
       let response = {
         success: true,
         status: false,
-        message: "Following order canceled"
+        message: "Order already canceled."
       };
       result(null, response);
     }else {
       let response = {
         success: true,
         status: false,
-        message: "Following order not yet to delivered"
+        message: "Order not yet to delivered."
       };
       result(null, response);
     }
@@ -1976,20 +1790,15 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
     let response = {
       success: true,
       status: false,
-      message: "Following order is not available"
+      message: "Order is not available"
     };
     result(null, response);
   }
 };
 Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
-
-  console.log(req);
-
   var waitinglistquery = "SELECT ors.orderid,ors.ordertime,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail from Orders as ors left join MakeitUser ms on ors.makeit_user_id = ms.userid WHERE  ors.orderstatus=0 and ors.lock_status = 0  and ors.created_at < (DATE_SUB(CURDATE(), interval 6 minute)) group by ors.orderid order by ors.orderid  desc";
-
   sql.query(waitinglistquery, function(err,res1) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
       for (let i = 0; i < res1.length; i++) {
@@ -2002,7 +1811,6 @@ Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
         status:true,
         result: res1
       };
-
       result(null, resobj);
     }
     

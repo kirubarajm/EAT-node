@@ -15,8 +15,7 @@ var Orderitems = function(orderitems) {
 Orderitems.createOrderitems = function createOrderitems(order_item, res) {
   sql.query("INSERT INTO OrderItem set ?", order_item, function(err, result) {
     if (err) {
-      console.log("error: ", err);
-      res(null, err);
+      res(err, null);
     } else {
       var OrderItemid = result.insertId;
       sql.query(
@@ -24,21 +23,16 @@ Orderitems.createOrderitems = function createOrderitems(order_item, res) {
         [order_item.quantity, order_item.productid],
         function(err, res1) {
           if (err) {
-            console.log("error: ", err);
-            res(null, err);
+            res(err, null);
+            return;
           }
         }
       );
-
-      let sucobj = true;
-      let mesobj = "Order Item Created successfully";
-
       let resobj = {
-        success: sucobj,
-        message: mesobj,
+        success: true,
+        message: "Order Item Created successfully",
         OrderItemid: OrderItemid
       };
-
       res(null, resobj);
     }
   });
@@ -47,28 +41,21 @@ Orderitems.createOrderitems = function createOrderitems(order_item, res) {
 Orderitems.createOrderitemsonline = function createOrderitemsonline(order_item,res) {
   sql.query("INSERT INTO OrderItem set ?", order_item, function(err, result) {
     if (err) {
-      console.log("error: ", err);
-      res(null, err);
+      res(err, null);
     } else {
       var OrderItemid = result.insertId;
-
       sql.query(
         "update Product set quantity= quantity-? WHERE productid = ?",
         [order_item.quantity, order_item.productid],
         function(err, res1) {
           if (err) {
-            console.log("error: ", err);
-            res(null, err);
+            res(err, null);
           }
         }
       );
-
-      let sucobj = true;
-      let mesobj = "Order Item Created successfully";
-
       let resobj = {
-        success: sucobj,
-        message: mesobj,
+        success: true,
+        message: "Order Item Created successfully",
         OrderItemid: OrderItemid
       };
 
@@ -83,7 +70,6 @@ Orderitems.getOrderById = function getOrderById(orderid, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
       result(null, res);
@@ -94,25 +80,20 @@ Orderitems.getOrderById = function getOrderById(orderid, result) {
 Orderitems.getAllOrder = function getAllOrder(result) {
   sql.query("Select * from OrderItem", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("Order : ", res);
-
       result(null, res);
     }
   });
 };
 
 Orderitems.updateById = function(id, user, result) {
-  console.log("test");
   sql.query(
     "UPDATE OrderItem SET moveit_user_id = ? WHERE orderid = ?",
     [id, id],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         result(null, res);
       }
@@ -126,8 +107,7 @@ Orderitems.remove = function(id, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
       result(null, res);
     }
