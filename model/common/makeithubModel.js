@@ -12,6 +12,7 @@ MakeitHub.getAllMakeitHub = function getAllMakeitHub(result) {
     } else {
       let resobj = {
         success: true,
+        status:true,
         result: res
       };
       result(null, resobj);

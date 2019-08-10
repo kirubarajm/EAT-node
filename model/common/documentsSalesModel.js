@@ -2,7 +2,6 @@
 var sql = require("../db.js");
 var Documents = require("./documentsModel.js");
 var PackagingBox = require("./packagingboxModel.js");
-
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 
@@ -105,8 +104,6 @@ Documentsales.createkitchenDoument = async function createkitchenDoument(
    
   
     if (packagingdetails && docid) {
-      console.log("packagingdetails-->",docid)
-      
       for (var i = 0; i < packagingdetails.length; i++) {
         var newpackagingdetails = new PackagingBox(packagingdetails[i]);
         newpackagingdetails.sales_userid = newdocument.sales_userid;
@@ -122,11 +119,10 @@ Documentsales.createkitchenDoument = async function createkitchenDoument(
       }
     }
   
-    let mesobj = "Document stored successfully";
     let resobj = {
       success: true,
       status:true,
-      message: mesobj,
+      message: "Document stored successfully",
       docid: docid
     };
     res(null, resobj);
@@ -174,16 +170,15 @@ Documentsales.infodocumentcreate = async function infodocumentcreate(
         err,
         result
       ) {
-        if (err) res.send(err);
+        if (err) res(err, null);
       });
     }
   }
 
-  let mesobj = "Document stored successfully";
   let resobj = {
     success: true,
     status: true,
-    message: mesobj,
+    message: "Document stored successfully",
     docid: docid
   };
   res(null, resobj);
@@ -195,7 +190,6 @@ Documentsales.getDocumentById = function getDocumentById(id, result) {
     id,
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
       } else {
         result(null, res);
@@ -206,11 +200,8 @@ Documentsales.getDocumentById = function getDocumentById(id, result) {
 Documentsales.getAllDocument = function getAllDocument(result) {
   sql.query("Select * from Documents_Sales", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("User : ", res);
-
       result(null, res);
     }
   });
@@ -221,14 +212,11 @@ Documentsales.getAllSalesTrainingDocument = function getAllSalesTrainingDocument
 ) {
   sql.query("Select * from SalesTraining", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("User : ", res);
-
-      let sucobj = "true";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status: true,
         result: res
       };
       result(null, resobj);
@@ -244,8 +232,7 @@ Documentsales.updateById = function(id, documents, result) {
     [documents.task, id],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         result(null, res);
       }
@@ -260,45 +247,12 @@ Documentsales.remove = function(req, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
       result(null, res);
     }
   });
 };
-
-// Documentsales.remove_s3_sales_doc = function(dname, result){
-//     const fs = require('fs');
-//      const AWS = require('aws-sdk');
-//      const s3 = new AWS.S3({
-//      accessKeyId: AWS_ACCESS_KEY,
-//      secretAccessKey: AWS_SECRET_ACCESS_KEY
-//      });
-
-//           const params = {
-//               Bucket: 'eattovo/upload/sales/makeit', // pass your bucket name
-//               Key: dname // file will be saved as testBucket/contacts.csv
-//           };
-
-//           s3.deleteObjects(params, (err, data) => {
-//             if(err) {
-//                 console.log("error: ", err);
-//                 result(err, null);
-//             }
-//             else{
-//                 //console.log(res.insertId);
-//                 let sucobj='true';
-//                 let message = 'Doucment Deleted successfully';
-//                 let resobj = {
-//                 success: sucobj,
-//                 message:message,
-//                 data:data
-//                 };
-//                 result(null, resobj);
-//             }
-//         })
-//    };
 
 Documentsales.getsalesDocumentById = function getsalesDocumentById(
   req,
@@ -309,7 +263,6 @@ Documentsales.getsalesDocumentById = function getsalesDocumentById(
     [req.sales_userid, req.makeit_userid],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
       } else {
         result(null, res);

@@ -6,20 +6,17 @@ var Eatfeedback = function(eatfeedback) {
   this.rating = eatfeedback.rating;
   this.content = eatfeedback.content;
   this.userid = eatfeedback.userid;
-  // this.created_at = new Date();
 };
 
 Eatfeedback.createfeedback = function createfeedback(newfeedback, result) {
   sql.query("INSERT INTO Eat_Feedback set ?", newfeedback, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = true;
-      let message = "Feedback has been submitted successfully";
       let resobj = {
-        success: sucobj,
-        message: message,
+        success: true,
+        status:true,
+        message: "Feedback has been submitted successfully",
         faqid: res.insertId
       };
 
@@ -34,7 +31,6 @@ Eatfeedback.getfeedbackById = function getfeedbackById(feedbackId, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
       result(null, res);
@@ -48,12 +44,11 @@ Eatfeedback.getfeedbackByType = function getfeedbackById(id, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = "true";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
@@ -66,14 +61,11 @@ Eatfeedback.getAllfeedback = function getAllfeedback(result) {
     "Select ef.fid,ef.rating,ef.content,ef.userid,ef.created_at,us.name,us.userid,us.phoneno from Eat_Feedback ef join User us on ef.userid=us.userid ",
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(null, err);
       } else {
-        console.log("Faq : ", res);
-
-        let sucobj = "true";
         let resobj = {
-          success: sucobj,
+          success: true,
+          status:true,
           result: res
         };
         result(null, resobj);

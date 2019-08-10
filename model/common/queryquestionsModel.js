@@ -16,16 +16,13 @@ var QueryQuestions = function(queryquestions) {
 QueryQuestions.createquestions = function createquestions(req, result) {
   sql.query("INSERT INTO Query_questions  set ?", req, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      
       let resobj = {
         success: true,
         status:true,
         message: "Questions created successfully"
       };
-
       result(null, resobj);
     }
   });
@@ -42,12 +39,9 @@ QueryQuestions.read_a_question_id = function read_a_question_id(req, result) {
   }
 
   query = query + "GROUP BY qqs.qid ORDER BY qa.created_at desc";
-  
-  console.log(query);
 
   sql.query(query,async function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
 

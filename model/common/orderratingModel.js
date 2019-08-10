@@ -18,41 +18,32 @@ Orderrating.createOrderrating = function createOrderrating(
     "Select * from Order_rating where orderid = '" + Order_rating.orderid + "'",
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
       } else {
-        console.log(res);
         if (res.length === 0) {
           sql.query("INSERT INTO Order_rating set ?", Order_rating, function(
             err,
             res
           ) {
             if (err) {
-              console.log("error: ", err);
-              res(null, err);
+              result(err, null);
             } else {
-              
               let resobj = {
                 success: true,
                 status: true,
                 message: "Thanks for your Order Rating",
                 orid: res.insertId
               };
-
               result(null, resobj);
             }
           });
         } else {
-          let sucobj = true;
-          let mesobj = "Already order rating completed";
-
           let resobj = {
-            success: sucobj,
+            success: true,
             status: false,
-            message: mesobj,
+            message:  "Already order rating completed",
             result: res
           };
-
           result(null, resobj);
         }
       }
@@ -66,7 +57,6 @@ Orderrating.getOrderById = function getOrderById(orderid, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
       result(null, res);
@@ -77,11 +67,8 @@ Orderrating.getOrderById = function getOrderById(orderid, result) {
 Orderrating.getAllOrder = function getAllOrder(result) {
   sql.query("Select * from Order_rating", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("Order : ", res);
-
       result(null, res);
     }
   });
@@ -94,8 +81,7 @@ Orderrating.updateById = function(id, user, result) {
     [id, id],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         result(null, res);
       }
@@ -109,8 +95,7 @@ Orderrating.remove = function(id, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
       result(null, res);
     }

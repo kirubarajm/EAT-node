@@ -13,14 +13,12 @@ var Faq = function(faq) {
 Faq.createFaq = function createFaq(newFaq, result) {
   sql.query("INSERT INTO Faq set ?", newFaq, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = true;
-      let message = "Faq created succesfully";
       let resobj = {
-        success: sucobj,
-        message: message,
+        success: true,
+        status:true,
+        message: "Faq created succesfully",
         faqid: res.insertId
       };
 
@@ -32,7 +30,6 @@ Faq.createFaq = function createFaq(newFaq, result) {
 Faq.getFaqById = function getFaqById(userId, result) {
   sql.query("Select * from Faq where faqid = ? ", userId, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
       result(null, res);
@@ -43,12 +40,11 @@ Faq.getFaqById = function getFaqById(userId, result) {
 Faq.getFaqByType = function getFaqById(id, result) {
   sql.query("Select * from Faq where type = ? ", id, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = true;
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
@@ -59,14 +55,12 @@ Faq.getFaqByType = function getFaqById(id, result) {
 Faq.getAllFaq = function getAllFaq(result) {
   sql.query("Select * from Faq", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("Faq : ", res);
-
       let sucobj = true;
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
@@ -80,8 +74,7 @@ Faq.updateById = function(id, user, result) {
     [task.task, id],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         result(null, res);
       }
@@ -92,14 +85,11 @@ Faq.updateById = function(id, user, result) {
 Faq.remove = function(id, result) {
   sql.query("DELETE FROM Faq WHERE faqid = ?", [id], function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("Faq : ", res);
-
-      let sucobj = true;
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         message: "Faq successfully deleted"
       };
       result(null, resobj);
@@ -110,10 +100,8 @@ Faq.remove = function(id, result) {
 Faq.getAllFaqbyid = function getAllFaqByid(id, result) {
   sql.query("Select * from Faq where faqid = ? ", id, function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      console.log("Faq : ", res);
       result(null, res);
     }
   });

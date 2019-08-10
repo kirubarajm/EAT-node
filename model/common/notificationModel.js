@@ -24,13 +24,11 @@ Notification.getPushOrderDetail = async function(orderid) {
     "left join MoveitUser mu on mu.userid = ors.moveit_user_id "+
     "where ors.orderid ='" +orderid +"'"
   );
- // console.log("orders--->" +orders[0].userdetail);
   return orders[0];
 };
 
 Notification.getEatUserDetail = async function(userid) {
   var EatUser = await query("SELECT * FROM User where userid = " + userid);
-  console.log("EatUser--->" + EatUser);
   return EatUser[0];
 };
 
@@ -269,7 +267,6 @@ Notification.appointment_makeit_PushNotification = async function(
   sales_user_detail = sales_user_detail[0];
   var data = null;
   var salesman_name = sales_user_detail.name;
-  console.log("outside");
   switch (status) {
     case 2:
       data = {
@@ -280,7 +277,6 @@ Notification.appointment_makeit_PushNotification = async function(
         app: "Make-it",
         notification_type: "1"
       };
-      console.log("22");
       break;
 
     case 4:
@@ -351,7 +347,6 @@ Notification.sales_PushNotification = async function(
     "SELECT pushid_android FROM Sales_QA_employees where id = " + sales_userid
   );
   if (Salesuser && Salesuser[0].pushid_android && data) {
-    console.log("sales user-->" + Salesuser[0].pushid_android);
     FCM_Sales.sendNotificationAndroid(Salesuser[0].pushid_android, data);
   }
 };
@@ -406,7 +401,6 @@ Notification.queries_answers_PushNotification = async function(
   Userdetails = await query(
     "SELECT * FROM " + userTable + " where " + ID + " = " + userid
   );
-  console.log("kkk---" + userTable + "---userid--" + userid);
 
   if (Userdetails && Userdetails[0].pushid_ios) {
     FCM_EAT.sendNotificationAndroid(Userdetails[0].pushid_ios, data);

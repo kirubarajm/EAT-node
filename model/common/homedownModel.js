@@ -11,16 +11,13 @@ var Hometown = function(hometown) {
 Hometown.createHometown = function createHometown(req, result) {
   sql.query("INSERT INTO Hometown  set ?", req, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = true;
-      let message = "Region created successfully";
       let resobj = {
-        success: sucobj,
-        message: message
+        success: true,
+        status:true,
+        message: "Region created successfully"
       };
-
       result(null, resobj);
     }
   });
@@ -28,26 +25,17 @@ Hometown.createHometown = function createHometown(req, result) {
 
 Hometown.read_a_question_id = function read_a_question_id(req, result) {
   var query = "Select * from Hometown";
-
   if (req.type && req.userid) {
     query = query + " and userid = '" + req.userid + "'";
   }
   query = query + "order by qid desc";
-
-  console.log(query);
-
   sql.query(query, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      for (let i = 0; i < res.length; i++) {
-        //res[i].count = count;
-      }
-
-      let sucobj = true;
       let resobj = {
-        sucobj: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
@@ -58,12 +46,11 @@ Hometown.read_a_question_id = function read_a_question_id(req, result) {
 Hometown.getRegionByType = function getRegionByType(id, result) {
   sql.query("Select * from Hometown where type = ? ", id, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = "true";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
@@ -74,12 +61,11 @@ Hometown.getRegionByType = function getRegionByType(id, result) {
 Hometown.getAllHometown = function getAllHometown(result) {
   sql.query("Select hometownid,hometownname,regionid from Hometown", function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-      let sucobj = "true";
       let resobj = {
-        success: sucobj,
+        success: true,
+        status:true,
         result: res
       };
       result(null, resobj);
@@ -94,8 +80,7 @@ Hometown.updateById = function(id, user, result) {
     [task.task, id],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
-        result(null, err);
+        result(err, null);
       } else {
         result(null, res);
       }
@@ -109,8 +94,7 @@ Hometown.remove = function(id, result) {
     res
   ) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
       result(null, res);
     }
