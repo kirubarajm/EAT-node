@@ -720,7 +720,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
   });
 };
 
-Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
+Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
   
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
@@ -951,20 +951,17 @@ Eatuser.get_eat_kitchen_list_sort_filter = function(req, result) {
   var currenthour = day.getHours();
 
   console.log(currenthour);
-
-  if (currenthour <= 12) {
-
+  if (currenthour < 12) {
     query = query + " and pt.breakfast = 1";
-  //  console.log("breakfast");
-  }else if(currenthour >= 12 && currenthour <= 16){
+   }else if(currenthour >= 12 && currenthour <= 16){
 
     query = query + " and pt.lunch = 1";
-  //  console.log("lunch");
-  }else if( currenthour >= 16 && currenthour <= 23){
-    
-    query = query + " and pt.dinner = 1";
-  //  console.log("dinner");
-  }
+
+    }else if( currenthour >= 16){
+
+      query = query + " and pt.dinner = 1";
+   }
+
 
 
   if (req.sortid == 1) {

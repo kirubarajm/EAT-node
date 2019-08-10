@@ -109,21 +109,30 @@ exports.order_status_update = function(req, res) {
 };
 
 exports.order_view_eatuser = function(req, res) {
+  if (!req.params.orderid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide orderid" });
+  }else{
   Order.orderviewbyeatuser(req.params, function(err, user) {
     console.log("controller");
     if (err) res.send(err);
     console.log("res", user);
     res.send(user);
   });
+}
 };
 
 exports.order_list_eatuser = function(req, res) {
+ 
+  if (!req.body.userid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide userid" });
+  }else{
   Order.orderlistbyeatuser(req.params, function(err, user) {
     console.log("controller");
     if (err) res.send(err);
     console.log("res", user);
     res.send(user);
   });
+}
 };
 
 exports.order_assign = function(req, res) {

@@ -354,8 +354,8 @@ Order.online_order_place_conformation = async function(order_place, result) {
             }
           });
          }
-    
-        if (order_place.refund_balance) {
+         
+        if (order_place.refund_balance !==0 || order_place.rcid ) {
           var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(
             order_place.rcid,
             order_place.refund_balance,
@@ -382,7 +382,7 @@ Order.online_order_place_conformation = async function(order_place, result) {
             result(null, resobj);
           }
         });
-      }else if (order_place.payment_status == 2) {
+      }else if (order_place.payment_status === 2) {
         var releasequantityquery = "select * from Lock_order where orderid ='" + order_place.orderid + "' ";
         sql.query(releasequantityquery, function(err, res2) {
           if (err) {
@@ -1112,29 +1112,25 @@ Order.orderviewbyadmin = function(req, result) {
 };
 
 Order.orderviewbyeatuser = function(req, result) {
-  sql.query("select * from Orders where orderid =" + req.orderid + " ",function(err, res) {
+
+  var query =  "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  where ors.orderid =" +
+  req.orderid +
+  " "
+  sql.query(query,function(err, res1) {
       if (err) {
         result(err, null);
       } else {
-        if (res.length === 0) {
+        if (res1.length === 0 || res1[0].orderid === null) {
           let resobj = {
             success: true,
             status: false,
             message: "Order not found!",
-            result: res
+            result: []
           };
           result(null, resobj);
         } else {
-          // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
-          sql.query(
-            "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  where ors.orderid =" +
-              req.orderid +
-              " ",
-            function(err, res1) {
-              if (err) {
-                result(err, null);
-              } else {
-                //for (let i = 0; i < res.length; i++) {
+
+
                 eta = 15 + 3 * res1[0].distance;
                 //15min Food Preparation time , 3min 1 km
                 res1[0].eta = Math.round(eta) + " mins";
@@ -1155,11 +1151,11 @@ Order.orderviewbyeatuser = function(req, result) {
                   res1[0].items = items.item;
                 }
 
-                if (res[0].orderstatus > 3) {
+                if (res1[0].orderstatus > 3) {
                    // +20 min add with moveit order assign time
                   res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
                 }else{
-                  var deliverytime = moment(res[0].ordertime)
+                  var deliverytime = moment(res1[0].ordertime)
                   .add(0, "seconds")
                   .add(20, "minutes")
                   .format("YYYY-MM-DD HH:mm:ss");
@@ -1171,7 +1167,44 @@ Order.orderviewbyeatuser = function(req, result) {
                 );
                 //}
 
-            
+                var cartdetails = [];
+                var totalamountinfo = {};
+                var couponinfo = {};
+                var gstinfo = {};
+                var deliverychargeinfo = {};
+                var refundinfo = {};
+                //var grandtotalinfo = {};
+        
+                  totalamountinfo.title = "Total Amount";
+                  totalamountinfo.charges = res1[0].price;
+                  totalamountinfo.status = true;
+                  cartdetails.push(totalamountinfo);
+        
+                  if (res1[0].discount_amount) {
+                    couponinfo.title = "Coupon adjustment";
+                    couponinfo.charges = res1[0].discount_amount;
+                    couponinfo.status = true;
+                    cartdetails.push(couponinfo);
+                  }
+        
+                  gstinfo.title = "GST charge";
+                  gstinfo.charges = res1[0].gst;
+                  gstinfo.status = true;
+                  cartdetails.push(gstinfo);
+        
+                  deliverychargeinfo.title = "Delivery charge";
+                  deliverychargeinfo.charges = res1[0].delivery_charge;
+                  deliverychargeinfo.status = true;
+                  cartdetails.push(deliverychargeinfo);
+        
+                  if (res1[0].refund_amount) {
+                    refundinfo.title = "Refund adjustment";
+                    refundinfo.charges = res1[0].refund_amount;
+                    refundinfo.status = true;
+                    cartdetails.push(refundinfo);
+                  }
+
+                  res1[0].cartdetails = cartdetails;
                 let resobj = {
                   success: true,
                   status: true,
@@ -1179,9 +1212,9 @@ Order.orderviewbyeatuser = function(req, result) {
                 };
 
                 result(null, resobj);
-              }
-            }
-          );
+              //}
+          //   }
+          // );
         }
       }
     }
@@ -1226,7 +1259,11 @@ Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
 };
 
 Order.orderlistbyeatuser = async function(req, result) {
-  sql.query("select * from Orders where userid ='" +req.userid +"' and (orderstatus = 6 or orderstatus = 7)",function(err, res) {
+
+  var query = "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" +
+            req.userid +
+            "' and (ors.orderstatus = 6 or orderstatus = 7) group by ors.orderid order by ors.orderid desc";
+  sql.query(query,function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -1234,57 +1271,51 @@ Order.orderlistbyeatuser = async function(req, result) {
           let resobj = {
             success: true,
             status: false,
-            message: "Active order not found!"
+            message: "orders not found!"
           };
           result(null, resobj);
         } else {
-          // ,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items
-          // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
-          //    sql.query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" + req.userid +"'", function (err, res) {
+           
+            history_list =res;
+            //history_list.push(res1);
+           // history_list = Array.prototype.concat.apply([], history_list);
+           for (let i = 0; i < history_list.length; i++) {
+             if (history_list[i].userdetail) {
+               history_list[i].userdetail = JSON.parse(history_list[i].userdetail);
+             }
 
-          var query =
-            "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" +
-            req.userid +
-            "' and (ors.orderstatus = 6 or orderstatus = 7) group by ors.orderid order by ors.orderid desc";
-          
+             if (history_list[i].makeitdetail) {
+               history_list[i].makeitdetail = JSON.parse(history_list[i].makeitdetail);
+             }
+
+             if (history_list[i].moveitdetail) {
+               history_list[i].moveitdetail = JSON.parse(history_list[i].moveitdetail);
+             }
+
+             if (history_list[i].items) {
+               var items = JSON.parse(history_list[i].items);
+               history_list[i].items = items;
+             }
+           }
+
+           
+           let resobj = {
+             success: true,
+             status: true,
+             result: history_list
+           };
+
+           result(null, resobj);
+
          //var eat_order_history_query = 'CALL eat_order_history(?)';
         //  sql.query(eat_order_history_query,[req.userid], async function(err, res1) {
-        sql.query(query, async function(err, res1) {
-            if (err) {
-              result(err, null);
-            } else {
-               history_list =res1;
-               //history_list.push(res1);
-              // history_list = Array.prototype.concat.apply([], history_list);
-              for (let i = 0; i < history_list.length; i++) {
-                if (history_list[i].userdetail) {
-                  history_list[i].userdetail = JSON.parse(history_list[i].userdetail);
-                }
-
-                if (history_list[i].makeitdetail) {
-                  history_list[i].makeitdetail = JSON.parse(history_list[i].makeitdetail);
-                }
-
-                if (history_list[i].moveitdetail) {
-                  history_list[i].moveitdetail = JSON.parse(history_list[i].moveitdetail);
-                }
-
-                if (history_list[i].items) {
-                  var items = JSON.parse(history_list[i].items);
-                  history_list[i].items = items;
-                }
-              }
-
-              let sucobj = true;
-              let resobj = {
-                success: sucobj,
-                status: true,
-                result: history_list
-              };
-
-              result(null, resobj);
-            }
-          });
+        // sql.query(query, async function(err, res1) {
+        //     if (err) {
+        //       result(err, null);
+        //     } else {
+              
+        //     }
+         // });
         }
       }
     }
@@ -1386,6 +1417,7 @@ Order.create_refund = function create_refund(refundDetail) {
 };
 
 Order.eat_order_cancel = async function eat_order_cancel(req, result) {
+
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
   if (orderdetails[0].orderstatus < 5) {
@@ -1394,46 +1426,55 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           result(err, null);
         } else {
           
+
+          var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+                    
+          console.log(orderitemdetails);
+          for (let i = 0; i < orderitemdetails.length; i++) {
+            var productquantityadd =
+              "update Product set quantity = quantity+" +
+              orderitemdetails[i].quantity +
+              " where productid =" +
+              orderitemdetails[i].productid +
+              "";
+
+            sql.query(productquantityadd, function(err, res3) {
+              if (err) {
+                console.log("error: ", err);
+                result(null, err);
+              } else {
+              }
+            });
+          }
+
           var refundDetail = {
             orderid: req.orderid,
-            original_amt: orderdetails[0].price,
+            original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
             active_status: 1,
             userid: orderdetails[0].userid,
             payment_id: orderdetails[0].transactionid
           };
 
-
-              if (orderdetails[0].payment_type === "0") {
-                      var rc = new RefundCoupon(req);
-                      RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
-                        if (err) {
-                          result(err, null);
-                        } 
-                      });
-                    } else if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1) {
-
-                      await RefundOnline.createRefund(refundDetail);
-                    }
-
-                    var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
-                    
-                    console.log(orderitemdetails);
-                    for (let i = 0; i < orderitemdetails.length; i++) {
-                      var productquantityadd =
-                        "update Product set quantity = quantity+" +
-                        orderitemdetails[i].quantity +
-                        " where productid =" +
-                        orderitemdetails[i].productid +
-                        "";
-        
-                      sql.query(productquantityadd, function(err, res2) {
-                        if (err) {
-                          console.log("error: ", err);
-                          result(null, err);
-                        } else {
-                        }
-                      });
-                    }
+          if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+            
+            if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
+              await Order.create_refund(refundDetail);
+              await Notification.orderEatPushNotification(
+              req.orderid,
+              null,
+              PushConstant.Pageid_eat_order_cancel
+            );
+            }else if (orderdetails[0].payment_type === "0") {
+            var rc = new RefundCoupon(req);
+            RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+              if (err) {
+                result(err, null);
+              } 
+            });
+          }
+            
+            }
+                   
 
           await Notification.orderMakeItPushNotification(
             req.orderid,
@@ -1508,7 +1549,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
         } else {
           var refundDetail = {
             orderid: req.orderid,
-            original_amt: orderdetails[0].price,
+            original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
             active_status: 1,
             userid: orderdetails[0].userid,
             payment_id: orderdetails[0].transactionid
@@ -1528,6 +1569,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             });
           }
 
+          if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
           if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
             await Order.create_refund(refundDetail);
@@ -1544,7 +1586,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             } 
           });
         }
-
+          }
           if(orderdetails[0]&&orderdetails[0].moveit_user_id){
             await Notification.orderMoveItPushNotification(
               req.orderid,
