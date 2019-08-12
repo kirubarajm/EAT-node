@@ -14,7 +14,7 @@ const calculate = {
     eatversioncode : 1,
     eatforceupdate : 1,
     eat_delivery_min:60,
-    commission_per : 10
+    product_commission_percentage : 10 ,// percentage
 }
 
 

@@ -917,6 +917,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var couponstatus = true;
   var refundcouponstatus = true;
   var isAvaliablekitchen = true;
+  var makeit_earnings = 0;
  
 
   var orderlist = await query("Select * From Orders where userid = '" +req.userid +"' and orderstatus >= 6");
@@ -939,7 +940,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
   for (let i = 0; i < orderitems.length; i++) {
 
-    const res1 = await query("Select pt.*,cu.cuisinename From Product pt join Cuisine cu on cu.cuisineid = pt.cuisine where pt.productid = '" +orderitems[i].productid +"'  ");
+    const res1 = await query("Select pt.*,cu.cuisinename From Product pt left join Cuisine cu on cu.cuisineid = pt.cuisine where pt.productid = '" +orderitems[i].productid +"'  ");
   
     if (res1[0].quantity < orderitems[i].quantity) {
       console.log("quantity");
@@ -970,9 +971,12 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
       res1[0].availablity = true;
     }
     amount = res1[0].price * orderitems[i].quantity;
+   var order_makeit_earnings = res1[0].original_price * orderitems[i].quantity;
     res1[0].amount = amount;
+    res1[0].makeit_earnings = order_makeit_earnings;
     res1[0].cartquantity = orderitems[i].quantity;
     totalamount = totalamount + amount;
+    makeit_earnings = makeit_earnings + order_makeit_earnings;
     productdetails.push(res1[0]);
   }
   console.log(productdetails);
@@ -1134,6 +1138,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         calculationdetails.delivery_charge = delivery_charge;
         calculationdetails.refund_coupon_adjustment = refund_coupon_adjustment;
         calculationdetails.product_orginal_price = product_orginal_price;
+        calculationdetails.makeit_earnings = makeit_earnings;
         calculationdetails.totalamount = totalamount;
         calculationdetails.coupon_discount_amount = coupon_discount_amount;
         calculationdetails.couponstatus = false;
@@ -1900,38 +1905,38 @@ Makeituser.makeit_user_forgot_password_send_otp = function makeit_user_forgot_pa
 
 Makeituser.sum_total_earnings_makeit = function(makeit_userid, result) {
   var query =
-    "select SUM(price) as earnings from Orders where makeit_user_id = '" +
+    "select SUM(makeit_earnings) as earnings from Orders where makeit_user_id = '" +
     makeit_userid +
-    "' and orderstatus = 6 and payment_status = 1";
+    "' and orderstatus = 6 and payment_status = 1 and lock_status=0";
 
   sql.query(query, function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(null, err);
     } else {
-      var query =
-        "select SUM(price) as earnings,ordertime from Orders where makeit_user_id = '" +
+      var dayquery =
+        "select SUM(makeit_earnings) as earnings,ordertime from Orders where makeit_user_id = '" +
         makeit_userid +
-        "' and orderstatus = 6 and payment_status = 1 GROUP BY date(ordertime)  order by ordertime desc";
-      sql.query(query, function(err, res1) {
+        "' and orderstatus = 6 and payment_status = 1 and lock_status=0 GROUP BY date(ordertime)  order by ordertime desc";
+      sql.query(dayquery, function(err, res1) {
         if (err) {
           console.log("error: ", err);
           result(null, err);
         } else {
-          var query =
-            "select SUM(price) AS weeklyearnings , CONCAT(ordertime, '-', ordertime + INTERVAL 7 DAY) AS week FROM Orders where makeit_user_id = '" +
+          var weekquery =
+            "select SUM(makeit_earnings) AS weeklyearnings , CONCAT(ordertime, '-', ordertime + INTERVAL 7 DAY) AS week FROM Orders where makeit_user_id = '" +
             makeit_userid +
-            "' and orderstatus = 6 and payment_status = 1 GROUP BY week(ordertime)ORDER BY week(ordertime) desc";
-          sql.query(query, function(err, res2) {
+            "' and orderstatus = 6 and payment_status = 1 and lock_status=0 GROUP BY week(ordertime)ORDER BY week(ordertime) desc";
+          sql.query(weekquery, function(err, res2) {
             if (err) {
               console.log("error: ", err);
               result(null, err);
             } else {
-              var query =
-                "select count(ordertime) as totalmonth from Orders where  makeit_user_id = '" +
+              var monthquery =
+                "select count(makeit_earnings) as totalmonth from Orders where  makeit_user_id = '" +
                 makeit_userid +
-                "' and orderstatus = 6 and payment_status = 1 GROUP BY ordertime ";
-              sql.query(query, function(err, res3) {
+                "' and orderstatus = 6 and payment_status = 1 and lock_status=0 GROUP BY ordertime ";
+              sql.query(monthquery, function(err, res3) {
                 if (err) {
                   console.log("error: ", err);
                   result(null, err);
@@ -1939,25 +1944,22 @@ Makeituser.sum_total_earnings_makeit = function(makeit_userid, result) {
                   res[0].dayearnings = res1;
                   res[0].weekearnings = res2;
                   res[0].monthlyaverage = res[0].earnings / 12;
-                  console.log(res3);
-                  if (res[0].earnings === null) {
-                    let sucobj = true;
-                    let message = "Sorry there is no orders found!";
+                  
+                  if (res[0].earnings === null) {                   
                     let resobj = {
-                      success: sucobj,
+                      success: true,
                       status: false,
-                      message: message,
+                      message: "Sorry there is no orders found!",
                       result: res
                     };
 
                     result(null, resobj);
                   } else {
-                    let sucobj = true;
-                    let message = "Total earnings";
+                   
                     let resobj = {
-                      success: sucobj,
+                      success: true,
                       status: true,
-                      message: message,
+                      message: "Total earnings",
                       result: res
                     };
 

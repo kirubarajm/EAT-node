@@ -8,6 +8,7 @@ let config = require('../config.js');
 const CronJob = require('cron').CronJob;
 var moment = require("moment");
 const Razorpay = require("razorpay");
+var masters = require('../master');
 // var instance = new Razorpay({
 //     key_id: 'rzp_test_3cduMl5T89iR9G',
 //     key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
@@ -722,6 +723,8 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
 
 Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
   
+  //console.log(res3.result[0].amountdetails);
+  console.log(masters[0].regionid);
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
   var radiuslimit=constant.radiuslimit;
@@ -953,7 +956,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
   console.log(currenthour);
   if (currenthour < 12) {
     query = query + " and pt.breakfast = 1";
-   }else if(currenthour >= 12 && currenthour <= 16){
+   }else if(currenthour >= 12 && currenthour < 16){
 
     query = query + " and pt.lunch = 1";
 
@@ -986,7 +989,6 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
         var eta = foodpreparationtime + onekm * res[i].distance;
         //15min Food Preparation time , 3min 1 km
 
-
         res[i].eta = Math.round(eta) + " mins";
 
         if (res[i].cuisines) {
@@ -994,11 +996,12 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
         }
       }
 
-      let sucobj = true;
+   
       let resobj = {
-        success: sucobj,
+        success: true,
         status:true,
-        result: res
+        result: res,
+        masters :masters
       };
 
       result(null, resobj);

@@ -3,6 +3,7 @@ var sql = require("../db.js");
 var Productitem = require("../../model/makeit/productitemsModel.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
+var constant = require("../constant.js");
 //Task object constructor
 var Product = function(product) {
   this.makeit_userid = product.makeit_userid;
@@ -35,30 +36,34 @@ Product.getTotalPrice = async function createProduct(itemlist, result) {
   var totalamount = 0;
   var vegtype = 0;
   var itemdetail = {};
+  var product_commission_percentage = constant.product_commission_percentage;
   for (var i = 0; i < itemlist.length; i++) {
     const menuitem = await query(
       "Select * From Menuitem where menuitemid = '" + itemlist[i].itemid + "'"
     );
     if (menuitem.length!==0) {
       if (menuitem[0].vegtype === "1") vegtype = "1";
-      amount = menuitem[0].price * itemlist[i].quantity;
+     var amount = menuitem[0].price * itemlist[i].quantity;
+     
       totalamount = totalamount + amount;
+      var commision_price = (totalamount / 100) * product_commission_percentage; 
+      var original_price = totalamount + commision_price;
     }
   }
-  itemdetail.price = totalamount;
+  itemdetail.price = original_price;
+  itemdetail.original_price = totalamount;
   itemdetail.vegtype = vegtype;
   return itemdetail;
 };
 
-Product.createProduct = async function createProduct(
-  newProduct,
-  itemlist,
-  result
-) {
+Product.createProduct = async function createProduct(newProduct,itemlist,result) {
   var Productdetail = await Product.getTotalPrice(itemlist);
   newProduct.price = Productdetail.price;
+  newProduct.original_price = Productdetail.original_price;
   newProduct.vegtype = Productdetail.vegtype;
   
+ // console.log(Productdetail);
+
   sql.beginTransaction(function(err) {
     if (err) { throw err; }
     sql.query("INSERT INTO Product set ?", newProduct, function(err, res) {
@@ -571,6 +576,7 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
           var Productdetail = await Product.getTotalPrice(items);
           req.price = Productdetail.price;
           req.vegtype = Productdetail.vegtype;
+          req.original_price = Productdetail.original_price;
           var staticquery = "UPDATE Product SET ";
           var column = "";
 
@@ -609,21 +615,20 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
               console.log("error: ", err);
               result(err, null);
             } else {
-              let sucobj = true;
-              let message = "Product updated successfully";
+      
               let resobj = {
-                success: sucobj,
+                success: true,
                 status: true,
-                message: message
+                message: "Product updated successfully"
               };
 
               result(null, resobj);
             }
           });
         } else if (res[0].active_status == 1) {
-          let sucobj = true;
+          
           let resobj = {
-            success: sucobj,
+            success: true,
             status: false,
             message: "Sorry Product is live now, You can't edit"
           };
@@ -646,6 +651,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
         if (res[0].active_status == 0) {
           var Productdetail = await Product.getTotalPrice(items);
           req.price = Productdetail.price;
+          req.original_price = Productdetail.original_price;
           req.vegtype = Productdetail.vegtype;
           console.log(req);
           var staticquery = "UPDATE Product SET updated_at =?,";
@@ -653,7 +659,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
 
           //make the edited product column query without productid and items array
           for (const [key, value] of Object.entries(req)) {
-            console.log(`${key} ${value}`);
+        //    console.log(`${key} ${value}`);
 
             if (key !== "productid" && key !== "items") {
               // var value = `=${value}`;

@@ -58,6 +58,7 @@ var Order = function(order) {
   this.address_title = order.address_title;
   this.locality_name = order.locality_name;
   this.cancel_reason = order.cancel_reason;
+  this.makeit_earnings = order.makeit_earnings;
 };
 
 Order.createOrder = async function createOrder(req, orderitems, result) {
@@ -152,6 +153,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                   req.order_cost   = amountdata.original_price;
                   req.gst = amountdata.gstcharge;
                   req.price = amountdata.grandtotal;
+                  req.makeit_earnings = amountdata.makeit_earnings;
         
                   req.cus_address = address_data[0].address;
                   req.locality = address_data[0].locality;
