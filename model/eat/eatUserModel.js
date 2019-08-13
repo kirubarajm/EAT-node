@@ -1450,7 +1450,7 @@ Eatuser.eatuser_logout = async function eatuser_logout(req, result) {
        
       if (userdetails.length !==0) {
         
-        updatequery = await query ("Update User set pushid_android = '' and pushid_ios='' where userid = '"+req.userid+"'");
+        updatequery = await query ("Update User set pushid_android = '' and pushid_ios=' ' where userid = '"+req.userid+"'");
 
 
         let resobj = {
