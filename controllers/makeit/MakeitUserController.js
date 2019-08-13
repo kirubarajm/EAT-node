@@ -205,6 +205,14 @@ exports.admin_list_all_makeitusers = function(req, res) {
   });
 };
 
+exports.admin_list_all_badges = function(req, res) {
+
+  Makeituser.admin_list_all_badges(req.params, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
 exports.admin_makeit_unapproved_list = function(req, res) {
   console.log(req.body);
   Makeituser.admin_get_unapproved_makeitlist(req.body, function(err, result) {
@@ -309,6 +317,20 @@ exports.makeit_otp_verification = function(req, res) {
   }
 };
 
+exports.makeituser_logout = function(req, res) {
+  //var new_user = new Eatuser(req.body);
+  //handles null error
+  if (!req.body.userid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide userid" });
+  } else {
+    Makeituser.makeituser_logout(req.body, function(err, user) {
+      if (err) res.send(err);
+      res.json(user);
+    });
+  }
+};
 exports.makeit_user_forgot_password_update = function(req, res) {
   if (!req.body.password) {
     res.status(400).send({ error: true, message: "Please provide password" });

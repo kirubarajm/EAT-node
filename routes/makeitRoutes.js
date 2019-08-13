@@ -7,7 +7,7 @@ var documents = require("../controllers/common/DocumentsController");
 var menuitem = require("../controllers/makeit/MenuItemController");
 var product = require("../controllers/makeit/ProductController");
 var orders = require("../controllers/common/OrderController");
-
+let middleware = require('../model/middleware.js');
 // Makeit
 app.route("/makeit/orders").get(routesVersioning({"1.0.0":makeituser.all_order_list}));
 app.route("/makeit/orders/listbydate").post(routesVersioning({"1.0.0":makeituser.all_order_list_bydate}));
@@ -25,6 +25,7 @@ app.route("/makeit/edit").put(routesVersioning({"1.0.0":makeituser.edit_makeit_u
 app.route("/makeit/referral/:userid").get(routesVersioning({"1.0.0":makeituser.make_user_referral}));
 app.route("/makeit/phoneotp").post(routesVersioning({"1.0.0":makeituser.makeit_user_send_otp}));
 app.route("/makeit/otpverification").post(routesVersioning({"1.0.0":makeituser.makeit_otp_verification}));
+app.route("/makeit/logout").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.makeituser_logout}));
 app.route("/makeit/password").put(routesVersioning({"1.0.0":makeituser.makeit_user_forgot_password_update}));
 app.route("/makeit/forgot").post(routesVersioning({"1.0.0":makeituser.makeit_user_forgot_send_otp_by_phone}));
 app.route("/makeit/productupload").post(routesVersioning({"1.0.0":documents.makeit_product_upload_a_document}));

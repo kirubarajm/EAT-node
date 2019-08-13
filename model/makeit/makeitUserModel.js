@@ -1812,6 +1812,44 @@ Makeituser.makeit_user_otpverification = function makeit_user_otpverification(
   });
 };
 
+Makeituser.makeituser_logout = async function makeituser_logout(req, result) { 
+  sql.query("select * from MakeitUser where userid = "+req.userid+" ",async function(err,userdetails) {
+    if (err) {
+      console.log("error: ", err);
+      result(null, err);
+    } else {
+
+      console.log(req);
+       
+      if (userdetails.length !==0) {
+        
+        updatequery = await query("Update MakeitUser set pushid_android = 'null' where userid = '"+req.userid+"'");
+
+
+        let resobj = {
+          success: true,
+           status: true,
+          // message:mesobj,
+          message: 'Logout Successfully!'  
+        };
+  
+        result(null, resobj);
+      }else{
+
+        let resobj = {
+          success: true,
+           status: false,
+          // message:mesobj,
+          message: 'Please check userid'  
+        };
+  
+        result(null, resobj);
+      }     
+    }
+  });   
+ 
+};
+
 Makeituser.makeit_user_forgot_password_update = function makeit_user_forgot_password_update(
   newUser,
   result
@@ -2165,6 +2203,25 @@ Makeituser.edit_makeit_brand_identity_by_sales = async function(
     };
     result(null, resobj);
   }
+};
+
+Makeituser.admin_list_all_badges = function(req, result) {
+  var query = "select * from Makeit_badges ";
+  
+  console.log(query);
+  sql.query(query, function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      let resobj = {
+        success: true,
+        status: true,
+        result: res
+      };
+
+      result(null, resobj);
+    }
+  });
 };
 
 module.exports = Makeituser;

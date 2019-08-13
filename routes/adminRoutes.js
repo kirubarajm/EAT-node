@@ -91,7 +91,7 @@ app.route("/admin/refundlist").get(routesVersioning({"1.0.0":refundOnline.get_al
 app.route("/admin/order/cancel").put(routesVersioning({"1.0.0":orders.admin_order_cancel}));
 app.route("/admin/order/refundcreate").put(routesVersioning({"1.0.0":orders.eat_order_missing}));
 app.route("/admin/dashboard").get(routesVersioning({"1.0.0":admindashboard.get_all_dashboard_count}));
-app.route("/admin/repayment").post(routesVersioning({"1.0.0":Razorpay.razorpay_reflund_payment}));
+app.route("/admin/repayment").post(routesVersioning({"1.0.0":Razorpay.razorpay_refund_payment}));
 app.route("/admin/sales/sendotp").post(routesVersioning({"1.0.0":salesuser.Salesuser_send_otp_byphone}));
 app.route("/admin/sales/otpverification").post(routesVersioning({"1.0.0":salesuser.sales_user_otp_verification}));
 app.route("/admin/moveituser/sendotp").post(routesVersioning({"1.0.0":moveituser.Moveituser_send_otp_byphone}));
@@ -101,5 +101,5 @@ app.route("/admin/order/refund/list/:activestatus").get(routesVersioning({"1.0.0
 app.route("/admin/order/refund/create/").post(routesVersioning({"1.0.0":refundcoupon.createRefundCoupon}));
 app.route("/admin/order/refund/remove/:rcid").delete(routesVersioning({"1.0.0":refundcoupon.delete_a_RefundCoupon}));
 app.route("/admin/orders/waitinglist").get(routesVersioning({"1.0.0":orders.order_waiting_list_by_admin}));
-
+app.route("/admin/badges").get(routesVersioning({"1.0.0":makeituser.admin_list_all_badges}));
 }

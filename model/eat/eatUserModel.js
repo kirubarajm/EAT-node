@@ -394,6 +394,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
         // if(Images.length!==0) res[0].images=Images;
 
       if (res[0].makeituserid !== null && res[0].productlist !== null) {
+
         for (let i = 0; i < res.length; i++) {
           if (res[i].productlist) {
             res[i].productlist = JSON.parse(res[i].productlist);
@@ -402,7 +403,13 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
             //15min Food Preparation time , 3min 1 km
           //  eta = 15 + 3 * res[i].distance;
             var eta = foodpreparationtime + onekm * res[i].distance;
+            res[i].productlist
+            res[i].serviceablestatus = false;
 
+            
+        if (res[i].eta <= 60 || res[i].distance <= radiuslimit) {
+          res[i].serviceablestatus = true;
+        } 
            
             res[i].eta = Math.round(eta) + " mins";
           }
@@ -1419,7 +1426,56 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
   );
 };
 
+Eatuser.eatuser_logout = async function eatuser_logout(req, result) { 
+  sql.query("select * from User where userid = "+req.userid+" ",async function(err,userdetails) {
+    if (err) {
+      console.log("error: ", err);
+      result(null, err);
+    } else {
 
+      console.log(req);
+     //  let token = req.headers['x-access-token'] || req.headers['token'];
+      // let apptype = req.headers['x-access-token'] || req.headers['apptype'];
+   
+      
+      //console.log(token);
+        // if (apptype == 1) {
+          
+        //  query = "pushid_android = '' an";
+
+        // }else if (apptype == 2) {
+          
+        // }
+
+       
+      if (userdetails.length !==0) {
+        
+        updatequery = await query ("Update User set pushid_android = '' and pushid_ios='' where userid = '"+req.userid+"'");
+
+
+        let resobj = {
+          success: true,
+           status: true,
+          // message:mesobj,
+          message: 'Logout Successfully!'  
+        };
+  
+        result(null, resobj);
+      }else{
+
+        let resobj = {
+          success: true,
+           status: false,
+          // message:mesobj,
+          message: 'Please check userid'  
+        };
+  
+        result(null, resobj);
+      }     
+    }
+  });   
+ 
+};
 
 Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
   var otp = 0;
@@ -2213,8 +2269,14 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
                //  var eta = 15 + (3 * res[i].distance) ;
                  var eta = foodpreparationtime + onekm * res[i].distance;
                   //15min Food Preparation time , 3min 1 km 
-                
                   res[i].eta =   Math.round(eta) +" mins" ;  
+                  res[i].serviceablestatus = false;
+                            
+                  if (res[i].eta <= 60 ||  res[i].distance <= radiuslimit) {
+                     res[i].serviceablestatus = true;
+                     }
+
+                  
              
 
               if (res[i].cuisines) {

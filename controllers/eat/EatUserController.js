@@ -192,6 +192,20 @@ exports.eatuser_login = function(req, res) {
   }
 };
 
+exports.eatuser_logout = function(req, res) {
+  //var new_user = new Eatuser(req.body);
+  //handles null error
+  if (!req.body.userid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide userid" });
+  } else {
+    Eatuser.eatuser_logout(req.body, function(err, user) {
+      if (err) res.send(err);
+      res.json(user);
+    });
+  }
+};
 exports.eatuser_otpverification = function(req, res) {
   //var new_user = new Eatuser(req.body);
   //handles null error
