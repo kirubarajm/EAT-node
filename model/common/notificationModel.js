@@ -363,6 +363,7 @@ Notification.queries_answers_PushNotification = async function(
   var appname = "";
   var pageid = "0";
   var ID = "";
+  console.log("type--->",type);
   if (type === 1) {
     userTable = "MakeitUser";
     ID = "userid";

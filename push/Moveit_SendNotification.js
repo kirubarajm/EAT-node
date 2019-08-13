@@ -132,7 +132,7 @@ exports.sendNotificationAndroid = function(
     priority: "high",
     timeToLive: 60 * 60 * 24 // 1 day
   };
-  console.log("token:"+token);
+  console.log("token moveit:-"+token);
   var payload = {
     data: dat
   };

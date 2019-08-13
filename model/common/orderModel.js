@@ -1573,22 +1573,25 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
 
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
-          if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
-            await Order.create_refund(refundDetail);
-            await Notification.orderEatPushNotification(
+            if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
+              await Order.create_refund(refundDetail);
+              
+          }else if (orderdetails[0].payment_type === "0") {
+            var rc = new RefundCoupon(req);
+            RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+              if (err) {
+                result(err, null);
+              } 
+            });
+          }
+          }
+
+          await Notification.orderEatPushNotification(
             req.orderid,
             null,
             PushConstant.Pageid_eat_order_cancel
           );
-        }else if (orderdetails[0].payment_type === "0") {
-          var rc = new RefundCoupon(req);
-          RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
-            if (err) {
-              result(err, null);
-            } 
-          });
-        }
-          }
+          
           if(orderdetails[0]&&orderdetails[0].moveit_user_id){
             await Notification.orderMoveItPushNotification(
               req.orderid,
