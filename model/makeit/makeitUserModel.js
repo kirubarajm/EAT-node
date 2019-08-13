@@ -58,7 +58,6 @@ Makeituser.createUser = function createUser(newUser, result) {
       "' ",
     function(err, res2) {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
       } else {
         if (res2.length == 0) {
