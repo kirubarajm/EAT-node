@@ -69,10 +69,12 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     const onlinerefunddetails = await query("select * from Refund_Online where  rs_id ="+req.rs_id+"");
     const servicecharge = constant.servicecharge;
     
-    if (onlinerefunddetails[0].active_status === 1) {
+    if (onlinerefunddetails[0].active_status === 1 ) {
       
+      if (req.amount > servicecharge) {
+         
       ///cancel by ===1 is eat user cancel amount detect
-    if (req.cancel_by&& req.cancel_by === 1 ) {
+    if (req.cancel_by && req.cancel_by === 1) {
         amount= req.amount - servicecharge;
     }else{
         amount= req.amount;
@@ -89,7 +91,7 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
   }).then((data) => {
     console.log(data);
     // success
-    updatequery = "update Refund_Online set active_status= 0,refund_amt = '"+refund_amt+"',payment_id='"+data.id+"' where rs_id ='" + req.rs_id + "'"
+    updatequery = "update Refund_Online set active_status= 0,refund_amt = '"+refund_amt+"',payment_id='"+data.id+"',cancellation_charges='"+servicecharge+"' where rs_id ='" + req.rs_id + "'"
     
     sql.query(updatequery, function (err, res) {
         if(err) {
@@ -122,7 +124,21 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     };
     result(resobj,null);
     // error
-  })}else if (onlinerefunddetails[0].active_status===0) {
+  })
+
+}else{
+
+ 
+  let resobj = {  
+    success: true,
+    status:false,
+    message:"Sorry insufficient amount!",
+    result:onlinerefunddetails,
+    }; 
+
+ result(null, resobj);
+}
+}else if (onlinerefunddetails[0].active_status===0) {
     
     var  message = "Sorry your refund amount has been already refunded!"
           
