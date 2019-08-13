@@ -115,6 +115,7 @@ app.route("/eat/liveorders/:userid").get(middleware.checkToken,routesVersioning(
 app.route("/eat/proceedtopay").post(middleware.checkToken,routesVersioning({"1.0.0":orders.read_a_proceed_to_pay}));
 app.route("/eat/referral/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_user_referral}));
 app.route("/eat/login").post(routesVersioning({"1.0.0":eatuser.eatuser_login}));
+app.route("/eat/logout").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eatuser_logout}));
 app.route("/eat/otpverification").post(routesVersioning({"1.0.0":eatuser.eatuser_otpverification}));
 app.route("/eat/edit").put(middleware.checkToken,routesVersioning({"1.0.0":eatuser.edit_eat_users}));
 app.route("/eat/feedback").get(middleware.checkToken,routesVersioning({"1.0.0":feedback.list_all_feedback})).post(routesVersioning({"1.0.0":feedback.create_a_feedback}));
