@@ -330,7 +330,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
   var Images=[];
   if (req.eatuserid) {
     var productquery =
-      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,mk.locality as localityname ,re.regionname,mk.costfortwo,mk.virutal_rating_count as rating_count,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,mk.locality as localityname ,re.regionname,mk.costfortwo,mk.virutal_rating_count as rating_count,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +
@@ -395,7 +395,22 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
 
       if (res[0].makeituserid !== null && res[0].productlist !== null) {
 
+
+
         for (let i = 0; i < res.length; i++) {
+
+          if (res[i].member_type === 1) {
+            res[i].member_type_name = 'Gold';
+            res[i].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713720284-badges_makeit-01.png';
+          }else if (res[i].member_type === 2){
+            res[i].member_type_name = 'Silver';
+            res[i].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713745646-badges_makeit-02.png';
+          }else if (res[i].member_type === 3){
+            res[i].member_type_name = 'bronze';
+            res[i].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
+          }
+
+
           if (res[i].productlist) {
             res[i].productlist = JSON.parse(res[i].productlist);
 
@@ -785,7 +800,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
 
   if (req.eatuserid) {
     var query =
-      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +
@@ -1009,6 +1024,21 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
         res[i].eta = Math.round(eta) + " mins";
         if (res[i].cuisines) {
           res[i].cuisines = JSON.parse(res[i].cuisines);
+        }
+
+
+        if (res[i].member_type) {
+
+          if (res[i].member_type === 1) {
+            res[i].member_type_name = 'Gold';
+            res[i].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713720284-badges_makeit-01.png';
+          }else if (res[i].member_type === 2){
+            res[i].member_type_name = 'Silver';
+            res[i].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713745646-badges_makeit-02.png';
+          }else if (res[i].member_type === 3){
+            res[i].member_type_name = 'bronze';
+            res[i].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
+          }
         }
 
       }
@@ -2206,7 +2236,25 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
                                        }
                                        kitchendetaillist.push(kitchenlist[j]);
                                     
+                                       if (kitchenlist[j].member_type) {
+
+                                        if (kitchenlist[j].member_type === 1) {
+                                          kitchenlist[j].member_type_name = 'Gold';
+                                          kitchenlist[j].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713720284-badges_makeit-01.png';
+                                        }else if (kitchenlist[j].member_type === 2){
+                                          kitchenlist[j].member_type_name = 'Silver';
+                                          kitchenlist[j].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713745646-badges_makeit-02.png';
+                                        }else if (kitchenlist[j].member_type === 3){
+                                          kitchenlist[j].member_type_name = 'bronze';
+                                          kitchenlist[j].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
+                                        }
+                                      }
+
+
                                 }
+
+                               
+                          
 
                                 res2[i].kitchenlist=kitchendetaillist;
 
@@ -2253,7 +2301,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
   var radiuslimit=constant.radiuslimit;
 
 
-    var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+req.regionid+"  and  mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status = 2 and mk.verified_status = 1  and pt.quantity != 0 and pt.delete_status !=1  GROUP BY pt.productid  ORDER BY distance";
+    var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.member_type,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+req.regionid+"  and  mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status = 2 and mk.verified_status = 1  and pt.quantity != 0 and pt.delete_status !=1  GROUP BY pt.productid  ORDER BY distance";
 
       
        sql.query(nearbyregionquery, function (err, res) {
@@ -2266,6 +2314,19 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
 
              for (let i = 0; i < res.length; i++) {
  
+              if (res[i].member_type) {
+
+                if (res[i].member_type === 1) {
+                  res[i].member_type_name = 'Gold';
+                  res[i].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713720284-badges_makeit-01.png';
+                }else if (res[i].member_type === 2){
+                  res[i].member_type_name = 'Silver';
+                  res[i].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713745646-badges_makeit-02.png';
+                }else if (res[i].member_type === 3){
+                  res[i].member_type_name = 'bronze';
+                  res[i].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
+                }
+              }
                //  var eta = 15 + (3 * res[i].distance) ;
                  var eta = foodpreparationtime + onekm * res[i].distance;
                   //15min Food Preparation time , 3min 1 km 
@@ -2276,13 +2337,12 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
                      res[i].serviceablestatus = true;
                      }
 
-                  
-             
-
               if (res[i].cuisines) {
                   res[i].cuisines = JSON.parse(res[i].cuisines)
                  }
 
+           
+        
 
               }
 
