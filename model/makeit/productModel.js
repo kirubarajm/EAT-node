@@ -50,14 +50,18 @@ Product.getTotalPrice = async function createProduct(itemlist, result) {
       var original_price = totalamount + commision_price;
     }
   }
-  itemdetail.price = original_price;
-  itemdetail.original_price = totalamount;
+ 
+
+  itemdetail.price =  Math.round(original_price,0);
+  itemdetail.original_price = Math.round(totalamount,0);
   itemdetail.vegtype = vegtype;
   return itemdetail;
 };
 
 Product.createProduct = async function createProduct(newProduct,itemlist,result) {
   var Productdetail = await Product.getTotalPrice(itemlist);
+
+  
   newProduct.price = Productdetail.price;
   newProduct.original_price = Productdetail.original_price;
   newProduct.vegtype = Productdetail.vegtype;
