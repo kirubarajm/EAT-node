@@ -226,9 +226,9 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
           console.log("error: ", err);
           result(err, null);
         } else {
-          let sucobj = true;
+          
           let resobj = {
-            success: sucobj,
+            success: true,
             status:true,
             result: res
           };

@@ -113,7 +113,7 @@ Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,re
         console.log(currenthour);
         var  productquery = '';
         var  groupbyquery = " GROUP BY pt.makeit_userid";
-        var orderbyquery = " GROUP BY pt.productid  ORDER BY distance,mk.rating desc";
+        var orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
         if (currenthour < 12) {
 
         var  productquery = productquery + " and pt.breakfast = 1 ";
@@ -140,7 +140,8 @@ Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,re
               result(err, null);
             } else {
               for (let i = 0; i < res1.length; i++) {
-                if (req.cid === 1 || req.cid === 5) {
+
+                if (req.cid === 1 || req.cid === 2) {
                   res1[i].productlist =JSON.parse(res1[i].productlist)
                 }
                 
