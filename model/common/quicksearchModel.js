@@ -159,7 +159,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
         const productquery = await query(proquery);
     
       //  const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  brandname as name,userid as id, 2 from MakeitUser where (brandname IS NOT NULL and brandname != '') and appointment_status = 3 and verified_status = 1");
-        const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  mk.brandname as name,mk.userid as id, 2 from MakeitUser mk join Product pt on pt.makeit_userid=mk.userid where (mk.brandname IS NOT NULL and brandname != '') and mk.appointment_status = 3 and mk.verified_status = 1 and (pt.active_status = 1 and pt.quantity != 0  and pt.delete_status !=1 "+cyclequery+") group by mk.userid");
+        const kitchenquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT  mk.brandname as name,mk.userid as id, 2 from MakeitUser mk join Product pt on pt.makeit_userid=mk.userid where (mk.brandname IS NOT NULL and brandname != '') and mk.appointment_status = 3 and mk.verified_status = 1 and mk.ka_status = 2 and (pt.active_status = 1 and pt.quantity != 0  and pt.delete_status !=1 "+cyclequery+") group by mk.userid");
    
  
         const regionquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct regionname as name,regionid as id, 3 from Region where regionname IS NOT NULL group by regionname");
