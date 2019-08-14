@@ -154,7 +154,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
         //  console.log("dinner");
         }
 
-       var proquery = "INSERT INTO QuickSearch (name,id, type) SELECT distinct pt.product_name as name,pt.productid as id, 1 from Product pt join MakeitUser mk on mk.userid = pt.makeit_userid where (pt.product_name IS NOT NULL and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 "+cyclequery+")and(mk.appointment_status = 3 and mk.verified_status = 1)  group by pt.product_name"
+       var proquery = "INSERT INTO QuickSearch (name,id, type) SELECT distinct pt.product_name as name,pt.productid as id, 1 from Product pt join MakeitUser mk on mk.userid = pt.makeit_userid where (pt.product_name IS NOT NULL and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 "+cyclequery+")and(mk.appointment_status = 3 and mk.verified_status = 1 and ka_status = 2)  group by pt.product_name"
         
         const productquery = await query(proquery);
     

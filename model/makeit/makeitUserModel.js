@@ -1020,7 +1020,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   
         var eta = 15 + 3 * makeitavailability[0].distance;
           //15min Food Preparation time , 3min 1 km
-          if (makeitavailability[0].distance > constant.radiuslimit && eta > constant.eat_delivery_min) {
+          if (makeitavailability[0].distance > constant.radiuslimit) {
           
               isAvaliablekitchen = false;
               makeit_error_message = makeitavailability[0].brandname;
