@@ -3,6 +3,8 @@
 var sql = require("../db.js");
 const util = require('util');
 const query = util.promisify(sql.query).bind(sql);
+var moment = require("moment");
+var constant = require('../constant.js');
 
 var Collection = function(collection) {
   this.name = collection.name;
@@ -95,11 +97,44 @@ Collection.getAllCollection_by_user = function getAllCollection_by_user(userid,r
 };
 
 Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,result) {
+  
+  var foodpreparationtime = constant.foodpreparationtime;
+  var onekm = constant.onekm;
+  var radiuslimit=constant.radiuslimit;
+
     sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", function(err, res) {
       if (err) {
         result(err, null);
       } else {
-          var productlist = res[0].query;
+
+        var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+        var currenthour  = moment(day).format("HH");
+
+        console.log(currenthour);
+        var  productquery = '';
+        var  groupbyquery = " GROUP BY pt.makeit_userid";
+        var orderbyquery = " GROUP BY pt.productid  ORDER BY distance,mk.rating desc";
+        if (currenthour < 12) {
+
+        var  productquery = productquery + " and pt.breakfast = 1 ";
+        
+        }else if(currenthour >= 12 && currenthour <= 16){
+
+            productquery = productquery + " and pt.lunch = 1";
+
+        }else if( currenthour >= 16){
+
+            productquery = productquery + " and pt.dinner = 1";
+        }
+
+        
+        if (req.cid === 1 || req.cid ===2) {
+          var productlist = res[0].query + productquery  + groupbyquery;
+        }else if(req.cid === 3 ) {
+          var productlist = res[0].query + productquery  + orderbyquery;
+        }
+          
+          console.log( productlist);
           sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
             if (err) {
               result(err, null);
@@ -108,7 +143,20 @@ Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,re
                 if (req.cid === 1 || req.cid === 5) {
                   res1[i].productlist =JSON.parse(res1[i].productlist)
                 }
+                
                 res1[i].distance = res1[i].distance.toFixed(2);
+                //15min Food Preparation time , 3min 1 km
+              //  eta = 15 + 3 * res[i].distance;
+                var eta = foodpreparationtime + onekm * res1[i].distance;
+                
+                res1[i].serviceablestatus = false;
+    
+                
+            if (res1[i].eta <= 60 || res1[i].distance <= radiuslimit) {
+              res1[i].serviceablestatus = true;
+            } 
+               
+            res1[i].eta = Math.round(eta) + " mins";
                 if (res1[i].cuisines) {
                   res1[i].cuisines = JSON.parse(res1[i].cuisines);
                 }

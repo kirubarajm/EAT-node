@@ -418,7 +418,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
             //15min Food Preparation time , 3min 1 km
           //  eta = 15 + 3 * res[i].distance;
             var eta = foodpreparationtime + onekm * res[i].distance;
-            res[i].productlist
+            
             res[i].serviceablestatus = false;
 
             
