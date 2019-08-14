@@ -1650,31 +1650,29 @@ Eatuser.edit_eat_users = function(req, result) {
   var staticquery = "UPDATE User SET updated_at = ?, ";
   var column = "";
   req.referalcode = "EATWELL" + req.userid;
+  var column = '';
+  var values =[];
+  values.push(new Date());
   for (const [key, value] of Object.entries(req)) {
-    console.log(`${key} ${value}`);
-
     if (key !== "userid") {
-      // var value = `=${value}`;
-      column = column + key + "='" + value + "',";
+      column = column + key +" = ?,";
+      values.push(value);
     }
   }
-
-  var query =
-    staticquery + column.slice(0, -1) + " where userid = " + req.userid;
-  console.log(query);
-  sql.query(query, [new Date()], function(err, res) {
+  column=column.slice(0, -1)
+  values.push(req.userid);
+  var query = staticquery + column  + " where userid = ?";
+  //console.log("query--->",query)
+  //console.log("value--->",values)
+  sql.query(query, values, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = true;
-      let message = "Updated successfully";
       let resobj = {
-        success: sucobj,
+        success: true,
         status: true,
-        message: message
+        message: "Updated successfully"
       };
-
       result(null, resobj);
     }
   });
