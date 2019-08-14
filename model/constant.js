@@ -4,7 +4,7 @@
 const calculate = {
     gst     : 18,// percentage
     deliverycharge : 10,// cost
-    applink :'https://bit.ly/2TgpVol',
+    applink :'http://bit.ly/2OVOJ6M',
     refferalcontent : 'Welcome to EAT. Click the link to download the EAT app from play store and get Discount.',
     radiuslimit : 6,
     foodpreparationtime:15,//min

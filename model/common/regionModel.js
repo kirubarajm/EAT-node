@@ -83,7 +83,8 @@ Region.getRegionByType = function getRegionByType(id, result) {
 };
 
 Region.getAllregion = function getAllregion(result) {
-  sql.query("Select regionid,regionname from Region", function(err, res) {
+  var regionquery = "Select regionid,regionname from Region where regionid = 16 or regionid= 3 or regionid = 19";
+  sql.query(regionquery, function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(null, err);
