@@ -1115,7 +1115,7 @@ Order.orderviewbyadmin = function(req, result) {
 
 Order.orderviewbyeatuser = function(req, result) {
 
-  var query =  "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  where ors.orderid =" +
+  var query =  "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  where ors.orderid =" +
   req.orderid +
   " "
   sql.query(query,function(err, res1) {
@@ -1721,46 +1721,83 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
   }
 };
 Order.admin_order_cancel = async function admin_order_cancel(req, result) {
-  const orderdetails = await query(
-    "select * from Orders where orderid ='" + req.orderid + "'"
-  );
-  if (orderdetails[0].orderstatus === 7) {
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
+
+  if (orderdetails[0].orderstatus === 7 ) {
     let response = {
       success: true,
       status: false,
       message: "Sorry! order already canceled."
     };
     result(null, response);
+  }else if(orderdetails[0].orderstatus === 5){
+      let response = {
+        success: true,
+        status: false,
+        message: "Sorry! This order has been pickeped."
+      };
+      result(null, response);
+
   } else {
-    sql.query(
-      "UPDATE Orders SET orderstatus = 7,cancel_by = 2 WHERE orderid ='" +
-        req.orderid +
-        "'",
-      async function(err, res) {
+    sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 2 WHERE orderid ='" +req.orderid +"'",
+    async function(err, res) {
         if (err) {
           result(err, null);
         } else {
           var refundDetail = {
             orderid: req.orderid,
-            original_amt: orderdetails[0].price,
+            original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
             active_status: 1,
             userid: orderdetails[0].userid,
             payment_id: orderdetails[0].transactionid
           };
-          if (
-            orderdetails[0].payment_type === "1" &&
-            orderdetails[0].payment_status === 1
-          )
-          await Order.create_refund(refundDetail);
+          var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+          for (let i = 0; i < orderitemdetails.length; i++) {
+            var productquantityadd =
+              "update Product set quantity = quantity+" +
+              orderitemdetails[i].quantity +
+              " where productid =" +
+              orderitemdetails[i].productid +
+              "";
+            sql.query(productquantityadd, function(err, res2) {
+              if (err) {
+                result(err, null);
+              }
+            });
+          }
+
+          if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+
+            if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
+              await Order.create_refund(refundDetail);
+              
+          }else if (orderdetails[0].payment_type === "0") {
+            var rc = new RefundCoupon(req);
+            RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+              if (err) {
+                result(err, null);
+              } 
+            });
+          }
+          }
+
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
             PushConstant.Pageid_eat_order_cancel
           );
+          
+          if(orderdetails[0]&&orderdetails[0].moveit_user_id){
+            await Notification.orderMoveItPushNotification(
+              req.orderid,
+              PushConstant.pageidMoveit_Order_Cancel,
+              null
+            );
+          }
           let response = {
             success: true,
             status: true,
-            message: "order canceled successfully."
+            message: "Order canceled successfully."
           };
           result(null, response);
         }
@@ -1768,6 +1805,7 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
     );
   }
 };
+
 Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req,result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
   if (orderdetails) {
