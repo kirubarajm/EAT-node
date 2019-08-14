@@ -20,10 +20,16 @@ this.product_name = menuitem.product_name;
     this.vegtype=menuitem.vegtype;
 */
 
-MakeitBadges.createMakeitBadges = async function createMakeitBadges(newmakeitbadges, result) {
+MakeitBadges.createMakeitBadges = async function createMakeitBadges(badges, result) {
 
-
-        sql.query("INSERT INTO Makeit_badges_mapping set ?", newmakeitbadges, function (err, res) {
+            var new_badges ={} ;
+       for (let i = 0; i < badges.length; i++) {
+        var new_badges = new MakeitBadges(badges[i]);
+        new_badges.makeit_id = req.makeit_userid;
+       
+      }
+      console.log(new_badges);
+        sql.query("INSERT INTO Makeit_badges_mapping set ?", new_badges, function (err, res) {
                 
                 if(err) {
                     console.log("error: ", err);
@@ -32,7 +38,7 @@ MakeitBadges.createMakeitBadges = async function createMakeitBadges(newmakeitbad
                 else{
                     console.log(res.insertId);
                     
-                    let megobj = "Makeit badges Created Successful";
+                    let megobj = "Makeit badges Created Successfully";
                     let resobj = {  
                     success: true,
                     status:true,

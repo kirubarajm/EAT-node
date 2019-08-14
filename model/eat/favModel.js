@@ -175,7 +175,7 @@ Fav.read_a_dishlist_byeatuserid = function read_a_dishlist_byeatuserid(userId,re
                 
             }else{
 
-    var query = "Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid,re.regionname, pt.product_name,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid=pt.cuisine  left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid=pt.productid left join Region re on re.regionid = mu.regionid where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = '"+userId+"'  group by productid";
+    var query = "Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid,re.regionname, pt.product_name,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid=pt.cuisine  left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid=pt.productid left join Region re on re.regionid = mu.regionid where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = '"+userId+"'  group by productid";
    
   //  console.log(query);
 

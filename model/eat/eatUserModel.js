@@ -435,7 +435,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
         const kitchenmenuimage = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 4 limit 4");
         const kitchensignature = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 1 limit 1");
         
-        const foodbadge  = await query("select mbm.id,mb.url as badges from Makeit_badges_mapping mbm join  Makeit_badges mb on mbm.id = mb.id where mbm.makeit_id="+req.makeit_userid+"");
+        const foodbadge  = await query("select mbm.Makeit_id,mbm.badge_id,mb.name,mb.url from Makeit_badges_mapping mbm join  Makeit_badges mb on mbm.badge_id = mb.id where mbm.makeit_id ="+req.makeit_userid+"");
        // var special = await query("select * from Makeit_images ");
         res[0].specialitems=specialitems;
         res[0].kitcheninfoimage=kitcheninfoimage;
@@ -444,7 +444,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
         if (kitchensignature.length !== 0) {
           res[0].kitchensignature=kitchensignature[0].img_url ;
         }
-       
+        console.log(foodbadge);
         res[0].foodbadge=foodbadge
 
    // let sucobj = true;

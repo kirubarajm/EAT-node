@@ -8,6 +8,7 @@ var menuitem = require("../controllers/makeit/MenuItemController");
 var product = require("../controllers/makeit/ProductController");
 var orders = require("../controllers/common/OrderController");
 let middleware = require('../model/middleware.js');
+var makeitbadges = require("../controllers/makeit/MakeitBadgesController");
 // Makeit
 app.route("/makeit/orders").get(routesVersioning({"1.0.0":makeituser.all_order_list}));
 app.route("/makeit/orders/listbydate").post(routesVersioning({"1.0.0":makeituser.all_order_list_bydate}));
@@ -54,4 +55,6 @@ app.route("/makeit/bookappointment").put(routesVersioning({"1.0.0":makeituser.cr
 app.route("/makeit/appointments").get(routesVersioning({"1.0.0":makeituser.list_all_appointment}));
 app.route("/makeit/menuitem").get(routesVersioning({"1.0.0":menuitem.list_all_menuitem})).post(routesVersioning({"1.0.0":menuitem.create_a_menuitem}));
 app.route("/makeit/product").get(routesVersioning({"1.0.0":product.list_all_product})).post(routesVersioning({"1.0.0":product.create_a_product}));
+
+app.route("/makeit/badgescreate").post(routesVersioning({"1.0.0":makeitbadges.createMakeitBadges}));
 }
