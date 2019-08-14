@@ -2170,13 +2170,13 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
   const userinfo = await query("select regionid from User where userid= "+req.eatuserid+"");
 
     console.log(userinfo.length);
-  if (userinfo[0].regionid ) {
+  if (userinfo.length !== 0 ) {
     
-  // if (userinfo[0].regionid < 1 || userinfo[0].regionid === undefined) {
+  // if (userinfo[0].regionid < 1 || req.regionid === undefined) {
   //     var getregionquery = "select lat,lon,regionid from Region where regionid = (select regionid from User where userid= "+req.eatuserid+")";
   //   }else{
-      var getregionquery = "select lat,lon,regionid from Region where regionid = "+userinfo[0].regionid+"";
-   // }
+      var getregionquery = "select lat,lon,regionid from Region where regionid = 0 ";
+ //   }
     //var getregionquery = "select lat,lon,regionid from  Region where regionid = (select regionid from User where userid= '"+req.eatuserid+"')";
 
     sql.query(getregionquery, function (err, res1) {
@@ -2185,9 +2185,14 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
             result(err, null);
         }
         else {
-               
+               if (res1.length !== 0) {
+                
                 var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid  group by re.regionid  order by distance ASC";
-
+               }else if(res1.length === 0){
+               
+                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid  group by re.regionid  order by distance ASC";
+               }
+                
                 sql.query(getregionlistquery, async function (err, res2) {
                     if (err) {
                         console.log("error: ", err);
@@ -2199,6 +2204,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
                       //  res2.forEach(function(v){ delete v.distance});
                         let limit = 3;
                         for (let i = 0; i < res2.length; i++) {
+
                      
                        var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,mk.member_type,mk.about,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and mk.ka_status = 2 and pt.approved_status=2 and  pt.quantity != 0 and pt.delete_status !=1 GROUP BY pt.productid  ORDER BY distance";
                       //  console.log(nearbyregionquery);
