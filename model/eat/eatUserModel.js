@@ -417,16 +417,20 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
             res[i].distance = res[i].distance.toFixed(2);
             //15min Food Preparation time , 3min 1 km
           //  eta = 15 + 3 * res[i].distance;
-            var eta = foodpreparationtime + onekm * res[i].distance;
-            
-            res[i].serviceablestatus = false;
-
-            
-        if (res[i].eta <= 60 || res[i].distance <= radiuslimit) {
-          res[i].serviceablestatus = true;
-        } 
+          var eta = foodpreparationtime + (onekm * res[i].distance);
+          //15min Food Preparation time , 3min 1 km
+  
+         
+          res[i].eta = Math.round(eta);
+  
+          res[i].serviceablestatus = false;
+  
+          if (res[i].eta <= 60 || res[i].distance <= radiuslimit) {
+            res[i].serviceablestatus = true;
+          }
+          res[i].eta = Math.round(eta) + " mins";
            
-            res[i].eta = Math.round(eta) + " mins";
+            
           }
         }
 
