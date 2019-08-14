@@ -153,7 +153,7 @@ Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,re
                 res1[i].serviceablestatus = false;
     
                 
-            if (res1[i].eta <= 60 || res1[i].distance <= radiuslimit) {
+            if (res1[i].distance <= radiuslimit) {
               res1[i].serviceablestatus = true;
             } 
                

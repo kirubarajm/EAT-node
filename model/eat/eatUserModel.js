@@ -425,7 +425,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
   
           res[i].serviceablestatus = false;
   
-          if (res[i].eta <= 60 || res[i].distance <= radiuslimit) {
+          if (res[i].distance <= radiuslimit) {
             res[i].serviceablestatus = true;
           }
           res[i].eta = Math.round(eta) + " mins";
@@ -1022,7 +1022,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
 
         res[i].serviceablestatus = false;
 
-        if (res[i].eta <= 60 || res[i].distance <= radiuslimit) {
+        if (res[i].distance <= radiuslimit) {
           res[i].serviceablestatus = true;
         }
         res[i].eta = Math.round(eta) + " mins";
@@ -2259,7 +2259,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
 
                                     kitchenlist[j].serviceablestatus = false;
                             
-                                    if ( kitchenlist[j].eta <= 60 ||  kitchenlist[j].distance <= radiuslimit) {
+                                    if ( kitchenlist[j].distance <= radiuslimit) {
                                       kitchenlist[j].serviceablestatus = true;
                                     }
 
@@ -2380,7 +2380,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
                   res[i].eta =   Math.round(eta) +" mins" ;  
                   res[i].serviceablestatus = false;
                             
-                  if (res[i].eta <= 60 ||  res[i].distance <= radiuslimit) {
+                  if (res[i].distance <= radiuslimit) {
                      res[i].serviceablestatus = true;
                      }
 
