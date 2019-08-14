@@ -364,7 +364,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
   
    if (currenthour < 12) {
     productquery = productquery + " and pt.breakfast = 1";
-   }else if(currenthour >= 12 && currenthour <= 16){
+   }else if(currenthour >= 12 && currenthour < 16){
 
       productquery = productquery + " and pt.lunch = 1";
 
