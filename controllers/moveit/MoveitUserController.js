@@ -37,6 +37,20 @@ exports.create_a_user = function(req, res) {
   }
 };
 
+exports.Moveituser_logout = function(req, res) {
+  //var new_user = new Eatuser(req.body);
+  //handles null error
+  if (!req.body.userid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide userid" });
+  } else {
+    Moveituser.Moveituser_logout(req.body, function(err, user) {
+      if (err) res.send(err);
+      res.json(user);
+    });
+  }
+};
 exports.read_a_user = function(req, res) {
   Moveituser.getUserById(req.params.userid, function(err, user) {
     if (err) res.send(err);

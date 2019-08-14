@@ -6,7 +6,7 @@ module.exports = function(app) {
     var faq = require("../controllers/common/FaqController");
     var orders = require("../controllers/common/OrderController");
     var moveitdocument = require("../controllers/common/DocumentmoveitController");
-
+    let middleware = require('../model/middleware.js');
 // Moveit
 app.route("/moveit/faqs/:id").get(routesVersioning({"1.0.0":faq.list_all_faqbytype}));
 app.route("/moveit/onlinestatus").put(routesVersioning({"1.0.0":moveituser.moveit_live_status}));
@@ -30,5 +30,7 @@ app.route("/moveit/hub").post(routesVersioning({"1.0.0":moveituser.read_a_hub_de
 app.route("/moveit/setlocation").post(routesVersioning({"1.0.0":moveituser.setGeoLocation}));
 app.route("/moveit/getlocation").post(routesVersioning({"1.0.0":moveituser.getGeoLocation}));
 app.route("/moveitusers").get(routesVersioning({"1.0.0":moveituser.list_all_user})).post(routesVersioning({"1.0.0":moveituser.create_a_user}));
+
 app.route("/moveitusers/:userid").get(routesVersioning({"1.0.0":moveituser.read_a_user})).put(routesVersioning({"1.0.0":moveituser.update_a_user})).delete(routesVersioning({"1.0.0":moveituser.delete_a_user}));
+app.route("/moveit/logout").post(routesVersioning({"1.0.0":moveituser.Moveituser_logout}));
 }

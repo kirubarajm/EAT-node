@@ -4,6 +4,8 @@ var request = require("request");
 var Documentmoveit = require('../../model/common/documentsMoveitModel.js');
 var MoveitFireBase =require("../../push/Moveit_SendNotification")
 var Constant =require("../constant")
+const util = require("util");
+const query = util.promisify(sql.query).bind(sql);
 
 //Task object constructor
 var Moveituser = function (moveituser) {
@@ -597,6 +599,44 @@ Moveituser.update_pushid = function(req, result) {
         }
       }
     });
+  };
+
+  Moveituser.Moveituser_logout = async function Moveituser_logout(req, result) { 
+    sql.query("select * from MoveitUser where userid = "+req.userid+" ",async function(err,userdetails) {
+      if (err) {
+        console.log("error: ", err);
+        result(null, err);
+      } else {
+  
+        console.log(req);
+         
+        if (userdetails.length !==0) {
+          
+          updatequery = await query("Update MoveitUser set pushid_android = 'null' where userid = '"+req.userid+"'");
+  
+  
+          let resobj = {
+            success: true,
+             status: true,
+            // message:mesobj,
+            message: 'Logout Successfully!'  
+          };
+    
+          result(null, resobj);
+        }else{
+  
+          let resobj = {
+            success: true,
+             status: false,
+            // message:mesobj,
+            message: 'Please check userid'  
+          };
+    
+          result(null, resobj);
+        }     
+      }
+    });   
+   
   };
 
 module.exports = Moveituser;
