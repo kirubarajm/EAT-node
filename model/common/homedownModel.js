@@ -23,7 +23,7 @@ Hometown.createHometown = function createHometown(req, result) {
   });
 };
 
-Hometown.read_a_question_id = function read_a_question_id(req, result) {
+Hometown.read_a_region_id = function read_a_region_id(req, result) {
   var query = "Select * from Hometown";
   if (req.type && req.userid) {
     query = query + " and userid = '" + req.userid + "'";

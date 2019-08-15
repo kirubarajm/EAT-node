@@ -4,9 +4,7 @@ var Region = require("../../model/common/regionModel");
 
 exports.list_all_region = function(req, res) {
   Region.getAllregion(function(err, faq) {
-    console.log("controller");
     if (err) res.send(err);
-    console.log("res", faq);
     res.send(faq);
   });
 };
@@ -30,7 +28,7 @@ exports.create_a_Region = function(req, res) {
 };
 
 exports.read_a_question = function(req, res) {
-  Region.read_a_question_id(req.body, function(err, result) {
+  Region.read_a_region_id(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });

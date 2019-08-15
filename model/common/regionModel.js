@@ -36,7 +36,7 @@ Region.createRegion = function createRegion(req, result) {
   });
 };
 
-Region.read_a_question_id = function read_a_question_id(req, result) {
+Region.read_a_region_id = function read_a_region_id(req, result) {
   var query = "Select * from Region where type = '" + req.type + "'";
 
   if (req.type && req.userid) {
@@ -44,17 +44,12 @@ Region.read_a_question_id = function read_a_question_id(req, result) {
   }
   query = query + "order by qid desc";
 
-  console.log(query);
 
   sql.query(query, function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
-      for (let i = 0; i < res.length; i++) {
-        //res[i].count = count;
-      }
-
+     
       let sucobj = true;
       let resobj = {
         sucobj: sucobj,
@@ -84,12 +79,11 @@ Region.getRegionByType = function getRegionByType(id, result) {
 
 Region.getAllregion = function getAllregion(result) {
   var regionquery = "Select regionid,regionname from Region where regionid = 16 or regionid= 3 or regionid = 19";
+  //var regionquery = "Select * from Region";
   sql.query(regionquery, function(err, res) {
     if (err) {
-      console.log("error: ", err);
-      result(null, err);
+      result(err, null);
     } else {
-     
       let resobj = {
         success: true,
         status:true,
