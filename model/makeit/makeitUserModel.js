@@ -923,18 +923,27 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var ordercount = orderlist.length;
 
 
+  var breatfastcycle = constant.breatfastcycle;
+  var dinnercycle = constant.dinnercycle;
+  var lunchcycle = constant.lunchcycle;
+
   var day = moment().format("YYYY-MM-DD HH:mm:ss");;
   var currenthour  = moment(day).format("HH");
+  var productquery = "";
+ 
+  if (currenthour < lunchcycle) {
 
-  var productquery="breakfast";
-//  if (currenthour <= 12) {
-//    productquery = " breakfast";
-//  }else
-  if(currenthour >= 12 && currenthour < 16){
-   productquery =  "lunch";
-   }else if( currenthour >= 16){
-   productquery = "dinner";
- }
+    productquery = productquery + " and pt.breakfast = 1";
+  //  console.log("breakfast");
+  }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+
+    productquery = productquery + " and pt.lunch = 1";
+  //  console.log("lunch");
+  }else if( currenthour >= dinnercycle){
+    
+    productquery = productquery + " and pt.dinner = 1";
+  //  console.log("dinner");
+  }
 
 
   for (let i = 0; i < orderitems.length; i++) {

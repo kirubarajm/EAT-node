@@ -15,6 +15,9 @@ const calculate = {
     eatforceupdate : 1,
     eat_delivery_min:60,
     product_commission_percentage : 20,// percentage
+    breatfastcycle : 8,//8 -12
+    lunchcycle : 12,//12 - 4
+    dinnercycle : 4 //4 - 11
 }
 
 

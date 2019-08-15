@@ -121,7 +121,18 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
 
 Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
 
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+  var currenthour  = moment(day).format("HH");
+
+  var breatfastcycle = constant.breatfastcycle;
+  var dinnercycle = constant.dinnercycle;
+  var lunchcycle = constant.lunchcycle;
+
   const delivery_charge = constant.deliverycharge;
+
+  if (currenthour >= breatfastcycle  || currenthour <= dinnercycle) {
+    
+    
   const res = await query("select count(*) as count from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
   if (res[0].count === 0) {
     const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
@@ -190,18 +201,24 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
             });
       }
   } else {
-    let sucobj = true;
-    let status = false;
-    let mesobj =
-      "Already you have one order, So please try once delivered exiting order";
+   
     let resobj = {
-      success: sucobj,
-      status: status,
-      message: mesobj
+      success: true,
+      status: false,
+      message: "Already you have one order, So please try once delivered exiting order"
     };
     result(null, resobj);
   }
+}else{
+
   
+  let resobj = {
+    success: true,
+    status: false,
+    message: "Sorry Currently we are not receiving orders!"
+  };
+  result(null, resobj);
+}
 };
 
 Order.OrderOnline = async function OrderOnline(req, orderitems,result) {
@@ -1326,7 +1343,8 @@ Order.orderlistbyeatuser = async function(req, result) {
 
 Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(req,result) {
   const orderdetails = await query("select ors.*,mk.brandname from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.userid ='" +req.userid +"' and ors.orderstatus = 6  and ors.payment_status = 1 order by ors.orderid desc limit 1");
-  if (orderdetails.length !==0) {
+ 
+  if (orderdetails.length !== 0) {
 
     const orderratingdetails = await query("select * from Order_rating where orderid ='" +orderdetails[0].orderid +"'");
     orderdetails[0].rating = false;
@@ -1347,6 +1365,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
       if (err) {
         result(err, null);
       } else {
+        console.log(res.length);
         if (res.length === 0) {
           let resobj = {
             success: true,
@@ -1357,7 +1376,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
           result(null, resobj);
         } else {
           var liveorderquer=null;
-          if (res[0].payment_type === "0") liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
+          if (res[0].payment_type === "0" || res[0].payment_type === 0) liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
           else if (res[0].payment_type === "1" && res[0].payment_status === 1) liveorderquery ="Select ors.orderid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
           else {
             let resobj = {
