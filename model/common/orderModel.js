@@ -123,14 +123,16 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
 
   var day = moment().format("YYYY-MM-DD HH:mm:ss");;
   var currenthour  = moment(day).format("HH");
-
+ // var currenthour = 23
   var breatfastcycle = constant.breatfastcycle;
   var dinnercycle = constant.dinnercycle;
   var lunchcycle = constant.lunchcycle;
+  var dinnerend = constant.dinnerend;
 
   const delivery_charge = constant.deliverycharge;
-
-  if (currenthour >= breatfastcycle  || currenthour <= dinnercycle) {
+  console.log(currenthour);
+  console.log(dinnerend);
+  if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
     
     
   const res = await query("select count(*) as count from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
