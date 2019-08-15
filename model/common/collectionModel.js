@@ -107,25 +107,33 @@ Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,re
         result(err, null);
       } else {
 
-        var day = moment().format("YYYY-MM-DD HH:mm:ss");;
-        var currenthour  = moment(day).format("HH");
-
+      
         console.log(currenthour);
         var  productquery = '';
         var  groupbyquery = " GROUP BY pt.makeit_userid";
         var orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
-        if (currenthour < 12) {
+      
+        var breatfastcycle = constant.breatfastcycle;
+      var dinnercycle = constant.dinnercycle;
+      var lunchcycle = constant.lunchcycle;
 
-        var  productquery = productquery + " and pt.breakfast = 1 ";
+      var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+      var currenthour  = moment(day).format("HH");
+      var productquery = "";
+    
+      if (currenthour < lunchcycle) {
+
+        productquery = productquery + " and pt.breakfast = 1";
+      //  console.log("breakfast");
+      }else if(currenthour >= lunchcycle && currenthour <= dinnercycle){
+
+        productquery = productquery + " and pt.lunch = 1";
+      //  console.log("lunch");
+      }else if( currenthour >= dinnercycle){
         
-        }else if(currenthour >= 12 && currenthour <= 16){
-
-            productquery = productquery + " and pt.lunch = 1";
-
-        }else if( currenthour >= 16){
-
-            productquery = productquery + " and pt.dinner = 1";
-        }
+        productquery = productquery + " and pt.dinner = 1";
+      //  console.log("dinner");
+      }
 
         
         if (req.cid === 1 || req.cid ===2) {

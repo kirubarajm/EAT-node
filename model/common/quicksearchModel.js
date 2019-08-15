@@ -3,6 +3,7 @@ var sql = require("../db.js");
 const CronJob = require('cron').CronJob;
 const util = require('util');
 var moment = require("moment");
+var constant =require("../constant");
 
 const query = util.promisify(sql.query).bind(sql);
 var QuickSearch = function(QuickSearch){
@@ -109,7 +110,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
     //console.log('Before job instantiation');
       const job = new CronJob('0 */1 * * * *',async function(search, result) {
        // console.log("quick search");
-      try {
+   //   try {
         const quicksearchquery = await query("Select * from QuickSearch");
         if (quicksearchquery.err) {  
           let resobj = {
@@ -136,19 +137,23 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
         
         }
 
-        var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+        var breatfastcycle = constant.breatfastcycle;
+        var dinnercycle = constant.dinnercycle;
+        var lunchcycle = constant.lunchcycle;
+
+        var day = moment().format("YYYY-MM-DD HH:mm:ss");
         var currenthour  = moment(day).format("HH");
         var cyclequery = "";
        
-        if (currenthour < 12) {
+        if (currenthour < lunchcycle) {
 
           cyclequery = cyclequery + " and pt.breakfast = 1";
         //  console.log("breakfast");
-        }else if(currenthour >= 12 && currenthour <= 16){
+        }else if(currenthour >= lunchcycle && currenthour <= dinnercycle){
 
           cyclequery = cyclequery + " and pt.lunch = 1";
         //  console.log("lunch");
-        }else if( currenthour >= 16){
+        }else if( currenthour >= dinnercycle){
           
           cyclequery = cyclequery + " and pt.dinner = 1";
         //  console.log("dinner");
@@ -167,16 +172,16 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
       }
     
       
-      } catch (error) {
+      // } catch (error) {
         
-                let resobj = {
-                  success: true,
-                  status:false,
-                  result: error
-                };
+      //           let resobj = {
+      //             success: true,
+      //             status:false,
+      //             result: error
+      //           };
         
-                result(null, resobj);
-              }
+      //           result(null, resobj);
+      //         }
        });
    // console.log('After job instantiation');
     job.start();  
