@@ -931,25 +931,23 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var currenthour  = moment(day).format("HH");
   var productquery = "";
  
-  if (currenthour < lunchcycle) {
+  
 
-    productquery = productquery + " and pt.breakfast = 1";
-  //  console.log("breakfast");
-  }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
-
-    productquery = productquery + " and pt.lunch = 1";
-  //  console.log("lunch");
-  }else if( currenthour >= dinnercycle){
-    
-    productquery = productquery + " and pt.dinner = 1";
-  //  console.log("dinner");
-  }
-
+  var productquery="breakfast";
+  //  if (currenthour <= 12) {
+  //    productquery = " breakfast";
+  //  }else
+    if(currenthour >= lunchcycle && currenthour < dinnercycle){
+     productquery =  "lunch";
+     }else if( currenthour >= dinnercycle){
+     productquery = "dinner";
+   }
 
   for (let i = 0; i < orderitems.length; i++) {
 
     const res1 = await query("Select pt.*,cu.cuisinename From Product pt left join Cuisine cu on cu.cuisineid = pt.cuisine where pt.productid = '" +orderitems[i].productid +"'  ");
   
+      console.log(res1);
     if (res1[0].quantity < orderitems[i].quantity) {
       console.log("quantity");
       res1[0].availablity = false;
@@ -971,7 +969,8 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
       tempmessage = tempmessage + res1[0].product_name + ",";
       isAvaliableItem = false;
     }else if (res1[0][productquery] !== 1) {
-      console.log("cycle_status");
+      console.log(res1[0][productquery]);
+      console.log("cycle_status" + productquery);
       res1[0].availablity = false;
       tempmessage = tempmessage + res1[0].product_name + ",";
       isAvaliableItem = false;
