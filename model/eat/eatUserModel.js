@@ -394,10 +394,10 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
         // if(res[0].img3) Images.push(res[0].img3);
         // if(res[0].img4) Images.push(res[0].img4);
         // if(Images.length!==0) res[0].images=Images;
+        //this code commaded due to flow changes
+        //   if (res[0].makeituserid !== null && res[0].productlist !== null) {
 
-      if (res[0].makeituserid !== null && res[0].productlist !== null) {
-
-
+    if (res[0].makeituserid !== null) {
 
         for (let i = 0; i < res.length; i++) {
 
@@ -450,7 +450,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
         if (kitchensignature.length !== 0) {
           res[0].kitchensignature=kitchensignature[0].img_url ;
         }
-        console.log(foodbadge);
+       // console.log(foodbadge);
         res[0].foodbadge=foodbadge
 
    // let sucobj = true;
@@ -463,7 +463,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
         result(null, resobj);
       } else {
        
-        let message = "There is no product available!";
+        let message = "kitchen is not available!";
         let resobj = {
           success: true,
           status:false,
