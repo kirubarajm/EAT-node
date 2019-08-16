@@ -411,3 +411,12 @@ exports.order_waiting_list_by_admin = function(req, res) {
     res.send(waitinglist);
   });
 };
+
+
+exports.moveit_delivery_cash_received_by_today = function(req, res) {
+  console.log(req.body);
+  Order.moveit_delivery_cash_received_by_today_by_userid(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

@@ -1923,4 +1923,29 @@ Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
   });
 };
 
+Order.moveit_delivery_cash_received_by_today_by_userid = async function moveit_delivery_cash_received_by_today_by_userid(req,result) {
+
+    var moveitquery = "select sum(price) as todaycash from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1 and payment_type = 0  and lock_status = 0 and  moveit_user_id = '"+req.userid+"' ";
+  
+  
+
+  sql.query(moveitquery,function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+
+        if (res[0].todaycash === null) {
+          res[0].todaycash = 0;
+        }
+        let resobj = {
+          success: true,
+          status:true,
+          result: res
+        };
+        result(null, resobj);
+      }
+    }
+  );
+};
+
 module.exports = Order;
