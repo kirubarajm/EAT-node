@@ -492,9 +492,23 @@ Order.getOrderById = function getOrderById(orderid, result) {
 };
 
 Order.updateOrderStatus = function updateOrderStatus(req, result) {
+  var query = "Update Orders set orderstatus = ? where orderid = ?"
+  var values=[req.orderstatus, req.orderid];
+  if (req.orderstatus === PushConstant.masteridOrder_Accept){
+      var orderaccepttime = moment()
+      .add(0, "seconds")
+      .add(15, "minutes")
+      .format("YYYY-MM-DD HH:mm:ss");
+  values=[req.orderstatus, orderaccepttime,req.orderid];
+  query = "Update Orders set orderstatus = ?,makeit_expected_preparing_time= ? where orderid = ? "
+  }else if (req.orderstatus === PushConstant.masteridOrder_Prepared){
+    var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
+    values=[req.orderstatus, transaction_time, req.orderid];
+    query = "Update Orders set orderstatus = ?,makeit_actual_preparing_time= ? where orderid = ? "
+  }
   sql.query(
-    "Update Orders set orderstatus = ? where orderid = ? ",
-    [req.orderstatus, req.orderid],
+    query,
+    values,
     async function(err, res) {
       if (err) {
         result(err, null);

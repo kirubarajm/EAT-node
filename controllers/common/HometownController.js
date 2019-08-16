@@ -29,8 +29,8 @@ exports.create_a_Region = function(req, res) {
   });
 };
 
-exports.read_a_question = function(req, res) {
-    Hometown.read_a_question_id(req.body, function(err, result) {
+exports.read_a_region = function(req, res) {
+    Hometown.read_a_region_id(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });
