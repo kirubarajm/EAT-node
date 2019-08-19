@@ -1409,7 +1409,8 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
     if (diffDays || diffHrs || diffMins > 30) orderdetails[0].showrating = true;
 
   }
-  sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and (payment_status !=2 or payment_status !=3) order by orderid desc limit 1",function(err, res) {
+  // or payment_status !=3)
+  sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",function(err, res) {
       if (err) {
         result(err, null);
       } else {

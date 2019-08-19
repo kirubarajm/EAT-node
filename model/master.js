@@ -246,6 +246,10 @@ const master = [
             {
                 "paymentstatusid": 1,
                 "paymentstatus": "paid"
+            },
+            {
+                "paymentstatusid": 2,
+                "paymentstatus": "cancelled"
             }
 
         ]
