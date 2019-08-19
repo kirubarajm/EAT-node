@@ -49,3 +49,10 @@ exports.get_all_collection_by_cid= function(req, res) {
 };
 
 
+
+exports.read_all_collection_by_userid = function(req, res) {
+  Collection.getAllCollection_by_user(req.params, function(err, result) {
+  if (err) res.send(err);
+  res.json(result);
+});
+}

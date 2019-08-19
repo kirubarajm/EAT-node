@@ -1,7 +1,8 @@
 "user strict";
 var sql = require("../db.js");
 var request = require("request");
-
+let jwt = require('jsonwebtoken');
+let config = require('../config.js');
 //Task object constructor
 var Salesuser = function(salesuser) {
   this.name = salesuser.name;
@@ -265,17 +266,31 @@ Salesuser.checkLogin = function checkLogin(req, result) {
         };
         result(resobj, null);
       } else {
-        let status = res.length == 1 ? true : false;
-        let message = status
-          ? "Successfully login"
-          : "Sorry! your not valid login";
+        if (res.length !== 0) {
+              
+          let token = jwt.sign({username: req.phoneno},
+            config.secret
+            // ,
+            // { //expiresIn: '24h' // expires in 24 hours
+            // }
+           );
+
+           let resobj = {
+            success: true,
+            status : true,
+            token :token,
+            result: res
+           };
+        result(null, resobj);
+      }else{
         let resobj = {
           success: true,
-          status: status,
-          message: message,
-          result: res
-        };
-        result(null, resobj);
+          status : false,
+          message : "Please check your username and password",
+          
+         };
+      result(null, resobj);
+        }
       }
     }
   );

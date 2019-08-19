@@ -82,10 +82,20 @@ Collection.remove = function(cid, result) {
 };
 
 Collection.getAllCollection_by_user = function getAllCollection_by_user(userid,result) {
-    sql.query("Select * from Collection where active_status=?",[userid], function(err, res) {
+
+    sql.query("Select * from Collection where active_status=1", function(err, res) {
       if (err) {
         result(err, null);
       } else {
+
+
+
+
+
+
+
+
+
         let resobj = {
           success: true,
           status:true,
@@ -107,25 +117,27 @@ Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,re
         result(err, null);
       } else {
 
-      
-        console.log(currenthour);
+      if (res.length !== 0) {
+        
+        
         var  productquery = '';
         var  groupbyquery = " GROUP BY pt.makeit_userid";
-        var orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
+        var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
       
-        var breatfastcycle = constant.breatfastcycle;
+      var breatfastcycle = constant.breatfastcycle;
       var dinnercycle = constant.dinnercycle;
       var lunchcycle = constant.lunchcycle;
 
       var day = moment().format("YYYY-MM-DD HH:mm:ss");;
       var currenthour  = moment(day).format("HH");
       var productquery = "";
-    
+      console.log(currenthour);
+
       if (currenthour < lunchcycle) {
 
         productquery = productquery + " and pt.breakfast = 1";
       //  console.log("breakfast");
-      }else if(currenthour >= lunchcycle && currenthour <= dinnercycle){
+      }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
 
         productquery = productquery + " and pt.lunch = 1";
       //  console.log("lunch");
@@ -134,9 +146,10 @@ Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,re
         productquery = productquery + " and pt.dinner = 1";
       //  console.log("dinner");
       }
+      
 
-        
-        if (req.cid === 1 || req.cid ===2) {
+      //based on logic this conditions will change
+        if (req.cid === 1 || req.cid === 2) {
           var productlist = res[0].query + productquery  + groupbyquery;
         }else if(req.cid === 3 ) {
           var productlist = res[0].query + productquery  + orderbyquery;
@@ -147,6 +160,7 @@ Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,re
             if (err) {
               result(err, null);
             } else {
+
               for (let i = 0; i < res1.length; i++) {
 
                 if (req.cid === 1 || req.cid === 2) {
@@ -161,16 +175,17 @@ Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,re
                 res1[i].serviceablestatus = false;
     
                 
-            if (res1[i].distance <= radiuslimit) {
-              res1[i].serviceablestatus = true;
-            } 
+                if (res1[i].distance <= radiuslimit) {
+                  res1[i].serviceablestatus = true;
+                } 
                
-            res1[i].eta = Math.round(eta) + " mins";
-                if (res1[i].cuisines) {
-                  res1[i].cuisines = JSON.parse(res1[i].cuisines);
-                }
+                res1[i].eta = Math.round(eta) + " mins";
+                    if (res1[i].cuisines) {
+                      res1[i].cuisines = JSON.parse(res1[i].cuisines);
+                    }
               
-            }
+              }
+
               let resobj = {
                 success: true,
                 status:true,
@@ -181,7 +196,17 @@ Collection.get_all_collection_by_cid = function get_all_collection_by_cid(req,re
             }
 
           });
-      
+        }else{
+
+          let resobj = {
+            success: true,
+            status: false,
+            result: res
+          };
+          result(null, resobj);
+
+
+        }
       }
     });
 };

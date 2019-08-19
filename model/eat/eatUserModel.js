@@ -2176,12 +2176,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
     console.log(userinfo.length);
   if (userinfo.length !== 0 ) {
     
-  // if (userinfo[0].regionid < 1 || req.regionid === undefined) {
-  //     var getregionquery = "select lat,lon,regionid from Region where regionid = (select regionid from User where userid= "+req.eatuserid+")";
-  //   }else{
       var getregionquery = "select lat,lon,regionid from Region where regionid = '"+userinfo[0].regionid+"' ";
- //   }
-    //var getregionquery = "select lat,lon,regionid from  Region where regionid = (select regionid from User where userid= '"+req.eatuserid+"')";
 
     sql.query(getregionquery, function (err, res1) {
         if (err) {
@@ -2249,17 +2244,15 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
                           res2[i].kitchencount = kitchenlist.length;
                          // console.log('kloop'+kitchencount);
                             
-                            if (kitchenlist.length  !==0) {
+                            if (kitchenlist.length  !==0 ) {
 
                                 for (let j = 0; j < kitchencount; j++) {
                                   //  console.log('loop'+kitchencount);
                                   //  var eta = 15 + (3 * kitchenlist[j].distance) ;\
-                                  console.log(kitchenlist[j].distance);
+                                  
                                   var eta = foodpreparationtime + (onekm  *  kitchenlist[j].distance);
                                     //15min Food Preparation time , 3min 1 km
                                     
-                                   // console.log(eta);
-
                                     kitchenlist[j].eta = Math.round(eta);
 
                                     kitchenlist[j].serviceablestatus = false;
@@ -2291,10 +2284,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
 
 
                                 }
-
-                               
-                          
-
+    
                                 res2[i].kitchenlist=kitchendetaillist;
 
                                 temparray.push(res2[i]);

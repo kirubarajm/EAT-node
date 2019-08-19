@@ -133,17 +133,16 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
   console.log(currenthour);
   console.log(dinnerend);
   if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
-    
-    
-  const res = await query("select count(*) as count from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
-  if (res[0].count === 0) {
+     
+  const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
+  if (res[0].length === 0) {
     const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
     //console.log("address_data-->",address_data);
     if(address_data.length === 0) {
       let resobj = {
                 success: true,
                 status: false,
-                message: "Sorry your slected address wrong.Please select correct address."
+                message: "Sorry your selected address wrong.Please select correct address."
               };
               result(null, resobj);
       }else{
@@ -202,12 +201,23 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
               }
             });
       }
-  } else {
+  }else if(res[0].payment_type === 1 && res[0].lock_status === 1){ 
+  let resobj = {
+    success: true,
+    status: false,
+    message: "Please complete your payment for yor order",
+    result : res
+  };
+  result(null, resobj);
+}
+  
+  else {
    
     let resobj = {
       success: true,
       status: false,
       message: "Already you have one order, So please try once delivered exiting order"
+    
     };
     result(null, resobj);
   }
@@ -1095,7 +1105,8 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
   if (rows.length=== 0) {
     var res = {
       result: "Order not found!",
-      status: false
+      status: false,
+      success: true,
     };
     result(null, res);
     return;
@@ -1148,6 +1159,9 @@ Order.orderviewbyadmin = function(req, result) {
 
 Order.orderviewbyeatuser = function(req, result) {
 
+  var foodpreparationtime = constant.foodpreparationtime;
+  var onekm = constant.onekm;
+  var radiuslimit=constant.radiuslimit;
   var query =  "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  where ors.orderid =" +
   req.orderid +
   " "
@@ -1166,9 +1180,14 @@ Order.orderviewbyeatuser = function(req, result) {
         } else {
 
 
-                eta = 15 + 3 * res1[0].distance;
+                eta = foodpreparationtime + (onekm * res1[0].distance);
                 //15min Food Preparation time , 3min 1 km
                 res1[0].eta = Math.round(eta) + " mins";
+
+                res1[0].payment_type_name ='Cash on delivery'; 
+                if (res1[0].payment_type === 1) {
+                  res1[0].payment_type_name ='Online'; 
+                }
 
                 if (res1[0].userdetail) {
                   res1[0].userdetail = JSON.parse(res1[0].userdetail);
@@ -1295,6 +1314,8 @@ Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
 
 Order.orderlistbyeatuser = async function(req, result) {
 
+
+
   var query = "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" +
             req.userid +
             "' and (ors.orderstatus = 6 or orderstatus = 7) group by ors.orderid order by ors.orderid desc";
@@ -1315,6 +1336,12 @@ Order.orderlistbyeatuser = async function(req, result) {
             //history_list.push(res1);
            // history_list = Array.prototype.concat.apply([], history_list);
            for (let i = 0; i < history_list.length; i++) {
+
+            history_list[i].payment_type_name ='Cash on delivery'; 
+              if (history_list[i].payment_type === 1) {
+                history_list[i].payment_type_name ='Online'; 
+              }
+
              if (history_list[i].userdetail) {
                history_list[i].userdetail = JSON.parse(history_list[i].userdetail);
              }
@@ -1358,6 +1385,11 @@ Order.orderlistbyeatuser = async function(req, result) {
 };
 
 Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(req,result) {
+
+  var foodpreparationtime = constant.foodpreparationtime;
+  var onekm = constant.onekm;
+  var radiuslimit=constant.radiuslimit;
+
   const orderdetails = await query("select ors.*,mk.brandname from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.userid ='" +req.userid +"' and ors.orderstatus = 6  and ors.payment_status = 1 order by ors.orderid desc limit 1");
  
   if (orderdetails.length !== 0) {
@@ -1381,7 +1413,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
       if (err) {
         result(err, null);
       } else {
-        console.log(res.length);
+     //   console.log(res.length);
         if (res.length === 0) {
           let resobj = {
             success: true,
@@ -1392,8 +1424,9 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
           result(null, resobj);
         } else {
           var liveorderquer=null;
-          if (res[0].payment_type === "0" || res[0].payment_type === 0) liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
-          else if (res[0].payment_type === "1" && res[0].payment_status === 1) liveorderquery ="Select ors.orderid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
+          console.log(res[0].payment_type);
+          if (res[0].payment_type === "0" || res[0].payment_type === 0) liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,ors.payment_type,ors. payment_status,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
+          else if (res[0].payment_type === "1" || res[0].payment_status === 1) liveorderquery ="Select ors.orderid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,ors.payment_type,ors.payment_status,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
           else {
             let resobj = {
               success: true,
@@ -1409,6 +1442,8 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
             if (err) {
               result(err, null);
             } else {
+
+            
               if (res1[0].orderstatus >= 3) {
                 // +20 min add with moveit order picked up time
                res1[0].deliverytime = res1[0].moveit_actual_delivered_time;
@@ -1423,7 +1458,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
               for (let i = 0; i < res1.length; i++) {
                 res1[i].distance = res1[i].distance.toFixed(2);
                 //15min Food Preparation time , 3min 1 km
-                eta = 15 + 3 * res1[i].distance;
+                eta = foodpreparationtime + (onekm * res1[i].distance);
                 res1[i].eta = Math.round(eta) + " mins";
                 if (res1[i].items) {
                   var items = JSON.parse(res1[i].items);
@@ -1494,14 +1529,14 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
 
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
             
-            if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
+            if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
               await Order.create_refund(refundDetail);
               await Notification.orderEatPushNotification(
               req.orderid,
               null,
               PushConstant.Pageid_eat_order_cancel
             );
-            }else if (orderdetails[0].payment_type === "0") {
+            }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
             var rc = new RefundCoupon(req);
             RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
               if (err) {
@@ -1608,10 +1643,10 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
 
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
-            if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
+            if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
               await Order.create_refund(refundDetail);
               
-          }else if (orderdetails[0].payment_type === "0") {
+          }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
             var rc = new RefundCoupon(req);
             RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
               if (err) {
@@ -1803,10 +1838,10 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
 
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
-            if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
+            if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
               await Order.create_refund(refundDetail);
               
-          }else if (orderdetails[0].payment_type === "0") {
+          }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_type === 0) {
             var rc = new RefundCoupon(req);
             RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
               if (err) {
@@ -1842,6 +1877,7 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
 };
 
 Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req,result) {
+
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
   if (orderdetails) {
     if (orderdetails[0].orderstatus === 6) {
@@ -1851,7 +1887,7 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
             result(err, null);
           } else {
             //console.log(orderdetails[0].payment_type);
-            if (orderdetails[0].payment_type === "0") {
+            if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_type === 0) {
               var rc = new RefundCoupon(req);
               console.log(rc);
               RefundCoupon.createRefundCoupon(rc, async function(err, res2) {

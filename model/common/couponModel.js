@@ -95,45 +95,28 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
       if (err) {
         result(err, null);
       } else {
+
+      
           if (res.length !== 0 ) {
+
+              var tempcount = 0;
+              for (let i = 0; i < res.length; i++) {
+
+                console.log(res[i].cid);
+               //   couponusedcount = await query("select * from CouponsUsed where userid = "+userid+" and cid = "+res[i].cid+" ");
+
+               //   console.log(couponusedcount.length);
+
+              }
+
+
             let resobj = {
               success: true,
               status:true,
               result: res
             };
             result(null, resobj);
-          //   for (let i = 0; i < res.length; i++) {
-          //     const element = array[index];
-               
-          //     var couponinfo = await query("select * from CouponsUsed where userid= '"+userid+"'");
-          //   // sql.query( , function(err, couponinfo) {
-          //   //   if (err) {
-          //   //     console.log("error: ", err);
-          //   //     result(null, err);
-          //   //   } else {
-
-          //     if (couponinfo.length <= 5) {
-          //       let resobj = {
-          //         success: true,
-          //         status:true,
-          //         result: res
-          //       };
-          //       result(null, resobj);
-          //     }else{
-
-          //       let resobj = {
-          //         success: true,
-          //         status:false,
-          //         message: "Sorry Already Coupons used at maximum number of times"
-          //       };
-          //       result(null, resobj);
-
-          //     }
-
-                     
-          //   //   }
-          //   // });
-          // }
+      
           }else{
 
             let resobj = {

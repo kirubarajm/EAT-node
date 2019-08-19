@@ -195,6 +195,10 @@ const master = [
             {
                 "OrderStatusid": 8,
                 "OrderStatus": "Order missed by kitchen"
+            },
+            {
+                "OrderStatusid": 9,
+                "OrderStatus": "Incomplete online order reject "
             }
         ]
     },
