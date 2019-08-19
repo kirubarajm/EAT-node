@@ -6,7 +6,7 @@ const calculate = {
     deliverycharge : 10,// cost
     applink :'http://bit.ly/2ZcGL95',
     refferalcontent : 'Welcome to EAT. Click the link to download the EAT app from play store and get Discount.',
-    radiuslimit : 6, //eat radius limit
+    radiuslimit : 6,
     foodpreparationtime:15,//min
     onekm:3,
     servicecharge:25,

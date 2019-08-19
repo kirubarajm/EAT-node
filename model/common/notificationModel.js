@@ -123,6 +123,7 @@ Notification.orderEatPushNotification = async function(
         title: "Your order has been cancelled due to unforeseen circumstances.",
         message: message,
         pageid: "" + pageid,
+        payment_type:orders.payment_type,
         app: "Eat",
         notification_type: "2"
       };
