@@ -5,8 +5,9 @@ const authentication = {
   host: "35.154.249.232",
   user: "eattovo",
   password: "eattv2020",
-  database: "eatdev",
+  database: "eatprod",
   timezone: "IST",
+  multipleStatements: true
 };
 
 // const authentication = {
