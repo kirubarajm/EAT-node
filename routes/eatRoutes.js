@@ -156,6 +156,7 @@ app.route("/eat/coupon/:userid").get(middleware.checkToken,routesVersioning({"1.
 app.route("/eat/coupon/validate").post(middleware.checkToken,routesVersioning({"1.0.0":coupon.coupons_code_validate}));
 //app.route("/eat/collection").get(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection}));
 app.route("/eat/collection").get(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection}));
+app.route("/eat/collectionlist").post(middleware.checkToken,routesVersioning({"1.0.0":collection.read_all_collection_by_userid}));
 app.route("/eat/collectiondetails").post(middleware.checkToken,routesVersioning({"1.0.0":collection.get_all_collection_by_cid}));
 app.route("/eat/versioncheck").post(middleware.checkToken,routesVersioning({"1.0.0": eatuser.eat_app_version_check}));
 

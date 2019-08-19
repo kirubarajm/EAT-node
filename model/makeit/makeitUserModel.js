@@ -5,6 +5,8 @@ const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 var request = require("request");
 var moment = require("moment");
+let jwt = require('jsonwebtoken');
+let config = require('../config.js');
 //var OrderModel = require("../../model/common/orderModel");
 var Cusinemakeit = require("../../model/makeit/cusinemakeitModel");
 var MakeitImages = require("../../model/makeit/makeitImagesModel");
@@ -61,6 +63,7 @@ Makeituser.createUser = function createUser(newUser, result) {
         result(err, null);
       } else {
         if (res2.length == 0) {
+
           sql.query("INSERT INTO MakeitUser set ?", newUser, function(
             err,
             res3
@@ -89,12 +92,20 @@ Makeituser.createUser = function createUser(newUser, result) {
                           console.log("error: ", err);
                           result(err, null);
                         } else {
-                          let sucobj = true;
-                          let message = "Registration Successfully";
+
+                          let token = jwt.sign({username: newUser.phoneno},
+                            config.secret
+                            // ,
+                            // { //expiresIn: '24h' // expires in 24 hours
+                            // }
+                           );
+
+                       
                           let resobj = {
-                            success: sucobj,
+                            success: true,
                             status: true,
-                            message: message,
+                            token : token,
+                            message: "Registration Successfully",
                             result: res4
                           };
 
@@ -309,16 +320,22 @@ Makeituser.checkLogin = function checkLogin(req, result) {
         result(resobj, null);
       } else {
         if (res.length !== 0) {
-          if (res[0].virtualkey === 0) {
-            let sucobj = res.length !== 0 ? true : false;
-            let status = res.length !== 0 ? true : false;
-            let resobj = {
-              success: sucobj,
-              status: status,
-              result: res
-            };
-            console.log("result: ---", res.length);
+          if (res[0].virtualkey === 0) {  
+              let token = jwt.sign({username: req.phoneno},
+                config.secret
+                // ,
+                // { //expiresIn: '24h' // expires in 24 hours
+                // }
+               );
+    
+               let resobj = {
+                success: true,
+                status : true,
+                token :token,
+                result: res
+               };
             result(null, resobj);
+          
           } else {
             let resobj = {
               success: true,
@@ -1746,19 +1763,13 @@ Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(
   );
 };
 
-Makeituser.makeit_user_otpverification = function makeit_user_otpverification(
-  req,
-  result
-) {
+Makeituser.makeit_user_otpverification = function makeit_user_otpverification(req,result) {
   var otp = 0;
   var passwordstatus = false;
   var otpstatus = false;
   var genderstatus = false;
 
-  sql.query("Select * from Otp where oid = '" + req.oid + "'", function(
-    err,
-    res
-  ) {
+  sql.query("Select * from Otp where oid = '" + req.oid + "'", function(err,res) {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -1774,26 +1785,23 @@ Makeituser.makeit_user_otpverification = function makeit_user_otpverification(
             } else {
               console.log(res1.length);
               if (res1.length == 1) {
-                console.log("OTP VALID");
-                let message = "OTP verified successfully";
-                let sucobj = true;
+           
 
                 let resobj = {
-                  success: sucobj,
+                  success: true,
                   status: true,
-                  message: message,
+                  message:  "OTP verified successfully",
                   userid: res1[0].userid
                 };
 
                 result(null, resobj);
               } else {
-                let message = "OTP verified successfully";
-                let sucobj = true;
+           
 
                 let resobj = {
-                  success: sucobj,
+                  success: true,
                   status: true,
-                  message: message
+                  message: "OTP verified successfully"
                 };
 
                 result(null, resobj);

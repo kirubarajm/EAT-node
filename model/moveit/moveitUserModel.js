@@ -6,6 +6,8 @@ var MoveitFireBase =require("../../push/Moveit_SendNotification")
 var Constant =require("../constant")
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
+let jwt = require('jsonwebtoken');
+let config = require('../config.js');
 
 //Task object constructor
 var Moveituser = function (moveituser) {
@@ -63,11 +65,11 @@ Moveituser.createUser = function createUser(newUser, result) {
                         // });
 
 
-                        let sucobj = true;
-                        let message = 'Moveit user created successfully';
+                   
                         let resobj = {
-                            success: sucobj,
-                            message: message,
+                            success: true,
+                            status :true,
+                            message: 'Moveit user created successfully',
                             id: res.insertId
 
                         };
@@ -78,10 +80,11 @@ Moveituser.createUser = function createUser(newUser, result) {
                 });
             } else {
 
-                let sucobj = true;
+              
                 let message = "Following user already Exist! Please check it mobile number / email";
                 let resobj = {
-                    success: sucobj,
+                    success: true,
+                    status : false,
                     message: message
                 };
 
@@ -177,7 +180,7 @@ Moveituser.remove = function (id, result) {
 
 Moveituser.checkLogin = function checkLogin(req, result) {
     var reqs = [req.phoneno, req.password];
-    sql.query("Select * from MoveitUser where phoneno = ? and password = ? limit 1", reqs, function (err, res) {
+    sql.query("Select * from MoveitUser where phoneno = ? and password = ?", reqs, function (err, res) {
         if (err) {
             console.log("error: ", err);
 
@@ -188,17 +191,33 @@ Moveituser.checkLogin = function checkLogin(req, result) {
             result(resobj, null);
         }
         else {
+            
+             if (res.length !== 0) {
+              
+              let token = jwt.sign({username: req.phoneno},
+                config.secret
+                // ,
+                // { //expiresIn: '24h' // expires in 24 hours
+                // }
+               );
 
-
-            let sucobj = (res.length !== 0) ? true : false;
-            let status = (res.length !== 0) ? true : false;
-            let resobj = {
-                success: sucobj,
-                status : status,
+               let resobj = {
+                success: true,
+                status : true,
+                token :token,
                 result: res
-            };
-            console.log("result: ---", res.length);
+               };
             result(null, resobj);
+            }else{
+            let resobj = {
+              success: true,
+              status : false,
+              message : "Please check your username and password",
+              
+             };
+          result(null, resobj);
+          }
+           
         }
     });
 };
