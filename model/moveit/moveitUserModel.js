@@ -180,7 +180,7 @@ Moveituser.remove = function (id, result) {
 
 Moveituser.checkLogin = function checkLogin(req, result) {
     var reqs = [req.phoneno, req.password];
-    sql.query("Select * from MoveitUser where phoneno = ? and password = ? limit 1", reqs, function (err, res) {
+    sql.query("Select * from MoveitUser where phoneno = ? and password = ?", reqs, function (err, res) {
         if (err) {
             console.log("error: ", err);
 
@@ -191,7 +191,7 @@ Moveituser.checkLogin = function checkLogin(req, result) {
             result(resobj, null);
         }
         else {
-
+            
              if (res.length !== 0) {
               
               let token = jwt.sign({username: req.phoneno},
@@ -208,7 +208,7 @@ Moveituser.checkLogin = function checkLogin(req, result) {
                 result: res
                };
             result(null, resobj);
-          }else{
+            }else{
             let resobj = {
               success: true,
               status : false,

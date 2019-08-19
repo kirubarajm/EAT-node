@@ -81,25 +81,129 @@ Collection.remove = function(cid, result) {
   });
 };
 
-Collection.getAllCollection_by_user = function getAllCollection_by_user(userid,result) {
+Collection.getAllCollection_by_user = function getAllCollection_by_user(req,result) {
 
-    sql.query("Select * from Collection where active_status=1", function(err, res) {
+    sql.query("Select * from Collections where active_status=1", function(err, res) {
       if (err) {
         result(err, null);
       } else {
 
+          if (res.length !==0) {
+            
+            for (let i = 0; i < res.length; i++) {
+             
+            var  productquery = '';
+            var  groupbyquery = " GROUP BY pt.makeit_userid";
+            var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
+            
+            var breatfastcycle = constant.breatfastcycle;
+            var dinnercycle = constant.dinnercycle;
+            var lunchcycle = constant.lunchcycle;
+      
+            var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+            var currenthour  = moment(day).format("HH");
+            var productquery = "";
+           
+      
+            if (currenthour < lunchcycle) {
+      
+              productquery = productquery + " and pt.breakfast = 1";
+            //  console.log("breakfast");
+            }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+      
+              productquery = productquery + " and pt.lunch = 1";
+            //  console.log("lunch");
+            }else if( currenthour >= dinnercycle){
+              
+              productquery = productquery + " and pt.dinner = 1";
+            //  console.log("dinner");
+            }
+            
+      
+          var  productquery = '';
+          var  groupbyquery = " GROUP BY pt.makeit_userid";
+          var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
+          
+          var breatfastcycle = constant.breatfastcycle;
+          var dinnercycle = constant.dinnercycle;
+          var lunchcycle = constant.lunchcycle;
+    
+          var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+          var currenthour  = moment(day).format("HH");
+          var productquery = "";
+       //   console.log(currenthour);
+    
+          if (currenthour < lunchcycle) {
+    
+            productquery = productquery + " and pt.breakfast = 1";
+          //  console.log("breakfast");
+          }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+    
+            productquery = productquery + " and pt.lunch = 1";
+          //  console.log("lunch");
+          }else if( currenthour >= dinnercycle){
+            
+            productquery = productquery + " and pt.dinner = 1";
+          //  console.log("dinner");
+          }
+          
+    
+          //based on logic this conditions will change
+            if (res[i].cid === 1 || res[i] === 2) {
+              var productlist = res[0].query + productquery  + groupbyquery;
+            }else if(res[i] === 3 ) {
+              var productlist = res[0].query + productquery  + orderbyquery;
+            }
 
+           var temparray = [];
+            console.log(productlist);
+            sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
+              if (err) {
+                result(err, null);
+              } else {
+  
+                  if (res1.length !== 0) {
+                    temparray=res1;
+                    console.log(temparray);
+                  }
+              }
+  
+            });
+              
+            }
+          }
 
+       
 
+          for (let i = 0; i < temparray.length; i++) {
 
+            if (temparray[i].cid === 1 || temparray[i] === 2) {
+              temparray[i].productlist =JSON.parse(temparray[i].productlist)
+            }
+            
+            temparray[i].distance = temparray[i].distance.toFixed(2);
+            //15min Food Preparation time , 3min 1 km
+          //  eta = 15 + 3 * res[i].distance;
+            var eta = foodpreparationtime + onekm * temparray[i].distance;
+            
+            temparray[i].serviceablestatus = false;
 
-
-
+            
+            if (temparray[i].distance <= radiuslimit) {
+              temparray[i].serviceablestatus = true;
+            } 
+           
+            temparray[i].eta = Math.round(eta) + " mins";
+                if (temparray[i].cuisines) {
+                  temparray[i].cuisines = JSON.parse(temparray[i].cuisines);
+                }
+          
+          }
 
         let resobj = {
           success: true,
           status:true,
-          result: res
+          result: temparray
         };
         result(null, resobj);
       }

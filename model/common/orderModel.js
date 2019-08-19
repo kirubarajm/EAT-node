@@ -1443,6 +1443,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
               result(err, null);
             } else {
 
+              console.log(res1);
             
               if (res1[0].orderstatus >= 3) {
                 // +20 min add with moveit order picked up time
@@ -1455,6 +1456,8 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                .format("YYYY-MM-DD HH:mm:ss");
                res1[0].deliverytime = deliverytime;
              }
+
+
               for (let i = 0; i < res1.length; i++) {
                 res1[i].distance = res1[i].distance.toFixed(2);
                 //15min Food Preparation time , 3min 1 km
@@ -1465,6 +1468,8 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                   res1[i].items = items.item;
                 }
               }
+
+              
               let resobj = {
                 success: true,
                 status: true,
