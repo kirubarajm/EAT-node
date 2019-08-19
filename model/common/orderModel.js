@@ -641,9 +641,10 @@ Order.get_today_vorders = function get_today_vorders(req, result) {
   var page = req.page || 1;
   var makeithub_id = req.makeithub_id || 1;
   var startlimit = (page - 1) * orderlimit;
+  var orderstatus =req.orderstatus||0
 
   var query =
-    "Select od.*,us.name as name,us.phoneno as phoneno,mk.name as makeit_name,mk.brandname as makeit_brandname from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id where DATE(od.ordertime) = CURDATE() and mk.virtualkey = 1";
+    "Select od.*,us.name as name,us.phoneno as phoneno,mk.name as makeit_name,mk.brandname as makeit_brandname from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id where DATE(od.ordertime) = CURDATE() and mk.virtualkey = 1 and od.payment_status!=2 and od.orderstatus = "+orderstatus;
   var searchquery =
     "us.phoneno LIKE  '%" +
     req.search +
@@ -665,11 +666,28 @@ Order.get_today_vorders = function get_today_vorders(req, result) {
 
   var limitquery =
     query +
-    " order by od.orderid desc limit " +
+    " order by od.orderid asc limit " +
     startlimit +
     "," +
     orderlimit +
     " ";
+
+    if(req.orderstatus===1){
+    limitquery = query +" order by od.makeit_expected_preparing_time asc limit " +
+    startlimit +
+    "," +
+    orderlimit +
+    " ";
+    }
+    if(req.orderstatus===3){
+    limitquery = query +" order by od.makeit_actual_preparing_time asc limit " +
+    startlimit +
+    "," +
+    orderlimit +
+    " ";
+    }
+    
+    
 
   sql.query(limitquery, function(err, res1) {
     if (err) {
@@ -702,7 +720,7 @@ Order.get_all_vorders = function get_all_vorders(req, result) {
   var startlimit = (page - 1) * orderlimit;
 
   var query =
-    "Select od.*,us.name as name,us.phoneno as phoneno,mk.name as makeit_name,mk.brandname as makeit_brandname from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id where mk.virtualkey = 1";
+    "Select od.*,us.name as name,us.phoneno as phoneno,mk.name as makeit_name,mk.brandname as makeit_brandname from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id where mk.virtualkey = 1 and od.payment_status!=2";
   var searchquery =
     "us.phoneno LIKE  '%" +
     req.search +
