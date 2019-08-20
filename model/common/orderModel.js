@@ -1206,7 +1206,7 @@ Order.orderviewbyeatuser = function(req, result) {
                 res1[0].eta = Math.round(eta) + " mins";
 
                 res1[0].payment_type_name ='Cash on delivery'; 
-                if (res1[0].payment_type === 1) {
+                if (res1[0].payment_type === 1 || res1[0].payment_type === "1") {
                   res1[0].payment_type_name ='Online'; 
                 }
 
@@ -1359,7 +1359,7 @@ Order.orderlistbyeatuser = async function(req, result) {
            for (let i = 0; i < history_list.length; i++) {
 
             history_list[i].payment_type_name ='Cash on delivery'; 
-              if (history_list[i].payment_type === 1) {
+              if (history_list[i].payment_type === 1 || history_list[i].payment_type === "1") {
                 history_list[i].payment_type_name ='Online'; 
               }
 

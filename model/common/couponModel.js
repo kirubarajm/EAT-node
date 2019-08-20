@@ -89,7 +89,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
   };
 
 
-  Coupon.get_coupons_by_userid = function get_coupons_by_userid(userid,result) {
+  Coupon.get_coupons_by_userid = function get_coupons_by_userid(req,result) {
 
     sql.query("Select * from Coupon where active_status= 1 and expiry_date > NOW() ", async function(err, res) {
       if (err) {
@@ -99,15 +99,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
       
           if (res.length !== 0 ) {
 
-              var tempcount = 0;
-              for (let i = 0; i < res.length; i++) {
-
-                console.log(res[i].cid);
-               //   couponusedcount = await query("select * from CouponsUsed where userid = "+userid+" and cid = "+res[i].cid+" ");
-
-               //   console.log(couponusedcount.length);
-
-              }
+              var kitchens =   await Coupon.getcouponlist(res,req)
 
 
             let resobj = {
@@ -131,14 +123,41 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
   };
 
 
+
+  Coupon.getcouponlist = async function(res,req){
+
+    for (let i = 0; i < res.length; i++) {
+      req.cid = res[i].cid;
+      req.coupon_name = res[i].coupon_name;
+      req.numberoftimes = res[i].numberoftimes;
+
+      var couponinfo = await query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? ",[req.eatuserid,req.cid]);
+      console.log(couponinfo[0].cnt);
+      if(couponinfo[0].cnt < req.numberoftimes){
+       res[i].couponstatus = true;
+      }else{
+       res[i].couponstatus = false;
+      // delete res[i];
+     // res.splice(i);
+      }
+
+    }
+  
+  return res
+  }
+  
+
+
+
+
   Coupon.coupons_validate_by_userid = async function coupons_validate_by_userid(req,result) {
 
-    sql.query("Select * from Coupon where active_status= 1 and coupon_name = '"+req.coupon_name+"' and expiry_date > NOW() limit 1", async function(err, res) {
+    sql.query("Select * from Coupon where active_status= 1 and coupon_name = '"+req.coupon_name+"' and expiry_date > NOW() limit 1", async function(err, res1) {
       if (err) {
         result(err, null);
       } else {
           if (res.length !== 0 ) {
-            sql.query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? ",[req.userid,res[0].cid], function(err, couponinfo) {
+            sql.query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? ",[req.userid,res1[0].cid], function(err, couponinfo) {
               if (err) {
                 result(err, null);
               } else {
@@ -156,6 +175,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
                   let resobj = {
                     success:true,
                     status: false,
+                    result: res,
                     message: "Already Coupons used at maximum number of times"
                   };
                   result(null, resobj);
