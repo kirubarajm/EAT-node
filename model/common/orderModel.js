@@ -1979,7 +1979,7 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
   }
 };
 Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
-  var waitinglistquery = "SELECT ors.orderid,ors.ordertime,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail from Orders as ors left join MakeitUser ms on ors.makeit_user_id = ms.userid WHERE  ors.orderstatus=0 and ors.lock_status = 0  and ors.created_at < (DATE_SUB(CURDATE(), interval 6 minute)) group by ors.orderid order by ors.orderid  desc";
+  var waitinglistquery = "SELECT ors.orderid,ors.ordertime,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail from Orders as ors left join MakeitUser ms on ors.makeit_user_id = ms.userid WHERE  ors.orderstatus=0 and ors.lock_status = 0 and ors.payment_status!=2 and (ors.created_at+ INTERVAL 6 MINUTE) < now() group by ors.orderid order by ors.orderid  desc";
   sql.query(waitinglistquery, function(err,res1) {
     if (err) {
       result(err, null);
@@ -2013,6 +2013,28 @@ Order.moveit_delivery_cash_received_by_today_by_userid = async function moveit_d
           success: true,
           status:true,
           cod_amount:res[1][0].totalamount,
+          result: res[0]
+        };
+        result(null, resobj);
+      }
+    }
+  );
+};
+
+Order.get_orders_cash_online_amount = async function get_orders_cash_online_amount(req,result) {
+  req.startdate = req.startdate;
+  req.enddate = req.enddate;
+  var paymentType=req.payment_type||0;
+  var orderquery = "select * from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1 and payment_type = "+paymentType+"  and lock_status = 0";
+  var orderamountquery = orderquery+";"+"select sum(price) as totalamount from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1 and payment_type = "+paymentType+"  and lock_status = 0";
+  sql.query(orderamountquery,function(err, res) {
+      if (err) {
+        result(err, null);
+      } else{
+        let resobj = {
+          success: true,
+          status:true,
+          totalamount:res[1][0].totalamount,
           result: res[0]
         };
         result(null, resobj);
