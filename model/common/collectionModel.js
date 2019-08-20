@@ -33,10 +33,19 @@ Collection.createCollection = function createCollection(req, result) {
 };
 
 Collection.list_all_active_collection = function list_all_active_collection(req,result) {
-  sql.query("Select cid,name,active_status,category,img_url,heading,subheading,created_at from Collections where active_status=1", function(err, res) {
+  sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at from Collections where active_status=1",async function(err, res) {
     if (err) {
       result(err, null);
     } else {
+
+
+     
+
+      
+
+      var kitchens =   await Collection.getcollectionlist(res,req)
+
+      console.log("first collection");
        if (res.length !== 0 ) {
         let resobj = {
           success: true,
@@ -81,6 +90,71 @@ Collection.remove = function(cid, result) {
   });
 };
 
+Collection.getkichens = async function(res,req){
+
+  for (let i = 0; i < res.length; i++) {
+    req.cid = res[i].cid;
+    req.query = res[i].query;
+    await Collection.get_all_collection_by_cid_getkichens(req, async function(err,res3) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res3.status != true) {
+          result(null, res3);
+        } else {
+          
+         // console.log("kitchenlist"+res3.result);
+          res[i].kitchenlist = res3.result;
+           
+           
+        }
+      }
+    });
+
+  }
+
+return res
+}
+
+
+Collection.getcollectionlist = async function(res,req){
+
+  for (let i = 0; i < res.length; i++) {
+    req.cid = res[i].cid;
+    req.query = res[i].query;
+    await Collection.get_all_collection_by_cid_getkichens(req, async function(err,res3) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res3.status != true) {
+          result(null, res3);
+        } else {
+          
+         // console.log("kitchenlist"+res3.result);
+         // res[i].kitchenlist = res3.result;
+        var kitchenlist = res3.result
+         console.log(kitchenlist.length);
+          
+          if (kitchenlist.length !==0) {
+            res[i].collectionstatus = true;
+          }else{
+            res[i].collectionstatus = false;
+          }
+           	
+          delete res[i].query;
+         // delete json[res[i].query]
+        }
+      }
+    });
+
+  }
+
+return res
+}
+
+
+
+
 Collection.getAllCollection_by_user =async function getAllCollection_by_user(req,result) {
 
     sql.query("Select * from Collections where active_status=1", async function(err, res) {
@@ -89,54 +163,9 @@ Collection.getAllCollection_by_user =async function getAllCollection_by_user(req
       } else {
 
           if (res.length !==0) {   
-            for (let i = 0; i < res.length; i++) {
-              req.cid = res[i].cid;
-              Collection.get_all_collection_by_cid(req, async function(err,res3) {
-                if (err) {
-                  result(err, null);
-                } else {
-                  if (res3.status != true) {
-                    result(null, res3);
-                  } else {
-                    var temparray = [];
-                    clist = res3.result;
-                    console.log("test"+res3.result);
-                    res[i].result = res3.result;
-                     
-                     
-                  }
-                }
-              });
-        
-            }
-
-           // console.log(temparray.length);
-
-            // for (let i = 0; i < temparray.length; i++) {
-
-            //   if (temparray[i].cid === 1 || temparray[i] === 2) {
-            //     temparray[i].productlist =JSON.parse(temparray[i].productlist)
-            //   }
-              
-            //   temparray[i].distance = temparray[i].distance.toFixed(2);
-            //   //15min Food Preparation time , 3min 1 km
-            // //  eta = 15 + 3 * res[i].distance;
-            //   var eta = foodpreparationtime + onekm * temparray[i].distance;
-              
-            //   temparray[i].serviceablestatus = false;
-  
-              
-            //   if (temparray[i].distance <= radiuslimit) {
-            //     temparray[i].serviceablestatus = true;
-            //   } 
-             
-            //   temparray[i].eta = Math.round(eta) + " mins";
-            //       if (temparray[i].cuisines) {
-            //         temparray[i].cuisines = JSON.parse(temparray[i].cuisines);
-            //       }
-            
-            // }
-
+         
+       var kitchens =   await Collection.getkichens(res,req)
+       
             let resobj = {
               success: true,
               status:true,
@@ -163,7 +192,7 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
   var onekm = constant.onekm;
   var radiuslimit=constant.radiuslimit;
 
-    sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", function(err, res) {
+   await sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -175,28 +204,28 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
         var  groupbyquery = " GROUP BY pt.makeit_userid";
         var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
       
-      var breatfastcycle = constant.breatfastcycle;
-      var dinnercycle = constant.dinnercycle;
-      var lunchcycle = constant.lunchcycle;
+        var breatfastcycle = constant.breatfastcycle;
+        var dinnercycle = constant.dinnercycle;
+        var lunchcycle = constant.lunchcycle;
 
-      var day = moment().format("YYYY-MM-DD HH:mm:ss");;
-      var currenthour  = moment(day).format("HH");
-      var productquery = "";
-      console.log(currenthour);
+        var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+        var currenthour  = moment(day).format("HH");
+        var productquery = "";
+       // console.log(currenthour);
 
-      if (currenthour < lunchcycle) {
+        if (currenthour < lunchcycle) {
 
-        productquery = productquery + " and pt.breakfast = 1";
-      //  console.log("breakfast");
-      }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+          productquery = productquery + " and pt.breakfast = 1";
+        //  console.log("breakfast");
+        }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
 
-        productquery = productquery + " and pt.lunch = 1";
-      //  console.log("lunch");
-      }else if( currenthour >= dinnercycle){
-        
-        productquery = productquery + " and pt.dinner = 1";
-      //  console.log("dinner");
-      }
+          productquery = productquery + " and pt.lunch = 1";
+        //  console.log("lunch");
+        }else if( currenthour >= dinnercycle){
+          
+          productquery = productquery + " and pt.dinner = 1";
+        //  console.log("dinner");
+        }
       
 
       //based on logic this conditions will change
@@ -207,7 +236,7 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
         }
           
           console.log( productlist);
-          sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
+         await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
             if (err) {
               result(err, null);
             } else {
@@ -260,6 +289,85 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
         }
       }
     });
+};
+
+
+Collection.get_all_collection_by_cid_getkichens = async function get_all_collection_by_cid_getkichens(req,result) {
+  
+        var foodpreparationtime = constant.foodpreparationtime;
+        var onekm = constant.onekm;
+        var radiuslimit=constant.radiuslimit;
+        var  productquery = '';
+        var  groupbyquery = " GROUP BY pt.makeit_userid";
+        var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
+      
+        var breatfastcycle = constant.breatfastcycle;
+        var dinnercycle = constant.dinnercycle;
+        var lunchcycle = constant.lunchcycle;
+
+        var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+        var currenthour  = moment(day).format("HH");
+        var productquery = "";
+       // console.log(currenthour);
+
+        if (currenthour < lunchcycle) {
+
+          productquery = productquery + " and pt.breakfast = 1";
+        //  console.log("breakfast");
+        }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+
+          productquery = productquery + " and pt.lunch = 1";
+        //  console.log("lunch");
+        }else if( currenthour >= dinnercycle){
+          
+          productquery = productquery + " and pt.dinner = 1";
+        //  console.log("dinner");
+        }
+      
+
+      //based on logic this conditions will change
+        if (req.cid === 1 || req.cid === 2) {
+          var productlist = req.query + productquery  + groupbyquery;
+        }else if(req.cid === 3 ) {
+          var productlist = req.query + productquery  + orderbyquery;
+        }
+       
+      //  console.log(productlist);
+          var res1 = await query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid])
+   
+              for (let i = 0; i < res1.length; i++) {
+
+                if (req.cid === 1 || req.cid === 2) {
+                  res1[i].productlist =JSON.parse(res1[i].productlist)
+                }
+                
+                res1[i].distance = res1[i].distance.toFixed(2);
+                //15min Food Preparation time , 3min 1 km
+              //  eta = 15 + 3 * res[i].distance;
+                var eta = foodpreparationtime + onekm * res1[i].distance;
+                
+                res1[i].serviceablestatus = false;
+    
+                
+                if (res1[i].distance <= radiuslimit) {
+                  res1[i].serviceablestatus = true;
+                } 
+               
+                res1[i].eta = Math.round(eta) + " mins";
+                    if (res1[i].cuisines) {
+                      res1[i].cuisines = JSON.parse(res1[i].cuisines);
+                    }
+              
+              }
+
+              let resobj = {
+                success: true,
+                status:true,
+                result: res1
+              };
+              result(null, resobj);
+
+        
 };
 
 module.exports = Collection;
