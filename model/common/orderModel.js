@@ -130,13 +130,16 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
   var dinnerend = constant.dinnerend;
 
   const delivery_charge = constant.deliverycharge;
-  console.log(currenthour);
-  console.log(dinnerend);
+  // console.log(currenthour);
+  // console.log(dinnerend);
   if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
      
-  const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
-  if (res[0].length === 0) {
-    const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
+    const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
+
+    console.log(res.length);
+
+    if (res.length === 0 ) {
+      const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
     //console.log("address_data-->",address_data);
     if(address_data.length === 0) {
       let resobj = {
@@ -201,7 +204,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
               }
             });
       }
-  }else if(res[0].payment_type === 1 && res[0].lock_status === 1){ 
+   }
+else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
   let resobj = {
     success: true,
     status: false,
@@ -209,14 +213,13 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
     result : res
   };
   result(null, resobj);
-}
-  
-  else {
+}else {
    
     let resobj = {
       success: true,
       status: false,
       message: "Already you have one order, So please try once delivered exiting order"
+      
     
     };
     result(null, resobj);
