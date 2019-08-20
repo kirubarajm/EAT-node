@@ -2025,8 +2025,8 @@ Order.get_orders_cash_online_amount = async function get_orders_cash_online_amou
   req.startdate = req.startdate;
   req.enddate = req.enddate;
   var paymentType=req.payment_type||0;
-  var orderquery = "select * from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1 and payment_type = "+paymentType+"  and lock_status = 0";
-  var orderamountquery = orderquery+";"+"select sum(price) as totalamount from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1 and payment_type = "+paymentType+"  and lock_status = 0";
+  var orderquery = "select ors.* from Orders as ors left join User as us on ors.userid=us.userid where us.virtualkey=0 and ors.created_at between '"+req.startdate+"' and '"+req.enddate+"' and ors.orderstatus = 6  and ors.payment_status = 1 and ors.payment_type = "+paymentType+"  and ors.lock_status = 0";
+  var orderamountquery = orderquery+";"+"select sum(ors.price) as totalamount from Orders as ors left join User as us on ors.userid=us.userid  where us.virtualkey=0 and ors.created_at between '"+req.startdate+"' and '"+req.enddate+"' and ors.orderstatus = 6  and ors.payment_status = 1 and ors.payment_type = "+paymentType+"  and ors.lock_status = 0";
   sql.query(orderamountquery,function(err, res) {
       if (err) {
         result(err, null);
@@ -2034,7 +2034,7 @@ Order.get_orders_cash_online_amount = async function get_orders_cash_online_amou
         let resobj = {
           success: true,
           status:true,
-          totalamount:res[1][0].totalamount,
+          totalamount:res[1][0].totalamount||0,
           result: res[0]
         };
         result(null, resobj);
