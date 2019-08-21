@@ -2184,7 +2184,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
             result(err, null);
         }
         else {
-          
+
                if (res1.length !== 0) {
                 
                 var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid  group by re.regionid  order by distance ASC";
@@ -2333,7 +2333,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
   var dinnercycle = constant.dinnercycle;
   var lunchcycle = constant.lunchcycle;
 
-                     var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+                      var day = moment().format("YYYY-MM-DD HH:mm:ss");;
                       var currenthour  = moment(day).format("HH");
                       var productquery = '';
 

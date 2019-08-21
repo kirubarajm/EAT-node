@@ -438,3 +438,11 @@ exports.moveit_delivery_cash_received_by_today = function(req, res) {
     res.json(result);
   });
 };
+
+exports.getTotalAmountofOrders = function(req, res) {
+  console.log(req.body);
+  Order.get_orders_cash_online_amount(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

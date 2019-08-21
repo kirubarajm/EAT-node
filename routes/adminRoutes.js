@@ -103,4 +103,6 @@ app.route("/admin/order/refund/remove/:rcid").delete(routesVersioning({"1.0.0":r
 app.route("/admin/orders/waitinglist").get(routesVersioning({"1.0.0":orders.order_waiting_list_by_admin}));
 app.route("/admin/badges").get(routesVersioning({"1.0.0":makeituser.admin_list_all_badges}));
 app.route("/admin/moveit/todayincome").post(routesVersioning({"1.0.0":orders.moveit_delivery_cash_received_by_today}));
+app.route("/admin/orders/amount").post(routesVersioning({"1.0.0":orders.getTotalAmountofOrders}));
+
 }
