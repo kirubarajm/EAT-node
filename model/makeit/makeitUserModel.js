@@ -1865,10 +1865,7 @@ Makeituser.makeituser_logout = async function makeituser_logout(req, result) {
  
 };
 
-Makeituser.makeit_user_forgot_password_update = function makeit_user_forgot_password_update(
-  newUser,
-  result
-) {
+Makeituser.makeit_user_forgot_password_update = function makeit_user_forgot_password_update(newUser,result) {
   sql.query(
     "UPDATE MakeitUser SET password = '" +
       newUser.password +
@@ -1892,10 +1889,7 @@ Makeituser.makeit_user_forgot_password_update = function makeit_user_forgot_pass
   );
 };
 
-Makeituser.makeit_user_forgot_password_send_otp = function makeit_user_forgot_password_send_otp(
-  newUser,
-  result
-) {
+Makeituser.makeit_user_forgot_password_send_otp = function makeit_user_forgot_password_send_otp(newUser,result) {
   var OTP = Math.floor(Math.random() * 90000) + 10000;
 
   var otpurl =
@@ -1956,76 +1950,55 @@ Makeituser.makeit_user_forgot_password_send_otp = function makeit_user_forgot_pa
   );
 };
 
-Makeituser.sum_total_earnings_makeit = function(makeit_userid, result) {
-  var query =
-    "select SUM(makeit_earnings) as earnings from Orders where makeit_user_id = '" +
-    makeit_userid +
-    "' and orderstatus = 6 and payment_status = 1 and lock_status=0";
+Makeituser.sum_total_earnings_makeit = async function(makeit_userid, result) {
+  
+  // var query ="select SUM(makeit_earnings) as earnings from Orders where makeit_user_id = '" +makeit_userid +"' and orderstatus = 6 and payment_status = 1 and lock_status=0";
 
-  sql.query(query, function(err, res) {
-    if (err) {
-      console.log("error: ", err);
-      result(null, err);
-    } else {
-      var dayquery =
-        "select SUM(makeit_earnings) as earnings,ordertime from Orders where makeit_user_id = '" +
-        makeit_userid +
-        "' and orderstatus = 6 and payment_status = 1 and lock_status=0 GROUP BY date(ordertime)  order by ordertime desc";
-      sql.query(dayquery, function(err, res1) {
-        if (err) {
-          console.log("error: ", err);
-          result(null, err);
-        } else {
-          var weekquery =
-            "select SUM(makeit_earnings) AS weeklyearnings , CONCAT(ordertime, '-', ordertime + INTERVAL 7 DAY) AS week FROM Orders where makeit_user_id = '" +
-            makeit_userid +
-            "' and orderstatus = 6 and payment_status = 1 and lock_status=0 GROUP BY week(ordertime)ORDER BY week(ordertime) desc";
-          sql.query(weekquery, function(err, res2) {
-            if (err) {
-              console.log("error: ", err);
-              result(null, err);
-            } else {
-              var monthquery =
-                "select count(makeit_earnings) as totalmonth from Orders where  makeit_user_id = '" +
-                makeit_userid +
-                "' and orderstatus = 6 and payment_status = 1 and lock_status=0 GROUP BY ordertime ";
-              sql.query(monthquery, function(err, res3) {
-                if (err) {
-                  console.log("error: ", err);
-                  result(null, err);
-                } else {
-                  res[0].dayearnings = res1;
-                  res[0].weekearnings = res2;
-                  res[0].monthlyaverage = res[0].earnings / 12;
-                  
-                  if (res[0].earnings === null) {                   
-                    let resobj = {
-                      success: true,
-                      status: false,
-                      message: "Sorry there is no orders found!",
-                      result: res
-                    };
+  // const  res = await query("select SUM(makeit_earnings) as earnings from Orders where makeit_user_id = '" +makeit_userid +"' and orderstatus = 6 and payment_status = 1 and lock_status=0");
 
-                    result(null, resobj);
-                  } else {
-                   
-                    let resobj = {
-                      success: true,
-                      status: true,
-                      message: "Total earnings",
-                      result: res
-                    };
+  const res = await query(
+    "select SUM(makeit_earnings) as earnings from Orders where makeit_user_id = '" +makeit_userid +"' and orderstatus = 6 and payment_status = 1 and lock_status= 0 ");
+    
+  const res1 = await query(
+      "select SUM(makeit_earnings) as earnings,ordertime from Orders where makeit_user_id = '" +
+      makeit_userid +
+      "' and orderstatus = 6 and payment_status = 1 and lock_status=0 GROUP BY date(ordertime)  order by ordertime desc ");
 
-                    result(null, resobj);
-                  }
-                }
-              });
-            }
-          });
-        }
-      });
-    }
-  });
+  const res2 = await query(
+      "select SUM(makeit_earnings) AS weeklyearnings , CONCAT(ordertime, '-', ordertime + INTERVAL 7 DAY) AS week FROM Orders where makeit_user_id = '" +
+      makeit_userid +
+      "' and orderstatus = 6 and payment_status = 1 and lock_status=0 GROUP BY week(ordertime)ORDER BY week(ordertime) desc ");
+
+  const res3 = await query(
+      "select count(ordertime) as totalmonth from Orders where  makeit_user_id = '" +
+      makeit_userid +
+      "' and orderstatus = 6 and payment_status = 1 and lock_status=0 GROUP BY month(ordertime)");
+     
+      
+      if (res[0].earnings === null) {                   
+        let resobj = {
+          success: true,
+          status: false,
+          message: "Sorry there is no orders found!",
+          result: res
+        };
+
+        result(null, resobj);
+      } else {
+       
+        res[0].dayearnings = res1;
+        res[0].weekearnings = res2;
+        res[0].monthlyaverage = res[0].earnings / res3.length;
+
+        let resobj = {
+          success: true,
+          status: true,
+          message: "Total earnings",
+          result: res
+        };
+
+        result(null, resobj);
+      }      
 };
 
 Makeituser.makeit_document_store_by_userid = async function makeit_document_store_by_userid(
@@ -2089,12 +2062,11 @@ Makeituser.update_pushid = function(req, result) {
   }
 
   if (staticquery.length === 0) {
-    let sucobj = true;
-    let message = "There no valid data";
+  
     let resobj = {
-      success: sucobj,
+      success: true,
       status: false,
-      message: message
+      message: "There no valid data"
     };
 
     result(null, resobj);
@@ -2104,12 +2076,11 @@ Makeituser.update_pushid = function(req, result) {
         console.log("error: ", err);
         result(err, null);
       } else {
-        let sucobj = true;
-        let message = "Updated successfully";
+       
         let resobj = {
-          success: sucobj,
+          success: true,
           status: true,
-          message: message
+          message: "Updated successfully"
         };
 
         result(null, resobj);
@@ -2118,11 +2089,7 @@ Makeituser.update_pushid = function(req, result) {
   }
 };
 
-Makeituser.edit_makeit_brand_identity_by_sales = async function(
-  req,
-  cuisines,
-  result
-) {
+Makeituser.edit_makeit_brand_identity_by_sales = async function(req,cuisines,result) {
   try {
     cuisinesstatus = false;
     removecuisinesstatus = false;
@@ -2138,11 +2105,11 @@ Makeituser.edit_makeit_brand_identity_by_sales = async function(
     }
 
     if (req.email || req.password || req.phoneno) {
-      let sucobj = true;
-      let message = "You can't to be Edit email / password/ phoneno";
+      
       let resobj = {
-        success: sucobj,
-        message: message
+        success: true,
+        status :false,
+        message: "You can't to be Edit email / password/ phoneno"
       };
       result(null, resobj);
     } else {
@@ -2194,13 +2161,11 @@ Makeituser.edit_makeit_brand_identity_by_sales = async function(
             }
           }
 
-          let sucobj = true;
-          let message = "Updated successfully";
-
+        
           let resobj = {
-            success: sucobj,
+            success: true,
             status: true,
-            message: message
+            message: "Updated successfully"
           };
 
           result(null, resobj);
@@ -2223,7 +2188,7 @@ Makeituser.edit_makeit_brand_identity_by_sales = async function(
 Makeituser.admin_list_all_badges = function(req, result) {
   var query = "select * from Makeit_badges ";
   
-  console.log(query);
+ // console.log(query);
   sql.query(query, function(err, res) {
     if (err) {
       result(err, null);

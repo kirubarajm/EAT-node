@@ -10,6 +10,7 @@ const calculate = {
     foodpreparationtime:15,//min
     onekm:3,
     servicecharge:25,
+    cancellationmessage : "Following order cancellation charges will ",
     makeit_nearby_moveit_radius:4, // in kilometers
     eatversioncode : 2,
     eatforceupdate : 1,
@@ -18,7 +19,10 @@ const calculate = {
     breatfastcycle : 8,//8 -12
     lunchcycle : 12,//12 - 4
     dinnercycle : 16 ,//4 - 11
-    dinnerend : 22
+    dinnerend : 22,
+    moveitversioncode : 1,
+    moveitforceupdate : 1,
+
 }
 
 

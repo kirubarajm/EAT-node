@@ -8,6 +8,7 @@ const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 let jwt = require('jsonwebtoken');
 let config = require('../config.js');
+var constant = require('../constant.js');
 
 //Task object constructor
 var Moveituser = function (moveituser) {
@@ -656,6 +657,37 @@ Moveituser.update_pushid = function(req, result) {
       }
     });   
    
+  };
+
+
+  Moveituser.moveit_app_version_check_vid= async function moveit_app_version_check_vid(req,result) { 
+ 
+    var updatestatus = {};
+    var versionstatus = false;
+    var moveitforceupdatestatus =false;
+
+    var moveitversioncode = constant.moveitversioncode;
+    var moveitforceupdate = constant.moveitforceupdate;
+    
+
+    if (req.moveitversioncode < moveitversioncode) {
+      
+      versionstatus = true;
+      moveitforceupdatestatus = true;
+    }
+
+    updatestatus.versionstatus = versionstatus;
+    updatestatus.moveitforceupdatestatus = moveitforceupdatestatus;
+
+        let resobj = {
+            success: true,
+            status:true,
+            result:updatestatus
+        };
+  
+        result(null, resobj);
+
+  
   };
 
 module.exports = Moveituser;

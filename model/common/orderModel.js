@@ -1209,7 +1209,8 @@ Order.orderviewbyeatuser = function(req, result) {
           result(null, resobj);
         } else {
 
-
+          res1[0].servicecharge = constant.servicecharge;
+          res1[0].cancellationmessage = constant.cancellationmessage;;
                 eta = foodpreparationtime + (onekm * res1[0].distance);
                 //15min Food Preparation time , 3min 1 km
                 res1[0].eta = Math.round(eta) + " mins";
@@ -1545,22 +1546,18 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
 
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
                     
-          console.log(orderitemdetails);
+        //  console.log(orderitemdetails);
           for (let i = 0; i < orderitemdetails.length; i++) {
-            var productquantityadd =
-              "update Product set quantity = quantity+" +
-              orderitemdetails[i].quantity +
-              " where productid =" +
-              orderitemdetails[i].productid +
-              "";
+            var productquantityadd ="update Product set quantity = quantity+" +orderitemdetails[i].quantity +" where productid =" +orderitemdetails[i].productid +"";
 
-            sql.query(productquantityadd, function(err, res3) {
-              if (err) {
-                console.log("error: ", err);
-                result(null, err);
-              } else {
-              }
-            });
+            var res3 = await query(productquantityadd);
+            // sql.query(productquantityadd, function(err, res3) {
+            //   if (err) {
+            //     console.log("error: ", err);
+            //     result(null, err);
+            //   } else {
+            //   }
+            // });
           }
 
           var refundDetail = {
@@ -1571,7 +1568,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             payment_id: orderdetails[0].transactionid
           };
 
-          if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+          if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status === 1) {
             
             if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
               await Order.create_refund(refundDetail);
