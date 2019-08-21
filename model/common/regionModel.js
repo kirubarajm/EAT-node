@@ -78,7 +78,7 @@ Region.getRegionByType = function getRegionByType(id, result) {
 };
 
 Region.getAllregion = function getAllregion(result) {
-  var regionquery = "Select regionid,regionname from Region where regionid = 16 or regionid= 3 or regionid = 19";
+  var regionquery = "Select regionid,regionname from Region where active_status = 1";
   //var regionquery = "Select * from Region";
   sql.query(regionquery, function(err, res) {
     if (err) {

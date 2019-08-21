@@ -233,3 +233,15 @@ exports.Moveituserotpverification = function(req, res) {
     });
   }
 };
+
+
+exports.moveit_app_version_check_vid = function(req, res) {
+  
+  Moveituser.moveit_app_version_check_vid(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+
+};

@@ -1602,6 +1602,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                      // console.log(res3.length);
                       if (res3.length !== 0) {
                         responce.push(res3[0]);
+                        responce[0].razer_customerid = res1[0].razer_customerid
                       }
 
                       let token = jwt.sign({username: req.phoneno},
@@ -2176,7 +2177,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
     
   if (userinfo.length !== 0 ) {
     
-      var getregionquery = "select lat,lon,regionid from Region where regionid = '"+userinfo[0].regionid+"' ";
+      var getregionquery = "select lat,lon,regionid from Region where regionid = '"+userinfo[0].regionid+"'  ";
 
     sql.query(getregionquery, function (err, res1) {
         if (err) {
@@ -2187,10 +2188,10 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
 
                if (res1.length !== 0) {
                 
-                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid  group by re.regionid  order by distance ASC";
+                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid where re.active_status = 1 group by re.regionid order by distance ASC";
                }else if(res1.length === 0){
                
-                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid  group by re.regionid  order by distance ASC";
+                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid where re.active_status = 1 group by re.regionid order by distance ASC";
                }
              
 
