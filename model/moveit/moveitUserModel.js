@@ -222,43 +222,36 @@ Moveituser.checkLogin = function checkLogin(req, result) {
     });
 };
 
-
-
-
-
 Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req, result) {
-
-    req.vacant = req.vacant || 'all'
-
-    var query = "Select * from MoveitUser";
-
-    console.log(req.vacant);
-    if (req.vacant !== 'all') {
-        query = query + " where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1 ";
-    }
-
-    if (req.vacant !== 'all' && req.search) {
+    var query = "Select * from MoveitUser as mov";
+    if(req.online_status===0){
+      query = query + " where mov.online_status=" +req.online_status
+      if (req.search) {
+        query = query + " and mov.name LIKE  '%" + req.search + "%'";
+      }
+    }else if(req.online_status===1){
+      query= "select * from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
+      if (req.search) {
         query = query + " and name LIKE  '%" + req.search + "%'";
-    } else if (req.search) {
-        query = query + " where name LIKE  '%" + req.search + "%'";
-    }
-
-    console.log(query);
+      }
+    }else if(req.online_status===-2){
+      query= "select * from MoveitUser where userid IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
+      if (req.search) {
+        query = query + " and name LIKE  '%" + req.search + "%'";
+      }
+    }else if (req.search) {
+      query = query + " where mov.name LIKE  '%" + req.search + "%'";
+    } 
     sql.query(query, function (err, res) {
-
         if (err) {
-            console.log("error: ", err);
             result(err, null);
-        }
-        else {
-            let sucobj = true;
-            let resobj = {
-                success: sucobj,
-                result: res
-            };
-
-            result(null, resobj);
-
+        }else{
+          let resobj = {
+              success: true,
+              status:true,
+              result: res
+          };
+        result(null, resobj);
         }
     });
 };
