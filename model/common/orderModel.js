@@ -59,14 +59,15 @@ var Order = function(order) {
   this.locality_name = order.locality_name;
   this.cancel_reason = order.cancel_reason;
   this.makeit_earnings = order.makeit_earnings;
+  this.moveit_accept_time = order.moveit_accept_time;
+  this.moveit_status = order.moveit_status;
 };
+
+
 
 Order.createOrder = async function createOrder(req, orderitems, result) {
   try {
-    const res = await query( "select count(*) as count from Orders where orderstatus < 6 and lock_status = 0 and userid= '" +
-        req.userid +
-        "'"
-    );
+    const res = await query( "select count(*) as count from Orders where orderstatus < 6 and lock_status = 0 and userid= '" +req.userid +"'");
     if (res[0].count === 0) {
       Makeituser.read_a_cartdetails_makeitid(req, orderitems,false,async function(err,res3) {
         if (err) {
@@ -75,6 +76,8 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
           if (res3.status != true) {
             result(null, res3);
           } else {
+
+
             var amountdata = res3.result[0].amountdetails;
             var address_data = await query("Select * from Address where aid = '" + req.aid + "'");
             req.cus_address = address_data[0].address;
@@ -136,9 +139,11 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
      
     const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
 
-    console.log(res.length);
+    
 
     if (res.length === 0 ) {
+
+    
       const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
     //console.log("address_data-->",address_data);
     if(address_data.length === 0) {
@@ -159,7 +164,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                   result(null, res3);
                 } else {
                   var amountdata = res3.result[0].amountdetails;
-        
+                  console.log(address_data[0].address);
                   req.original_price = amountdata.original_price;
                   req.refund_balance = amountdata.refund_balance;
                   req.refund_amount = amountdata.refundamount;
@@ -1123,6 +1128,9 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
       " and   DATE(ors.ordertime) = CURDATE() order by  ors.order_assigned_time desc"
   );
 
+  const cod_amount = await query(
+    "select sum(price) as totalamount from Orders where (moveit_actual_delivered_time) = CURDATE() and orderstatus = 6  and payment_status = 1 and payment_type = 0  and lock_status = 0 and  moveit_user_id = " +moveit_user_id +"");
+
   if (rows.length=== 0) {
     var res = {
       result: "Order not found!",
@@ -1145,6 +1153,7 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
   let resobj = {
     success: true,
     status: true,
+    cod_amount :cod_amount[0].totalamount || 0,
     result: rows
   };
 
@@ -1445,6 +1454,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
           };
           result(null, resobj);
         } else {
+
           var liveorderquer=null;
           console.log(res[0].payment_type);
           if (res[0].payment_type === "0" || res[0].payment_type === 0) liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,ors.payment_type,ors. payment_status,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
@@ -1489,6 +1499,13 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                   var items = JSON.parse(res1[i].items);
                   res1[i].items = items.item;
                 }
+              }
+
+              ///this code only online payment incomplete orderA to return pay the payment If false res1[0].onlinepaymentstatus thay have to repay true track the order,  not for COD
+              if (res1[0].payment_type == 1 && res1[0].payment_status == 0 && res1[0].lock_status === 1) {
+                res1[0].onlinepaymentstatus = false;
+              }else{
+                res1[0].onlinepaymentstatus = true;
               }
 
               
@@ -1773,6 +1790,74 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
   }
 };
 
+
+Order.moveit_order_accept = async function moveit_order_accept(req, result) {
+
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
+
+  // d.setHours(d.getHours() + 5);
+  if (orderdetails.length !== 0) {
+
+    if (orderdetails[0].moveit_status < 1 ) {
+
+      if (orderdetails[0].moveit_user_id === req.moveituserid) {
+        
+        var orderaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
+        // .add(0, "seconds")
+        // .add(0, "minutes")
+        // .format("YYYY-MM-DD HH:mm:ss");
+      // console.log(orderaccepttime);
+      updatequery ="UPDATE Orders SET moveit_status = 1 ,moveit_accept_time= '" + orderaccepttime +"' WHERE orderid ='" +req.orderid +"'";
+     
+      sql.query(updatequery, async function(err, res) {
+        if (err) {
+          result(err, null);
+        } else {
+        
+          let response = {
+            success: true,
+            status: true,
+            message: "Order accepted successfully."
+          };
+          result(null, response);
+        }
+      });
+    }else {
+
+      let response = {
+        success: true,
+        status: false,
+        message: "sorry following order is not assign to you!"
+      };
+      result(null, response);
+      
+
+    }
+    } else if (orderdetails[0].moveit_status == 1) {
+      let response = {
+        success: true,
+        status: false,
+        message: "Sorry your order already accepted"
+      };
+      result(null, response);
+    } else {
+      let response = {
+        success: true,
+        status: false,
+        message: "order not found please check"
+      };
+      result(null, response);
+    }
+  } else {
+    let response = {
+      success: true,
+      status: false,
+      message: "order not found please check"
+    };
+    result(null, response);
+  }
+};
+
 Order.order_missing_by_makeit = async function order_missing_by_makeit(req, result) {
   const orderdetails = await query(
     "select * from Orders where orderid ='" + req.orderid + "'"
@@ -2020,5 +2105,6 @@ Order.moveit_delivery_cash_received_by_today_by_userid = async function moveit_d
     }
   );
 };
+
 
 module.exports = Order;

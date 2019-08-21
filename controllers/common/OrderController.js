@@ -359,6 +359,8 @@ exports.makeit_order_cancel = function(req, res) {
   }
 };
 
+
+//Makeit order accept
 exports.makeit_order_accept = function(req, res) {
   if (!req.body.orderid) {
    res 
@@ -367,6 +369,22 @@ exports.makeit_order_accept = function(req, res) {
  }
   else {
    Order.makeit_order_accept(req.body, function(err, ordercancel) {
+     if (err) res.send(err);
+     res.send(ordercancel);
+   });
+ }
+};
+
+
+//moveit order accept
+exports.moveit_order_accept = function(req, res) {
+  if (!req.body.orderid) {
+   res 
+     .status(400)
+     .send({ error: true, status: false, message: "Please provide orderid" });
+ }
+  else {
+   Order.moveit_order_accept(req.body, function(err, ordercancel) {
      if (err) res.send(err);
      res.send(ordercancel);
    });
