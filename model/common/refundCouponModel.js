@@ -28,7 +28,7 @@ RefundCoupon.createRefundCoupon = async function createRefundCoupon(req, result)
 
   const orderrefunddetails = await query("select * from Refund_Coupon where orderid =" + req.orderid + " and active_status=1");
   console.log(orderrefunddetails.length);
-  if (orderrefunddetails.length===0) {
+  if (orderrefunddetails.length === 0) {
    
   sql.query("Select userid,price,refund_amount,payment_status,orderstatus,lock_status from Orders where orderid=? ",[req.orderid], function(err, res) {
     if (err) {
@@ -36,10 +36,9 @@ RefundCoupon.createRefundCoupon = async function createRefundCoupon(req, result)
       result(null, err);
     } else {
      
-
       var price = res[0].price;
       var refundamount = res[0].refund_amount;
-      req.rcoupon ="Refund"+res[0].price;
+      
       req.active_status = 1;
       req.userid = res[0].userid;
 
@@ -50,11 +49,11 @@ RefundCoupon.createRefundCoupon = async function createRefundCoupon(req, result)
          req.refund_balance = refundamount;
         req.refundamount = refundamount;
       }
-      console.log("ddd:"+ req.refund_balance);
-      console.log("ddd:"+ req.refundamount);
-
      
-     // refundamount = price + refundamount;
+     // refund coupon
+      req.rcoupon ="Refund"+req.refundamount;
+    
+      console.log(req.rcoupon);
   
       sql.query("INSERT INTO Refund_Coupon set ?", req, function(err, res) {
           if (err) {
@@ -83,6 +82,153 @@ RefundCoupon.createRefundCoupon = async function createRefundCoupon(req, result)
 
 };
 
+
+
+RefundCoupon.createRefundCoupon_admin = async function createRefundCoupon_admin(req, result) {
+
+  console.log("ddd:"+req.orderid);
+
+  const orderrefunddetails = await query("select * from Refund_Coupon where orderid =" + req.orderid + " and active_status = 1");
+  console.log(orderrefunddetails.length);
+  if (orderrefunddetails.length === 0) {
+   
+  sql.query("Select userid,price,refund_amount,payment_status,orderstatus,lock_status from Orders where orderid=? ",[req.orderid], function(err, res) {
+    if (err) {
+      console.log("error: ", err);
+      result(null, err);
+    } else {
+     
+      var price = res[0].price;
+      var refundamount = res[0].refund_amount;
+      
+      req.active_status = 1;
+      req.userid = res[0].userid;
+
+      if (res[0].payment_status === 1) {
+        req.refund_balance = price + refundamount;
+        req.refundamount = price + refundamount;
+      }else{
+         req.refund_balance = refundamount;
+        req.refundamount = refundamount;
+      }
+     
+     // refund coupon
+      req.rcoupon ="Refund"+req.refundamount;
+    
+
+  
+      sql.query("INSERT INTO Refund_Coupon set ?", req, function(err, res) {
+          if (err) {
+            result(err, null);
+          } else {
+           
+            let resobj = {
+              success: true,
+              status:true,
+              message: "RefundCoupon created successfully"
+            };
+            result(null, resobj);
+          }
+        });
+      
+      };
+    });
+  }else{
+    let resobj = {
+      success: true,
+      status:false,
+      message: "Sorry RefundCoupon Already exist for following order! Please check once again"
+    };
+    result(null, resobj);
+  }
+
+};
+
+RefundCoupon.create_Refund_Coupon_online_orders = async function create_Refund_Coupon_online_orders(req, result) {
+
+  const orderrefunddetails = await query("select * from Refund_Coupon where orderid =" + req.orderid + " and active_status = 1");
+ 
+  if (orderrefunddetails.length === 0) {
+   
+  sql.query("Select userid,price,refund_amount,payment_status,orderstatus,lock_status from Orders where orderid=? ",[req.orderid], function(err, res) {
+    if (err) {
+      console.log("error: ", err);
+      result(null, err);
+    } else {
+      
+      req.active_status = 1;
+      req.refund_balance = res[0].refund_amount;
+      req.refundamount = res[0].refund_amount;
+      
+     
+     // refund coupon
+      req.rcoupon ="Refund"+req.refundamount;
+    
+
+  
+      sql.query("INSERT INTO Refund_Coupon set ?", req, function(err, res) {
+          if (err) {
+            result(err, null);
+          } else {
+           
+            let resobj = {
+              success: true,
+              status:true,
+              message: "RefundCoupon created successfully"
+            };
+            result(null, resobj);
+          }
+        });
+      
+      };
+    });
+  }else{
+    let resobj = {
+      success: true,
+      status:false,
+      message: "Sorry RefundCoupon Already exist for following order! Please check once again"
+    };
+    result(null, resobj);
+  }
+
+};
+
+
+
+
+RefundCoupon.create_Refund_Coupon_online_orders_common = async function create_Refund_Coupon_online_orders_common(req, result) {
+
+  const orderrefunddetails = await query("select * from Refund_Coupon where orderid =" + req.orderid + " and active_status = 1");
+ 
+  if (orderrefunddetails.length === 0) {
+ 
+      req.active_status = 1;
+   
+      sql.query("INSERT INTO Refund_Coupon set ?", req, function(err, res) {
+          if (err) {
+            result(err, null);
+          } else {
+           
+            let resobj = {
+              success: true,
+              status:true,
+              message: "RefundCoupon created successfully"
+            };
+            result(null, resobj);
+          }
+        });
+      
+    
+  }else{
+    let resobj = {
+      success: true,
+      status:false,
+      message: "Sorry RefundCoupon Already exist for following order! Please check once again"
+    };
+    result(null, resobj);
+  }
+
+};
 
 //For Admin
 RefundCoupon.getAllrefundcoupon_by_activstatus = function getAllrefundcoupon_by_activstatus(active_status,result) {

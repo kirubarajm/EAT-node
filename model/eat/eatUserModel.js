@@ -1291,7 +1291,7 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
 
 
 Eatuser.eatuser_login = function eatuser_login(newUser, result) { 
-     
+  // console.log(newUser.otpcode);  
   var OTP = Math.floor(Math.random() * 90000) + 10000;
    
   var passwordstatus = false;
@@ -1301,9 +1301,11 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
   var otpurl =
     "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
     newUser.phoneno +
-    "&senderId=EATHOM&message=Your EAT App OTP is " +
+    "&senderId=EATHOM&message=<%23>Your EAT App OTP is " +
     OTP +
-    ". Note: Please DO NOT SHARE this OTP with anyone.";
+    ". Note: Please DO NOT SHARE this OTP with anyone. " +
+    newUser.otpcode +
+    " ";
 
   // var otpurl = "https://www.google.com/";
 
@@ -1380,15 +1382,11 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
           //   genderstatus = true;
           // }
 
-          if (
-            res[0].gender !== "" &&
-            res[0].gender !== null &&
-            res[0].name !== "" &&
-            res[0].name !== null
-          ) {
+          if (res[0].gender !== "" &&res[0].gender !== null && res[0].name !== "" && res[0].name !== null) {
+           
             genderstatus = true;
             // otpstatus = true;
-          }
+             }
 
           if (passwordstatus === false) {
             request(
@@ -1404,7 +1402,7 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
                 } else {
                   console.log(response.statusCode, body);
                   var responcecode = body.split("#");
-                  console.log(responcecode[0]);
+                  console.log('responcecode'+responcecode[0]);
 
                   if (responcecode[0] === "0") {
                     sql.query("insert into Otp(phone_number,apptype,otp)values('" +newUser.phoneno +"',4,'" +OTP +"')",function(err, res1) {
@@ -1430,12 +1428,10 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
                     let resobj = {
                       success: true,
                       status: false,
-                      message: responcecode[1],
-                      passwordstatus: passwordstatus,
+                      message: responcecode[0],
                       otpstatus: otpstatus,
                       genderstatus: genderstatus,
-                      userid: res[0].userid,
-                      oid: res1.insertId
+                      message : responcecode
                     };
 
                     result(null, resobj);

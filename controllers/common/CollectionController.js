@@ -11,6 +11,15 @@ exports.list_all_collection = function(req, res) {
   });
 };
 
+// exports.list_all_collection_new = function(req, res) {
+//   Collection.list_all_active_collection(req.params,function(err, result) {
+//   console.log("controller");
+//   if (err) res.send(err);
+//   console.log("res", result);
+//   res.send(result);
+// });
+// };
+
 exports.createcollection = function(req, res) {
   var rc =new Collection(req.body);
   Collection.createcollection(rc, function(err, result) {
@@ -56,3 +65,5 @@ exports.read_all_collection_by_userid = function(req, res) {
   res.json(result);
 });
 }
+
+
