@@ -355,6 +355,7 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
 }
 
 Order.online_order_place_conformation = async function(order_place, result) {
+  console.log(order_place);
   var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
   var transaction_status= order_place.payment_status === 1? 'success':'failed';
   var orderUpdateQuery =
@@ -394,7 +395,9 @@ Order.online_order_place_conformation = async function(order_place, result) {
           });
          }
          
-        if (order_place.refund_balance !==0 || order_place.rcid ) {
+         console.log(order_place.refund_balance);
+         console.log(order_place.rcid);
+        if (order_place.refund_balance !== 0 || order_place.rcid ) {
           var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(
             order_place.rcid,
             order_place.refund_balance,
@@ -1128,7 +1131,7 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
   );
 
   const cod_amount = await query(
-    "select sum(price) as totalamount from Orders where (moveit_actual_delivered_time) = CURDATE() and orderstatus = 6  and payment_status = 1 and payment_type = 0  and lock_status = 0 and  moveit_user_id = " +moveit_user_id +"");
+    "select sum(price) as totalamount from Orders where DATE(moveit_actual_delivered_time) = CURDATE() and orderstatus = 6  and payment_status = 1 and payment_type = 0  and lock_status = 0 and  moveit_user_id = " +moveit_user_id +"");
 
   if (rows.length=== 0) {
     var res = {
@@ -1149,6 +1152,7 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
     rows[i].items = products;
     rows[i].locality = "Guindy";
   }
+  console.log(cod_amount);
   let resobj = {
     success: true,
     status: true,
@@ -1550,13 +1554,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             var productquantityadd ="update Product set quantity = quantity+" +orderitemdetails[i].quantity +" where productid =" +orderitemdetails[i].productid +"";
 
             var res3 = await query(productquantityadd);
-            // sql.query(productquantityadd, function(err, res3) {
-            //   if (err) {
-            //     console.log("error: ", err);
-            //     result(null, err);
-            //   } else {
-            //   }
-            // });
+            
           }
 
           var refundDetail = {
@@ -1567,16 +1565,64 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             payment_id: orderdetails[0].transactionid
           };
 
+          var totalrefund = orderdetails[0].price + orderdetails[0].refund_amount;
+
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status === 1) {
             
-            if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
-              await Order.create_refund(refundDetail);
+          if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
+
+            // if (orderdetails[0].price > constant.servicecharge) {
+                
+            //   refundDetail.price  = refundDetail.price - constant.servicecharge;
+
+              
+
+            // }else if (orderdetails[0].refund_amount < constant.servicecharge){
+
+            //   var couponrefundtotal = orderdetails[0].refund_amount - constant.servicecharge;
+
+            //   if (orderdetails[0].refund_amount !==0) {
+            //     var rc = new RefundCoupon(req);
+            //     rc.refund_balance = totalrefund;
+            //     rc.refundamount = totalrefund;
+            //     RefundCoupon.create_Refund_Coupon_online_orders_common(rc, async function(err, res2) {
+            //     if (err) {
+            //       result(err, null);
+            //     } 
+            //   });
+            //   }
+
+            // }else if (totalrefund > constant.servicecharge){
+
+            //   totalrefund = totalrefund - constant.servicecharge;
+
+            //   if (orderdetails[0].refund_amount !==0) {
+            //     var rc = new RefundCoupon(req);
+            //     rc.refund_balance = totalrefund;
+            //     rc.refundamount = totalrefund;
+            //     RefundCoupon.create_Refund_Coupon_online_orders_common(rc, async function(err, res2) {
+            //     if (err) {
+            //       result(err, null);
+            //     } 
+            //   });
+            //   }
+
+            // }
+
+ 
+                
+              if (orderdetails[0].price !==0) {
+                await Order.create_refund(refundDetail);
+              }
+
+
+            //  await Order.create_refund(refundDetail);
               await Notification.orderEatPushNotification(
               req.orderid,
               null,
               PushConstant.Pageid_eat_order_cancel
             );
-            }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
+          }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
             var rc = new RefundCoupon(req);
             RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
               if (err) {
@@ -1585,7 +1631,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             });
           }
             
-            }
+          }
                    
 
           await Notification.orderMakeItPushNotification(
@@ -1795,8 +1841,8 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
   if (orderdetails.length !== 0) {
 
     if (orderdetails[0].moveit_status < 1 ) {
-
-      if (orderdetails[0].moveit_user_id === req.moveituserid) {
+      console.log(req.moveituserid);
+    //  if (orderdetails[0].moveit_user_id === req.moveituserid || orderdetails[0].moveit_user_id === "req.moveituserid") {
         
         var orderaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
         // .add(0, "seconds")
@@ -1818,17 +1864,7 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
           result(null, response);
         }
       });
-    }else {
-
-      let response = {
-        success: true,
-        status: false,
-        message: "sorry following order is not assign to you!"
-      };
-      result(null, response);
-      
-
-    }
+   
     } else if (orderdetails[0].moveit_status == 1) {
       let response = {
         success: true,
@@ -1988,43 +2024,61 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
 
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
   if (orderdetails) {
+    
     if (orderdetails[0].orderstatus === 6) {
+ //     console.log(orderdetails[0].moveit_actual_delivered_time);
+      var today = moment();
+      var moveit_actual_delivered_time = moment(orderdetails[0].moveit_actual_delivered_time);
+      var diffMs  = (today - moveit_actual_delivered_time);
+      var diffDays = Math.floor(diffMs / 86400000); 
+      var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
+      var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
+  
+      
+      console.log(diffDays);
+      ///minimum 24 hours for item missing or 1 day
+      if (diffDays === 0) {
+           
       sql.query("UPDATE Orders SET item_missing = 1,item_missing_reason='" +req.item_missing_reason +"' WHERE orderid ='" +req.orderid +"'",
           async function(err, res1) {
           if (err) {
             result(err, null);
           } else {
+            var refundDetail = {
+              orderid : req.orderid,
+              original_amt : orderdetails[0].price,
+              active_status : 1,
+              userid : orderdetails[0].userid,
+              payment_id : orderdetails[0].transactionid
+            };
             //console.log(orderdetails[0].payment_type);
+
             if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_type === 0) {
               var rc = new RefundCoupon(req);
-              console.log(rc);
-              RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+              RefundCoupon.createRefundCoupon_admin(rc, async function(err, res2) {
                 if (err) {
                   result(err, null);
                 } else {
-                  if (res2.status != true) {
-                    result(null, res2);
-                  } else {
-                    let response = {
-                      success: true,
-                      status: true,
-                      message: "Refunded created successfully."
-                    };
-                    result(null, response);
-                  }
+                  
                 }
               });
-            } else if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1) {
-              // var rc =new RefundOnline(req);
-              var refundDetail = {
-                orderid : req.orderid,
-                original_amt : orderdetails[0].price,
-                active_status : 1,
-                userid : orderdetails[0].userid,
-                payment_id : orderdetails[0].transactionid
-              };
-              console.log(refundDetail);
-              await Order.create_refund(refundDetail);
+            } else if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1) {
+              
+              if (orderdetails[0].refund_amount !==0) {
+                var rc = new RefundCoupon(req);
+              RefundCoupon.create_Refund_Coupon_online_orders(rc, async function(err, res2) {
+                if (err) {
+                  result(err, null);
+                } 
+              });
+              }
+ 
+                
+              if (orderdetails[0].price !==0) {
+                await Order.create_refund(refundDetail);
+              }
+            
+
                 let response = {
                   success: true,
                   status: true,
@@ -2032,9 +2086,22 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
                 };
                 result(null, response);
             }
+         
+         
           }
         }
       );
+
+      }else{
+
+        let response = {
+          success: true,
+          status: false,
+          message: "Sorry can't create the item missing."
+        };
+        result(null, response);
+
+      }
     } else if(orderdetails[0].orderstatus === 7){
       let response = {
         success: true,

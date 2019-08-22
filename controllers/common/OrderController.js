@@ -397,7 +397,7 @@ exports.eat_order_missing = function(req, res) {
      .send({ error: true, status: false, message: "Please provide orderid" });
  }
   else {
-    console.log(req.body);
+   // console.log(req.body);
    Order.eat_order_missing_byuserid(req.body, function(err, ordercancel) {
      if (err) res.send(err);
      res.send(ordercancel);

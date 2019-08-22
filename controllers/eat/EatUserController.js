@@ -185,7 +185,7 @@ exports.eatuser_login = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide phoneno" });
   } else {
-    Eatuser.eatuser_login(new_user, function(err, user) {
+    Eatuser.eatuser_login(req.body, function(err, user) {
       if (err) res.send(err);
       res.json(user);
     });

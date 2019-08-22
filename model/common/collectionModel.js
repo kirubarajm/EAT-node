@@ -66,6 +66,38 @@ Collection.list_all_active_collection = function list_all_active_collection(req,
   });
 };
 
+// Collection.list_all_active_collection_new = function list_all_active_collection_new(eatuserid,result) {
+//   sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at from Collections where active_status=1",async function(err, res) {
+//     if (err) {
+//       result(err, null);
+//     } else {
+
+//         var req = {};
+//          req.eatuserid = eatuserid
+     
+//       var kitchens =   await Collection.getcollectionlist(res,req)
+
+//       console.log("first collection");
+//        if (res.length !== 0 ) {
+//         let resobj = {
+//           success: true,
+//           status:true,
+//           collection: res
+//         };
+//         result(null, resobj);
+//        } else {
+//         let resobj = {
+//           success: true,
+//           status:false,
+//           message: "Sorry there no active collections"
+//         };
+//         result(null, resobj);
+//        }
+     
+//     }
+//   });
+// };
+
 Collection.updateByCollectionId = function(cid,active_status) {
   sql.query(
     "UPDATE Collection SET active_status=? WHERE cid = ?",
@@ -133,7 +165,7 @@ Collection.getcollectionlist = async function(res,req){
          // console.log("kitchenlist"+res3.result);
          // res[i].kitchenlist = res3.result;
         var kitchenlist = res3.result
-         console.log(kitchenlist.length);
+      //   console.log(kitchenlist.length);
           
           if (kitchenlist.length !==0) {
             res[i].collectionstatus = true;
@@ -185,6 +217,13 @@ Collection.getAllCollection_by_user =async function getAllCollection_by_user(req
       }
     });
 };
+
+
+
+
+
+
+
 
 Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(req,result) {
   
