@@ -76,9 +76,7 @@ exports.list_all_orders = function(req, res) {
 
 exports.list_today_virtual_makeit_orders = function(req, res) {
   Order.get_today_vorders(req.body, function(err, user) {
-    console.log("controller");
     if (err) res.send(err);
-    console.log("res", user);
     res.send(user);
   });
 };
