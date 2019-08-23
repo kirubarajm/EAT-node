@@ -412,7 +412,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
             res[i].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
           }
 
-
+          res[i].serviceablestatus = false;
           if (res[i].productlist) {
             res[i].productlist = JSON.parse(res[i].productlist);
 
@@ -425,7 +425,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
          
           res[i].eta = Math.round(eta);
   
-          res[i].serviceablestatus = false;
+         
   
           if (res[i].distance <= radiuslimit) {
             res[i].serviceablestatus = true;

@@ -425,6 +425,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
                 let message = "Quantity added successfully";
                 let resobj = {
                   success: true,
+                  status : true,
                   message: message
                 };
                 result(null, resobj);
