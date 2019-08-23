@@ -187,12 +187,12 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
 
   Coupon.coupons_validate_by_userid = async function coupons_validate_by_userid(req,result) {
 
-    sql.query("Select * from Coupon where active_status= 1 and coupon_name = '"+req.coupon_name+"' and expiry_date > NOW() limit 1", async function(err, res1) {
+    sql.query("Select * from Coupon where active_status= 1 and coupon_name = '"+req.coupon_name+"' and expiry_date > NOW() limit 1", async function(err, res) {
       if (err) {
         result(err, null);
       } else {
           if (res.length !== 0 ) {
-            sql.query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? ",[req.userid,res1[0].cid], function(err, couponinfo) {
+            sql.query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? ",[req.userid,res[0].cid], function(err, couponinfo) {
               if (err) {
                 result(err, null);
               } else {

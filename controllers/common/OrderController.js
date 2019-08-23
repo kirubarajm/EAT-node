@@ -391,7 +391,7 @@ exports.moveit_order_accept = function(req, res) {
  }
 };
 //refund creation
-exports.eat_order_missing = function(req, res) {
+exports.eat_order_item_missing = function(req, res) {
   
   if (!req.body.orderid) {
    res 
@@ -400,7 +400,7 @@ exports.eat_order_missing = function(req, res) {
  }
   else {
    // console.log(req.body);
-   Order.eat_order_missing_byuserid(req.body, function(err, ordercancel) {
+   Order.eat_order_item_missing_byuserid(req.body, function(err, ordercancel) {
      if (err) res.send(err);
      res.send(ordercancel);
    });

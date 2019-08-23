@@ -18,7 +18,7 @@ RefundOnline.createRefund = async function createRefund(req, result) {
   const orderrefunddetails = await query("select * from Refund_Online where orderid ='" + req.orderid + "' and active_status=1");
   console.log(orderrefunddetails.length);
   if (orderrefunddetails.length===0) {
-    sql.query("INSERT INTO Refund_Online set ?",req, function(err, res1) {
+    sql.query("INSERT INTO Refund_Online set ?",req,async function(err, res1) {
       if (err) result(true, null);
       else {
 
@@ -42,6 +42,10 @@ RefundOnline.createRefund = async function createRefund(req, result) {
   result(resobj,null);
 }
 };
+
+
+
+
 
 RefundOnline.get_all_refunds = function get_all_refunds(req, result) {
   sql.query("select rf.*,ors.cancel_by,ors.item_missing from Refund_Online rf left join Orders as ors on ors.orderid = rf.orderid order by active_status DESC,created_at DESC", function(err, res) {
