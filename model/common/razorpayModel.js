@@ -71,17 +71,18 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     
     if (onlinerefunddetails[0].active_status === 1 ) {
       
-      if (req.amount > servicecharge) {
+    //  if (req.amount > servicecharge) {
          
       ///cancel by ===1 is eat user cancel amount detect
-    if (req.cancel_by && req.cancel_by === 1) {
-        amount= req.amount - servicecharge;
-    }else{
-        amount= req.amount;
-    }
+    // if (req.cancel_by && req.cancel_by === 1) {
+    //     amount= req.amount - servicecharge;
+    // }else{
+    //     amount= req.amount;
+    // }
     // instance.payments. refund(req.paymentid, {
     // amount: 10,
-    var refund_amt = amount
+    var amount= req.amount;
+    var refund_amt = req.amount
     instance.payments.refund(req.paymentid, {
       //amount values convert to paisa
     amount: amount * 100,
@@ -126,18 +127,18 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     // error
   })
 
-}else{
+// }else{
 
  
-  let resobj = {  
-    success: true,
-    status:false,
-    message:"Sorry insufficient amount!",
-    result:onlinerefunddetails,
-    }; 
+//   let resobj = {  
+//     success: true,
+//     status:false,
+//     message:"Sorry insufficient amount!",
+//     result:onlinerefunddetails,
+//     }; 
 
- result(null, resobj);
-}
+//  result(null, resobj);
+// }
 }else if (onlinerefunddetails[0].active_status===0) {
     
     var  message = "Sorry your refund amount has been already refunded!"

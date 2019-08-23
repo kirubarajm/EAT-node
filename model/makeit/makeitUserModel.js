@@ -1686,13 +1686,32 @@ Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(
         if (res1.length == 0) {
           var OTP = Math.floor(Math.random() * 90000) + 10000;
 
-          var otpurl =
+          // var otpurl =
+          //   "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
+          //   newUser.phoneno +
+          //   "&senderId=EATHOM&message=Your EAT App OTP is " +
+          //   OTP +
+          //   ". Note: Please DO NOT SHARE this OTP with anyone.";
+
+          if (newUser.otpcode) {
+            var otpurl =
+            "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
+            newUser.phoneno +
+            "&senderId=EATHOM&message=<%23>Your EAT App OTP is " +
+            OTP +
+            ". Note: Please DO NOT SHARE this OTP with anyone. " +
+            newUser.otpcode +
+            " ";
+          }else{
+        
+            var otpurl =
             "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
             newUser.phoneno +
             "&senderId=EATHOM&message=Your EAT App OTP is " +
             OTP +
-            ". Note: Please DO NOT SHARE this OTP with anyone.";
-
+            ". Note: Please DO NOT SHARE this OTP with anyone. ";
+          }
+        
           request(
             {
               method: "GET",
@@ -1892,12 +1911,25 @@ Makeituser.makeit_user_forgot_password_update = function makeit_user_forgot_pass
 Makeituser.makeit_user_forgot_password_send_otp = function makeit_user_forgot_password_send_otp(newUser,result) {
   var OTP = Math.floor(Math.random() * 90000) + 10000;
 
-  var otpurl =
+  if (newUser.otpcode) {
+    var otpurl =
+    "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
+    newUser.phoneno +
+    "&senderId=EATHOM&message=<%23>Your EAT App OTP is " +
+    OTP +
+    ". Note: Please DO NOT SHARE this OTP with anyone. " +
+    newUser.otpcode +
+    " ";
+  }else{
+
+    var otpurl =
     "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
     newUser.phoneno +
     "&senderId=EATHOM&message=Your EAT App OTP is " +
     OTP +
-    ". Note: Please DO NOT SHARE this OTP with anyone.";
+    ". Note: Please DO NOT SHARE this OTP with anyone. ";
+  }
+
 
   request(
     {

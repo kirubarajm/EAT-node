@@ -61,6 +61,7 @@ var Order = function(order) {
   this.makeit_earnings = order.makeit_earnings;
   this.moveit_accept_time = order.moveit_accept_time;
   this.moveit_status = order.moveit_status;
+  this.cancel_charge = order.cancel_charge;
 };
 
 
@@ -174,7 +175,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                   req.gst = amountdata.gstcharge;
                   req.price = amountdata.grandtotal;
                   req.makeit_earnings = amountdata.makeit_earnings;
-        
+                  console.log(req.makeit_earnings);
                   req.cus_address = address_data[0].address;
                   req.locality = address_data[0].locality;
                   req.cus_lat = address_data[0].lat;
@@ -1434,10 +1435,9 @@ Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
 Order.orderlistbyeatuser = async function(req, result) {
 
 
-
   var query = "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" +
             req.userid +
-            "' and (ors.orderstatus = 6 or orderstatus = 7) group by ors.orderid order by ors.orderid desc";
+            "' and (ors.orderstatus = 6 or orderstatus = 7 or orderstatus = 8 ) group by ors.orderid order by ors.orderid desc";
   sql.query(query,function(err, res) {
       if (err) {
         result(err, null);
@@ -1477,6 +1477,12 @@ Order.orderlistbyeatuser = async function(req, result) {
                var items = JSON.parse(history_list[i].items);
                history_list[i].items = items;
              }
+
+             history_list[i].ordercancelstatus = false;
+             if (history_list[i].orderstatus === 7 || history_list[i].orderstatus === 8) {
+              history_list[i].ordercancelstatus = true;
+             }
+
            }
 
            
@@ -1612,10 +1618,33 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
     }
   );
 };
-
+//online refund coupon
 Order.create_refund = function create_refund(refundDetail) {
   var refund = new RefundOnline(refundDetail);
   RefundOnline.createRefund(refund, function(err, res) {
+    if (err) return err;
+    else return res;
+  });
+};
+
+
+
+Order.cod_create_refund_coupon_servicecharge = function cod_create_refund_coupon_servicecharge(refundDetail) {
+
+  var rc = new RefundCoupon(refundDetail);
+  console.log(rc)
+   RefundCoupon.create_Refund_Coupon_online_orders_servicecharge(rc, function(err, res) {
+    if (err) return err;
+    else return res;
+  });
+};
+
+
+Order.create_Refund_Coupon_by_totalamount_servicecharge = function create_Refund_Coupon_by_totalamount_servicecharge(refundDetail) {
+
+  var rc = new RefundCoupon(refundDetail);
+  console.log(rc)
+   RefundCoupon.create_Refund_Coupon_by_totalamount_servicecharge(rc, function(err, res) {
     if (err) return err;
     else return res;
   });
@@ -1631,7 +1660,6 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           result(err, null);
         } else {
           
-
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
                     
         //  console.log(orderitemdetails);
@@ -1644,80 +1672,89 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
 
           var refundDetail = {
             orderid: req.orderid,
-            original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
+            original_amt: orderdetails[0].price,
             active_status: 1,
             userid: orderdetails[0].userid,
             payment_id: orderdetails[0].transactionid
           };
 
           var totalrefund = orderdetails[0].price + orderdetails[0].refund_amount;
-
+          var querycancel_charge ="update Orders set cancel_charge = "+constant.servicecharge+"  where orderid =" +req.orderid+"";
+          /// check the order refunded amount and payment status
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status === 1) {
             
+
+
+
+            /// check the order refunded amount and payment type 
           if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
-
-            // if (orderdetails[0].price > constant.servicecharge) {
-                
-            //   refundDetail.price  = refundDetail.price - constant.servicecharge;
-
-              
-
-            // }else if (orderdetails[0].refund_amount < constant.servicecharge){
-
-            //   var couponrefundtotal = orderdetails[0].refund_amount - constant.servicecharge;
-
-            //   if (orderdetails[0].refund_amount !==0) {
-            //     var rc = new RefundCoupon(req);
-            //     rc.refund_balance = totalrefund;
-            //     rc.refundamount = totalrefund;
-            //     RefundCoupon.create_Refund_Coupon_online_orders_common(rc, async function(err, res2) {
-            //     if (err) {
-            //       result(err, null);
-            //     } 
-            //   });
-            //   }
-
-            // }else if (totalrefund > constant.servicecharge){
-
-            //   totalrefund = totalrefund - constant.servicecharge;
-
-            //   if (orderdetails[0].refund_amount !==0) {
-            //     var rc = new RefundCoupon(req);
-            //     rc.refund_balance = totalrefund;
-            //     rc.refundamount = totalrefund;
-            //     RefundCoupon.create_Refund_Coupon_online_orders_common(rc, async function(err, res2) {
-            //     if (err) {
-            //       result(err, null);
-            //     } 
-            //   });
-            //   }
-
-            // }
-
  
                 
-              if (orderdetails[0].price !==0) {
+              if (orderdetails[0].refund_amount  > constant.servicecharge) {
+                //online user paid and used refund coupon amount so after he cancel order . so detect the serivice charge
+                console.log("refund_amount service charge");
+                await Order.cod_create_refund_coupon_servicecharge(refundDetail);
                 await Order.create_refund(refundDetail);
+                await Notification.orderEatPushNotification(
+                  req.orderid,
+                  null,
+                  PushConstant.Pageid_eat_order_cancel
+                );
+                var updatecancel_charge = await query(querycancel_charge);
+              }else if (orderdetails[0].price  > constant.servicecharge){
+                console.log("price service charge");
+                refundDetail.original_amt = orderdetails[0].price - constant.servicecharge;
+                await Order.create_refund(refundDetail);
+                await Notification.orderEatPushNotification(
+                  req.orderid,
+                  null,
+                  PushConstant.Pageid_eat_order_cancel
+                );
+
+                //online user paid and used refund coupon amount so after he cancel order . so create refund again
+                if (orderdetails[0].refund_amount !== 0) {
+                  console.log("Online cod refund");
+                 await Order.cod_create_refund_byonline(refundDetail);
+                 var updatecancel_charge = await query(querycancel_charge);
+                }
+
+              }else if (totalrefund  > constant.servicecharge){
+               //online order paid and used refund amount . and total amount was too low comparing serivce charge so summ of price and refundamount and defetect service charge
+                await Order.create_Refund_Coupon_by_totalamount_servicecharge(refundDetail);
+                await Notification.orderEatPushNotification(
+                  req.orderid,
+                  null,
+                  PushConstant.Pageid_eat_order_cancel
+                );
+
+                var updatecancel_charge = await query(querycancel_charge);
+                
+
+               
+    
               }
 
-
-            //  await Order.create_refund(refundDetail);
-              await Notification.orderEatPushNotification(
-              req.orderid,
-              null,
-              PushConstant.Pageid_eat_order_cancel
-            );
           }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
             var rc = new RefundCoupon(req);
             RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
               if (err) {
                 result(err, null);
-              } 
+              } else{
+                let response = {
+                  success: true,
+                  status: true,
+                  message: "Refunded created successfully."
+                };
+                result(null, response);
+            
+              }
             });
           }
-            
+      
+
           }
                    
+
 
           await Notification.orderMakeItPushNotification(
             req.orderid,
@@ -1792,7 +1829,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
         } else {
           var refundDetail = {
             orderid: req.orderid,
-            original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
+            original_amt: orderdetails[0].price,
             active_status: 1,
             userid: orderdetails[0].userid,
             payment_id: orderdetails[0].transactionid
@@ -1815,8 +1852,15 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
             if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
-              await Order.create_refund(refundDetail);
               
+              await Order.create_refund(refundDetail);
+              if (orderdetails[0].refund_amount !== 0) {
+                console.log("Online cod refund");
+               await Order.cod_create_refund_byonline(refundDetail);
+               
+              }
+
+
           }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
             var rc = new RefundCoupon(req);
             RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
@@ -1917,7 +1961,6 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
   }
 };
 
-
 Order.moveit_order_accept = async function moveit_order_accept(req, result) {
 
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
@@ -1995,23 +2038,63 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
             orderid: req.orderid,
             original_amt: orderdetails[0].price,
             active_status: 1,
-            userid :orderdetails[0].userid,
-            payment_id:orderdetails[0].transactionid,
+            userid: orderdetails[0].userid,
+            payment_id: orderdetails[0].transactionid
           };
-          if (
-            orderdetails[0].payment_type === "1" &&
-            orderdetails[0].payment_status === 1
-          )
-          await Order.create_refund(refundDetail);
+          var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+          for (let i = 0; i < orderitemdetails.length; i++) {
+            var productquantityadd =
+              "update Product set quantity = quantity+" +
+              orderitemdetails[i].quantity +
+              " where productid =" +
+              orderitemdetails[i].productid +
+              "";
+            sql.query(productquantityadd, function(err, res2) {
+              if (err) {
+                result(err, null);
+              }
+            });
+          }
+
+          if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+
+            if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
+              
+              await Order.create_refund(refundDetail);
+              if (orderdetails[0].refund_amount !== 0) {
+                console.log("Online cod refund");
+               await Order.cod_create_refund_byonline(refundDetail);
+               
+              }
+
+
+          }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
+            var rc = new RefundCoupon(req);
+            RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+              if (err) {
+                result(err, null);
+              } 
+            });
+          }
+          }
+
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
             PushConstant.Pageid_eat_order_cancel
           );
+          
+          if(orderdetails[0]&&orderdetails[0].moveit_user_id){
+            await Notification.orderMoveItPushNotification(
+              req.orderid,
+              PushConstant.pageidMoveit_Order_Cancel,
+              null
+            );
+          }
           let response = {
             success: true,
             status: true,
-            message: "Sorry your order accept time is missing.so this order is auto canceled"
+            message: "Order canceled successfully."
           };
           result(null, response);
         }
@@ -2019,6 +2102,7 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
     );
   }
 };
+
 Order.admin_order_cancel = async function admin_order_cancel(req, result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
@@ -2068,9 +2152,16 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
             if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
-              await Order.create_refund(refundDetail);
               
-          }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_type === 0) {
+              await Order.create_refund(refundDetail);
+              if (orderdetails[0].refund_amount !== 0) {
+                console.log("Online cod refund");
+               await Order.cod_create_refund_byonline(refundDetail);
+               
+              }
+
+
+          }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
             var rc = new RefundCoupon(req);
             RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
               if (err) {
@@ -2105,13 +2196,26 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
   }
 };
 
-Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req,result) {
+
+// this code is online order cod refund creation
+Order.cod_create_refund_byonline = function cod_create_refund_byonline(refundDetail) {
+
+  var rc = new RefundCoupon(refundDetail);
+  console.log(rc)
+   RefundCoupon.create_Refund_Coupon_online_orders(rc, function(err, res) {
+    if (err) return err;
+    else return res;
+  });
+};
+
+
+Order.eat_order_item_missing_byuserid = async function eat_order_item_missing_byuserid(req,result) {
 
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
   if (orderdetails) {
     
     if (orderdetails[0].orderstatus === 6) {
- //     console.log(orderdetails[0].moveit_actual_delivered_time);
+
       var today = moment();
       var moveit_actual_delivered_time = moment(orderdetails[0].moveit_actual_delivered_time);
       var diffMs  = (today - moveit_actual_delivered_time);
@@ -2119,16 +2223,16 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
       var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
       var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
   
-      
-      console.log(diffDays);
       ///minimum 24 hours for item missing or 1 day
       if (diffDays === 0) {
-           
-      sql.query("UPDATE Orders SET item_missing = 1,item_missing_reason='" +req.item_missing_reason +"' WHERE orderid ='" +req.orderid +"'",
-          async function(err, res1) {
+
+        console.log(diffDays);   
+      sql.query("UPDATE Orders SET item_missing = 1,item_missing_reason='" +req.item_missing_reason +"' WHERE orderid ='" +req.orderid +"'",async function(err, res1) {
           if (err) {
             result(err, null);
           } else {
+
+
             var refundDetail = {
               orderid : req.orderid,
               original_amt : orderdetails[0].price,
@@ -2136,34 +2240,43 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
               userid : orderdetails[0].userid,
               payment_id : orderdetails[0].transactionid
             };
-            //console.log(orderdetails[0].payment_type);
+           
 
             if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_type === 0) {
+
               var rc = new RefundCoupon(req);
-              RefundCoupon.createRefundCoupon_admin(rc, async function(err, res2) {
+              RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
                 if (err) {
                   result(err, null);
-                } else {
-                  
+                } else{
+
+                  let response = {
+                    success: true,
+                    status: true,
+                    message: "Refunded created successfully."
+                  };
+                  result(null, response);
+              
                 }
               });
-            } else if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1) {
+
+            } else if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_type === 1) {
               
-              if (orderdetails[0].refund_amount !==0) {
-                var rc = new RefundCoupon(req);
-              RefundCoupon.create_Refund_Coupon_online_orders(rc, async function(err, res2) {
-                if (err) {
-                  result(err, null);
-                } 
-              });
-              }
- 
-                
+
               if (orderdetails[0].price !==0) {
+                console.log("Online refund");
                 await Order.create_refund(refundDetail);
               }
             
 
+            if (orderdetails[0].refund_amount !== 0) {
+              console.log("Online cod refund");
+             await Order.cod_create_refund_byonline(refundDetail);
+             
+            }
+ 
+                
+              
                 let response = {
                   success: true,
                   status: true,
@@ -2174,7 +2287,7 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
          
          
           }
-        }
+      }
       );
 
       }else{
@@ -2182,11 +2295,13 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
         let response = {
           success: true,
           status: false,
-          message: "Sorry can't create the item missing."
+          message: "Sorry can't create the item missing due to time 1 day extened."
         };
         result(null, response);
 
       }
+  
+  
     } else if(orderdetails[0].orderstatus === 7){
       let response = {
         success: true,
@@ -2211,6 +2326,10 @@ Order.eat_order_missing_byuserid = async function eat_order_missing_byuserid(req
     result(null, response);
   }
 };
+
+
+
+
 Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
   var waitinglistquery = "SELECT ors.orderid,ors.ordertime,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail from Orders as ors left join MakeitUser ms on ors.makeit_user_id = ms.userid WHERE  ors.orderstatus=0 and ors.lock_status = 0 and ors.payment_status!=2 and (ors.created_at+ INTERVAL 6 MINUTE) < now() group by ors.orderid order by ors.orderid  desc";
   sql.query(waitinglistquery, function(err,res1) {

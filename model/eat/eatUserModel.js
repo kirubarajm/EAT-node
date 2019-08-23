@@ -1298,7 +1298,9 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
   var otpstatus = false;
   var genderstatus = false;
   var otptemp = 0;
-  var otpurl =
+
+  if (newUser.otpcode) {
+    var otpurl =
     "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
     newUser.phoneno +
     "&senderId=EATHOM&message=<%23>Your EAT App OTP is " +
@@ -1306,6 +1308,17 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
     ". Note: Please DO NOT SHARE this OTP with anyone. " +
     newUser.otpcode +
     " ";
+  }else{
+
+    var otpurl =
+    "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
+    newUser.phoneno +
+    "&senderId=EATHOM&message=Your EAT App OTP is " +
+    OTP +
+    ". Note: Please DO NOT SHARE this OTP with anyone. ";
+  }
+
+ 
 
   // var otpurl = "https://www.google.com/";
 
@@ -2444,7 +2457,23 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       var foodpreparationtime = constant.foodpreparationtime;
       var onekm = constant.onekm;
       var radiuslimit=constant.radiuslimit;
-        if (req.eatuserid) {
+
+    var regex = /^[A-Za-z0-9 ]+$/ ;
+ 
+    var isValid = regex.test(req.search);
+    if (!isValid) {
+
+      let resobj = {
+        success: true,
+        status: false,
+        message : "search Contains Special Characters."
+        
+    };
+
+    result(null, resobj);
+
+    } else {
+        
           var query =
             "Select pt.makeit_userid  as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
             req.lat +
@@ -2461,7 +2490,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
             "%' and pt.active_status = 1 and mk.ka_status = 2 and pt.approved_status=2 and pt.quantity != 0 and pt.delete_status != 1  group by pt.makeit_userid";
 
           //var query ="Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid as makeit_region,re.regionname, pt.product_name,pt.vegtype,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,cu.cuisineid,ly.localityname, ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid join Cuisine cu on cu.cuisineid=pt.cuisine left join Locality ly on mu.localityid=ly.localityid join Region re on re.regionid = mu.regionid left join Fav fa on fa.productid = pt.productid and fa.eatuserid = '"+req.eatuserid+"'  where mu.appointment_status = 3 and mu.verified_status = 1 and pt.active_status =1 and pt.quantity != 0  and pt.delete_status !=1 and pt.product_name like '%"+req.search+"%'  HAVING distance <="+radiuslimit+" ORDER BY pt.product_name ASC";
-        } 
+      
 
 
         console.log(query);
@@ -2479,10 +2508,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
               //15min Food Preparation time , 3min 1 km
             //  eta = 15 + 3 * res[i].distance;
             var eta = foodpreparationtime + onekm * res[i].distance;
-  
-              // if (eta > 60) {
-              //   eta = 60;
-              // }
+            
               res[i].eta = Math.round(eta) + " mins";
             
           }
@@ -2498,6 +2524,8 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
 
         }
       });
+
+    }
     };
 
 
