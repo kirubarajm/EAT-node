@@ -1347,6 +1347,16 @@ Order.orderviewbyeatuser = function(req, result) {
                   res1[0].items = items.item;
                 }
 
+                  var itemlist = res1[0].items
+                  var productprice = 0;
+                for (let i = 0; i < itemlist.length; i++) {
+                  
+                  productprice = productprice + ( itemlist[i].quantity * itemlist[i].price);
+                  console.log(productprice);
+                }
+
+
+
                 if (res1[0].orderstatus > 3) {
                    // +20 min add with moveit order assign time
                   res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
@@ -1369,13 +1379,15 @@ Order.orderviewbyeatuser = function(req, result) {
                 var gstinfo = {};
                 var deliverychargeinfo = {};
                 var refundinfo = {};
+                var productinfo = {};
                 //var grandtotalinfo = {};
         
-                  totalamountinfo.title = "Total Amount";
-                  totalamountinfo.charges = res1[0].price;
-                  totalamountinfo.status = true;
-                  cartdetails.push(totalamountinfo);
-        
+                    productinfo.title = "Product Price";
+                    productinfo.charges = productprice;
+                    productinfo.status = true;
+                    cartdetails.push(productinfo); 
+
+
                   if (res1[0].discount_amount) {
                     couponinfo.title = "Coupon adjustment";
                     couponinfo.charges = res1[0].discount_amount;
@@ -1399,6 +1411,13 @@ Order.orderviewbyeatuser = function(req, result) {
                     refundinfo.status = true;
                     cartdetails.push(refundinfo);
                   }
+
+                  
+                  // totalamountinfo.title = "Total Amount";
+                  // totalamountinfo.charges = res1[0].price;
+                  // totalamountinfo.status = true;
+                  // cartdetails.push(totalamountinfo);
+        
 
                   res1[0].cartdetails = cartdetails;
                 let resobj = {
