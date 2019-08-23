@@ -792,6 +792,23 @@ Order.get_today_vorders = function get_today_vorders(req, result) {
     " ";
     }
 
+    if(req.orderstatus===3){
+      limitquery = query +" group by od.orderid order by od.makeit_actual_preparing_time asc limit " +
+      startlimit +
+      "," +
+      orderlimit +
+      " ";
+      }
+
+      if(req.orderstatus===4){
+        limitquery = query +" group by od.orderid order by od.makeit_actual_preparing_time asc limit " +
+        startlimit +
+        "," +
+        orderlimit +
+        " ";
+        }
+
+
   sql.query(limitquery, function(err, res1) {
     if (err) {
       result(err, null);
@@ -961,16 +978,21 @@ Order.orderviewbymoveituser = function(orderid, result) {
 //////////////
 Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveituser( req,kitchenqualitylist,result) {
   var order_pickup_time = moment().format("YYYY-MM-DD HH:mm:ss");
-
-  var twentyMinutesLater = moment()
-        .add(0, "seconds")
-        .add(20, "minutes")
-        .format("YYYY-MM-DD HH:mm:ss");
+  var twentyMinutesLater = moment().add(0, "seconds").add(20, "minutes").format("YYYY-MM-DD HH:mm:ss");
 
 sql.query("Select * from Orders where orderid = ?", [req.orderid], function(err,res1) {
     if (err) {
       result(err, null);
     } else {
+      if (res1[0].orderstatus === 7) {
+        let resobj = {
+          success: true,
+          status:false,
+          message: "Sorry! This order already canceled."
+        };
+        result(null, resobj);
+        return;
+      }
       for (let i = 0; i < kitchenqualitylist.length; i++) {
         var qualitylist = new MoveitRatingForMakeit(kitchenqualitylist[i]);
         qualitylist.orderid = req.orderid;
