@@ -2415,4 +2415,34 @@ Order.moveit_delivery_cash_received_by_today_by_userid = async function moveit_d
 };
 
 
+Order.get_orders_cash_online_amount = async function get_orders_cash_online_amount(req,result) {
+  req.startdate = req.startdate;
+  req.enddate = req.enddate;
+  var paymentType=req.payment_type;
+  var orderquery = "select * from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1";
+  var orderamountquery ="select sum(price) as totalamount from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1";
+  
+  if(paymentType===0||paymentType===1){
+    orderquery=orderquery+" and payment_type = "+paymentType;
+    orderamountquery=orderamountquery+" and payment_type = "+paymentType;  
+  }
+  var orderamountquery =orderquery+";"+orderamountquery;
+  
+  sql.query(orderamountquery,function(err, res) {
+      if (err) {
+        result(err, null);
+      } else{
+        let resobj = {
+          success: true,
+          status:true,
+          totalamount:res[1][0].totalamount,
+          result: res[0]
+        };
+        result(null, resobj);
+      }
+    }
+  );
+};
+
+
 module.exports = Order;
