@@ -995,7 +995,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
       res1[0].availablity = true;
     }
     amount = res1[0].price * orderitems[i].quantity;
-   var order_makeit_earnings = res1[0].original_price * orderitems[i].quantity;
+    var order_makeit_earnings = res1[0].original_price * orderitems[i].quantity;
     res1[0].amount = amount;
     res1[0].makeit_earnings = order_makeit_earnings;
     res1[0].cartquantity = orderitems[i].quantity;
@@ -1042,8 +1042,8 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               "' and mk.appointment_status = 3 and mk.verified_status = 1 and mk.ka_status = 2"
           );
 
-  
-        var eta = 15 + 3 * makeitavailability[0].distance;
+            
+        var eta = constant.foodpreparationtime + (constant.onekm * makeitavailability[0].distance);
           //15min Food Preparation time , 3min 1 km
           if (makeitavailability[0].distance > constant.radiuslimit) {
           
@@ -1166,10 +1166,12 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         calculationdetails.totalamount = totalamount;
         calculationdetails.coupon_discount_amount = coupon_discount_amount;
         calculationdetails.couponstatus = false;
-        calculationdetails.refundcouponstatus = false
+        calculationdetails.refundcouponstatus = false;
+        
 
         if (req.cid && couponstatus) {
           calculationdetails.couponstatus = couponstatus;
+          calculationdetails.cid = req.cid;
         }
         if (req.rcid && refundcouponstatus) {
         calculationdetails.refundcouponstatus = refundcouponstatus;

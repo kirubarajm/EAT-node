@@ -139,12 +139,11 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
   if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
      
     const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
-
-    
+ 
 
     if (res.length === 0 ) {
 
-    
+    //get address 
       const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
     //console.log("address_data-->",address_data);
     if(address_data.length === 0) {
@@ -182,6 +181,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                   req.cus_lon = address_data[0].lon;
                   req.address_title = address_data[0].address_title;
                   req.locality_name = address_data[0].locality;
+                  req.coupon = req.cid
                     if (req.payment_type === 0) {
                       Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                         if (err) {
@@ -1695,8 +1695,11 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
 
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
+  var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
+
+  console.log(ordercanceltime);
   if (orderdetails[0].orderstatus < 5) {
-    sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 1,cancel_reason= '" +req.cancel_reason +"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
+    sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 1,cancel_reason= '" +req.cancel_reason +"',cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
         if (err) {
           result(err, null);
         } else {
@@ -1795,7 +1798,15 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
 
           }
                    
-
+          if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
+            removecoupon = {};
+            removecoupon.userid = orderdetails[0].userid;
+            removecoupon.cid = orderdetails[0].coupon;
+            removecoupon.orderid = req.orderid;
+            // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
+            // await query(deletequery);
+            await Order.remove_used_coupon(removecoupon);
+          }
 
           await Notification.orderMakeItPushNotification(
             req.orderid,
@@ -1844,9 +1855,17 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
   }
 };
 
+Order.remove_used_coupon = function remove_used_coupon(removecoupon) {
+
+   CouponUsed.remove_coupon_by_userid(removecoupon, function(err, res) {
+    if (err) return err;
+    else return res;
+  });
+};
+
 Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
-
+  var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
   if (orderdetails[0].orderstatus === 7 ) {
     let response = {
       success: true,
@@ -1863,7 +1882,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
       result(null, response);
 
   } else {
-    sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 2 WHERE orderid ='" +req.orderid +"'",
+    sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 2 ,cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",
     async function(err, res) {
         if (err) {
           result(err, null);
@@ -1912,6 +1931,16 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
           }
           }
 
+          if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
+            removecoupon = {};
+            removecoupon.userid = orderdetails[0].userid;
+            removecoupon.cid = orderdetails[0].coupon;
+            removecoupon.orderid = req.orderid;
+            // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
+            // await query(deletequery);
+            await Order.remove_used_coupon(removecoupon);
+          }
+
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
@@ -1925,6 +1954,11 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
               null
             );
           }
+
+         
+
+
+
           let response = {
             success: true,
             status: true,
@@ -1941,7 +1975,7 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
   const orderdetails = await query(
     "select * from Orders where orderid ='" + req.orderid + "'"
   );
-
+  var makeitaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
   // d.setHours(d.getHours() + 5);
   if (orderdetails.length !== 0) {
     if (orderdetails[0].orderstatus < 1) {
@@ -1951,7 +1985,7 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
         .format("YYYY-MM-DD HH:mm:ss");
       // deliverytime.setMinutes(transaction_time.getMinutes() + 15);
       console.log(orderaccepttime);
-      updatequery ="UPDATE Orders SET orderstatus = 1 ,makeit_expected_preparing_time= '" + orderaccepttime +"' WHERE orderid ='" +req.orderid +"'";
+      updatequery ="UPDATE Orders SET orderstatus = 1 ,makeit_expected_preparing_time= '" + orderaccepttime +"',makeit_accept_time= '" + makeitaccepttime +"' WHERE orderid ='" +req.orderid +"'";
       console.log(updatequery);
       sql.query(updatequery, async function(err, res) {
         if (err) {
@@ -2009,6 +2043,7 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
   // d.setHours(d.getHours() + 5);
   if (orderdetails.length !== 0) {
 
+      console.log(orderdetails.length);
     if (orderdetails[0].moveit_status < 1 ) {
       console.log(req.moveituserid);
     //  if (orderdetails[0].moveit_user_id === req.moveituserid || orderdetails[0].moveit_user_id === "req.moveituserid") {
@@ -2034,7 +2069,7 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
         }
       });
    
-    } else if (orderdetails[0].moveit_status == 1) {
+    } else if (orderdetails[0].moveit_status === 1) {
       let response = {
         success: true,
         status: false,
@@ -2045,7 +2080,7 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
       let response = {
         success: true,
         status: false,
-        message: "order not found please check"
+        message: "order not found please check test"
       };
       result(null, response);
     }
@@ -2053,7 +2088,7 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
     let response = {
       success: true,
       status: false,
-      message: "order not found please check"
+      message: "order not found please check test1"
     };
     result(null, response);
   }
@@ -2063,6 +2098,8 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
   const orderdetails = await query(
     "select * from Orders where orderid ='" + req.orderid + "'"
   );
+
+  var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
   if (orderdetails[0].orderstatus === 8) {
     let response = {
       success: true,
@@ -2071,7 +2108,7 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
     };
     result(null, response);
   } else {
-    sql.query("UPDATE Orders SET orderstatus = 8,cancel_by = 2 WHERE orderid ='" +req.orderid +"'",async function(err, res) {
+    sql.query("UPDATE Orders SET orderstatus = 8,cancel_by = 2,cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
         if (err) {
           result(err, null);
         } else {
@@ -2117,6 +2154,17 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
               } 
             });
           }
+          }
+
+          
+          if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
+            removecoupon = {};
+            removecoupon.userid = orderdetails[0].userid;
+            removecoupon.cid = orderdetails[0].coupon;
+            removecoupon.orderid = req.orderid;
+            // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
+            // await query(deletequery);
+            await Order.remove_used_coupon(removecoupon);
           }
 
           await Notification.orderEatPushNotification(
@@ -2210,6 +2258,16 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
               } 
             });
           }
+          }
+
+          if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
+            removecoupon = {};
+            removecoupon.userid = orderdetails[0].userid;
+            removecoupon.cid = orderdetails[0].coupon;
+            removecoupon.orderid = req.orderid;
+            // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
+            // await query(deletequery);
+            await Order.remove_used_coupon(removecoupon);
           }
 
           await Notification.orderEatPushNotification(
