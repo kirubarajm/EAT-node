@@ -164,8 +164,4 @@ app.route("/eat/collection").post(middleware.checkToken,routesVersioning({"1.0.0
 
 
 
-
-
-
-
 }

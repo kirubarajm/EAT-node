@@ -74,4 +74,22 @@ CouponUsed.firstOrderCoupon = function firstOrderCoupon(orderCost,userid,cid) {
 };
   
 
+
+//Admin can remove coupon
+CouponUsed.remove_coupon_by_userid = function remove_coupon_by_userid(req, result) {
+  var deletequery = "delete from CouponsUsed where cid = "+req.cid+" and userid = "+req.userid+" and orderid ="+req.orderid+"  order by cuid desc limit 1";
+  console.log(deletequery);
+  sql.query(deletequery, function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      let resobj = {
+        success: true,
+        status:true,
+        message: "Coupons remove_coupon_by_userid"
+      };
+      result(null, resobj);
+    }
+  });
+};
   module.exports = CouponUsed;
