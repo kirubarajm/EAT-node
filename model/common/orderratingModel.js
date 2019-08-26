@@ -10,10 +10,7 @@ var Orderrating = function(orderrating) {
   this.orderid = orderrating.orderid;
 };
 
-Orderrating.createOrderrating = function createOrderrating(
-  Order_rating,
-  result
-) {
+Orderrating.createOrderrating = function createOrderrating(Order_rating,result) {
   sql.query(
     "Select * from Order_rating where orderid = '" + Order_rating.orderid + "'",
     function(err, res) {

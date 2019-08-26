@@ -349,7 +349,7 @@ exports.eat_region_list_sort_filter = function(req, res) {
 
 
 exports.eat_region_list = function(req, res) {
-  console.log("eat_region_list");
+
   if (!req.body.lat) {
     res
       .status(400)
