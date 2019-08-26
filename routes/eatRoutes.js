@@ -97,7 +97,7 @@ app.route("/eat/products").post(middleware.checkToken,routesVersioning({"1.0.0":
 //app.route("/eat/placeorder").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eatuser_order_create}));
 app.route("/eat/order/:orderid").get(middleware.checkToken,routesVersioning({"1.0.0":orders.order_view_eatuser}));
 app.route("/eat/orders/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":orders.order_list_eatuser}));
-app.route("/eat/address").get(middleware.checkToken,routesVersioning({"1.0.0":eatuseraddress.list_all_address})).post(routesVersioning({"1.0.0":eatuseraddress.create_a_address}));
+app.route("/eat/address").get(middleware.checkToken,routesVersioning({"1.0.0":eatuseraddress.list_all_address})).post(middleware.checkToken,routesVersioning({"1.0.0":eatuseraddress.create_a_address}));
 app.route("/eat/address/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":eatuseraddress.read_a_user_address_userid})).delete(routesVersioning({"1.0.0":eatuseraddress.delete_a_user_address}));
 app.route("/eat/addresslist/:aid").get(middleware.checkToken,routesVersioning({"1.0.0":eatuseraddress.read_a_user_address_aid}));
 app.route("/eat/address/").put(middleware.checkToken,routesVersioning({"1.0.0":eatuseraddress.update_a_user_address}));
