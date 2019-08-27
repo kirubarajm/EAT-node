@@ -54,7 +54,7 @@ app.route("/makeit/paymentregistration/:userid").put(routesVersioning({"1.0.0":m
 app.route("/makeit/bookappointment").put(middleware.checkToken,routesVersioning({"1.0.0":makeituser.creat_a_appointment}));
 app.route("/makeit/appointments").get(middleware.checkToken,routesVersioning({"1.0.0":makeituser.list_all_appointment}));
 app.route("/makeit/menuitem").get(middleware.checkToken,routesVersioning({"1.0.0":menuitem.list_all_menuitem})).post(routesVersioning({"1.0.0":menuitem.create_a_menuitem}));
-app.route("/makeit/product").get(middleware.checkToken,routesVersioning({"1.0.0":product.list_all_product})).post(routesVersioning({"1.0.0":product.create_a_product}));
-
+app.route("/makeit/product").get(middleware.checkToken,routesVersioning({"1.0.0":product.list_all_product})).post(routesVersioning({"1.0.0":product.create_a_product}))
 app.route("/makeit/badgescreate").post(middleware.checkToken,routesVersioning({"1.0.0":makeitbadges.createMakeitBadges}));
+app.route("/makeit/versioncheck").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_app_version_check_vid}));
 }

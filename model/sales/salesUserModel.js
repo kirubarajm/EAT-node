@@ -3,6 +3,9 @@ var sql = require("../db.js");
 var request = require("request");
 let jwt = require('jsonwebtoken');
 let config = require('../config.js');
+var constant = require("../constant.js");
+const util = require("util");
+const query = util.promisify(sql.query).bind(sql);
 //Task object constructor
 var Salesuser = function(salesuser) {
   this.name = salesuser.name;
@@ -539,4 +542,80 @@ Salesuser.sales_user_otpverification = function sales_user_otpverification( req,
     }
   });
 };
+
+
+Salesuser.sales_app_version_check_vid= async function sales_app_version_check_vid(req,result) { 
+ 
+  var updatestatus = {};
+  var versionstatus = false;
+  var salesforceupdatestatus =false;
+
+  if (req.salesversioncode < constant.salesversionforceupdate) {
+      
+      versionstatus = true;
+      salesforceupdatestatus = true;
+
+  }else if(req.salesversioncode < constant.salesversioncodenew){
+
+    versionstatus = true;
+    salesforceupdatestatus = false;
+    
+  }else{
+    versionstatus = false;
+    salesforceupdatestatus = false;
+  }
+
+
+  updatestatus.versionstatus = versionstatus;
+  updatestatus.salesforceupdatestatus = salesforceupdatestatus;
+
+      let resobj = {
+          success: true,
+          status:true,
+          result:updatestatus
+      };
+
+      result(null, resobj);
+
+
+};
+
+
+Salesuser.Salesuser_logout = async function Salesuser_logout(req, result) { 
+  sql.query("select * from Sales_QA_employees where id = "+req.userid+" ",async function(err,userdetails) {
+    if (err) {
+      console.log("error: ", err);
+      result(null, err);
+    } else {
+
+      if (userdetails.length !==0) {
+        
+        updatequery = await query("Update Sales_QA_employees set pushid_android = 'null' where id = '"+req.userid+"'");
+
+
+        let resobj = {
+          success: true,
+           status: true,
+          // message:mesobj,
+          message: 'Logout Successfully!'  
+        };
+  
+        result(null, resobj);
+      }else{
+
+        let resobj = {
+          success: true,
+           status: false,
+          // message:mesobj,
+          message: 'Please check userid'  
+        };
+  
+        result(null, resobj);
+      }     
+    }
+  });   
+ 
+};
+
+
 module.exports = Salesuser;

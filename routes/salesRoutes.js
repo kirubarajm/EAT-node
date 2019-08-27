@@ -34,6 +34,8 @@ app.route("/salesusers").post(routesVersioning({"1.0.0":salesuser.create_a_user}
 app.route("/salesusers").get(routesVersioning({"1.0.0":salesuser.list_all_user}));
 app.route("/salesusers/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":salesuser.read_a_user}));
 app.route("/salesusers/:userid").put(middleware.checkToken,routesVersioning({"1.0.0":salesuser.update_a_user}));
+app.route("/sales/versioncheck").post(middleware.checkToken,routesVersioning({"1.0.0": salesuser.sales_app_version_check_vid}));
+app.route("/sales/logout").post(middleware.checkToken,routesVersioning({"1.0.0":salesuser.Salesuser_logout}));
 //app.route("/salesusers/:userid").delete(routesVersioning({"1.0.0":salesuser.delete_a_user}));
 
 

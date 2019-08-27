@@ -663,11 +663,25 @@ Moveituser.update_pushid = function(req, result) {
     var moveitforceupdate = constant.moveitforceupdate;
     
 
-    if (req.moveitversioncode < moveitversioncode) {
+    // if (req.moveitversioncode < moveitversioncode) {
       
+    //   versionstatus = true;
+    //   moveitforceupdatestatus = true;
+    // }
+
+    if (req.moveitversioncode < constant.moveitversionforceupdate) {
+        
       versionstatus = true;
       moveitforceupdatestatus = true;
+    }else if(req.moveitversioncode < constant.moveitversioncodenew){
+      versionstatus = true;
+      moveitforceupdatestatus = false;
+    }else{
+      versionstatus = false;
+      moveitforceupdatestatus = false;
     }
+
+
 
     updatestatus.versionstatus = versionstatus;
     updatestatus.moveitforceupdatestatus = moveitforceupdatestatus;

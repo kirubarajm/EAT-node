@@ -415,3 +415,14 @@ exports.edit_makeit_brand_identity = function(req, res) {
     });
   }
 };
+
+exports.makeit_app_version_check_vid = function(req, res) {
+  
+  Makeituser.makeit_app_version_check_vid(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+
+};

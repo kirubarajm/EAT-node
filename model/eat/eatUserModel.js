@@ -2198,10 +2198,10 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
         else {
                if (res1.length !== 0) {
                 console.log("regionid");
-                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid where re.active_status = 1 group by re.regionid order by distance ASC";
+                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid  group by re.regionid order by distance ASC";
                }else if(res1.length === 0){
                 console.log("regionid1");
-                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid where re.active_status = 1 group by re.regionid order by distance ASC";
+                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid  group by re.regionid order by distance ASC";
                }
              
 
@@ -2543,14 +2543,20 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       var versionstatus = false;
       var eatforceupdatestatus =false;
 
-      var eatversioncode = constant.eatversioncode;
+      var eatversioncode = constant.eatversioncodenew;
       var eatforceupdate = constant.eatforceupdate;
       
 
-      if (req.eatversioncode < eatversioncode) {
+      if (req.eatversioncode < constant.eatversionforceupdate) {
         
         versionstatus = true;
         eatforceupdatestatus = true;
+      }else if(req.eatversioncode < constant.eatversioncodenew){
+        versionstatus = true;
+        eatforceupdatestatus = false;
+      }else{
+        versionstatus = false;
+        eatforceupdatestatus = false;
       }
 
       updatestatus.versionstatus = versionstatus;

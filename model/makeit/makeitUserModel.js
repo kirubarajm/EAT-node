@@ -2238,4 +2238,43 @@ Makeituser.admin_list_all_badges = function(req, result) {
   });
 };
 
+
+
+
+Makeituser.makeit_app_version_check_vid= async function makeit_app_version_check_vid(req,result) { 
+ 
+  var updatestatus = {};
+  var versionstatus = false;
+  var makeitforceupdatestatus =false;
+
+  if (req.makeitversioncode < constant.makeitversionforceupdate) {
+      
+      versionstatus = true;
+      makeitforceupdatestatus = true;
+
+  }else if(req.makeitversioncode < constant.makeitversioncodenew){
+
+    versionstatus = true;
+    makeitforceupdatestatus = false;
+
+  }else{
+    versionstatus = false;
+    makeitforceupdatestatus = false;
+  }
+
+
+  updatestatus.versionstatus = versionstatus;
+  updatestatus.makeitforceupdatestatus = makeitforceupdatestatus;
+
+      let resobj = {
+          success: true,
+          status:true,
+          result:updatestatus
+      };
+
+      result(null, resobj);
+
+
+};
+
 module.exports = Makeituser;

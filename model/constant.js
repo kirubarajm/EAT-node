@@ -12,7 +12,8 @@ const calculate = {
     servicecharge:25,
     cancellationmessage : "Following order cancellation charges will ",
     makeit_nearby_moveit_radius:4, // in kilometers
-    eatversioncode : 4,
+    eatversioncodenew : 4,//normal update
+    eatversionforceupdate : 3, //forceupdate version
     eatforceupdate : 1,
     eat_delivery_min:60,
     product_commission_percentage : 20,// percentage
@@ -20,9 +21,18 @@ const calculate = {
     lunchcycle : 12,//12 - 4
     dinnercycle : 16 ,//4 - 11
     dinnerend : 22,
-    moveitversioncode : 1,
-    moveitforceupdate : 1,
+  //  moveitversioncode : 1,
+    moveitversioncodenew : 1,//normal update
+    moveitversionforceupdate : 1, //forceupdate version
+    moveitforceupdate : 1, 
 
+    makeitversioncodenew : 1,//normal update
+    makeitversionforceupdate : 1, //forceupdate version
+    makeitforceupdate : 1, 
+
+    salesversioncodenew : 1,//normal update
+    salesversionforceupdate : 1, //forceupdate version
+    salesforceupdate : 1, 
 }
 
 

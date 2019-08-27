@@ -223,3 +223,30 @@ exports.sales_user_otp_verification = function(req, res) {
     });
   }
 };
+
+
+exports.sales_app_version_check_vid = function(req, res) {
+  
+  Salesuser.sales_app_version_check_vid(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+
+};
+
+exports.Salesuser_logout = function(req, res) {
+  //var new_user = new Eatuser(req.body);
+  //handles null error
+  if (!req.body.userid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide userid" });
+  } else {
+    Salesuser.Salesuser_logout(req.body, function(err, user) {
+      if (err) res.send(err);
+      res.json(user);
+    });
+  }
+};
