@@ -159,8 +159,9 @@ app.route("/eat/coupon/:eatuserid").get(middleware.checkToken,routesVersioning({
 //app.route("/eat/collection").get(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection}));
 app.route("/eat/collectionlist").post(middleware.checkToken,routesVersioning({"1.0.0":collection.read_all_collection_by_userid}));
 app.route("/eat/collectiondetails").post(middleware.checkToken,routesVersioning({"1.0.0":collection.get_all_collection_by_cid}));
-app.route("/eat/versioncheck").post(middleware.checkToken,routesVersioning({"1.0.0": eatuser.eat_app_version_check}));
+app.route("/eat/versioncheck").post(routesVersioning({"1.0.0": eatuser.eat_app_version_check}));
 app.route("/eat/collection").post(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection}));
+app.route("/eat/orderskip").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eat_order_skip_count}));
 
 
 

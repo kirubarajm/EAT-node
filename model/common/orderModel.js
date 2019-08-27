@@ -62,6 +62,7 @@ var Order = function(order) {
   this.moveit_accept_time = order.moveit_accept_time;
   this.moveit_status = order.moveit_status;
   this.cancel_charge = order.cancel_charge;
+  this.rating_skip=order.rating_skip;
 };
 
 
@@ -1473,9 +1474,9 @@ Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
   return trackingDetail;
 };
 
-Order.orderlistbyeatuser = async function(req, result) {
+Order.orderlistbyeatuser = async function(req,result) {
 
-
+console.log(req);
   var query = "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" +
             req.userid +
             "' and (ors.orderstatus = 6 or orderstatus = 7 or orderstatus = 8 ) group by ors.orderid order by ors.orderid desc";
@@ -1554,16 +1555,19 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
 
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
-  var radiuslimit=constant.radiuslimit;
+  var radiuslimit = constant.radiuslimit;
 
   const orderdetails = await query("select ors.*,mk.brandname from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.userid ='" +req.userid +"' and ors.orderstatus = 6  and ors.payment_status = 1 order by ors.orderid desc limit 1");
  
   if (orderdetails.length !== 0) {
 
-    const orderratingdetails = await query("select * from Order_rating where orderid ='" +orderdetails[0].orderid +"'");
     orderdetails[0].rating = false;
     orderdetails[0].showrating = false;
 
+  if (orderdetails[0].rating_skip < constant.max_order_rating_skip) {
+              
+    const orderratingdetails = await query("select * from Order_rating where orderid ='" +orderdetails[0].orderid +"'");
+   
     var today = moment();
     var moveit_actual_delivered_time = moment(orderdetails[0].moveit_actual_delivered_time);
     var diffMs  = (today - moveit_actual_delivered_time);
@@ -1575,6 +1579,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
     if (diffDays || diffHrs || diffMins > 30) orderdetails[0].showrating = true;
 
   }
+}
   // or payment_status !=3)
   sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",function(err, res) {
       if (err) {
@@ -1613,7 +1618,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
 
               console.log(res1);
             
-              if (res1[0].orderstatus >= 3) {
+              if (res1[0].orderstatus > 3) {
                 // +20 min add with moveit order picked up time
                res1[0].deliverytime = res1[0].moveit_actual_delivered_time;
              }else{
@@ -2502,5 +2507,44 @@ Order.get_orders_cash_online_amount = async function get_orders_cash_online_amou
   );
 };
 
+
+
+Order.eat_order_skip_count_by_uid = async function eat_order_skip_count_by_uid(req,result) {
+
+  var orderdetails = await query("select * from Orders where orderid = '"+req.orderid+"'");
+
+  if (orderdetails.length !==0) {
+    rating_skip =  orderdetails[0].rating_skip + 1;
+
+    var skipupdatequery = await query("update Orders set rating_skip = "+rating_skip+"  where orderid = '"+req.orderid+"'");
+    if (skipupdatequery.err) {
+      let resobj = {
+        success: true,
+        status:false,
+        result: err
+      };
+      result(null, resobj);
+    }
+    let resobj = {
+      success: true,
+      status: true,
+      message:"Rating skip updated",
+      result: orderdetails
+    };
+    result(null, resobj);
+
+  }else{
+
+    let resobj = {
+      success: true,
+      status:false,
+      message:"There is no orders found!",
+      result: orderdetails
+    };
+    result(null, resobj);
+
+  }
+
+};
 
 module.exports = Order;

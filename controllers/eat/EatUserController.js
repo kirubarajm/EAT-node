@@ -487,8 +487,8 @@ exports.eat_order_cancel = function(req, res) {
 
 
 exports.eat_app_version_check = function(req, res) {
-  
-  Eatuser.eat_app_version_check_vid(req.body, function(err, user) {
+ // console.log(req.body);
+  Eatuser.eat_app_version_check_vid(req.body,req.headers, function(err, user) {
     console.log("controller");
     if (err) res.send(err);
     console.log("res", user);

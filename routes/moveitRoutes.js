@@ -35,5 +35,5 @@ app.route("/moveitusers/:userid").get(middleware.checkToken,routesVersioning({"1
 app.route("/moveit/logout").post(middleware.checkToken,routesVersioning({"1.0.0":moveituser.Moveituser_logout}));
 app.route("/moveit/todayincome").post(routesVersioning({"1.0.0":orders.moveit_delivery_cash_received_by_today}));
 app.route("/moveit/order/accept").put(middleware.checkToken,routesVersioning({"1.0.0":orders.moveit_order_accept}));
-app.route("/moveit/versioncheck").post(middleware.checkToken,routesVersioning({"1.0.0": moveituser.moveit_app_version_check_vid}));
+app.route("/moveit/versioncheck").post(routesVersioning({"1.0.0": moveituser.moveit_app_version_check_vid}));
 }

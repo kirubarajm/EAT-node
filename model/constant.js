@@ -21,18 +21,23 @@ const calculate = {
     lunchcycle : 12,//12 - 4
     dinnercycle : 16 ,//4 - 11
     dinnerend : 22,
+    max_order_rating_skip : 2,
   //  moveitversioncode : 1,
-    moveitversioncodenew : 1,//normal update
-    moveitversionforceupdate : 1, //forceupdate version
+    moveitversioncodenew : 4,//normal update
+    moveitversionforceupdate : 4, //forceupdate version
     moveitforceupdate : 1, 
 
-    makeitversioncodenew : 1,//normal update
-    makeitversionforceupdate : 1, //forceupdate version
+    makeitversioncodenew : 4,//normal update
+    makeitversionforceupdate : 4, //forceupdate version
     makeitforceupdate : 1, 
 
-    salesversioncodenew : 1,//normal update
-    salesversionforceupdate : 1, //forceupdate version
+    salesversioncodenew : 2,//normal update
+    salesversionforceupdate : 2, //forceupdate version
     salesforceupdate : 1, 
+
+    eatiosversioncodenew : 1,//normal update
+    eatiosversionforceupdate : 1, //forceupdate version
+    eatforceupdate : 1,
 }
 
 

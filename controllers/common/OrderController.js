@@ -444,3 +444,17 @@ exports.getTotalAmountofOrders = function(req, res) {
     res.json(result);
   });
 };
+
+
+exports.eat_order_skip_count = function(req, res) {
+  if (!req.body.orderid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide orderid" });
+  }else{
+  Order.eat_order_skip_count_by_uid(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+}
+};

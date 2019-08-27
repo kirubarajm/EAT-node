@@ -656,7 +656,21 @@ const master = [
                 "positiontype": "center-left"
             },
         ]
-    }
+    },
+
+    {
+        'apptype': [{
+                "aapptypeid": 1,
+                "description": 'android'
+            },
+            {
+                "addresstypeid": 2,
+                "description": 'ios'
+            }
+
+        ]
+    },
+
 
 ]
 module.exports = master;
