@@ -166,7 +166,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
       req.coupon_name = res[i].coupon_name;
       req.numberoftimes = res[i].numberoftimes;
 
-      var couponinfo = await query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? ",[req.eatuserid,req.cid]);
+      var couponinfo = await query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? and active_status=1 ",[req.eatuserid,req.cid]);
       console.log(couponinfo[0].cnt);
       if(couponinfo[0].cnt < req.numberoftimes){
        res[i].couponstatus = true;
@@ -192,7 +192,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
         result(err, null);
       } else {
           if (res.length !== 0 ) {
-            sql.query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? ",[req.userid,res[0].cid], function(err, couponinfo) {
+            sql.query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? and active_status=1  ",[req.userid,res[0].cid], function(err, couponinfo) {
               if (err) {
                 result(err, null);
               } else {

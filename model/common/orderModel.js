@@ -376,6 +376,42 @@ Order.online_order_place_conformation = async function(order_place, result) {
       result(err, null);
     } else {
       if (order_place.payment_status === 1) {
+       
+        // const orderdetails = await query("select * from Orders where orderid ='" +order_place.orderid +"'");
+        // if (orderdetails.err) {
+        //   let resobj = {
+        //     success: true,
+        //     status: false,
+        //     result: orderdetails.err
+        //   };
+        //   result(null, resobj);
+        // }else{
+
+        //   if (orderdetails[0].coupon || order_place.cid) {
+            
+        //        var new_createCouponUsed = new CouponUsed(order_place); 
+        //       new_createCouponUsed.after_discount_cost = orderdetails[0].price
+        //       new_createCouponUsed.order_cost = orderdetails[0].original_price
+        //       new_createCouponUsed.userid = orderdetails[0].userid
+          
+        //       CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
+        //         if (err) {
+        //           result(err, null);
+        //           return;
+        //         }
+        //       });
+        //   } 
+
+        //   if (order_place.refund_balance !== 0 || order_place.rcid || orderdetails[0].refund_amount) {
+        //     var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(
+        //       order_place.rcid,
+        //       order_place.refund_balance,
+        //       order_place.orderid
+        //     );
+        //   }
+
+        // }
+
         if (order_place.cid) {
           const orderdetailsquery = "select * from Orders where orderid ='" +order_place.orderid +"'";
           sql.query(orderdetailsquery, async function(err, orderdetails) {
@@ -397,8 +433,7 @@ Order.online_order_place_conformation = async function(order_place, result) {
           });
          }
          
-         console.log(order_place.refund_balance);
-         console.log(order_place.rcid);
+   
         if (order_place.refund_balance !== 0 || order_place.rcid ) {
           var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(
             order_place.rcid,
@@ -1323,8 +1358,9 @@ Order.orderviewbyeatuser = function(req, result) {
 
           res1[0].servicecharge = constant.servicecharge;
           res1[0].cancellationmessage = constant.cancellationmessage;;
-                eta = foodpreparationtime + (onekm * res1[0].distance);
+                eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
                 //15min Food Preparation time , 3min 1 km
+             
                 res1[0].eta = Math.round(eta) + " mins";
 
                 res1[0].payment_type_name ='Cash on delivery'; 
@@ -1563,7 +1599,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
 
     orderdetails[0].rating = false;
     orderdetails[0].showrating = false;
-
+    console.log("rating_skip"+orderdetails[0].rating_skip);
   if (orderdetails[0].rating_skip < constant.max_order_rating_skip) {
               
     const orderratingdetails = await query("select * from Order_rating where orderid ='" +orderdetails[0].orderid +"'");
@@ -1785,7 +1821,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
 
           }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
             var rc = new RefundCoupon(req);
-            RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+            RefundCoupon.createRefundCoupon_by_id(rc, async function(err, res2) {
               if (err) {
                 result(err, null);
               } else{
@@ -2514,6 +2550,7 @@ Order.eat_order_skip_count_by_uid = async function eat_order_skip_count_by_uid(r
   var orderdetails = await query("select * from Orders where orderid = '"+req.orderid+"'");
 
   if (orderdetails.length !==0) {
+    
     rating_skip =  orderdetails[0].rating_skip + 1;
 
     var skipupdatequery = await query("update Orders set rating_skip = "+rating_skip+"  where orderid = '"+req.orderid+"'");
@@ -2529,6 +2566,42 @@ Order.eat_order_skip_count_by_uid = async function eat_order_skip_count_by_uid(r
       success: true,
       status: true,
       message:"Rating skip updated",
+      result: orderdetails
+    };
+    result(null, resobj);
+
+  }else{
+
+    let resobj = {
+      success: true,
+      status:false,
+      message:"There is no orders found!",
+      result: orderdetails
+    };
+    result(null, resobj);
+
+  }
+
+};
+
+Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_by_moveit_id(req,result) {
+
+  var orderdetails = await query("select *,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( cus_lat ) )  * cos( radians( cus_lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(cus_lat)) ) ) AS distance from Orders where orderid = "+req.orderid+" ");
+
+  if (orderdetails.length !==0) {
+  
+ var eta = constant.onekm + Math.round(constant.onekm * orderdetails[0].distance);
+
+ var deliverytime = moment()
+        .add(0, "seconds")
+        .add(eta, "minutes")
+        .format("YYYY-MM-DD HH:mm:ss");
+    
+        orderdetails[0].deliverytime = deliverytime;  
+
+    let resobj = {
+      success: true,
+      status: true,
       result: orderdetails
     };
     result(null, resobj);

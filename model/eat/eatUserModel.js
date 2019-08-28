@@ -336,7 +336,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
       req.lon +
       "') ) + sin( radians('" +
       req.lat +
-      "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid', pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+      "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid', pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
       req.eatuserid +
       "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
       req.eatuserid +
@@ -1531,7 +1531,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
   var otpstatus = false;
   var genderstatus = false;
 
-  if (req.phoneno === '9500313689') {
+  if (req.phoneno === '9500313689' && req.otp === 30878) {
     
     let resobj = {
       success: true,
@@ -2410,7 +2410,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
                 }
               }
                //  var eta = 15 + (3 * res[i].distance) ;
-                 var eta = foodpreparationtime + onekm * res[i].distance;
+                 var eta = foodpreparationtime + (onekm * res[i].distance);
                   //15min Food Preparation time , 3min 1 km 
                   res[i].eta =   Math.round(eta) +" mins" ;  
                   res[i].serviceablestatus = false;
@@ -2505,7 +2505,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
             req.lon +
             "') ) + sin( radians('" +
             req.lat +
-            "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid',pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+            "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid',pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
             req.eatuserid +
             "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
             req.eatuserid +

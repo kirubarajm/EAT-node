@@ -670,6 +670,17 @@ const master = [
 
         ]
     },
+    {
+        'categorytype': [{
+                "categorytypeid": 1,
+                "categorytype": "product"
+            },
+            {
+                "categorytypeid": 2,
+                "categorytype": "kitchen"
+            }
+        ]
+    },
 
 
 ]

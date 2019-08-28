@@ -1044,11 +1044,14 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
             
         var eta = constant.foodpreparationtime + (constant.onekm * makeitavailability[0].distance);
+        
+        
           //15min Food Preparation time , 3min 1 km
           if (makeitavailability[0].distance > constant.radiuslimit) {
           
               isAvaliablekitchen = false;
               makeit_error_message = makeitavailability[0].brandname;
+              
           }
         }
 
@@ -1074,11 +1077,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             var discount_percent = couponlist[0].discount_percent;
             var minprice_limit = couponlist[0].minprice_limit
             var CouponsUsedlist = await query(
-              "Select * From CouponsUsed where cid = '" +
-                req.cid +
-                "' and userid = '" +
-                req.userid +
-                "'"
+              "Select * From CouponsUsed where cid = '" +req.cid +"' and userid = '" +req.userid +"' and active_status = 1"
             );
             var couponusedcount = CouponsUsedlist.length;
 
@@ -1093,7 +1092,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                            
               if (discount_amount >= maxdiscount) {
 
-                                         discount_amount = maxdiscount;
+                     discount_amount = maxdiscount;
                 }
 
               if (totalamount >= discount_amount) {
@@ -1243,7 +1242,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         }
 
         if (!isAvaliableItem){
-          resobj.message = tempmessage.slice(0, -1) + " is not avaliable";
+          resobj.message = tempmessage.slice(0, -1) + " is not avaliable.Change quantity/product";
           resobj.status = isAvaliableItem
         }
        if (!isAvaliablekitchen){

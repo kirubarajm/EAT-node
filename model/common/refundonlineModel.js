@@ -27,7 +27,6 @@ RefundOnline.createRefund = async function createRefund(req, result) {
           status: true,
           message : "refund online created successfully"
       };
-
       
       result(null, response);
       }
@@ -61,10 +60,7 @@ RefundOnline.get_all_refunds = function get_all_refunds(req, result) {
   });
 };
 
-RefundOnline.get_unsuccess_refunds = function get_unsuccess_refunds(
-  req,
-  result
-) {
+RefundOnline.get_unsuccess_refunds = function get_unsuccess_refunds(req,result) {
   sql.query("select * from Refund_Online Where status = 0", function(err, res) {
     if (err) result(err, null);
     else {

@@ -8,6 +8,7 @@ var CouponUsed = function(couponused) {
   this.after_discount_cost =couponused.after_discount_cost;
   this.orderid =couponused.orderid;
   this.userid =couponused.userid;
+  this.active_status = couponused.active_status || 1;
 }
 
 
@@ -77,9 +78,10 @@ CouponUsed.firstOrderCoupon = function firstOrderCoupon(orderCost,userid,cid) {
 
 //Admin can remove coupon
 CouponUsed.remove_coupon_by_userid = function remove_coupon_by_userid(req, result) {
-  var deletequery = "delete from CouponsUsed where cid = "+req.cid+" and userid = "+req.userid+" and orderid ="+req.orderid+"  order by cuid desc limit 1";
-  console.log(deletequery);
-  sql.query(deletequery, function(err, res) {
+ // var deletequery = "delete from CouponsUsed where cid = "+req.cid+" and userid = "+req.userid+" and orderid ="+req.orderid+"  order by cuid desc limit 1";
+ var updatequery = "update CouponsUsed set active_status = 2 where cid = "+req.cid+" and userid = "+req.userid+" and orderid ="+req.orderid+" ";
+
+  sql.query(updatequery, function(err, res) {
     if (err) {
       result(err, null);
     } else {
