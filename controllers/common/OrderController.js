@@ -458,3 +458,16 @@ exports.eat_order_skip_count = function(req, res) {
   });
 }
 };
+
+exports.eat_get_delivery_time= function(req, res) {
+  if (!req.body.orderid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide orderid" });
+  }else{
+  Order.eat_get_delivery_time_by_moveit_id(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+}
+};

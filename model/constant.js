@@ -10,7 +10,7 @@ const calculate = {
     foodpreparationtime:15,//min
     onekm:3,
     servicecharge:25,
-    cancellationmessage : "Following order cancellation charges will ",
+    cancellationmessage : " Cancellation charge of Rs.25 will be detected. Do you want to proceed ?",
     makeit_nearby_moveit_radius:4, // in kilometers
     eatversioncodenew : 1,//normal update
     eatversionforceupdate : 1, //forceupdate version

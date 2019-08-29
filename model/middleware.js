@@ -3,11 +3,8 @@ const config = require('./config.js');
 
 let checkToken = (req, res, next) => {
   let token = req.headers['x-access-token'] || req.headers['authorization']; // Express headers are auto converted to lowercase
-  //let apptype = req.headers['x-access-token'] || req.headers['apptype']; 
 
-  //console.log("apptype"+apptype);
 
-  //req.body.apptype = apptype;
   if (token) {
     if (token.startsWith('Bearer ')) {
       // Remove Bearer from string
