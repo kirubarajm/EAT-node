@@ -23,9 +23,9 @@ const calculate = {
     dinnerend : 22,
     max_order_rating_skip : 2,
   //  moveitversioncode : 1,
-    moveitversioncodenew : 4,//normal update
-    moveitversionforceupdate : 4, //forceupdate version
-    moveitforceupdate : 1, 
+    moveitversioncodenew : 5,//normal update
+    moveitversionforceupdate : 5, //forceupdate version
+    moveitforceupdate : 5, 
 
     makeitversioncodenew : 4,//normal update
     makeitversionforceupdate : 4, //forceupdate version
