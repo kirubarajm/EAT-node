@@ -1015,7 +1015,9 @@ Order.orderviewbymoveituser = function(orderid, result) {
     }
   );
 };
-//////////////
+
+
+
 Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveituser( req,kitchenqualitylist,result) {
   var order_pickup_time = moment().format("YYYY-MM-DD HH:mm:ss");
   var twentyMinutesLater = moment().add(0, "seconds").add(20, "minutes").format("YYYY-MM-DD HH:mm:ss");
@@ -1254,6 +1256,13 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
       };
       result(null, resobj);
     } else {
+
+
+      const yesterdaycod = await query("select sum(price) as cod from Orders where moveit_user_id =" +
+      moveit_user_id +
+      " and DATE(created_at) = DATE(NOW() - INTERVAL 1 DAY) and orderstatus = 6 and payment_type = 0  ");
+
+      console.log(yesterdaycod[0].cod);
     for (let i = 0; i < rows.length; i++) {
       var url =
         "Select ot.productid,pt.product_name,ot.quantity from OrderItem ot join Product pt on ot.productid=pt.productid where ot.orderid = " +
@@ -1265,6 +1274,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
     let resobj = {
       success: true,
       status:true,
+      yesterdaycod : yesterdaycod[0].cod || 0,
       result: rows
     };
     result(null, resobj);
@@ -1279,7 +1289,7 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
   );
 
   const cod_amount = await query(
-    "select sum(price) as totalamount from Orders where DATE(moveit_actual_delivered_time) = CURDATE() and orderstatus = 6  and payment_status = 1 and payment_type = 0  and lock_status = 0 and  moveit_user_id = " +moveit_user_id +"");
+    "select sum(price) as totalamount from Orders where DATE(created_at) = CURDATE() and orderstatus = 6  and payment_status = 1 and payment_type = 0  and lock_status = 0 and  moveit_user_id = " +moveit_user_id +"");
 
   if (rows.length=== 0) {
     var res = {
@@ -2607,6 +2617,46 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
       success: true,
       status: true,
       result: orderdetails
+    };
+    result(null, resobj);
+
+  }else{
+
+    let resobj = {
+      success: true,
+      status:false,
+      message:"There is no orders found!",
+      result: orderdetails
+    };
+    result(null, resobj);
+
+  }
+
+};
+
+
+
+Order.moveit_notification_time_orderid = async function moveit_notification_time_orderid(req,result) {
+
+  var orderdetails = await query("select * from Orders where orderid = '"+req.orderid+"'");
+
+  if (orderdetails.length !==0) {
+    
+    var currenttime = moment().format("YYYY-MM-DD HH:mm:ss");
+
+    var skipupdatequery = await query("update Orders set moveit_notification_time = '"+currenttime+"'  where orderid = '"+req.orderid+"'");
+    if (skipupdatequery.err) {
+      let resobj = {
+        success: true,
+        status:false,
+        result: err
+      };
+      result(null, resobj);
+    }
+    let resobj = {
+      success: true,
+      status: true,
+      message:"Order moveit notification updated"
     };
     result(null, resobj);
 

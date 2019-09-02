@@ -168,14 +168,15 @@ exports.eat_kitchen_sort_filter = function(req, res) {
   }
 };
 
-exports.eat_user_referral = function(req, res) {
-  Eatuser.eat_user_referral_code(req.params, function(err, user) {
-    console.log("controller");
-    if (err) res.send(err);
-    console.log("res", user);
-    res.send(user);
-  });
-};
+// exports.eat_user_referral = function(req, res) {
+//   console.log("headers"+req.params);
+//   Eatuser.eat_user_referral_code(req.params,req.headers, function(err, user) {
+//     console.log("controller");
+//     if (err) res.send(err);
+//     console.log("res", user);
+//     res.send(user);
+//   });
+// };
 
 exports.eatuser_login = function(req, res) {
   var new_user = new Eatuser(req.body);
@@ -424,7 +425,8 @@ exports.eat_region_kitchen_showmore = function(req, res) {
 
 
 exports.eat_user_referral = function(req, res) {
-  Eatuser.eat_user_referral_code(req.params, function(err, user) {
+  console.log("headers"+req.headers);
+  Eatuser.eat_user_referral_code(req.params,req.headers, function(err, user) {
     console.log("controller");
     if (err) res.send(err);
     console.log("res", user);
@@ -487,7 +489,7 @@ exports.eat_order_cancel = function(req, res) {
 
 
 exports.eat_app_version_check = function(req, res) {
- // console.log(req.body);
+
   Eatuser.eat_app_version_check_vid(req.body,req.headers, function(err, user) {
     console.log("controller");
     if (err) res.send(err);

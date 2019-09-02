@@ -9,6 +9,7 @@ const query = util.promisify(sql.query).bind(sql);
 let jwt = require('jsonwebtoken');
 let config = require('../config.js');
 var constant = require('../constant.js');
+var MoveitTimelog = require("../../model/moveit/moveitTimeModel");
 
 //Task object constructor
 var Moveituser = function (moveituser) {
@@ -96,15 +97,16 @@ Moveituser.createUser = function createUser(newUser, result) {
 };
 
 Moveituser.getUserById = function getUserById(userId, result) {
-    sql.query("Select * From MoveitUser where userid = ? ", userId, function (err, res) {
+    sql.query("Select userid,name,email,bank_account_no,phoneno,Vehicle_no,verified_status,online_status,referalcode,localityid,bank_name,ifsc,bank_holder_name,moveit_hub,driver_lic,vech_insurance,vech_rcbook,photo,legal_document,branch,pushid_android,address,pushid_ios From MoveitUser where userid = ? ", userId, function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
         }
         else {
-            let sucobj = true;
+            
             let resobj = {
-                success: sucobj,
+                success: true,
+                status :true,
                 result: res
             };
 
@@ -258,10 +260,20 @@ Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req, result) {
 };
 
 
+Moveituser.create_createMoveitTimelog = function create_createMoveitTimelog(req) {
+  var new_MoveitTimelog = new MoveitTimelog(req);
+    MoveitTimelog.createMoveitTimelog(new_MoveitTimelog, function(err, new_MoveitTimelog) {
+      if (err) return err;
+      else return new_MoveitTimelog;
+     
+    });
+ 
+};
+
 
 Moveituser.update_online_status = function (req, result) {
 
-    sql.query("UPDATE MoveitUser SET online_status = ? WHERE userid = ?", [req.online_status, req.userid], function (err, res) {
+    sql.query("UPDATE MoveitUser SET online_status = ? WHERE userid = ?", [req.online_status, req.userid],async function (err, res) {
 
         if (err) {
             console.log("error: ", err);
@@ -275,14 +287,17 @@ Moveituser.update_online_status = function (req, result) {
                 key = "Moved offline";
                 key1 = false;
             }
-           
-            let message = key;
-            let onlinestatus = key1;
+            req.type =req.online_status;
+            req.moveit_userid =req.userid;
+            await Moveituser.create_createMoveitTimelog(req);
+
+            // let message = key;
+            // let onlinestatus = key1;
             let resobj = {
                 success: true,
                 status:true,
-                message: message,
-                onlinestatus: onlinestatus
+                message: key,
+                onlinestatus: key1
             };
 
             result(null, resobj);

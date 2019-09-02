@@ -7,6 +7,7 @@ module.exports = function(app) {
     var orders = require("../controllers/common/OrderController");
     var moveitdocument = require("../controllers/common/DocumentmoveitController");
     let middleware = require('../model/middleware.js');
+    var moveitlogtime = require("../controllers/moveit/MoveitTimelogController");
 // Moveit
 app.route("/moveit/faqs/:id").get(middleware.checkToken,routesVersioning({"1.0.0":faq.list_all_faqbytype}));
 app.route("/moveit/onlinestatus").put(middleware.checkToken,routesVersioning({"1.0.0":moveituser.moveit_live_status}));
@@ -36,4 +37,6 @@ app.route("/moveit/logout").post(middleware.checkToken,routesVersioning({"1.0.0"
 app.route("/moveit/todayincome").post(routesVersioning({"1.0.0":orders.moveit_delivery_cash_received_by_today}));
 app.route("/moveit/order/accept").put(middleware.checkToken,routesVersioning({"1.0.0":orders.moveit_order_accept}));
 app.route("/moveit/versioncheck").post(routesVersioning({"1.0.0": moveituser.moveit_app_version_check_vid}));
+app.route("/moveit/ordernotificationtime").post(routesVersioning({"1.0.0": orders.moveit_notification_time}));
+app.route("/moveit/logtime").post(routesVersioning({"1.0.0": moveitlogtime.createMoveitTimelog_by_id}));
 }

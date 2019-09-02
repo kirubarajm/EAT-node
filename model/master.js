@@ -374,7 +374,7 @@ const master = [
 
     // sales move online 
     {
-        'moveonlinestatus': [{
+        'moveitonlinestatus': [{
                 "moveonlinestatusid": 0,
                 "moveonlinestatus": "offline"
             },

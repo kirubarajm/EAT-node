@@ -432,7 +432,21 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
           if (res[i].distance <= radiuslimit) {
             res[i].serviceablestatus = true;
           }
-          res[i].eta = Math.round(eta) + " mins";
+
+          if (  res[i].eta > 60) {
+            var hours =  res[i].eta / 60;
+            var rhours = Math.floor(hours);
+            var minutes = (hours - rhours) * 60;
+            var rminutes = Math.round(minutes);
+           
+            console.log(rhours);
+            console.log(rminutes);
+           // res[i].eta =   +rhours+" hour and " +rminutes +" minute."
+            res[i].eta = "above 60 Mins"
+          }else{
+            res[i].eta = Math.round(eta) + " mins";
+          }
+        //  res[i].eta = Math.round(eta) + " mins";
            
             
           }
@@ -1024,12 +1038,30 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
        
         res[i].eta = Math.round(eta);
 
+        
+
         res[i].serviceablestatus = false;
 
         if (res[i].distance <= radiuslimit) {
           res[i].serviceablestatus = true;
         }
-        res[i].eta = Math.round(eta) + " mins";
+
+       
+        if ( res[i].eta > 60) {
+          var hours = res[i].eta / 60;
+          var rhours = Math.floor(hours);
+          var minutes = (hours - rhours) * 60;
+          var rminutes = Math.round(minutes);
+         
+          console.log(rhours);
+          console.log(rminutes);
+         // res[i].eta =   +rhours+" hour and " +rminutes +" minute."
+         res[i].eta = "above 60 Mins"
+        }else{
+          res[i].eta = Math.round(eta) + " mins";
+        }
+
+       
         if (res[i].cuisines) {
           res[i].cuisines = JSON.parse(res[i].cuisines);
         }
@@ -1061,28 +1093,25 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
       result(null, resobj);
     }
 
-    // function timeConvert(n) {
-    //   console.log("minitues calculate");
-    //   var num = n;
-    //   var hours = num / 60;
-    //   var rhours = Math.floor(hours);
-    //   var minutes = (hours - rhours) * 60;
-    //   var rminutes = Math.round(minutes);
-    //   return (
-    //     eta +
-    //     " minutes = " +
-    //     rhours +
-    //     " hour(s) and " +
-    //     rminutes +
-    //     " minute(s)."
-    //   );
-    // }
+   
   });
 };
 
-Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
+
+
+Eatuser.timeConvert = function timeConvert(n,result) {
    
-    var applink = constant.applink;
+  console.log("minitues calculate");
+  var num = n;
+  var hours = num / 60;
+  var rhours = Math.floor(hours);
+  var minutes = (hours - rhours) * 60;
+  var rminutes = Math.round(minutes);
+  return (eta +" minutes = " +rhours +" hour(s) and " +rminutes +" minute(s).");
+ };
+
+Eatuser.eat_user_referral_code = function eat_user_referral_code(req,headers,result) {
+   
     var refferalcontent = constant.refferalcontent;
 
        sql.query("select referalcode from User where userid = '"+req.userid+"' " , function (err, res) {
@@ -1095,8 +1124,21 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,result) {
               
           //  res[0].applink = "https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3D"+res[0].referalcode+"%26utm_campaign%3Dreferral";
         //  console.log("res[0].referalcode: ", res[0].referalcode);
-          res[0].applink = refferalcontent+" "+ applink +". Use Refferal Code :"+ res[0].referalcode
+        
               
+
+          if (headers.apptype === '1' || headers.apptype === 1) {
+        
+            res[0].applink = refferalcontent+" "+constant.applink +". Use Refferal Code :"+ res[0].referalcode
+           
+              
+            }else if (headers.apptype === '2' || headers.apptype === 2) {
+              res[0].applink = refferalcontent+" "+constant.iosapplink +". Use Refferal Code :"+ res[0].referalcode
+      
+            }else{
+              res[0].applink = refferalcontent+" "+constant.applink +". Use Refferal Code :"+ res[0].referalcode
+            }
+
           
                let resobj = {  
                success: true,
@@ -2296,7 +2338,20 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
                                       kitchenlist[j].serviceablestatus = true;
                                     }
 
-                                    kitchenlist[j].eta =   Math.round(eta) +" mins" ;
+                                    if ( kitchenlist[j].eta > 60) {
+                                      var hours = kitchenlist[j].eta / 60;
+                                      var rhours = Math.floor(hours);
+                                      var minutes = (hours - rhours) * 60;
+                                      var rminutes = Math.round(minutes);
+                                     
+                                      console.log(rhours);
+                                      console.log(rminutes);
+                                      kitchenlist[j].eta =   +rhours+" hour and " +rminutes +" minute."
+                                    }else{
+                                      kitchenlist[j].eta = Math.round(eta) + " mins";
+                                    }
+
+                                   // kitchenlist[j].eta =   Math.round(eta) +" mins" ;
 
                                     if (kitchenlist[j].cuisines) {
                                         kitchenlist[j].cuisines = JSON.parse(kitchenlist[j].cuisines)
@@ -2412,7 +2467,22 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
                //  var eta = 15 + (3 * res[i].distance) ;
                  var eta = foodpreparationtime + (onekm * res[i].distance);
                   //15min Food Preparation time , 3min 1 km 
-                  res[i].eta =   Math.round(eta) +" mins" ;  
+                 res[i].eta =   Math.round(eta)  ;  
+
+                  if (  res[i].eta > 60) {
+                    var hours =  res[i].eta / 60;
+                    var rhours = Math.floor(hours);
+                    var minutes = (hours - rhours) * 60;
+                    var rminutes = Math.round(minutes);
+                   
+                    console.log(rhours);
+                    console.log(rminutes);
+                  //  res[i].eta =   +rhours+" hour and " +rminutes +" minute."
+                    res[i].eta = "above 60 Mins"
+                  }else{
+                    res[i].eta = Math.round(eta) + " mins";
+                  }
+                  
                   res[i].serviceablestatus = false;
                             
                   if (res[i].distance <= radiuslimit) {
@@ -2423,15 +2493,14 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
                   res[i].cuisines = JSON.parse(res[i].cuisines)
                  }
 
-           
         
-
+      
               }
 
 
-         let sucobj = true;
+         
          let resobj = {
-             success: sucobj,
+             success: true,
              status:true,
              result:res
          };

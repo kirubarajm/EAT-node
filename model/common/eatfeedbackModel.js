@@ -16,7 +16,7 @@ Eatfeedback.createfeedback = function createfeedback(newfeedback, result) {
       let resobj = {
         success: true,
         status:true,
-        message: "Feedback has been submitted successfully",
+        message: "Thanks for Feedback",
         faqid: res.insertId
       };
 
