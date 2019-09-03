@@ -2635,6 +2635,30 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
 };
 
 
+Order.get_sales_product_count = async function get_sales_product_count(req,result) {
+
+  // var query =
+  // "Select JSON_OBJECT('productitem', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items"+ 
+  // " from Orders as od"+ 
+  // " left join MakeitUser as mk on mk.userid=od.makeit_user_id"+
+  // " left join OrderItem ci ON ci.orderid = od.orderid"+ 
+  // " left join Product pt on pt.productid = ci.productid"+
+  // " where DATE(od.ordertime) = CURDATE() and mk.virtualkey = 1 and (od.payment_type=0 or (od.payment_type=1 and od.payment_status=1)) and od.orderstatus = 6";
+
+  var query ="SELECT * FROM OrderItem  Where orderid IN(SELECT orderid FROM Orders Where DATE(ordertime) = CURDATE() and payment_status=1 and orderstatus = 6) ORDER BY quantity DESC";
+  sql.query(query,function(err, res) {
+    if (err) {
+      result(err, null);
+    } else{
+      let resobj = {
+        success: true,
+        status:true,
+        result: res
+      };
+      result(null, resobj);
+    }
+  });
+}
 
 Order.moveit_notification_time_orderid = async function moveit_notification_time_orderid(req,result) {
 

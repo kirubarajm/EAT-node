@@ -59,7 +59,7 @@ Notification.orderEatPushNotification = async function(
       mk_username=mk_username?" by "+mk_username :""
       data = {
         title: "Your order has been accepted "+mk_username,
-        message: "Your order will be delivered in approcimately 30 minutes",
+        message: "Your order will be delivered in approximately 30 minutes",
         pageid: "" + pageid,
         app: "Eat",
         notification_type: "2"
@@ -71,7 +71,7 @@ Notification.orderEatPushNotification = async function(
       mk_username=mk_username?" by "+mk_username :""
       data = {
         title: "Your order has been prepared "+mk_username,
-        message: "Your order will be delivered in approcimately 30 minutes.",
+        message: "Your order will be delivered in approximately 30 minutes.",
         pageid: "" + pageid,
         app: "Eat",
         notification_type: "2"

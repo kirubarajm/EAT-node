@@ -438,7 +438,6 @@ exports.moveit_delivery_cash_received_by_today = function(req, res) {
 };
 
 exports.getTotalAmountofOrders = function(req, res) {
-  console.log(req.body);
   Order.get_orders_cash_online_amount(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
@@ -472,6 +471,13 @@ exports.eat_get_delivery_time= function(req, res) {
 }
 };
 
+exports.get_sales_products_count= function(req, res) {
+  Order.get_sales_product_count(req.params, function(err, orders) {
+    if (err) res.send(err);
+    res.send(orders);
+  });
+
+};
 
 exports.moveit_notification_time = function(req, res) {
   
