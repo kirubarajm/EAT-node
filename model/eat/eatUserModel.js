@@ -1531,7 +1531,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
   var otpstatus = false;
   var genderstatus = false;
 
-  if (req.phoneno === '9500313689' && req.otp === 30878) {
+  if (req.phoneno == '9500313689' && req.otp == 30878) {
     
     let resobj = {
       success: true,
