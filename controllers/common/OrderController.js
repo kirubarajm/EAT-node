@@ -472,7 +472,7 @@ exports.eat_get_delivery_time= function(req, res) {
 };
 
 exports.get_sales_products_count= function(req, res) {
-  Order.get_sales_product_count(req.params, function(err, orders) {
+  Order.get_sales_product_count(req.body, function(err, orders) {
     if (err) res.send(err);
     res.send(orders);
   });
