@@ -478,3 +478,14 @@ exports.get_sales_products_count= function(req, res) {
   });
 
 };
+
+exports.moveit_notification_time = function(req, res) {
+  
+  Order.moveit_notification_time_orderid(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+
+};
