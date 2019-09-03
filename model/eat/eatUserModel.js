@@ -2345,7 +2345,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
                                       var rminutes = Math.round(minutes);
                                    
                                      // kitchenlist[j].eta =   +rhours+" hour and " +rminutes +" minute."
-                                      res[i].eta = "above 60 Mins"
+                                     kitchenlist[j].eta = "above 60 Mins"
                                     }else{
                                       kitchenlist[j].eta = Math.round(eta) + " mins";
                                     }
