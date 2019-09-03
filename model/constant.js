@@ -36,9 +36,13 @@ const calculate = {
     salesversionforceupdate : 2, //forceupdate version
     salesforceupdate : 1, 
 
-    eatiosversioncodenew : 1,//normal update
-    eatiosversionforceupdate : 1, //forceupdate version
+    eatiosversioncodenew : 2,//normal update
+    eatiosversionforceupdate : 2, //forceupdate version
     eatforceupdate : 1,
+
+    distanceapiKey :'AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc',
+    orderbuffertime :10 //min
+
 }
 
 

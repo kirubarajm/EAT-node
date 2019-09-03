@@ -100,7 +100,7 @@ exports.moveit_live_status = function(req, res) {
     if (err) res.send(err);
     res.json(user);
   });
-}
+  }
 };
 
 exports.moveit_kitchen_qualitycheck = function(req, res) {

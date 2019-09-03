@@ -180,11 +180,6 @@ exports.orderview = function(req, res) {
 exports.order_pickup_status = function(req, res) {
   var kitchenqualitylist = req.body.qualitychecklist;
 
-  // console.log(kitchenqualitylist);
-  //   if(kitchenqualitylist.length === 0 || kitchenqualitylist.length === undefined || kitchenqualitylist.length === null) {
-  //     res.status(400).send({ error: true, message: 'Please provide order quality list' });
-  //   }else{
-
   Order.order_pickup_status_by_moveituser(
     req.body,
     kitchenqualitylist,
@@ -488,4 +483,17 @@ exports.moveit_notification_time = function(req, res) {
     res.send(user);
   });
 
+};
+
+exports.eat_order_distance_calculation= function(req, res) {
+  if (!req.body.orderid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide orderid" });
+  }else{
+  Order.eat_order_distance_calculation(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+}
 };
