@@ -93,11 +93,11 @@ exports.moveitSearch = function(req, res) {
 };
 
 exports.moveit_live_status = function(req, res) {
-  if (!req.userid) {
-    res.status(400).send({ error: true,status:false, message: "Please provide moveit_userid " });
-  } else if (!req.lat) {
+  if (!req.body.userid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide userid" });
+  } else if (!req.body.lat) {
     res.status(400).send({ error: true, status:false, message: "Please provide lat" });
-  } else if (!req.lon) {
+  } else if (!req.body.lon) {
     res.status(400).send({ error: true, status:false, message: "Please provide lon" });
   } else {
   Moveituser.update_online_status(req.body, function(err, user) {

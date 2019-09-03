@@ -20,9 +20,6 @@ exports.list_all_feedbackbytype = function(req, res) {
 
 exports.create_a_feedback = function(req, res) {
   var new_Eatfeedback = new Eatfeedback(req.body);
-  console.log(new_Eatfeedback);
-  //handles null error
-
   Eatfeedback.createfeedback(new_Eatfeedback, function(err, faq) {
     if (err) res.send(err);
     res.json(faq);
