@@ -7,7 +7,7 @@ var MoveitRatingForMakeit = function (moveitratingformakeit) {
     this.moveit_userid = moveitratingformakeit.moveit_userid;
     this.quality_analysis_id = moveitratingformakeit.quality_analysis_id;
     this.orderid = moveitratingformakeit.orderid;
-    this.rating = moveitratingformakeit.rating;
+    this.rating = moveitratingformakeit.rating || 0;
     this.enabled = moveitratingformakeit.enabled;
   //  this.created_at = new Date();    
 };
@@ -71,23 +71,24 @@ MoveitRatingForMakeit.getAllUser = function getAllUser(result) {
 };
 
 MoveitRatingForMakeit.MoveitRatingForMakeit = function(req, result){
-sql.query("UPDATE MoveitRatingForMakeit SET  rating = ? WHERE makeit_userid = ? and orderid = ? and moveit_userid = ?", [req.rating,req.makeit_userid,req.orderid,req.moveit_userid], function (err, res) {
+sql.query("UPDATE MoveitRatingForMakeit SET  rating = ? WHERE  orderid = ?", [req.rating,req.orderid], function (err, res) {
     if(err) {
         console.log("error: ", err);
         result(err, null);
     }
     else{
-       let sucobj=true;
-       let message = "Rating has been done successfully";
+  
+    
         let resobj = {  
-        success: sucobj,
-        message:message
+        success: true,
+        status :true,
+        message:"Rating has been done successfully"
         }; 
 
      result(null, resobj);
   
     }
-        }); 
+}); 
 };
 
 MoveitRatingForMakeit.remove = function(id, result){

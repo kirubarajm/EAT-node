@@ -1022,7 +1022,7 @@ Order.orderviewbymoveituser = function(orderid, result) {
 
 Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveituser( req,kitchenqualitylist,result) {
   var order_pickup_time = moment().format("YYYY-MM-DD HH:mm:ss");
-  var twentyMinutesLater = moment().add(0, "seconds").add(20, "minutes").format("YYYY-MM-DD HH:mm:ss");
+  var twentyMinutesLater = moment().add(0, "seconds").add(constant.foodpreparationtime, "minutes").format("YYYY-MM-DD HH:mm:ss");
 
 sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid = ?", [req.orderid], function(err,res1) {
     if (err) {
@@ -1037,6 +1037,8 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
         result(null, resobj);
         return;
       }
+
+      
       for (let i = 0; i < kitchenqualitylist.length; i++) {
         var qualitylist = new MoveitRatingForMakeit(kitchenqualitylist[i]);
         qualitylist.orderid = req.orderid;
@@ -1053,7 +1055,7 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
 
       if (res1[0].moveit_user_id === req.moveit_userid) {
         sql.query(
-          "UPDATE Orders SET orderstatus = ? ,moveit_reached_time = ?,moveit_expected_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
+          "UPDATE Orders SET orderstatus = ? ,moveit_pickup_time = ?,moveit_expected_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
           [
             req.orderstatus,
             order_pickup_time,
@@ -1098,11 +1100,7 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
                      .format("YYYY-MM-DD HH:mm:ss");
     
                      await Order.insert_delivery_time(req);
-    
-                    console.log("routes"+req.distance );
-                    console.log("routes"+req.duration);
-    
-                              
+                                  
                     let response = {
                       success: true,
                       status: true,
@@ -1187,7 +1185,7 @@ Order.order_delivery_status_by_moveituser = function(req, result) {
 };
 
 Order.moveit_kitchen_reached_status = function(req, result) {
-  var kitchenreachtime = new Date();
+  var kitchenreachtime = moment().format("YYYY-MM-DD HH:mm:ss");
   var twentyMinutesLater = new Date();
   twentyMinutesLater.setMinutes(twentyMinutesLater.getMinutes() + 20);
 

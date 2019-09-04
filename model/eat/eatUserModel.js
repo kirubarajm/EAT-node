@@ -1696,6 +1696,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                         token: token,
                         userid: res1[0].userid,
                         regionid:res1[0].regionid || 0,
+                        razer_customerid : res1[0].razer_customerid,
                         result: responce
                       };
 
