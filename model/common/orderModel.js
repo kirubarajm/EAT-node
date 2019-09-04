@@ -16,7 +16,7 @@ var RefundOnline = require("../../model/common/refundonlineModel");
 var CouponUsed = require("../../model/common/couponUsedModel");
 var request = require('request');
 var OrderDeliveryTime = require("../../model/common/orderdeliverytimeModel");
-
+var MoveitReassignedOrders = require("../../model/common/moveitReassignedOrdersModel");
 // var instance = new Razorpay({
 //   key_id: "rzp_test_3cduMl5T89iR9G",
 //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
@@ -934,7 +934,7 @@ Order.get_all_vorders = function get_all_vorders(req, result) {
 
 Order.order_assign = function order_assign(req, result) {
   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
-  console.log(assign_time);
+
   sql.query(
     "Select online_status,pushid_android,pushid_ios From MoveitUser where userid= '" +
       req.moveit_user_id +
@@ -979,22 +979,52 @@ Order.order_assign = function order_assign(req, result) {
   );
 };
 
-Order.getUnassignorders = function getUnassignorders(result) {
-  sql.query(
-    "Select us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0",
-    function(err, res) {
-      if (err) {
-        result(err, null);
-      } else {
-        let resobj = {
-          success: true,
-          status:true,
-          result: res
-        };
-        result(null, resobj);
-      }
-    }
-  );
+Order.getUnassignorders =async function getUnassignorders(req,result) {
+//req.id == 1 getUnassignorders
+//req.id == 2 unacceptorders
+//req.id == 3 delivery orders
+  var data = [];
+  if (req.id == 1 ) {
+    
+    var res = await query("Select us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0");
+    // sql.query(
+    //   "Select us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0",
+    //   function(err, res) {
+    //     if (err) {
+    //       result(err, null);
+    //     } else {
+    //       let resobj = {
+    //         success: true,
+    //         status:true,
+    //         result: res
+    //       };
+    //       result(null, resobj);
+    //     }
+    //   }
+    // );
+  }else if(req.id == 2){
+    var res = await query("Select * from Orders where DATE(created_at) = CURDATE() and moveit_user_id !=0 and (moveit_status IS NULL OR moveit_status = '') order by orderid ASC");
+    if (res.err) {
+          result(err, null);
+        } 
+  }else if(req.id == 3){
+    var res = await query("Select * from Orders where DATE(created_at) = CURDATE() and moveit_user_id !=0 and moveit_status=1 order by orderid ASC");
+  if (res.err) {
+    result(err, null);
+  } 
+  }else{
+    var res = await query("Select us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0");
+  }
+ 
+  let resobj = {
+            success: true,
+            status:true,
+            result: res
+          };
+          result(null, resobj);
+ 
+
+ 
 };
 
 Order.orderviewbymoveituser = function(orderid, result) {
@@ -1189,21 +1219,16 @@ Order.moveit_kitchen_reached_status = function(req, result) {
   var twentyMinutesLater = new Date();
   twentyMinutesLater.setMinutes(twentyMinutesLater.getMinutes() + 20);
 
-  sql.query("Select * from Orders where orderid = ?", [req.orderid], function(
-    err,
-    res1
-  ) {
+  sql.query("Select * from Orders where orderid = ?", [req.orderid], function(err,res1) {
     if (err) {
       result(err, null);
     } else {
       var getmoveitid = res1[0].moveit_user_id;
       if (getmoveitid === req.moveit_user_id) {
         sql.query(
-          "UPDATE Orders SET orderstatus = ?,moveit_reached_time = ?,moveit_expected_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
-          [
-            req.orderstatus,
+          "UPDATE Orders SET moveit_reached_time = ? WHERE orderid = ? and moveit_user_id =?",
+          [           
             kitchenreachtime,
-            twentyMinutesLater,
             req.orderid,
             req.moveit_user_id
           ],
@@ -2864,20 +2889,103 @@ Order.eat_order_distance_calculation = async function eat_order_distance_calcula
           };
           result(null, resobj);
         }
- 
-    
-      
-       
+           
       }
     }
   );
- 
- 
-
-
- 
 
 };
+
+
+Order.createMoveitReassignedOrders = function createMoveitReassignedOrders(reassignorders) {
+
+  var ReassignedOrders = new MoveitReassignedOrders(reassignorders);
+ 
+  MoveitReassignedOrders.createMoveitReassignedOrders(ReassignedOrders, function(err, res) {
+    if (err) return err;
+    else return res;
+  });
+};
+
+Order.reassign_orders_by_id =async function reassign_orders_by_id(req, result) {
+  var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+  var orderdetails = await query("select * from Orders where orderid = '"+req.orderid+"' ");
+
+if (orderdetails[0].orderstatus <= 5) {
+    
+  sql.query("Select online_status,pushid_android,pushid_ios From MoveitUser where userid= '" +req.moveit_user_id +"' ",function(err, res1) {
+      if (err) {
+        result(err, null);
+      } else {
+        var online_status = res1[0].online_status;
+        if (online_status == 1) {
+          sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[req.moveit_user_id, assign_time, req.orderid],async function(err, res2) {
+              if (err) {
+                result(err, null);
+              } else {
+                var reassignorders  = {};
+              
+                reassignorders.orderid = req.orderid;
+                reassignorders.moveit_userid = orderdetails[0].moveit_user_id;
+                reassignorders.notification_time =orderdetails[0].notification_time;
+                reassignorders.accept_time =orderdetails[0].accept_time;
+                reassignorders.reason = req.reason;
+
+                await Order.createMoveitReassignedOrders(reassignorders);
+
+                await Notification.orderMoveItPushNotification(
+                  req.orderid,
+                  PushConstant.pageidMoveit_Order_Assigned,
+                  res1[0]
+                );
+                let resobj = {
+                  success: true,
+                  status:true,
+                  message: "Order Re-Assigned Successfully"
+                };
+                result(null, resobj);
+              }
+            }
+          );
+        } else {
+          let resobj = {
+            success: true,
+            status: false,
+            message: "Move it user is offline"
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+  }else if(orderdetails[0].orderstatus === 6){
+
+    let resobj = {
+      success: true,
+      status: false,
+      message: "Order already delivered"
+    };
+    result(null, resobj);
+  }else if(orderdetails[0].orderstatus === 7){
+
+    let resobj = {
+      success: true,
+      status: false,
+      message: "Order already cancelled"
+    };
+    result(null, resobj);
+  }else{
+
+    let resobj = {
+      success: true,
+      status: false,
+      message: "Waiting for order assign"
+    };
+    result(null, resobj);
+  }
+};
+
+
 
 
 module.exports = Order;

@@ -32,7 +32,7 @@ app.route("/admin/vorders/history").post(routesVersioning({"1.0.0":orders.list_a
 app.route("/admin/order/:id").get(routesVersioning({"1.0.0":orders.order_view}));
 app.route("/admin/orderstatus/update").put(routesVersioning({"1.0.0":orders.order_status_update}));
 app.route("/admin/order/assign").put(routesVersioning({"1.0.0":orders.order_assign}));
-app.route("/admin/orders/unassign").get(routesVersioning({"1.0.0":orders.un_assign_orders}));
+app.route("/admin/orders/unassign/:id").get(routesVersioning({"1.0.0":orders.un_assign_orders}));
 app.route("/admin/product").post(routesVersioning({"1.0.0":product.admin_list_all_product}));
 app.route("/admin/makeitusers").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers}));
 app.route("/admin/unapproved/makeitlist").post(routesVersioning({"1.0.0":makeituser.admin_makeit_unapproved_list}));
@@ -105,4 +105,5 @@ app.route("/admin/badges").get(routesVersioning({"1.0.0":makeituser.admin_list_a
 app.route("/admin/moveit/todayincome").post(routesVersioning({"1.0.0":orders.moveit_delivery_cash_received_by_today}));
 app.route("/admin/orders/amount").post(routesVersioning({"1.0.0":orders.getTotalAmountofOrders}));
 app.route("/admin/products/salescount").post(routesVersioning({"1.0.0":orders.get_sales_products_count}));
+app.route("/admin/orders/reassign").post(routesVersioning({"1.0.0":orders.reassign_orders}));
 }

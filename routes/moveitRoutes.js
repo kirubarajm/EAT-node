@@ -15,7 +15,7 @@ app.route("/moveit/orders/:moveit_user_id").get(middleware.checkToken,routesVers
 app.route("/moveit/vorders/:orderid").get(middleware.checkToken,routesVersioning({"1.0.0":orders.orderview}));
 app.route("/moveit/orderpickupstatus").put(middleware.checkToken,routesVersioning({"1.0.0":orders.order_pickup_status}));
 app.route("/moveit/orderdeliverystatus").put(middleware.checkToken,routesVersioning({"1.0.0":orders.order_delivery_status}));
-app.route("/moveit/moveitstatus").put(middleware.checkToken,routesVersioning({"1.0.0":orders.moveit_kitchen_reached}));
+app.route("/moveit/kitchenreach").put(middleware.checkToken,routesVersioning({"1.0.0":orders.moveit_kitchen_reached}));
 app.route("/moveit/makeitrating").put(middleware.checkToken,routesVersioning({"1.0.0":moveituser.moveit_kitchen_rating}));
 app.route("/moveit/qualitycheck").post(middleware.checkToken,routesVersioning({"1.0.0":moveituser.moveit_kitchen_qualitycheck}));
 app.route("/moveit/paymentstatus").put(middleware.checkToken,routesVersioning({"1.0.0":orders.order_payment_status}));

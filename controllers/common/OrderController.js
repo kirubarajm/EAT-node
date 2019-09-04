@@ -142,7 +142,7 @@ exports.order_assign = function(req, res) {
 };
 
 exports.un_assign_orders = function(req, res) {
-  Order.getUnassignorders(function(err, result) {
+  Order.getUnassignorders(req.params,function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });
@@ -496,4 +496,13 @@ exports.eat_order_distance_calculation= function(req, res) {
     res.send(user);
   });
 }
+};
+
+exports.reassign_orders = function(req, res) {
+  Order.reassign_orders_by_id(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
 };
