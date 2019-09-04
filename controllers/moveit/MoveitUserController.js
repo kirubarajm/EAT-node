@@ -93,12 +93,14 @@ exports.moveitSearch = function(req, res) {
 };
 
 exports.moveit_live_status = function(req, res) {
-  
+  if (!req.body.userid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide userid" });
+  } else {
   Moveituser.update_online_status(req.body, function(err, user) {
     if (err) res.send(err);
     res.json(user);
   });
-
+  }
 };
 
 exports.moveit_kitchen_qualitycheck = function(req, res) {
