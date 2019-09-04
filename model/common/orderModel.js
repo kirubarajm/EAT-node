@@ -2919,7 +2919,7 @@ if (orderdetails[0].orderstatus <= 5) {
       } else {
         var online_status = res1[0].online_status;
         if (online_status == 1) {
-          sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[req.moveit_user_id, assign_time, req.orderid],async function(err, res2) {
+          sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ?,moveit_status=0 WHERE orderid = ?",[req.moveit_user_id, assign_time, req.orderid],async function(err, res2) {
               if (err) {
                 result(err, null);
               } else {
