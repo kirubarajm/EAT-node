@@ -93,7 +93,7 @@ Eatuser.createUser = function createUser(newUser, result) {
 
 Eatuser.getUserById = function getUserById(userId, result) {
   sql.query(
-    "Select us.userid,us.name,us.email,us.phoneno,us.Locality,us.created_at,us.virtualkey,us.gender,re.regionname,us.regionid from User us left join Region re on re.regionid = us.regionid  where us.userid = ? ",
+    "Select us.userid,us.name,us.email,us.phoneno,us.Locality,us.created_at,us.virtualkey,us.gender,re.regionname,us.regionid,us.razer_customerid from User us left join Region re on re.regionid = us.regionid  where us.userid = ? ",
     userId,
     function(err, res) {
       if (err) {
