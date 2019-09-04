@@ -2751,41 +2751,41 @@ Order.eat_order_skip_count_by_uid = async function eat_order_skip_count_by_uid(r
 
 };
 
-Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_by_moveit_id(req,result) {
+// Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_by_moveit_id(req,result) {
 
-  var orderdetails = await query("select *,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( cus_lat ) )  * cos( radians( cus_lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(cus_lat)) ) ) AS distance from Orders where orderid = "+req.orderid+" ");
+//   var orderdetails = await query("select *,( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( cus_lat ) )  * cos( radians( cus_lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(cus_lat)) ) ) AS distance from Orders where orderid = "+req.orderid+" ");
 
-  if (orderdetails.length !==0) {
+//   if (orderdetails.length !==0) {
   
- var eta = constant.onekm + Math.round(constant.onekm * orderdetails[0].distance);
+//  //var eta = constant.onekm + Math.round(constant.onekm * orderdetails[0].distance);
 
- var deliverytime = moment()
-        .add(0, "seconds")
-        .add(eta, "minutes")
-        .format("YYYY-MM-DD HH:mm:ss");
+//  var deliverytime = moment()
+//         .add(0, "seconds")
+//         .add(eta, "minutes")
+//         .format("YYYY-MM-DD HH:mm:ss");
     
-        orderdetails[0].deliverytime = deliverytime;  
+//         orderdetails[0].deliverytime = deliverytime;  
 
-    let resobj = {
-      success: true,
-      status: true,
-      result: orderdetails
-    };
-    result(null, resobj);
+//     let resobj = {
+//       success: true,
+//       status: true,
+//       result: orderdetails
+//     };
+//     result(null, resobj);
 
-  }else{
+//   }else{
 
-    let resobj = {
-      success: true,
-      status:false,
-      message:"There is no orders found!",
-      result: orderdetails
-    };
-    result(null, resobj);
+//     let resobj = {
+//       success: true,
+//       status:false,
+//       message:"There is no orders found!",
+//       result: orderdetails
+//     };
+//     result(null, resobj);
 
-  }
+//   }
 
-};
+// };
 
 
 Order.get_sales_product_count = async function get_sales_product_count(req,result) {
@@ -2986,6 +2986,88 @@ if (orderdetails[0].orderstatus <= 5) {
 };
 
 
+Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_by_moveit_id(req,result) {
 
+  var orderdeliverytimedetails = await query("select od.deliverytime,od.duration,od.distance,od.orderid,ors.orderstatus,ors.cus_lat,ors.cus_lon,mk.lat as makeit_lat,mk.lon as makeit_lon from Order_deliverytime od join Orders ors on od.orderid=ors.orderid join MakeitUser mk on mk.userid=ors.makeit_user_id where od.orderid = "+req.orderid+" and od.deliverytime > NOW() and ors.orderstatus < 6 order by od.od_id desc limit 1");
+
+  if (orderdeliverytimedetails.length === 0) {
+    req.deslat = orderdeliverytimedetails[0].cus_lat;
+    req.deslon = orderdeliverytimedetails[0].cus_lon;
+   
+
+    if (orderdeliverytimedetails[0].orderstatus < 5) {
+      
+      req.orglat = orderdeliverytimedetails[0].makeit_lat;
+      req.orglon = orderdeliverytimedetails[0].makeit_lon;
+    }else if (orderdeliverytimedetails[0].orderstatus == 5){
+
+      if (req.lat) {
+        req.orglat = req.lat;
+        req.orglon = req.lon;
+      }else{
+
+        let response = {
+          success: true,
+          status: false,
+          message: "Please provide moveit lat amd.",
+       
+        };
+        result(null, response);
+      }
+
+     
+    }else{
+      req.orglat = orderdeliverytimedetails[0].makeit_lat;
+      req.orglon = orderdeliverytimedetails[0].makeit_lon;
+    }
+   
+
+    Order.eat_order_distance_calculation(req ,async function(err,res3) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res3.status != true) {
+          result(null, res3);
+        } else {
+
+          
+          var routes = res3.result;
+          var caldistance = routes.routes;
+          var deliverytimedata = caldistance[0].legs;
+         
+          req.distance = parseInt(deliverytimedata[0].distance.text);
+           req.duration = parseInt(deliverytimedata[0].duration.text);
+           req.duration = req.duration + constant.orderbuffertime;
+           req.deliverytime  = moment()
+           .add(0, "seconds")
+           .add(req.duration, "minutes")
+           .format("YYYY-MM-DD HH:mm:ss");
+
+           await Order.insert_delivery_time(req);
+                        
+          let response = {
+            success: true,
+            status: true,
+            message: "Order Pickedup successfully.",
+         
+          };
+          result(null, response);
+        }
+      }
+    });
+
+  }else{
+
+    let resobj = {
+      success: true,
+      status:false,
+      message: "Folloing Order delivery will be "+orderdeliverytimedetails[0].deliverytime,
+  
+    };
+    result(null, resobj);
+
+  }
+
+};
 
 module.exports = Order;
