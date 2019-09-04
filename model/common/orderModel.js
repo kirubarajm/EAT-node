@@ -1003,12 +1003,12 @@ Order.getUnassignorders =async function getUnassignorders(req,result) {
     //   }
     // );
   }else if(req.id == 2){
-    var res = await query("Select * from Orders where DATE(created_at) = CURDATE() and moveit_user_id !=0 and (moveit_status IS NULL OR moveit_status = '') order by orderid ASC");
+    var res = await query("Select * from Orders where DATE(created_at) = CURDATE() and moveit_user_id !=0 and (moveit_status IS NULL OR moveit_status = '') and orderstatus < 6 order by orderid ASC");
     if (res.err) {
           result(err, null);
         } 
   }else if(req.id == 3){
-    var res = await query("Select * from Orders where DATE(created_at) = CURDATE() and moveit_user_id !=0 and moveit_status=1 order by orderid ASC");
+    var res = await query("Select * from Orders where DATE(created_at) = CURDATE() and moveit_user_id !=0 and moveit_status = 1  and orderstatus < 6 order by orderid ASC");
   if (res.err) {
     result(err, null);
   } 
