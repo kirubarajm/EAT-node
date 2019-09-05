@@ -30,7 +30,7 @@ app.route("/admin/orders").post(routesVersioning({"1.0.0":orders.list_all_orders
 app.route("/admin/vorders").post(routesVersioning({"1.0.0":orders.list_today_virtual_makeit_orders}));
 app.route("/admin/vorders/history").post(routesVersioning({"1.0.0":orders.list_all_virtual_makeit_orders}));
 app.route("/admin/order/:id").get(routesVersioning({"1.0.0":orders.order_view}));
-app.route("/admin/orderstatus/update").put(routesVersioning({"1.0.0":orders.order_status_update}));
+app.route("/admin/orderstatus/update").put(routesVersioning({"1.0.0":orders.order_status_update}));//order accept
 app.route("/admin/order/assign").put(routesVersioning({"1.0.0":orders.order_assign}));
 app.route("/admin/orders/unassign/:id").get(routesVersioning({"1.0.0":orders.un_assign_orders}));
 app.route("/admin/product").post(routesVersioning({"1.0.0":product.admin_list_all_product}));
