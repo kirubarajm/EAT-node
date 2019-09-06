@@ -1224,7 +1224,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           cartdetails.push(totalamountinfo);
 
           if (req.cid && couponstatus) {
-            couponinfo.title = "Coupon adjustment";
+            couponinfo.title = "Coupon adjustment (-)";
             couponinfo.charges = coupon_discount_amount;
             couponinfo.status = true;
             cartdetails.push(couponinfo);
@@ -1241,7 +1241,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           cartdetails.push(deliverychargeinfo);
 
           if (req.rcid && refundcouponstatus) {
-            refundinfo.title = "Refund adjustment";
+            refundinfo.title = "Refund adjustment (-)";
             refundinfo.charges = refund_coupon_adjustment;
             refundinfo.status = true;
             cartdetails.push(refundinfo);

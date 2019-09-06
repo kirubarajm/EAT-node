@@ -20,6 +20,7 @@ const PushConstant={
     pageidMoveit_Order_Cancel:2,
     pageidMoveit_Order_Prepared:3,
     pageidMoveit_Replies:4,
+    pageidMoveit_Order_Reassign:5,
 
     pageidMakeit_Order_Post:1,
     pageidMakeit_Order_Cancel:2,

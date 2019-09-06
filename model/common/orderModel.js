@@ -2503,6 +2503,8 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
 };
 
 Order.admin_order_cancel = async function admin_order_cancel(req, result) {
+
+ var cancel_reason=req.cancel_reason||""
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
   if (orderdetails[0].orderstatus === 7 ) {
@@ -2521,7 +2523,7 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
       result(null, response);
 
   } else {
-    sql.query("UPDATE Orders SET makeit_status=0,orderstatus = 7,cancel_by = 2 WHERE orderid ='" +req.orderid +"'",
+    sql.query("UPDATE Orders SET makeit_status=0,orderstatus = 7,cancel_by = 2,cancel_reason= '"+cancel_reason+"' WHERE orderid ='" +req.orderid +"'",
     async function(err, res) {
         if (err) {
           result(err, null);
@@ -3039,6 +3041,11 @@ if (orderdetails[0].orderstatus <= 5) {
                   req.orderid,
                   PushConstant.pageidMoveit_Order_Assigned,
                   res1[0]
+                );
+                await Notification.orderMoveItPushNotification(
+                  req.orderid,
+                  PushConstant.pageidMoveit_Order_Reassign,
+                  await Notification.getMovieitDetail( orderdetails[0].moveit_user_id)
                 );
                 let resobj = {
                   success: true,

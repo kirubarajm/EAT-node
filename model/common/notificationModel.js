@@ -32,6 +32,11 @@ Notification.getEatUserDetail = async function(userid) {
   return EatUser[0];
 };
 
+Notification.getMovieitDetail = async function(userid) {
+  var MoveitUser = await query("SELECT * FROM MoveitUser where userid = " + userid);
+  return MoveitUser[0];
+};
+
 Notification.orderEatPushNotification = async function(
   orderid,
   userid,
@@ -191,7 +196,9 @@ Notification.orderMoveItPushNotification = async function(
   pageid,
   move_it_user_detail
 ) {
+  
   const orders = await Notification.getPushOrderDetail(orderid);
+ // const moveitdetails = await Notification.getMovieitDetail()
   var Eatuserdetail = JSON.parse(orders.userdetail);
   var data = null;
 
@@ -231,6 +238,16 @@ Notification.orderMoveItPushNotification = async function(
       data = {
         title: "Order is Prepared",
         message: "Hi! Your current order is prepared.",
+        pageid: "" + pageid,
+        app: "Move-it",
+        notification_type: "1"
+      };
+
+      break;
+      case PushConstant.pageidMoveit_Order_Reassign:
+      data = {
+        title: "Order Re-assigned",
+        message: "Your order has been assigned to another moveit.",
         pageid: "" + pageid,
         app: "Move-it",
         notification_type: "1"
