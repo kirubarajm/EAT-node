@@ -4,7 +4,7 @@
 const calculate = {
     gst     : 18,// percentage
     food_gst     : 5,// percentage
-    fodd_commission_cost : 18,
+    food_commission_cost : 18,
     deliverycharge : 10,// cost
     applink :'http://bit.ly/2ZcGL95',
     iosapplink : 'https://apple.co/2lna3n9',
@@ -26,9 +26,9 @@ const calculate = {
     dinnerend : 22,
     max_order_rating_skip : 2,
   //  moveitversioncode : 1,
-    moveitversioncodenew : 6,//normal update
-    moveitversionforceupdate : 6, //forceupdate version
-    moveitforceupdate : 6, 
+    moveitversioncodenew : 7,//normal update
+    moveitversionforceupdate : 7, //forceupdate version
+    moveitforceupdate : 7, 
 
     makeitversioncodenew : 4,//normal update
     makeitversionforceupdate : 4, //forceupdate version

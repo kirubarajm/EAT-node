@@ -1839,6 +1839,17 @@ Eatuser.eat_user_post_registration = async function(req, result) {
 
   const userinfo = await query("Select * from User where userid = '" +req.userid +"'");
 
+  if (userinfo[0].email != req.email) {
+    let resobj = {
+      success: true,
+      status: false,
+     // message: "Sorry can't create customerid format is invalid"
+     message: "This email already exist!"
+      
+      
+    };
+  result(null,resobj );
+  }else{
  // console.log(userinfo[0].razer_customerid);
   var customerid = userinfo[0].razer_customerid;
 
@@ -1890,6 +1901,7 @@ Eatuser.eat_user_post_registration = async function(req, result) {
       result(null, resobj);
     }
   });
+}
 };
 
 Eatuser.eat_user_forgot_password_byuserid = function eat_user_forgot_password_byuserid(

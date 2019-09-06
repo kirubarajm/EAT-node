@@ -919,7 +919,6 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var coupon__error_message = "";
   var refundcoupon__error_message = "";
   var gst = constant.gst;
-  var food_gst = constant.gst;
   var delivery_charge = constant.deliverycharge;
   const productdetails = [];
   var totalamount = 0;
@@ -1004,11 +1003,14 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     var order_makeit_earnings = res1[0].original_price * orderitems[i].quantity;
 
     ///single product commission cost
-    var commission_cost = res1[0].price - res1[0].original_price;
+    var commission_cost = amount - order_makeit_earnings;
 
     ///get total commission cost
     total_commission_cost = total_commission_cost + commission_cost;
-    res1[0].total_commission_cost = total_commission_cost;
+    //console.log(total_commission_cost);
+    
+ 
+    // console.log(res1[0].total_commission_cost);
     res1[0].amount = amount;
     res1[0].makeit_earnings = order_makeit_earnings;
     res1[0].cartquantity = orderitems[i].quantity;
@@ -1017,7 +1019,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     makeit_earnings = makeit_earnings + order_makeit_earnings;
     productdetails.push(res1[0]);
   }
-  console.log(productdetails);
+ // console.log(productdetails);
   // This query is to get the makeit details and cuisine details
   var query1 =
     "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
@@ -1108,7 +1110,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                 }
 
               if (totalamount >= discount_amount) {
-               
+                console.log(discount_amount);
                 totalamount = totalamount - discount_amount;
                 coupon_discount_amount = discount_amount;
               }else{
@@ -1121,7 +1123,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             }
             }else{
               couponstatus = false;
-              coupon__error_message = "Please makeit minimum order values is " + minprice_limit;
+              coupon__error_message = "Product value should be "+ minprice_limit+" to apply this coupons " ;
             }
           }else{
 
@@ -1132,12 +1134,27 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         
         
       //  var gstcharge = (totalamount / 100) * gst;  // this code commanded due to gst percentage modifications 06/09/2019
-      var gstcharge = (totalamount / 100) * food_gst;
+      console.log(totalamount);
+      console.log(constant.food_gst);
+   
+      var foodgstcharge = (totalamount / 100) * constant.food_gst;
 
-      var food_commission_gst = (res1[0].total_commission_cost / 100) * food_gst; 
-        gstcharge = Math.round(gstcharge);
-        var original_price = gstcharge+product_orginal_price+delivery_charge;
-        var grandtotal = gstcharge+totalamount+delivery_charge;
+      console.log("foodgstcharge"+foodgstcharge);
+      
+      var total_commission_delivery_cost = total_commission_cost + delivery_charge;
+
+      console.log(total_commission_delivery_cost);
+      console.log(constant.food_commission_cost);
+      var food_commission_gst = (total_commission_delivery_cost / 100) * constant.food_commission_cost; 
+
+      console.log("food_commission_gst"+food_commission_gst);
+      var gstcharge = foodgstcharge + food_commission_gst;
+
+          gstcharge = Math.round(gstcharge);
+
+      var original_price = gstcharge+product_orginal_price+delivery_charge;
+
+      var grandtotal = gstcharge+totalamount+delivery_charge;
 
 
         //refund coupon amount detection algorithm 
@@ -1180,6 +1197,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         calculationdetails.makeit_earnings = makeit_earnings;
         calculationdetails.totalamount = totalamount;
         calculationdetails.coupon_discount_amount = coupon_discount_amount;
+        calculationdetails.total_commission_cost = total_commission_cost;
         calculationdetails.couponstatus = false;
         calculationdetails.refundcouponstatus = false;
         
