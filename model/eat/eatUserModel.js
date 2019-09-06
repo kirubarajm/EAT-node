@@ -1845,9 +1845,7 @@ Eatuser.eat_user_post_registration = async function(req, result) {
   req.name= userinfo[0].name;
   req.phoneno= userinfo[0].phoneno;
   //console.log(req);
-  if (!customerid) {
-    
-    
+  if (!customerid) {  
   var customerid = await Eatuser.create_customerid_by_razorpay(req);
   console.log("customerid:----- ", customerid); 
   if (customerid === 400) {

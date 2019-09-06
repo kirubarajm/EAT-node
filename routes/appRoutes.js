@@ -14,8 +14,22 @@ module.exports = function(app) {
   var allocation = require("../controllers/sales/AllocationController");
   var documents = require("../controllers/common/DocumentsController");
   var product = require("../controllers/makeit/ProductController");
+  var stories = require("../controllers/common/StoryController");
   // Masters
+
+
+  //Region
   app.route("/masters/regionlist").get(routesVersioning({"1.0.0":region.list_all_region}));
+  app.route("/masters/region").post(routesVersioning({"1.0.0":region.create_a_Region}));
+  
+
+
+  //Stories
+  app.route("/masters/storieslist").post(routesVersioning({"1.0.0":stories.list_all_Stories}));
+  app.route("/masters/storiescreate").post(routesVersioning({"1.0.0":stories.createnewstory}));
+
+
+
   app.route("/masters/homedownlist").get(routesVersioning({"1.0.0":homedown.list_all_homedown}));
   app.route("/masters/makeithub").get(routesVersioning({"1.0.0":makeithub.list_all_makeithubs}));
   app.route("/masters/cuisinelist").get(routesVersioning({"1.0.0":cusine.list_all_Cuisine}));

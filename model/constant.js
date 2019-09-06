@@ -3,6 +3,8 @@
 
 const calculate = {
     gst     : 18,// percentage
+    food_gst     : 5,// percentage
+    fodd_commission_cost : 18,
     deliverycharge : 10,// cost
     applink :'http://bit.ly/2ZcGL95',
     iosapplink : 'https://apple.co/2lna3n9',

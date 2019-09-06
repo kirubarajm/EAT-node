@@ -17,11 +17,10 @@ exports.getRegionByType = function(req, res) {
 };
 
 exports.create_a_Region = function(req, res) {
-  var new_ques = new Region(req.body);
-  console.log(new_ques);
+  var new_Region = new Region(req.body);
   //handles null error
 
-  Region.createquestions(new_ques, function(err, result) {
+  Region.createRegion(new_Region, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });

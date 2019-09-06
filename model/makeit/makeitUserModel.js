@@ -919,6 +919,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var coupon__error_message = "";
   var refundcoupon__error_message = "";
   var gst = constant.gst;
+  var food_gst = constant.gst;
   var delivery_charge = constant.deliverycharge;
   const productdetails = [];
   var totalamount = 0;
@@ -934,6 +935,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var refundcouponstatus = true;
   var isAvaliablekitchen = true;
   var makeit_earnings = 0;
+  var total_commission_cost  = 0;
  
 
   var orderlist = await query("Select * From Orders where userid = '" +req.userid +"' and orderstatus >= 6");
@@ -994,11 +996,23 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     }   else {
       res1[0].availablity = true;
     }
+
+    ///get amount each product
     amount = res1[0].price * orderitems[i].quantity;
+
+    ///get makeit earning each product
     var order_makeit_earnings = res1[0].original_price * orderitems[i].quantity;
+
+    ///single product commission cost
+    var commission_cost = res1[0].price - res1[0].original_price;
+
+    ///get total commission cost
+    total_commission_cost = total_commission_cost + commission_cost;
+    res1[0].total_commission_cost = total_commission_cost;
     res1[0].amount = amount;
     res1[0].makeit_earnings = order_makeit_earnings;
     res1[0].cartquantity = orderitems[i].quantity;
+    //total product cost
     totalamount = totalamount + amount;
     makeit_earnings = makeit_earnings + order_makeit_earnings;
     productdetails.push(res1[0]);
@@ -1076,9 +1090,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             var numberoftimes = couponlist[0].numberoftimes;
             var discount_percent = couponlist[0].discount_percent;
             var minprice_limit = couponlist[0].minprice_limit
-            var CouponsUsedlist = await query(
-              "Select * From CouponsUsed where cid = '" +req.cid +"' and userid = '" +req.userid +"' and active_status = 1"
-            );
+            var CouponsUsedlist = await query("Select * From CouponsUsed where cid = '" +req.cid +"' and userid = '" +req.userid +"' and active_status = 1");
             var couponusedcount = CouponsUsedlist.length;
 
             if (totalamount >=minprice_limit) {
@@ -1118,9 +1130,13 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           }
         }
         
-        var gstcharge = (totalamount / 100) * gst;
+        
+      //  var gstcharge = (totalamount / 100) * gst;  // this code commanded due to gst percentage modifications 06/09/2019
+      var gstcharge = (totalamount / 100) * food_gst;
+
+      var food_commission_gst = (res1[0].total_commission_cost / 100) * food_gst; 
         gstcharge = Math.round(gstcharge);
-        var original_price =gstcharge+product_orginal_price+delivery_charge;
+        var original_price = gstcharge+product_orginal_price+delivery_charge;
         var grandtotal = gstcharge+totalamount+delivery_charge;
 
 

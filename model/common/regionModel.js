@@ -15,6 +15,7 @@ var Region = function(region) {
   this.identity_img=region.identity_img;
   this.tagline=region.tagline;
   this.specialities_food_content=region.specialities_food_content;
+  this.active_status=region.active_status || 0;
   // this.created_at = new Date();
 };
 
@@ -24,11 +25,13 @@ Region.createRegion = function createRegion(req, result) {
       console.log("error: ", err);
       result(err, null);
     } else {
-      let sucobj = true;
-      let message = "Region created successfully";
+      
+
       let resobj = {
-        success: sucobj,
-        message: message
+        success: true,
+        status : true,
+        message: "Region created successfully"
+        
       };
 
       result(null, resobj);

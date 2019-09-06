@@ -11,14 +11,14 @@ exports.list_all_Stories = function(req, res) {
   });
 };
 
-;
 
-exports.create_a_Stories = function(req, res) {
+exports.createnewstory = function(req, res) {
   var new_Stories = new Stories(req.body);
-  console.log(new_ques);
+  var storylist = req.body.storylist;
+  console.log(storylist);
   //handles null error
 
-  Stories.createStories(new_Stories, function(err, result) {
+  Stories.createnewstory(new_Stories,storylist, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });
