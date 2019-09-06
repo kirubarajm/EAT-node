@@ -1594,12 +1594,12 @@ Order.orderviewbyeatuser = function(req, result) {
                     cartdetails.push(couponinfo);
                   }
         
-                  gstinfo.title = "GST charge";
+                  gstinfo.title = "GST";
                   gstinfo.charges = res1[0].gst;
                   gstinfo.status = true;
                   cartdetails.push(gstinfo);
         
-                  deliverychargeinfo.title = "Delivery charge";
+                  deliverychargeinfo.title = "Handling charge";
                   deliverychargeinfo.charges = res1[0].delivery_charge;
                   deliverychargeinfo.status = true;
                   cartdetails.push(deliverychargeinfo);

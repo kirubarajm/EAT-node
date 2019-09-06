@@ -1838,23 +1838,31 @@ Eatuser.eat_user_post_registration = async function(req, result) {
   var column = "";
 
   const userinfo = await query("Select * from User where userid = '" +req.userid +"'");
-
-  if (userinfo[0].email != req.email) {
-    let resobj = {
-      success: true,
-      status: false,
-     // message: "Sorry can't create customerid format is invalid"
-     message: "This email already exist!"
+    
+  // if (userinfo[0].email != req.email) {
+  //   let resobj = {
+  //     success: true,
+  //     status: false,
+  //    // message: "Sorry can't create customerid format is invalid"
+  //    message: "This email already exist!"
       
       
-    };
-  result(null,resobj );
-  }else{
+  //   };
+  // result(null,resobj );
+ // }else{
  // console.log(userinfo[0].razer_customerid);
+
+ if (userinfo[0].email === null || userinfo[0].email) {
+  
+  const emailinfo = await query("Select * from User where email = '" +req.email +"'");
+
+
+  if (emailinfo.length === 0) {
+   
   var customerid = userinfo[0].razer_customerid;
 
-  req.name= userinfo[0].name;
-  req.phoneno= userinfo[0].phoneno;
+  req.name = userinfo[0].name;
+  req.phoneno = userinfo[0].phoneno;
   //console.log(req);
   if (!customerid) {  
   var customerid = await Eatuser.create_customerid_by_razorpay(req);
@@ -1901,6 +1909,17 @@ Eatuser.eat_user_post_registration = async function(req, result) {
       result(null, resobj);
     }
   });
+}else{
+
+
+      let resobj = {
+        success: true,
+        status: false,
+        message: "email already exist!"
+      };
+
+      result(null, resobj);
+}
 }
 };
 

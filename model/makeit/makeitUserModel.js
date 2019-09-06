@@ -1230,12 +1230,12 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             cartdetails.push(couponinfo);
           }
 
-          gstinfo.title = "GST charge";
+          gstinfo.title = "GST ";
           gstinfo.charges = gstcharge;
           gstinfo.status = true;
           cartdetails.push(gstinfo);
 
-          deliverychargeinfo.title = "Delivery charge";
+          deliverychargeinfo.title = "Handling charge";
           deliverychargeinfo.charges = delivery_charge;
           deliverychargeinfo.status = true;
           cartdetails.push(deliverychargeinfo);

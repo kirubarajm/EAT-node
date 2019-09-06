@@ -114,7 +114,8 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
             let resobj = {
               success: true,
               status:false,
-              message: "Sorry there is no coupon"
+              message: "Sorry there is no coupon",
+              result: res
             };
             result(null, resobj);
           }  
