@@ -65,6 +65,8 @@ var Order = function(order) {
   this.moveit_status = order.moveit_status;
   this.cancel_charge = order.cancel_charge;
   this.rating_skip=order.rating_skip;
+  this.landmark = order.landmark;
+  this.flatno=order.flatno;
 };
 
 
@@ -167,7 +169,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                   result(null, res3);
                 } else {
                   var amountdata = res3.result[0].amountdetails;
-                  console.log(address_data[0].address);
+                 
                   req.original_price = amountdata.original_price;
                   req.refund_balance = amountdata.refund_balance;
                   req.refund_amount = amountdata.refundamount;
@@ -177,13 +179,18 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                   req.gst = amountdata.gstcharge;
                   req.price = amountdata.grandtotal;
                   req.makeit_earnings = amountdata.makeit_earnings;
-                  console.log(req.makeit_earnings);
+               
                   req.cus_address = address_data[0].address;
                   req.locality = address_data[0].locality;
                   req.cus_lat = address_data[0].lat;
                   req.cus_lon = address_data[0].lon;
                   req.address_title = address_data[0].address_title;
                   req.locality_name = address_data[0].locality;
+
+                  console.log(address_data[0].flatno);
+                  console.log(address_data[0].landmark);
+                  req.flatno = address_data[0].flatno;
+                  req.landmark = address_data[0].landmark;
                   req.coupon = req.cid
                     if (req.payment_type === 0) {
                       Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
@@ -1060,7 +1067,7 @@ Order.getUnassignorders =async function getUnassignorders(req,result) {
     //   }
     // );Select * from Orders where DATE(created_at) = CURDATE() and moveit_user_id !=0 and (moveit_status IS NULL OR moveit_status = '') and orderstatus < 6 order by orderid ASC
   }else if(req.id == 2){
-    var res = await query("Select us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and ors.moveit_user_id !=0 and (ors.moveit_status IS NULL OR ors.moveit_status = '') and ors.orderstatus < 6 order by ors.orderid ASC");
+    var res = await query("Select us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and ors.moveit_user_id !=0 and (ors.moveit_status IS NULL OR ors.moveit_status = '') and ors.orderstatus < 5 order by ors.orderid ASC");
     if (res.err) {
           result(err, null);
         } 
@@ -1363,7 +1370,7 @@ Order.order_payment_status_by_moveituser = function(req, result) {
 
 Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
     const rows = await query(
-      "Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id =" +
+      "Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makitphone,ms.userid as makeituserid,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ors.landmark,ors.flatno from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid  where ors.moveit_user_id =" +
         moveit_user_id +
         " and (ors.orderstatus = 6 or ors.orderstatus = 7) order by ors.moveit_actual_delivered_time desc"
     );
@@ -1403,7 +1410,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
 
 Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
   const rows = await query(
-    "Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id =" +
+    "Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.landmark,ors.flatno,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id =" +
       moveit_user_id +
       " and   DATE(ors.ordertime) = CURDATE() order by  ors.order_assigned_time desc"
   );
@@ -3213,6 +3220,50 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
 
   }
 
+};
+
+
+
+Order.moveit_customer_location_reached_by_userid = function(req, result) {
+  var customerlocationreachtime = moment().format("YYYY-MM-DD HH:mm:ss");
+ 
+
+  sql.query("Select * from Orders where orderid = ?", [req.orderid], function(err,res1) {
+    if (err) {
+      result(err, null);
+    } else {
+      var getmoveitid = res1[0].moveit_user_id;
+      if (getmoveitid === req.moveit_user_id) {
+        sql.query(
+          "UPDATE Orders SET moveit_customerlocation_reached_time = ? WHERE orderid = ? and moveit_user_id =?",
+          [           
+            customerlocationreachtime,
+            req.orderid,
+            req.moveit_user_id
+          ],
+          function(err, res) {
+            if (err) {
+              result(err, null);
+            } else {
+              let resobj = {
+                success: true,
+                status:true,
+                message: "Customer location reached successfully"
+              };
+              result(null, resobj); 
+            }
+          }
+        );
+      } else {
+        let resobj = {
+          success: true,
+          status:false,
+          message: "Following order is not assigned to you!"
+        };
+        result(null, resobj);
+      }
+    }
+  });
 };
 
 module.exports = Order;

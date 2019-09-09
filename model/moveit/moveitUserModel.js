@@ -338,6 +338,7 @@ var userdetails = await query("select * from MoveitUser where userid = "+req.use
       success: true,
        status: false,
        forcelogout : 1, 
+       onlinestatus : true,
       // message:mesobj,
       message: "Sorry you can't go offline, Orders is assigned to you!"  
     };
@@ -350,6 +351,7 @@ var userdetails = await query("select * from MoveitUser where userid = "+req.use
       success: true,
       status: false,
       forcelogout : 2,
+      onlinestatus : false,
       message: "Please login"
   };
 
@@ -359,6 +361,7 @@ var userdetails = await query("select * from MoveitUser where userid = "+req.use
       success: true,
       status: false,
       forcelogout : 3,
+      onlinestatus : false,
       message: "Please contact Administrator"
   };
 

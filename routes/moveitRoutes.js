@@ -39,4 +39,6 @@ app.route("/moveit/order/accept").put(middleware.checkToken,routesVersioning({"1
 app.route("/moveit/versioncheck").post(routesVersioning({"1.0.0": moveituser.moveit_app_version_check_vid}));
 app.route("/moveit/ordernotificationtime").post(routesVersioning({"1.0.0": orders.moveit_notification_time}));
 app.route("/moveit/logtime").post(routesVersioning({"1.0.0": moveitlogtime.createMoveitTimelog_by_id}));
+
+app.route("/moveit/customerlocationreach").put(middleware.checkToken,routesVersioning({"1.0.0":orders.moveit_customer_location_reached}));
 }

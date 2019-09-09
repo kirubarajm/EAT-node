@@ -506,3 +506,10 @@ exports.reassign_orders = function(req, res) {
     res.send(user);
   });
 };
+
+exports.moveit_customer_location_reached = function(req, res) {
+  Order.moveit_customer_location_reached_by_userid(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
