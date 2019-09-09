@@ -978,20 +978,15 @@ Order.get_all_vorders = function get_all_vorders(req, result) {
 Order.order_assign = function order_assign(req, result) {
   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  sql.query(
-    "Select online_status,pushid_android,pushid_ios From MoveitUser where userid= '" +
-      req.moveit_user_id +
-      "' ",
-    function(err, res1) {
+  sql.query("Select online_status,pushid_android,pushid_ios,login_status From MoveitUser where userid= '" +req.moveit_user_id +"' ",function(err, res1) {
       if (err) {
         result(err, null);
       } else {
         var online_status = res1[0].online_status;
+        if (res1[0].login_status == 1) {
+                 
         if (online_status == 1) {
-          sql.query(
-            "UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",
-            [req.moveit_user_id, assign_time, req.orderid],
-            async function(err, res2) {
+          sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[req.moveit_user_id, assign_time, req.orderid],async function(err, res2) {
               if (err) {
                 result(err, null);
               } else {
@@ -1017,6 +1012,23 @@ Order.order_assign = function order_assign(req, result) {
           };
           result(null, resobj);
         }
+      }else if(userdetails[0].login_status == 2){
+        let resobj = {
+          success: true,
+          status: false,
+          message: "Please login"
+      };
+    
+      result(null, resobj);
+      }else if(userdetails[0].login_status == 3){
+        let resobj = {
+          success: true,
+          status: false,
+          message: "Please contact Administrator"
+      };
+    
+      result(null, resobj);
+      }
       }
     }
   );
@@ -1588,7 +1600,7 @@ Order.orderviewbyeatuser = function(req, result) {
 
 
                   if (res1[0].discount_amount) {
-                    couponinfo.title = "Coupon adjustment";
+                    couponinfo.title = "Coupon adjustment (-)";
                     couponinfo.charges = res1[0].discount_amount;
                     couponinfo.status = true;
                     cartdetails.push(couponinfo);
@@ -1605,7 +1617,7 @@ Order.orderviewbyeatuser = function(req, result) {
                   cartdetails.push(deliverychargeinfo);
         
                   if (res1[0].refund_amount) {
-                    refundinfo.title = "Refund adjustment";
+                    refundinfo.title = "Refund adjustment (-)";
                     refundinfo.charges = res1[0].refund_amount;
                     refundinfo.status = true;
                     cartdetails.push(refundinfo);

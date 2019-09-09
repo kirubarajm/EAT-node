@@ -39,7 +39,7 @@ EatuserAddress.createUserAddress = function createUserAddress(new_address, resul
                 }
                 else{
                   let sucobj=true;
-                  let mesobj = "EatUser Address Created successfully";
+                  let mesobj = "Address Created successfully";
                   let resobj = {  
                     success: sucobj,
                     message:mesobj,
@@ -89,9 +89,9 @@ EatuserAddress.getaddressById = function getaddressById(userId, result) {
                     
                     status = false;
                 }
-                let sucobj=true;
+               
                 let resobj = {  
-                success: sucobj,
+                success: true,
                 status:status,
                 result: res
                 }; 

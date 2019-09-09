@@ -10,6 +10,7 @@ let jwt = require('jsonwebtoken');
 let config = require('../config.js');
 var constant = require('../constant.js');
 var MoveitTimelog = require("../../model/moveit/moveitTimeModel");
+var moment = require("moment");
 
 //Task object constructor
 var Moveituser = function (moveituser) {
@@ -183,12 +184,13 @@ Moveituser.remove = function (id, result) {
 
 Moveituser.checkLogin = function checkLogin(req, result) {
     var reqs = [req.phoneno, req.password];
-    sql.query("Select * from MoveitUser where phoneno = ? and password = ?", reqs, function (err, res) {
+    sql.query("Select * from MoveitUser where phoneno = ? and password = ?", reqs,async function (err, res) {
         if (err) {
             console.log("error: ", err);
 
             let resobj = {
-                success: 'false',
+                success: false,
+                status : false,
                 result: err
             };
             result(resobj, null);
@@ -197,20 +199,39 @@ Moveituser.checkLogin = function checkLogin(req, result) {
             
              if (res.length !== 0) {
               
-              let token = jwt.sign({username: req.phoneno},
-                config.secret
-                // ,
-                // { //expiresIn: '24h' // expires in 24 hours
-                // }
-               );
 
-               let resobj = {
-                success: true,
-                status : true,
-                token :token,
-                result: res
-               };
-            result(null, resobj);
+              if (res[0].login_status === 3) {
+                let resobj = {
+                  success: true,
+                  status : false,
+                  message : "Please contact administrator!",
+                  
+                 };
+              result(null, resobj);
+              }else{
+
+                var logintime =  moment().format("YYYY-MM-DD HH:mm:ss");
+
+                updateloginstatus = await query("update MoveitUser set login_status = 1 ,login_time='"+logintime+"' where userid = "+res[0].userid+" ");
+                
+                let token = jwt.sign({username: req.phoneno},
+                  config.secret
+                  // ,
+                  // { //expiresIn: '24h' // expires in 24 hours
+                  // }
+                 );
+  
+                 console.log("login");
+                 let resobj = {
+                  success: true,
+                  status : true,
+                  token :token,
+                  result: res
+                 };
+              result(null, resobj);
+
+              }
+             
             }else{
             let resobj = {
               success: true,
@@ -271,8 +292,17 @@ Moveituser.create_createMoveitTimelog = function create_createMoveitTimelog(req)
 };
 
 
-Moveituser.update_online_status = function (req, result) {
+Moveituser.update_online_status =async function (req, result) {
 
+var userdetails = await query("select * from MoveitUser where userid = "+req.userid+"");
+
+  if (userdetails.length !==0) {
+    
+  if (userdetails[0].login_status == 1) {
+        
+    var orderdetails = await query("select * from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE() and moveit_user_id = "+req.userid+"");
+
+    if (orderdetails.length == 0) {
     sql.query("UPDATE MoveitUser SET online_status = ? WHERE userid = ?", [req.online_status, req.userid],async function (err, res) {
 
         if (err) {
@@ -303,6 +333,47 @@ Moveituser.update_online_status = function (req, result) {
             result(null, resobj);
         }
     });
+  }else{
+    let resobj = {
+      success: true,
+       status: false,
+       forcelogout : 1, 
+      // message:mesobj,
+      message: "Sorry you can't go offline, Orders is assigned to you!"  
+    };
+
+    result(null, resobj);
+  }
+ 
+  }else if(userdetails[0].login_status == 2){
+    let resobj = {
+      success: true,
+      status: false,
+      forcelogout : 2,
+      message: "Please login"
+  };
+
+  result(null, resobj);
+  }else if(userdetails[0].login_status == 3){
+    let resobj = {
+      success: true,
+      status: false,
+      forcelogout : 3,
+      message: "Please contact Administrator"
+  };
+
+  result(null, resobj);
+  }
+  }else{
+    
+    let resobj = {
+        success: true,
+        status: false,
+        message: "User not found!"
+    };
+
+    result(null, resobj);
+  }
 };
 
 Moveituser.get_a_hub_navigation = function get_a_hub_navigation(req, result) {
@@ -612,15 +683,12 @@ Moveituser.update_pushid = function(req, result) {
                   result(null, resobj);
                 
         } else {
-          console.log(res[0]);
-          console.log("OTP FAILED");
-          let message = "OTP is not valid!, Try once again";
-          let sucobj = true;
+        
   
           let resobj = {
-            success: sucobj,
+            success: true,
             status: false,
-            message: message
+            message: "OTP is not valid!, Try once again"
           };
   
           result(null, resobj);
@@ -630,18 +698,24 @@ Moveituser.update_pushid = function(req, result) {
   };
 
   Moveituser.Moveituser_logout = async function Moveituser_logout(req, result) { 
+
+    var orderdetails = await query("select * from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE() and moveit_user_id = "+req.userid+"");
+
+    if (orderdetails.length == 0) {
+      
     sql.query("select * from MoveitUser where userid = "+req.userid+" ",async function(err,userdetails) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
       } else {
   
-        console.log(req);
-         
+          
         if (userdetails.length !==0) {
           
-          updatequery = await query("Update MoveitUser set pushid_android = 'null' where userid = '"+req.userid+"'");
-  
+          var logouttime =  moment().format("YYYY-MM-DD HH:mm:ss");
+
+          updatequery = await query("Update MoveitUser set online_status = 0,pushid_android = 'null',login_status = 2,logout_time='"+logouttime+"'  where userid = '"+req.userid+"'");
+          
   
           let resobj = {
             success: true,
@@ -664,9 +738,75 @@ Moveituser.update_pushid = function(req, result) {
         }     
       }
     });   
+
+  }else{
+    let resobj = {
+      success: true,
+       status: false,
+      // message:mesobj,
+      message: "Sorry yoy can't logout , Currently Order is assigned to you!"  
+    };
+
+    result(null, resobj);
+  }
    
   };
 
+
+  Moveituser.admin_force_Moveituser_logout = async function admin_force_Moveituser_logout(req, result) { 
+
+    orderdetails = await query("select * from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE() and moveit_user_id = "+req.userid+"");
+
+    if (orderdetails.length == 0) {
+      
+    
+    sql.query("select * from MoveitUser where userid = "+req.userid+" ",async function(err,userdetails) {
+      if (err) {
+        console.log("error: ", err);
+        result(null, err);
+      } else {
+  
+          
+        if (userdetails.length !==0) {
+          
+          var logouttime =  moment().format("YYYY-MM-DD HH:mm:ss");
+         
+          updatequery = await query("Update MoveitUser set online_status = 0,pushid_android = 'null',login_status = "+req.login_status+",logout_time='"+logouttime+"'  where userid = '"+req.userid+"'");
+         
+        
+  
+          let resobj = {
+            success: true,
+             status: true,
+            // message:mesobj,
+            message: 'Logout Successfully!'  
+          };
+    
+          result(null, resobj);
+        }else{
+  
+          let resobj = {
+            success: true,
+             status: false,
+            // message:mesobj,
+            message: 'Please check userid'  
+          };
+    
+          result(null, resobj);
+        }     
+      }
+    });   
+  }else{
+    let resobj = {
+      success: true,
+       status: false,
+      // message:mesobj,
+      message: "Sorry can't logout, Order is assigned following user!"  
+    };
+
+    result(null, resobj);
+  }
+  };
 
   Moveituser.moveit_app_version_check_vid= async function moveit_app_version_check_vid(req,result) { 
  

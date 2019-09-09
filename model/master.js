@@ -385,6 +385,20 @@ const master = [
         ]
     },
 
+
+    // Moveit login and logout status
+
+    {
+        'moveitstatus': [{
+                "login_status_id": 1,
+                "login_status": "login"
+            },
+            {
+                "login_status_id": 2,
+                "login_status": "logout"
+            },
+        ]
+    },
     // order payment status
     {
         'paymentstatus': [{
