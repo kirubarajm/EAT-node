@@ -248,3 +248,18 @@ exports.moveit_app_version_check_vid = function(req, res) {
   });
 
 };
+
+exports.admin_force_Moveituser_logout = function(req, res) {
+  //var new_user = new Eatuser(req.body);
+  //handles null error
+  if (!req.body.userid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide userid" });
+  } else {
+    Moveituser.admin_force_Moveituser_logout(req.body, function(err, user) {
+      if (err) res.send(err);
+      res.json(user);
+    });
+  }
+};

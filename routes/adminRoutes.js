@@ -21,6 +21,7 @@ module.exports = function(app) {
   var admindashboard = require("../controllers/common/admindashboardController");
   var Razorpay = require("../controllers/common/RazorpayController");
   var MakeitImages = require("../controllers/makeit/MakeitImagesController");
+  var Stories = require("../controllers/common/StoryController");
 
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
@@ -106,4 +107,6 @@ app.route("/admin/moveit/todayincome").post(routesVersioning({"1.0.0":orders.mov
 app.route("/admin/orders/amount").post(routesVersioning({"1.0.0":orders.getTotalAmountofOrders}));
 app.route("/admin/products/salescount").post(routesVersioning({"1.0.0":orders.get_sales_products_count}));
 app.route("/admin/orders/reassign").post(routesVersioning({"1.0.0":orders.reassign_orders}));
+app.route("/admin/moveit/logout").post(routesVersioning({"1.0.0":moveituser.admin_force_Moveituser_logout}));
+app.route("/admin/stories").get(routesVersioning({"1.0.0":Stories.list_all_Stories}));
 }
