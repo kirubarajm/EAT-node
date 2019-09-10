@@ -560,8 +560,9 @@ Order.getOrderById = function getOrderById(orderid, result) {
 
 Order.updateOrderStatus =async function updateOrderStatus(req, result) {
 
-  var orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
+var orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
 
+if (orderdetails[0].orderstatus < 5) {
   var updatequery = "Update Orders set orderstatus = ? where orderid = ?"
   var values=[req.orderstatus, req.orderid];
   if (req.orderstatus === PushConstant.masteridOrder_Accept){
@@ -577,6 +578,7 @@ Order.updateOrderStatus =async function updateOrderStatus(req, result) {
     values=[req.orderstatus, transaction_time, req.orderid];
     updatequery = "Update Orders set orderstatus = ?,makeit_actual_preparing_time= ? where orderid = ? "
   }
+
   sql.query(updatequery,values,async function(err, res) {
   if (err) {
       result(err, null);
@@ -633,19 +635,37 @@ Order.updateOrderStatus =async function updateOrderStatus(req, result) {
             }
           }
         });
-
-
-
-
-        // let res = {
-        //   success: true,
-        //   status: true,
-        //   message: "Order status updated successfully"
-        // };
-        // result(null, res);
       }
     }
   );
+}else if (orderdetails[0].orderstatus == 5){
+
+  let response = {
+    success: true,
+    status: true,
+    message: "Order already pickedup",
+ //   result :deliverytimedata 
+  };
+  result(null, response);
+}else if (orderdetails[0].orderstatus == 6){
+
+  let response = {
+    success: true,
+    status: true,
+    message: "Order already delivered",
+ //   result :deliverytimedata 
+  };
+  result(null, response);
+}else{
+
+  let response = {
+    success: true,
+    status: true,
+    message: "Order already Canceled",
+ //   result :deliverytimedata 
+  };
+  result(null, response);
+}
 };
 
 Order.getAllOrder = function getAllOrder(result) {
@@ -1120,32 +1140,42 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
     if (err) {
       result(err, null);
     } else {
-      if (res1[0].orderstatus === 7) {
+  
+      if (res1[0].orderstatus == 7) {
         let resobj = {
           success: true,
           status:false,
           message: "Sorry! This order already canceled."
         };
         result(null, resobj);
-        return;
-      }
+       // return;
+      }else if (res1[0].orderstatus < 3 ) {
+        console.log(res1[0].orderstatus);
+        let resobj = {
+          success: true,
+          status:false,
+          message: "Please wait food not yet prepared"
+        };
+        result(null, resobj);
+      //  return;
+      }else{
+        console.log(res1[0].orderstatus);
+      if (res1[0].moveit_user_id == req.moveit_userid) {
 
-      
-      for (let i = 0; i < kitchenqualitylist.length; i++) {
-        var qualitylist = new MoveitRatingForMakeit(kitchenqualitylist[i]);
-        qualitylist.orderid = req.orderid;
-        qualitylist.makeit_userid = req.makeit_userid;
-        qualitylist.moveit_userid = req.moveit_userid;
+        for (let i = 0; i < kitchenqualitylist.length; i++) {
+          var qualitylist = new MoveitRatingForMakeit(kitchenqualitylist[i]);
+          qualitylist.orderid = req.orderid;
+          qualitylist.makeit_userid = req.makeit_userid;
+          qualitylist.moveit_userid = req.moveit_userid;
+  
+          MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck(
+            qualitylist,
+            function(err, res2) {
+              if (err) result(err, null);
+            }
+          );
+        }
 
-        MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck(
-          qualitylist,
-          function(err, res2) {
-            if (err) result(err, null);
-          }
-        );
-      }
-
-      if (res1[0].moveit_user_id === req.moveit_userid) {
         sql.query(
           "UPDATE Orders SET orderstatus = ? ,moveit_pickup_time = ?,moveit_expected_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
           [
@@ -1203,8 +1233,6 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
                   }
                 }
               });
-
-
             
             }
           }
@@ -1217,8 +1245,9 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
         };
         result(null, resobj);
       }
+      }
     }
-  });
+});
 };
 
 Order.order_delivery_status_by_moveituser = function(req, result) {
