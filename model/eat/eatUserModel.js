@@ -768,10 +768,10 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
 Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
   
   //console.log(res3.result[0].amountdetails);
-  console.log(masters);
+
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
-  var radiuslimit=constant.radiuslimit;
+  var radiuslimit = constant.radiuslimit;
 
   var filterquery = "";
   var cuisinequery = "";
@@ -981,8 +981,9 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
 
   if (cuisinelist !== undefined) {
   
+   // query =query +" where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) and (" +filterquery;
     query =query +" where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) and (" +filterquery;
-  
+
 }else{
 
    query = query + " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1)  and (pt.quantity != 0 and pt.delete_status !=1 and pt.active_status = 1 ) ";

@@ -1315,7 +1315,7 @@ Order.moveit_kitchen_reached_status = function(req, result) {
       result(err, null);
     } else {
       var getmoveitid = res1[0].moveit_user_id;
-      if (getmoveitid === req.moveit_user_id) {
+      if (getmoveitid == req.moveit_user_id) {
         sql.query(
           "UPDATE Orders SET moveit_reached_time = ? WHERE orderid = ? and moveit_user_id =?",
           [           
@@ -2401,9 +2401,8 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
   // d.setHours(d.getHours() + 5);
   if (orderdetails.length !== 0) {
 
-      console.log(orderdetails.length);
     if (orderdetails[0].moveit_status < 1 ) {
-      console.log(req.moveituserid);
+ 
     //  if (orderdetails[0].moveit_user_id === req.moveituserid || orderdetails[0].moveit_user_id === "req.moveituserid") {
         
         var orderaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -2427,7 +2426,7 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
         }
       });
    
-    } else if (orderdetails[0].moveit_status === 1) {
+    } else if (orderdetails[0].moveit_status == 1) {
       let response = {
         success: true,
         status: false,
@@ -3155,11 +3154,6 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
   var deliverytime = moment(orderdetails[0].deliverytime).format("YYYY-MM-DD HH:mm:ss");
   var deliveryhours = moment(deliverytime).format("HH:mm:ss");
 
-
-  console.log("currenthour"+currenthour);
-  console.log("deliveryhours"+deliveryhours);
-
-
   if (orderdetails.length !== 0) {
                 
     if (deliveryhours <= currenthour )  {
@@ -3262,7 +3256,7 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
       result(err, null);
     } else {
       var getmoveitid = res1[0].moveit_user_id;
-      if (getmoveitid === req.moveit_user_id) {
+      if (getmoveitid == req.moveit_user_id) {
         sql.query(
           "UPDATE Orders SET moveit_customerlocation_reached_time = ? WHERE orderid = ? and moveit_user_id =?",
           [           
