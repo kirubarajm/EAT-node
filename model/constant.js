@@ -38,8 +38,8 @@ const calculate = {
     salesversionforceupdate : 2, //forceupdate version
     salesforceupdate : 1, 
 
-    eatiosversioncodenew : 2,//normal update
-    eatiosversionforceupdate : 2, //forceupdate version
+    eatiosversioncodenew : 7,//normal update
+    eatiosversionforceupdate : 7, //forceupdate version
     eatforceupdate : 1,
 
     distanceapiKey :'AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc',
