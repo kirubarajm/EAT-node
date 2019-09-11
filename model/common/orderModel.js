@@ -1138,7 +1138,11 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
     if (err) {
       result(err, null);
     } else {
-  
+      
+      if (res1.length !==0) {
+        
+      
+
       if (res1[0].orderstatus == 7) {
         let resobj = {
           success: true,
@@ -1244,6 +1248,15 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
         result(null, resobj);
       }
       }
+    }else{
+      let response = {
+        success: true,
+        status: false,
+        message: "Order not found.",
+     
+      };
+      result(null, response);
+    }
     }
 });
 };
@@ -3149,10 +3162,12 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
   var day = moment().format("YYYY-MM-DD HH:mm:ss");
   var currenthour  = moment(day).format("HH:mm:ss");
  
+  // if (orderdetails[0].deliverytime) {
+    if (orderdetails.length !== 0) {
   var deliverytime = moment(orderdetails[0].deliverytime).format("YYYY-MM-DD HH:mm:ss");
   var deliveryhours = moment(deliverytime).format("HH:mm:ss");  
 
-  if (orderdetails.length !== 0) {
+ 
                 
     if (deliveryhours <= currenthour )  {
 
@@ -3219,7 +3234,7 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
     }else{
       let resobj = {
         success: true,
-        status: true,
+        status: false,
         message: "On the way your food",
         deliverytime : orderdetails[0].deliverytime
     }
@@ -3232,15 +3247,23 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
 
     let resobj = {
       success: true,
-      status: true,
-      message: "On the way your food",
-      deliverytime : orderdetails[0].deliverytime
+      status: false,
+      message: "delivery time not found"
   
     };
     result(null, resobj);
 
   }
-
+  // }else{
+  //   let resobj = {
+  //     success: true,
+  //     status: false,
+  //     message: "Delivery time not found",
+     
+  
+  //   };
+  //   result(null, resobj);
+  // }
 };
 
 
