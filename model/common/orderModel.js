@@ -1019,7 +1019,7 @@ Order.order_assign = function order_assign(req, result) {
               } else {
 
                 await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned,res1[0]);
-                
+
                 let resobj = {
                   success: true,
                   status:true,
@@ -3142,15 +3142,15 @@ if (orderdetails[0].orderstatus <= 5) {
 
 Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_by_moveit_id(req,result) {
  
-  console.log(req);
-  var orderdetails = await query("select od.deliverytime,od.duration,od.distance,od.orderid,ors.orderstatus,ors.cus_lat,ors.cus_lon,mk.lat as makeit_lat,mk.lon as makeit_lon from Order_deliverytime od join Orders ors on od.orderid=ors.orderid join MakeitUser mk on mk.userid=ors.makeit_user_id where od.orderid = "+req.orderid+"  and ors.orderstatus < 6 order by od.od_id desc limit 1");
+
+  var orderdetails = await query("select od.deliverytime,od.duration,od.distance,od.orderid,ors.orderstatus,ors.cus_lat,ors.cus_lon,mk.lat as makeit_lat,mk.lon as makeit_lon from Order_deliverytime od join Orders ors on od.orderid=ors.orderid join MakeitUser mk on mk.userid=ors.makeit_user_id where od.orderid = "+req.orderid+"  order by od.od_id desc limit 1");
  // var orderdeliverytimedetails = await query("select * from Order_deliverytime where orderid = "+req.orderid+"  and deliverytime < NOW()  order by od_id desc limit 1");
  
   var day = moment().format("YYYY-MM-DD HH:mm:ss");
   var currenthour  = moment(day).format("HH:mm:ss");
  
   var deliverytime = moment(orderdetails[0].deliverytime).format("YYYY-MM-DD HH:mm:ss");
-  var deliveryhours = moment(deliverytime).format("HH:mm:ss");
+  var deliveryhours = moment(deliverytime).format("HH:mm:ss");  
 
   if (orderdetails.length !== 0) {
                 
