@@ -359,18 +359,20 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
   var day = moment().format("YYYY-MM-DD HH:mm:ss");;
   var currenthour  = moment(day).format("HH");
 
-  console.log(currenthour);
+
   var breatfastcycle = constant.breatfastcycle;
   var dinnercycle = constant.dinnercycle;
   var lunchcycle = constant.lunchcycle;
   
    if (currenthour < lunchcycle) {
-    productquery = productquery + " and pt.breakfast = 1";
+
+       productquery = productquery + " and pt.breakfast = 1";
+
    }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
 
       productquery = productquery + " and pt.lunch = 1";
 
-    }else if( currenthour >= dinnercycle){
+    }else if(currenthour >= dinnercycle){
 
       productquery = productquery + " and pt.dinner = 1";
    }
@@ -381,7 +383,6 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
     productquery = productquery + " and pt.vegtype= 0";
   }
 
-    console.log("product query"+productquery);
   
   sql.query(productquery, async function(err, res) {
     if (err) {

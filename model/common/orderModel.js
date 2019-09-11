@@ -1037,7 +1037,7 @@ Order.order_assign = function order_assign(req, result) {
           };
           result(null, resobj);
         }
-      }else if(userdetails[0].login_status == 2){
+      }else if(res1[0].login_status == 2){
         let resobj = {
           success: true,
           status: false,
@@ -1045,7 +1045,7 @@ Order.order_assign = function order_assign(req, result) {
       };
     
       result(null, resobj);
-      }else if(userdetails[0].login_status == 3){
+      }else if(res1[0].login_status == 3){
         let resobj = {
           success: true,
           status: false,
