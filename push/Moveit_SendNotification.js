@@ -136,6 +136,9 @@ exports.sendNotificationAndroid = function(
   var payload = {
     data: dat
   };
-  console.log("payload:"+payload.data.title);
+  console.log("payload title:"+payload.data.title);
+  console.log("payload orderid:"+payload.data.orderid);
+  console.log("payload name:"+payload.data.name);
+  console.log("moveit notification payload:"+payload);
   Move_it.messaging().sendToDevice(token, payload, options);
 };

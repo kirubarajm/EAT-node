@@ -250,7 +250,12 @@ Notification.orderMoveItPushNotification = async function(
         message: "Your order has been assigned to another moveit.",
         pageid: "" + pageid,
         app: "Move-it",
-        notification_type: "1"
+        notification_type: "1",
+        name: "" + Eatuserdetail.name,
+        price: "" + orders.price,
+        orderid: "" + orders.orderid,
+        place: "" + orders.cus_address,
+     
       };
 
       break;

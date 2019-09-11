@@ -1017,11 +1017,9 @@ Order.order_assign = function order_assign(req, result) {
               if (err) {
                 result(err, null);
               } else {
-                await Notification.orderMoveItPushNotification(
-                  req.orderid,
-                  PushConstant.pageidMoveit_Order_Assigned,
-                  res1[0]
-                );
+
+                await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned,res1[0]);
+                
                 let resobj = {
                   success: true,
                   status:true,
