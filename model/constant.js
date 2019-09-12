@@ -46,7 +46,10 @@ const calculate = {
     eatforceupdate : 1,
 
     distanceapiKey :'AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc',
-    orderbuffertime :10 //min
+    orderbuffertime :10, //min
+
+    //moveitstratus
+   
 
 }
 

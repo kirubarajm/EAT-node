@@ -863,15 +863,25 @@ Moveituser.update_pushid = function(req, result) {
  
  var Moveitstatus = await query("select userid,login_status,pushid_ios,pushid_android  from MoveitUser where userid = "+req.userid+" ");
 
+    if (Moveitstatus.length !==0) {
+      let resobj = {
+        success: true,
+        status:true,
+        result:Moveitstatus
+    };
 
-        let resobj = {
-            success: true,
-            status:true,
-            result:Moveitstatus
-        };
-  
-        result(null, resobj);
+    result(null, resobj);
 
+    }else{
+      let resobj = {
+        success: true,
+        status: false,
+        result:Moveitstatus
+    };
+
+    result(null, resobj);
+    }
+       
   
   };
 module.exports = Moveituser;

@@ -1,5 +1,8 @@
 'user strict';
 var sql = require('../db.js');
+var MoveitStatus = require("../../model/moveit/moveitStatusModel");
+const util = require("util");
+const query = util.promisify(sql.query).bind(sql);
 
 //Task object constructor
 var MoveitRatingForMakeit = function (moveitratingformakeit) {
@@ -70,14 +73,26 @@ MoveitRatingForMakeit.getAllUser = function getAllUser(result) {
         });   
 };
 
-MoveitRatingForMakeit.MoveitRatingForMakeit = function(req, result){
-sql.query("UPDATE MoveitRatingForMakeit SET  rating = ? WHERE  orderid = ?", [req.rating,req.orderid], function (err, res) {
+MoveitRatingForMakeit.insert_order_status = function insert_order_status(req) {
+    var new_MoveitStatus = new MoveitStatus(req);
+    MoveitStatus.createMoveitStatus(new_MoveitStatus, function(err, res) {
+     if (err) return err;
+     else return res;
+   });
+  };
+
+MoveitRatingForMakeit.MoveitRatingForMakeit =async function(req, result){
+sql.query("UPDATE MoveitRatingForMakeit SET  rating = ? WHERE  orderid = ?", [req.rating,req.orderid],async function (err, res) {
     if(err) {
         console.log("error: ", err);
         result(err, null);
     }
     else{
-  
+        
+        req.moveitid = req.moveit_user_id;
+        req.status = 4 // order rating by moveit
+        await MoveitRatingForMakeit.insert_order_status(req);
+
     
         let resobj = {  
         success: true,

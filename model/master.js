@@ -696,6 +696,40 @@ const master = [
         ]
     },
 
+    {
+        'moveit_status': [
+            {
+                "statusid": 1,
+                "status": "order accept"
+            },
+            {
+                "statusid": 2,
+                "status": "Kitchen reached"
+            },
+            {
+                "statusid": 3,
+                "status": "order pickup"
+            },
+             {
+                "statusid": 4,
+                "status": "order Rating "
+            },
+            {
+                "statusid": 5,
+                "status": "Customer location reached"
+            },
+            {
+                "statusid": 6,
+                "status": "Cash received"
+            },
+            {
+                "statusid": 7,
+                "status": "Order  delivery"
+            },
+
+        ]
+    },
+
 
 ]
 module.exports = master;
