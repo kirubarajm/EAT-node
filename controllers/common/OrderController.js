@@ -205,7 +205,7 @@ exports.order_delivery_status = function(req, res) {
       res.json(result);
     });
   } else {
-    res.status(400).send({ error: true, message: "Invalid Delivery status" });
+    res.status(400).send({ error: true,status:false, message: "Invalid Delivery status" });
   }
 };
 

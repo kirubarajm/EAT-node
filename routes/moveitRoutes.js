@@ -22,7 +22,7 @@ app.route("/moveit/paymentstatus").put(middleware.checkToken,routesVersioning({"
 app.route("/moveit/ordershistory/:moveit_user_id").get(middleware.checkToken,routesVersioning({"1.0.0":orders.orderhistory_by_moveit_userid}));
 app.route("/moveit/documentUpload").post(middleware.checkToken,routesVersioning({"1.0.0":documents.moveit_upload_a_documents}));
 app.route("/moveit/documentstore").post(middleware.checkToken,routesVersioning({"1.0.0":moveitdocument.create_a_documents}));
-app.route("/moveit/makeitrating").put(middleware.checkToken,routesVersioning({"1.0.0":moveituser.moveit_kitchen_rating}));
+//app.route("/moveit/makeitrating").put(middleware.checkToken,routesVersioning({"1.0.0":moveituser.moveit_kitchen_rating}));
 app.route("/moveit/qualitychecklist").post(middleware.checkToken,routesVersioning({"1.0.0":moveituser.moveit_quality_checklist}));
 app.route("/moveit/pushid/add").put(routesVersioning({"1.0.0":moveituser.add_a_pushid}));
 app.route("/moveit/registration").post(routesVersioning({"1.0.0":moveituser.create_a_user}));

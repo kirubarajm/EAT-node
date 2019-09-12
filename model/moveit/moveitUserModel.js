@@ -313,9 +313,11 @@ var userdetails = await query("select * from MoveitUser where userid = "+req.use
             if (req.online_status == 1) {
                 key = "Moved online";
                 key1 = true;
+               
             } else {
                 key = "Moved offline";
                 key1 = false;
+               
             }
             req.type =req.online_status;
             req.moveit_userid =req.userid;
@@ -327,7 +329,8 @@ var userdetails = await query("select * from MoveitUser where userid = "+req.use
                 success: true,
                 status:true,
                 message: key,
-                onlinestatus: key1
+                onlinestatus: key1,
+                forcelogout : 1
             };
 
             result(null, resobj);
@@ -860,15 +863,25 @@ Moveituser.update_pushid = function(req, result) {
  
  var Moveitstatus = await query("select userid,login_status,pushid_ios,pushid_android  from MoveitUser where userid = "+req.userid+" ");
 
+    if (Moveitstatus.length !==0) {
+      let resobj = {
+        success: true,
+        status:true,
+        result:Moveitstatus
+    };
 
-        let resobj = {
-            success: true,
-            status:true,
-            result:Moveitstatus
-        };
-  
-        result(null, resobj);
+    result(null, resobj);
 
+    }else{
+      let resobj = {
+        success: true,
+        status: false,
+        result:Moveitstatus
+    };
+
+    result(null, resobj);
+    }
+       
   
   };
 module.exports = Moveituser;
