@@ -3114,12 +3114,18 @@ Order.reassign_orders_by_id =async function reassign_orders_by_id(req, result) {
 
 if (orderdetails[0].orderstatus <= 5) {
     
-  sql.query("Select online_status,pushid_android,pushid_ios From MoveitUser where userid= '" +req.moveit_user_id +"' ",function(err, res1) {
+  sql.query("Select online_status,pushid_android,pushid_ios From MoveitUser where userid= '" +req.moveit_user_id +"' ",async function(err, res1) {
       if (err) {
         result(err, null);
       } else {
         var online_status = res1[0].online_status;
+
+        
+
         if (online_status == 1) {
+
+          var moveitstatusupdate = await query("update Moveit_status set moveitid = '"+req.moveit_user_id+"' where moveitid = '"+orderdetails[0].moveit_user_id+"'");
+
           sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ?,moveit_status=0 WHERE orderid = ?",[req.moveit_user_id, assign_time, req.orderid],async function(err, res2) {
               if (err) {
                 result(err, null);
