@@ -748,53 +748,79 @@ Makeituser.get_admin_list_all_makeitusers = function(req, result) {
   //    rsearch = req.search || ''
 
   //  var query = "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img, mk.region, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating,JSON_OBJECT('cuisines', JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename))) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid";
-  var query = "select * from MakeitUser";
+  var query = "select mk.* from MakeitUser mk";
+  var searchquery = "mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE  '%" + req.search + "%'";
 
-  var searchquery = "name LIKE  '%" + req.search + "%'";
-
-  if (
-    req.appointment_status !== "all" &&
-    req.virtualkey !== "all" &&
-    !req.search
-  ) {
-    query =
-      query +
-      " WHERE appointment_status  = '" +
-      req.appointment_status +
-      "' and virtualkey  = '" +
-      req.virtualkey +
-      "'";
-  } else if (req.virtualkey !== "all" && !req.search) {
-    query = query + " WHERE virtualkey  = '" + req.virtualkey + "'";
-  } else if (req.appointment_status !== "all" && !req.search) {
-    query =
-      query + " WHERE appointment_status  = '" + req.appointment_status + "'";
-  } else if (
-    req.appointment_status !== "all" &&
-    req.virtualkey !== "all" &&
-    req.search
-  ) {
-    query =
-      query +
-      " WHERE appointment_status  = '" +
-      req.appointment_status +
-      "' and virtualkey  = '" +
-      req.virtualkey +
-      "' and " +
-      searchquery;
-  } else if (req.virtualkey !== "all" && req.search) {
-    query =
-      query + " WHERE virtualkey  = '" + req.virtualkey + "'and " + searchquery;
-  } else if (req.appointment_status !== "all" && req.search) {
-    query =
-      query +
-      " WHERE appointment_status  = '" +
-      req.appointment_status +
-      "'and " +
-      searchquery;
-  } else if (req.search) {
-    query = query + " where " + searchquery;
+  if(req.active_status){
+    query = query + " LEFT JOIN Product p on p.makeit_userid=mk.userid where p.active_status=1" ;
   }
+
+  if(req.appointment_status!=="all"){
+    if(query.toLowerCase().includes('where')) query =query +" and mk.appointment_status  = '" + req.appointment_status+"'"
+    else query =query +" where mk.appointment_status  = '" + req.appointment_status+"'"
+  }
+
+  if(req.virtualkey!=="all"){
+    if(query.toLowerCase().includes('where'))
+    query =query +" and mk.virtualkey  = '" + req.virtualkey+"'"
+    else query =query +" where mk.virtualkey  = '" + req.virtualkey+"'"
+  }
+
+  if(req.search){
+    if(query.toLowerCase().includes('where'))
+    query =query +" and "+searchquery
+    else query =query +" where "+searchquery
+  }
+
+  if(req.active_status){
+    query = query + " group by userid" ;
+  }
+
+  // if (
+  //   req.appointment_status !== "all" &&
+  //   req.virtualkey !== "all" &&
+  //   !req.search
+  // ) {
+  //   query =
+  //     query +
+  //     " WHERE appointment_status  = '" +
+  //     req.appointment_status +
+  //     "' and virtualkey  = '" +
+  //     req.virtualkey +
+  //     "'";
+  // } else if (req.virtualkey !== "all" && !req.search) {
+  //   query = query + " WHERE virtualkey  = '" + req.virtualkey + "'";
+  // } else if (req.appointment_status !== "all" && !req.search) {
+  //   query =
+  //     query + " WHERE appointment_status  = '" + req.appointment_status + "'";
+  // } else if (
+  //   req.appointment_status !== "all" &&
+  //   req.virtualkey !== "all" &&
+  //   req.search
+  // ) {
+  //   query =
+  //     query +
+  //     " WHERE appointment_status  = '" +
+  //     req.appointment_status +
+  //     "' and virtualkey  = '" +
+  //     req.virtualkey +
+  //     "' and " +
+  //     searchquery;
+  // } else if (req.virtualkey !== "all" && req.search) {
+  //   query =
+  //     query + " WHERE virtualkey  = '" + req.virtualkey + "'and " + searchquery;
+  // } else if (req.appointment_status !== "all" && req.search) {
+  //   query =
+  //     query +
+  //     " WHERE appointment_status  = '" +
+  //     req.appointment_status +
+  //     "'and " +
+  //     searchquery;
+  // } else if (req.search) {
+  //   query = query + " where " + searchquery;
+  // }
+
+  
 
   console.log(query);
   sql.query(query, function(err, res) {
