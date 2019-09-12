@@ -313,9 +313,11 @@ var userdetails = await query("select * from MoveitUser where userid = "+req.use
             if (req.online_status == 1) {
                 key = "Moved online";
                 key1 = true;
+               
             } else {
                 key = "Moved offline";
                 key1 = false;
+               
             }
             req.type =req.online_status;
             req.moveit_userid =req.userid;
@@ -327,7 +329,8 @@ var userdetails = await query("select * from MoveitUser where userid = "+req.use
                 success: true,
                 status:true,
                 message: key,
-                onlinestatus: key1
+                onlinestatus: key1,
+                forcelogout : 1
             };
 
             result(null, resobj);

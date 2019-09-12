@@ -15,9 +15,6 @@ const calculate = {
     servicecharge:25,
     cancellationmessage : "Cancellation charge of Rs.25 will be detected. Do you want to proceed ?",
     makeit_nearby_moveit_radius:4, // in kilometers
-    eatversioncodenew : 1,//normal update
-    eatversionforceupdate : 1, //forceupdate version
-    eatforceupdate : 1,
     eat_delivery_min:60,
     product_commission_percentage : 20,// percentage
     breatfastcycle : 8,//8 -12
@@ -25,6 +22,12 @@ const calculate = {
     dinnercycle : 16 ,//4 - 11
     dinnerend : 22,
     max_order_rating_skip : 2,
+
+    //eat version
+    eatversioncodenew : 7,//normal update
+    eatversionforceupdate : 7, //forceupdate version
+    eatforceupdate : 7,
+
   //  moveitversioncode : 1,
     moveitversioncodenew : 7,//normal update
     moveitversionforceupdate : 7, //forceupdate version
@@ -38,8 +41,8 @@ const calculate = {
     salesversionforceupdate : 2, //forceupdate version
     salesforceupdate : 1, 
 
-    eatiosversioncodenew : 7,//normal update
-    eatiosversionforceupdate : 7, //forceupdate version
+    eatiosversioncodenew : 1,//normal update
+    eatiosversionforceupdate : 1, //forceupdate version
     eatforceupdate : 1,
 
     distanceapiKey :'AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc',
