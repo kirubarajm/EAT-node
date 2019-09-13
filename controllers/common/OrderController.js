@@ -515,3 +515,10 @@ exports.moveit_customer_location_reached = function(req, res) {
   });
 };
 
+exports.moveit_unaccept_orders = function(req, res) {
+  console.log(req.body);
+  Order.moveit_unaccept_orders_byid(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
