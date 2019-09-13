@@ -22,7 +22,7 @@ module.exports = function(app) {
   var Razorpay = require("../controllers/common/RazorpayController");
   var MakeitImages = require("../controllers/makeit/MakeitImagesController");
   var Stories = require("../controllers/common/StoryController");
-
+  var adminController = require("../controllers/admin/adminUserController");
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));
@@ -109,4 +109,7 @@ app.route("/admin/products/salescount").post(routesVersioning({"1.0.0":orders.ge
 app.route("/admin/orders/reassign").post(routesVersioning({"1.0.0":orders.reassign_orders}));
 app.route("/admin/moveit/logout").post(routesVersioning({"1.0.0":moveituser.admin_force_Moveituser_logout}));
 app.route("/admin/stories").get(routesVersioning({"1.0.0":Stories.list_all_Stories}));
+app.route("/admin/login").post(routesVersioning({"1.0.0":adminController.login}));
+app.route("/admin/logout").post(routesVersioning({"1.0.0":adminController.logout}));
+app.route("/admin/pushupdate").put(routesVersioning({"1.0.0":adminController.updatePushToken}));
 }
