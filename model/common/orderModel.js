@@ -63,7 +63,7 @@ var Order = function(order) {
   this.cancel_reason = order.cancel_reason;
   this.makeit_earnings = order.makeit_earnings;
   this.moveit_accept_time = order.moveit_accept_time;
-  this.moveit_status = order.moveit_status;
+  this.moveit_status = order.moveit_status || 0;
   this.cancel_charge = order.cancel_charge;
   this.rating_skip=order.rating_skip;
   this.landmark = order.landmark;
@@ -1485,7 +1485,7 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
 
 Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
   const rows = await query(
-    "Select  ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.landmark,ors.flatno,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress,mt.status from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id left join Moveit_status mt on mt.moveitid = ors.moveit_user_id where ors.moveit_user_id =" +moveit_user_id +" and  DATE(ors.ordertime) = CURDATE() order by  ors.order_assigned_time desc,mt.status desc limit 1"
+    "Select  ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.landmark,ors.flatno,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress,mt.status from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id left join Moveit_status mt on mt.moveitid = ors.moveit_user_id where ors.moveit_user_id =" +moveit_user_id +" and  DATE(ors.ordertime) = CURDATE() order by  ors.order_assigned_time desc,mt.id desc limit 1"
   );
 
   const cod_amount = await query(
@@ -3353,6 +3353,36 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
           success: true,
           status:false,
           message: "Following order is not assigned to you!"
+        };
+        result(null, resobj);
+      }
+    }
+  });
+};
+
+
+Order.moveit_unaccept_orders_byid = function moveit_unaccept_orders_byid(req, result) {
+ 
+  sql.query("Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.landmark,ors.flatno,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress,ors.moveit_status,ors.moveit_accept_time from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id = ?  and (ors.moveit_status IS NULL OR ors.moveit_status = '') and DATE(ors.ordertime) = CURDATE() and ors.moveit_user_id !=0 and ors.orderstatus < 5 order by  ors.order_assigned_time desc ", [req.moveit_user_id],async function(err,res1) {
+    if (err) {
+      result(err, null);
+    } else {
+      
+      if (res1.length !==0) {
+
+              let resobj = {
+                success: true,
+                status:true,
+                result: res1
+              };
+              result(null, resobj); 
+         
+      
+      } else {
+        let resobj = {
+          success: true,
+          status: false,
+          message: "Orders not found!"
         };
         result(null, resobj);
       }
