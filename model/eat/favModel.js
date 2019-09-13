@@ -186,9 +186,9 @@ Fav.read_a_dishlist_byeatuserid = function read_a_dishlist_byeatuserid(userId,re
             result(err, null);
         }
         else{
-             let sucobj='true'; 
+          
             let resobj = {  
-            success: sucobj,
+            success: true,
             status:true,
             result:res   
 
