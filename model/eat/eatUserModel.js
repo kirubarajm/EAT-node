@@ -2427,6 +2427,40 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       var foodpreparationtime = constant.foodpreparationtime;
       var onekm = constant.onekm;
       var radiuslimit=constant.radiuslimit;
+      var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+      var currenthour  = moment(day).format("HH");
+    
+      var breatfastcycle = constant.breatfastcycle;
+      var dinnercycle = constant.dinnercycle;
+      var lunchcycle = constant.lunchcycle;
+      var ifconditionquery;
+      var cycle = '' ;
+      var nextcycle ='';
+      var where_condition_query = '';
+      
+      if (currenthour < lunchcycle) {
+
+         // productquery = productquery + " and pt.breakfast = 1";
+          ifconditionquery = "pt.breakfast =1";
+          cycle = cycle + constant.breatfastcycle + 'AM';
+          nextcycle = nextcycle + constant.lunchcycle + ' PM';
+          where_condition_query = where_condition_query + "and (pt.breakfast = 1 OR pt.lunch = 1)";
+      }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+
+          //productquery = productquery + " and pt.lunch = 1";
+          ifconditionquery = "pt.lunch =1";
+          cycle =  cycle + constant.lunchcycle + ' PM';
+          nextcycle = nextcycle + constant.dinnercycle + ' PM';
+          where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
+
+      }else if(currenthour >= dinnercycle){
+
+         /// productquery = productquery + " and pt.dinner = 1";
+          ifconditionquery = "pt.dinner =1";
+          cycle = cycle + constant.dinnercycle + 'PM';
+          nextcycle = nextcycle +"Tomorrow "+ constant.breatfastcycle + ' AM';
+          where_condition_query = where_condition_query + "and (pt.dinner = 1 OR  pt.breakfast = 1)";
+      }
 
     var regex = /^[A-Za-z0-9 ]+$/ ;
  
@@ -2451,17 +2485,17 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
             req.lon +
             "') ) + sin( radians('" +
             req.lat +
-            "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid',pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+            "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid',pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc,'next_available',IF("+ifconditionquery+",false,true),'next_available_time',IF("+ifconditionquery+",'"+cycle+"','"+nextcycle+"'),'breakfast',pt.breakfast,'lunch',pt.lunch,'dinner',pt.dinner)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
             req.eatuserid +
             "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
             req.eatuserid +
             "'  where product_name like '%" +
             req.search +
-            "%' and pt.active_status = 1 and mk.ka_status = 2 and pt.approved_status=2 and pt.quantity != 0 and pt.delete_status != 1  group by pt.makeit_userid";
+            "%' and pt.active_status = 1 and mk.ka_status = 2 and pt.approved_status=2 and pt.quantity != 0 and pt.delete_status != 1 "+where_condition_query+"  group by pt.makeit_userid";
 
           //var query ="Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid as makeit_region,re.regionname, pt.product_name,pt.vegtype,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,cu.cuisineid,ly.localityname, ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid join Cuisine cu on cu.cuisineid=pt.cuisine left join Locality ly on mu.localityid=ly.localityid join Region re on re.regionid = mu.regionid left join Fav fa on fa.productid = pt.productid and fa.eatuserid = '"+req.eatuserid+"'  where mu.appointment_status = 3 and mu.verified_status = 1 and pt.active_status =1 and pt.quantity != 0  and pt.delete_status !=1 and pt.product_name like '%"+req.search+"%'  HAVING distance <="+radiuslimit+" ORDER BY pt.product_name ASC";
       
-
+      console.log(query);
       sql.query(query, function(err, res) {
         if (err) {
          // console.log("error: ", err);
