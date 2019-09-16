@@ -11,7 +11,7 @@ const calculate = {
     refferalcontent : 'Welcome to EAT. Click the link to download the EAT app from play store.',
     radiuslimit : 4,
     foodpreparationtime:15,//min
-    onekm:3,
+    onekm:6,
     servicecharge:25,
     cancellationmessage : "Cancellation charge of Rs.25 will be detected. Do you want to proceed ?",
     makeit_nearby_moveit_radius:4, // in kilometers

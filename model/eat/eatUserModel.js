@@ -343,15 +343,15 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
    if (currenthour < lunchcycle) {
 
        productquery = productquery + " and pt.breakfast = 1";
-       ifconditionquery = "pr.breakfast =1";
+       ifconditionquery = "pt.breakfast =1";
        cycle = cycle + constant.breatfastcycle + 'AM';
-       nextcycle = nextcycle + constant.lunchcycle + 'AM';
+       nextcycle = nextcycle + constant.lunchcycle + ' PM';
        where_condition_query = where_condition_query + "and (pt.breakfast = 1 OR pt.lunch = 1)";
    }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
 
       productquery = productquery + " and pt.lunch = 1";
       ifconditionquery = "pt.lunch =1";
-      cycle =  cycle + constant.lunchcycle + ' AM';
+      cycle =  cycle + constant.lunchcycle + ' PM';
       nextcycle = nextcycle + constant.dinnercycle + ' PM';
       where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
 

@@ -2381,8 +2381,13 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
                 var deliverytimedata = caldistance[0].legs;
                
                 req.distance = parseInt(deliverytimedata[0].distance.text);
-                 req.duration = parseInt(deliverytimedata[0].duration.text);
-                 req.duration = req.duration + constant.orderbuffertime;
+                req.duration = parseInt(deliverytimedata[0].duration.text);
+
+                 console.log(req.duration);
+                 console.log(constant.foodpreparationtime);
+                 console.log(constant.orderbuffertime);
+
+                 req.duration = constant.foodpreparationtime + req.duration + constant.orderbuffertime;
                  req.deliverytime  = moment()
                  .add(0, "seconds")
                  .add(req.duration, "minutes")
@@ -2448,7 +2453,8 @@ Order.insert_order_status = function insert_order_status(req) {
 
 Order.moveit_order_accept = async function moveit_order_accept(req, result) {
 
-  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' ");
+  const ordermoveitstatus = await query("select * from Moveit_status where orderid ='" + req.orderid + "' ");
 
   // d.setHours(d.getHours() + 5);
   if (orderdetails.length !== 0) {
@@ -2457,7 +2463,11 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
       req.moveitid = req.moveituserid;
       req.status = 1;
     //  if (orderdetails[0].moveit_user_id === req.moveituserid || orderdetails[0].moveit_user_id === "req.moveituserid") {
-      await Order.insert_order_status(req);
+      if (ordermoveitstatus.length == 0) {
+        await Order.insert_order_status(req);
+      }
+      
+      
       var orderaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
    
       updatequery ="UPDATE Orders SET moveit_status = 1 ,moveit_accept_time= '" + orderaccepttime +"' WHERE orderid ='" +req.orderid +"'";

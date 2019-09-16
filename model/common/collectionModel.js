@@ -41,8 +41,6 @@ Collection.list_all_active_collection = function list_all_active_collection(req,
 
      
 
-      
-
       var kitchens =   await Collection.getcollectionlist(res,req)
 
       console.log("first collection");
@@ -250,36 +248,71 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
         var day = moment().format("YYYY-MM-DD HH:mm:ss");;
         var currenthour  = moment(day).format("HH");
         var productquery = "";
+        var ifconditionquery = '';
+        var cycle = '' ;
+        var nextcycle ='';
+        var where_condition_query = '';
+        var orderby = '';
        // console.log(currenthour);
 
         if (currenthour < lunchcycle) {
 
           productquery = productquery + " and pt.breakfast = 1";
+          ifnextavaquery = "pt.breakfast";
+          ifnextavatimequery = "IF(pt.breakfast =1,'12 PM','16 PM')"
+          cycle = cycle + constant.breatfastcycle + 'AM';
+          nextcycle = nextcycle + constant.lunchcycle + ' PM';
+          where_condition_query = " and (pt.breakfast = 1 OR pt.lunch = 1)";
+          orderby = " order by pt.breakfast = 1 desc";
         //  console.log("breakfast");
         }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
 
           productquery = productquery + " and pt.lunch = 1";
-        //  console.log("lunch");
+          ifnextavaquery ="pt.lunch";
+          ifnextavatimequery ="IF(pt.lunch =1,12 PM,16 PM)"
+          cycle =  cycle + constant.lunchcycle + ' PM';
+          nextcycle = nextcycle + constant.dinnercycle + ' PM';
+          where_condition_query =" and (pt.lunch = 1 OR pt.dinner = 1)";
+          orderby = " order by pt.lunch = 1 desc";
         }else if( currenthour >= dinnercycle){
           
           productquery = productquery + " and pt.dinner = 1";
+          ifnextavaquery = "pt.dinner";
+          ifnextavatimequery = "IF(pt.lunch =1,12 PM,16 PM)"
+         // ifconditionquery = "IF(pt.dinner =1,false,true)";
+         // IF(pt.dinner =1,'12 PM','16 PM')
+          cycle = cycle + constant.dinnercycle + 'PM';
+          nextcycle = nextcycle +"Tomorrow "+ constant.breatfastcycle + ' AM';
+          where_condition_query = " and (pt.dinner = 1 OR  pt.breakfast = 1)";
+          orderby = " order by pt.dinner = 1 desc";
         //  console.log("dinner");
         }
       
 
       //based on logic this conditions will change
         if (req.cid === 1 || req.cid === 2) {
-          var productlist = res[0].query + productquery  + groupbyquery;
+          var dyQ=res[0].query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
+          var productlist = dyQ+ where_condition_query  + groupbyquery + orderby;//res[0].query;
+          //var productlist = res[0].query + productquery  + groupbyquery;
         }else if(req.cid === 3 ) {
+          // var dyQ=res[0].query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
+          // var productlist = dyQ+ where_condition_query  + groupbyquery + orderby;//res[0].query;
           var productlist = res[0].query + productquery  + orderbyquery;
         }
-          
-          console.log( productlist);
-         await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
+       
+        //req.ifconditionquery = ifconditionquery.replace(/\'/gi,'')
+        console.log(productlist);
+        //console.log(req.ifconditionquery);
+       // console.log(dyQ);
+        //console.log([req.lat,req.lon,req.lat,ifconditionquery,ifconditionquery,cycle,nextcycle,req.eatuserid,req.eatuserid] );
+       
+  
+        
+         await sql.query(productlist, [req.lat,req.lon,req.lat,cycle,nextcycle,req.eatuserid,req.eatuserid] , function(err, res1) {
             if (err) {
               result(err, null);
             } else {
-
+              
               for (let i = 0; i < res1.length; i++) {
 
                 if (req.cid === 1 || req.cid === 2) {
@@ -347,32 +380,60 @@ Collection.get_all_collection_by_cid_getkichens = async function get_all_collect
         var day = moment().format("YYYY-MM-DD HH:mm:ss");;
         var currenthour  = moment(day).format("HH");
         var productquery = "";
+
+        var ifconditionquery = '';
+        var cycle = '' ;
+        var nextcycle ='';
+        var where_condition_query = '';
+        var orderby = '';
        // console.log(currenthour);
 
         if (currenthour < lunchcycle) {
 
           productquery = productquery + " and pt.breakfast = 1";
+          ifnextavaquery = "pt.breakfast";
+          ifnextavatimequery = "IF(pt.breakfast =1,'12 PM','16 PM')"
+          cycle = cycle + constant.breatfastcycle + 'AM';
+          nextcycle = nextcycle + constant.lunchcycle + ' PM';
+          where_condition_query = " and (pt.breakfast = 1 OR pt.lunch = 1)";
+          orderby = " order by pt.breakfast = 1 desc";
         //  console.log("breakfast");
         }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
 
           productquery = productquery + " and pt.lunch = 1";
+          ifnextavaquery ="pt.lunch";
+          ifnextavatimequery ="IF(pt.lunch =1,12 PM,16 PM)"
+          cycle =  cycle + constant.lunchcycle + ' PM';
+          nextcycle = nextcycle + constant.dinnercycle + ' PM';
+          where_condition_query =" and (pt.lunch = 1 OR pt.dinner = 1)";
+          orderby = " order by pt.lunch = 1 desc";
         //  console.log("lunch");
         }else if( currenthour >= dinnercycle){
           
           productquery = productquery + " and pt.dinner = 1";
+          ifnextavaquery = "pt.dinner";
+          ifnextavatimequery = "IF(pt.lunch =1,12 PM,16 PM)"
+         // ifconditionquery = "IF(pt.dinner =1,false,true)";
+         // IF(pt.dinner =1,'12 PM','16 PM')
+          cycle = cycle + constant.dinnercycle + 'PM';
+          nextcycle = nextcycle +"Tomorrow "+ constant.breatfastcycle + ' AM';
+          where_condition_query = " and (pt.dinner = 1 OR  pt.breakfast = 1)";
+          orderby = " order by pt.dinner = 1 desc";
         //  console.log("dinner");
         }
       
 
+          console.log("query"+req.query);
       //based on logic this conditions will change
         if (req.cid === 1 || req.cid === 2) {
-          var productlist = req.query + productquery  + groupbyquery;
+          var dyQ=req.query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
+          var productlist = dyQ+ where_condition_query  + groupbyquery ;
         }else if(req.cid === 3 ) {
           var productlist = req.query + productquery  + orderbyquery;
         }
        
       //  console.log(productlist);
-          var res1 = await query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid])
+          var res1 = await query(productlist,[req.lat,req.lon,req.lat,cycle,nextcycle,req.eatuserid,req.eatuserid])
    
               for (let i = 0; i < res1.length; i++) {
 
