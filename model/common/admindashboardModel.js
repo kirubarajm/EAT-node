@@ -27,6 +27,9 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
         //new order count
         var  new_order_count = await query("Select count(orderid) as count from Orders where moveit_user_id = 0 and orderstatus = 1 and cancel_by = 0 and lock_status = 0 and DATE(created_at) = CURDATE() and payment_status!=2"); 
         countlist.new_order_count  = new_order_count[0].count;
+        //new order not Accepted count
+        var  new_order_kitchen_un_accepted_count = await query("Select count(orderid) as count from Orders where moveit_user_id = 0 and orderstatus = 0 and cancel_by = 0 and lock_status = 0 and DATE(created_at) = CURDATE() and payment_status!=2"); 
+        countlist.new_order_kitchen_un_accepted_count  = new_order_kitchen_un_accepted_count[0].count;
         //makeit order count
         var  new_makeit_cancel_order_count = await query("Select count(orderid) as count from Orders where moveit_user_id = 0 and orderstatus = 7 and cancel_by = 2 and DATE(created_at) = CURDATE()"); 
         countlist.order_cancel_count  = new_makeit_cancel_order_count[0].count;

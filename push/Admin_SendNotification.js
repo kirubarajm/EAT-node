@@ -29,11 +29,6 @@ exports.sendNotificationWEB = function(
 // dat.content_available = '1';
 var payload = {
   data: dat,
-  notification: {
-    title: dat.title,
-    body: dat.message, // <= CHANGE
-    sound : "default"
-  }
 };
   
   // Send a message to the device corresponding to the provided
@@ -41,10 +36,10 @@ var payload = {
   Admin.messaging().sendToDevice(token, payload, options)
     .then((response) => {
       // Response is a message ID string.
-      console.log('Successfully sent message:', response);
+      console.log('ADMIN PUSH MESSAGE SENDING SUCCESSFULLY:', response);
     })
     .catch((error) => {
-      console.log('Error sending message:', error);
+      console.log('ADMIN PUSH MESSAGE SENDING ERROR:', error);
     });
 };
 
