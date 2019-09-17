@@ -6,6 +6,7 @@ var FCM_Moveit = require("../../push/Moveit_SendNotification.js");
 var FCM_EAT = require("../../push/Eat_SendNotification.js");
 var FCM_Makeit = require("../../push/Makeit_SendNotification.js");
 var FCM_Sales = require("../../push/Sales_SendNotification.js");
+var FCM_ADMIN = require("../../push/Admin_SendNotification.js");
 
 var PushConstant = require("../../push/PushConstant.js");
 
@@ -16,8 +17,8 @@ var Notification = function(notification) {
 
 Notification.getPushOrderDetail = async function(orderid) {
   var orders = await query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'pushid_ios',us.pushid_ios,'pushid_android',us.pushid_android,'name',us.name) as userdetail,"+
-    "JSON_OBJECT('userid',ms.userid,'name',ms.name,'brandName',ms.brandName,'virtualkey',ms.virtualkey) as makeitdetail,"+
-    "JSON_OBJECT('userid',mu.userid,'name',mu.name,'Vehicle_no',mu.Vehicle_no) as moveitdetail "+
+    "JSON_OBJECT('userid',ms.userid,'name',ms.name,'brandName',ms.brandName,'virtualkey',ms.virtualkey,'pushid_android',ms.pushid_android) as makeitdetail,"+
+    "JSON_OBJECT('userid',mu.userid,'name',mu.name,'Vehicle_no',mu.Vehicle_no,'pushid_android',mu.pushid_android) as moveitdetail "+
     "from Orders as ors "+
     "left join User as us on ors.userid=us.userid "+
     "left join MakeitUser ms on ors.makeit_user_id = ms.userid "+
@@ -25,6 +26,12 @@ Notification.getPushOrderDetail = async function(orderid) {
     "where ors.orderid ='" +orderid +"'"
   );
   return orders[0];
+};
+
+Notification.getVirtualMakeitPushId = async function(makeit_id) {
+  var vMkPushId = await query("SELECT au.push_token from MakeitUser mu left join Admin_users au on au.makeit_hubid=mu.makeithub_id where userid ='" +makeit_id +"'"
+  );
+  return vMkPushId[0];
 };
 
 Notification.getEatUserDetail = async function(userid) {
@@ -152,10 +159,10 @@ Notification.orderMakeItPushNotification = async function(
   pageid
 ) {
   console.log("orderid->", orderid);
-  if (!makeit_userid) {
     var orders = await Notification.getPushOrderDetail(orderid);
-    makeit_userid = orders.makeit_user_id;
-  }
+    var user = JSON.parse(orders.userdetail);
+    var makeituser = JSON.parse(orders.makeitdetail);
+    var moveituser = JSON.parse(orders.moveitdetail);
 
   var data = null;
   switch (pageid) {
@@ -173,7 +180,7 @@ Notification.orderMakeItPushNotification = async function(
     case PushConstant.pageidMakeit_Order_Cancel:
       data = {
         title: "Order Canceled",
-        message: "Sorry,Order canceled OrderID is#" + orderid,
+        message: "Sorry,Order canceled by user.OrderID is#" + orderid,
         pageid: "" + pageid,
         app: "Make-it",
         orderid: "" + orderid,
@@ -183,11 +190,12 @@ Notification.orderMakeItPushNotification = async function(
   }
 
   if (data == null) return;
-  var Makeituser = await query(
-    "SELECT * FROM MakeitUser where userid = " + makeit_userid
-  );
-  if (Makeituser && Makeituser[0].pushid_android) {
-    FCM_Makeit.sendNotificationAndroid(Makeituser[0].pushid_android, data);
+
+  if (makeituser && makeituser.pushid_android&&makeituser.virtualkey===0) {
+    FCM_Makeit.sendNotificationAndroid(makeituser.pushid_android, data);
+  }else{
+    var pushDetail = await Notification.getVirtualMakeitPushId(makeituser.userid);
+    FCM_ADMIN.sendNotificationWEB(pushDetail.push_token, data);
   }
 };
 
