@@ -1550,7 +1550,7 @@ Order.orderviewbyadmin = function(req, result) {
 
 Order.eat_get_delivery_time = function eat_get_delivery_time(req) {
 
-  console.log(req);
+
   Order.eat_get_delivery_time_by_moveit_id(req, function(err, res) {
     if (err) return err;
     else return res;
@@ -1909,7 +1909,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
               if ( res1[0].orderstatus < 6 ) {
             
                 if ( res1[0].orderstatus < 5 ){
-                 
+                 console.log("distance");
                    req.orderid  =res1[0].orderid;
                   await Order.eat_get_delivery_time(req);
                 }
@@ -2381,8 +2381,13 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
                 var deliverytimedata = caldistance[0].legs;
                
                 req.distance = parseInt(deliverytimedata[0].distance.text);
-                 req.duration = parseInt(deliverytimedata[0].duration.text);
-                 req.duration = req.duration + constant.orderbuffertime;
+                req.duration = parseInt(deliverytimedata[0].duration.text);
+
+                 console.log(req.duration);
+                 console.log(constant.foodpreparationtime);
+                 console.log(constant.orderbuffertime);
+
+                 req.duration = constant.foodpreparationtime + req.duration + constant.orderbuffertime;
                  req.deliverytime  = moment()
                  .add(0, "seconds")
                  .add(req.duration, "minutes")
@@ -2448,7 +2453,8 @@ Order.insert_order_status = function insert_order_status(req) {
 
 Order.moveit_order_accept = async function moveit_order_accept(req, result) {
 
-  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' ");
+  const ordermoveitstatus = await query("select * from Moveit_status where orderid ='" + req.orderid + "' ");
 
   // d.setHours(d.getHours() + 5);
   if (orderdetails.length !== 0) {
@@ -2457,7 +2463,11 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
       req.moveitid = req.moveituserid;
       req.status = 1;
     //  if (orderdetails[0].moveit_user_id === req.moveituserid || orderdetails[0].moveit_user_id === "req.moveituserid") {
-      await Order.insert_order_status(req);
+      if (ordermoveitstatus.length == 0) {
+        await Order.insert_order_status(req);
+      }
+      
+      
       var orderaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
    
       updatequery ="UPDATE Orders SET moveit_status = 1 ,moveit_accept_time= '" + orderaccepttime +"' WHERE orderid ='" +req.orderid +"'";
@@ -3054,11 +3064,13 @@ Order.moveit_notification_time_orderid = async function moveit_notification_time
 
 
 Order.eat_order_distance_calculation = async function eat_order_distance_calculation(req,result) {
-
+  console.log(req);
+//https://maps.googleapis.com/maps/api/directions/json?origin=12.9801,80.2184&destination=13.0072,80.2064&key=AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc
   var diatnceurl =
   "https://maps.googleapis.com/maps/api/directions/json?origin="+req.orglat+","+req.orglon+"&destination="+req.deslat+","+req.deslon+"&key="+constant.distanceapiKey+"";
 
-  request(
+  console.log(diatnceurl);
+  request(  
     {
       method: "GET",
       rejectUnauthorized: false,
@@ -3214,7 +3226,7 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
 
  
                 
-    if (deliveryhours <= currenthour )  {
+    if (deliveryhours <= currenthour)  {
 
       
         req.deslat = orderdetails[0].cus_lat;
@@ -3255,7 +3267,7 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
              
               req.distance = parseInt(deliverytimedata[0].distance.text);
                req.duration = parseInt(deliverytimedata[0].duration.text);
-               req.duration = req.duration + constant.orderbuffertime;
+               req.duration = constant.foodpreparationtime + req.duration + constant.orderbuffertime;
                req.deliverytime  = moment()
                .add(0, "seconds")
                .add(req.duration, "minutes")
