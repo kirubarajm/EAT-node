@@ -122,6 +122,34 @@ exports.eat_makeit_product_list = function(req, res) {
 }
 };
 
+///version 2
+exports.get_eat_makeit_product_list_v_2 = function(req, res) {
+  if (!req.body.lat) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lat" });
+  } else if (!req.body.lon) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lan" });
+  }else if (!req.body.eatuserid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide eatuserid" });
+  }else if (!req.body.vegtype) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide vegtype" });
+  } else {
+  Eatuser.get_eat_makeit_product_list_v_2(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+}
+};
+
 exports.eat_dish_sort_filter = function(req, res) {
   if (!req.body.lat) {
     res
@@ -168,6 +196,29 @@ exports.eat_kitchen_sort_filter = function(req, res) {
   }
 };
 
+exports.eat_kitchen_sort_filter_2 = function(req, res) {
+  console.log(req.body.lat);
+  if (!req.body.lat) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lat" });
+  } else if (!req.body.lon) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lan" });
+  }else if (!req.body.eatuserid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide eatuserid" });
+  } else {
+    Eatuser.get_eat_kitchen_list_sort_filter(req.body, function(err, user) {
+      console.log("controller");
+      if (err) res.send(err);
+      console.log("res", user);
+      res.send(user);
+    });
+  }
+};
 // exports.eat_user_referral = function(req, res) {
 //   console.log("headers"+req.params);
 //   Eatuser.eat_user_referral_code(req.params,req.headers, function(err, user) {
@@ -460,7 +511,29 @@ exports.eat_explore_dish = function(req, res) {
   }
 };
 
-
+exports.eat_explore_dish_v2 = function(req, res) {
+  if (!req.body.lat) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lat" });
+  } else if (!req.body.lon) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lan" });
+  }else if (!req.body.eatuserid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide eatuserid" });
+  }
+   else {
+    Eatuser.eat_explore_kitchen_dish_v2(req.body, function(err, region) {
+      console.log("controller");
+      if (err) res.send(err);
+      console.log("res", region);
+      res.send(region);
+    });
+  }
+};
 
 exports.eat_order_cancel = function(req, res) {
   if (!req.body.lat) {

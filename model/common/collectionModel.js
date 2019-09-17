@@ -32,6 +32,38 @@ Collection.createCollection = function createCollection(req, result) {
       
 };
 
+Collection.list_all_active_collection_v2 = function list_all_active_collection_v2(req,result) {
+  sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at from Collections where active_status=1",async function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+
+
+
+      var kitchens =   await Collection.getcollectionlist_v2(res,req)
+
+      console.log("first collection");
+       if (res.length !== 0 ) {
+        let resobj = {
+          success: true,
+          status:true,
+          collection: res
+        };
+        result(null, resobj);
+       } else {
+        let resobj = {
+          success: true,
+          status:false,
+          message: "Sorry there no active collections"
+        };
+        result(null, resobj);
+       }
+     
+    }
+  });
+};
+
+
 Collection.list_all_active_collection = function list_all_active_collection(req,result) {
   sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at from Collections where active_status=1",async function(err, res) {
     if (err) {
@@ -63,7 +95,6 @@ Collection.list_all_active_collection = function list_all_active_collection(req,
     }
   });
 };
-
 // Collection.list_all_active_collection_new = function list_all_active_collection_new(eatuserid,result) {
 //   sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at from Collections where active_status=1",async function(err, res) {
 //     if (err) {
@@ -147,6 +178,41 @@ return res
 }
 
 
+Collection.getcollectionlist_v2 = async function(res,req){
+
+  for (let i = 0; i < res.length; i++) {
+    req.cid = res[i].cid;
+    req.query = res[i].query;
+    await Collection.get_all_collection_by_cid_getkichens_v2(req, async function(err,res3) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res3.status != true) {
+          result(null, res3);
+        } else {
+          
+         // console.log("kitchenlist"+res3.result);
+         // res[i].kitchenlist = res3.result;
+        var kitchenlist = res3.result
+      //   console.log(kitchenlist.length);
+          
+          if (kitchenlist.length !==0) {
+            res[i].collectionstatus = true;
+          }else{
+            res[i].collectionstatus = false;
+          }
+           	
+          delete res[i].query;
+         // delete json[res[i].query]
+        }
+      }
+    });
+
+  }
+
+return res
+}
+
 Collection.getcollectionlist = async function(res,req){
 
   for (let i = 0; i < res.length; i++) {
@@ -185,6 +251,7 @@ return res
 
 
 
+
 Collection.getAllCollection_by_user =async function getAllCollection_by_user(req,result) {
 
     sql.query("Select * from Collections where active_status=1", async function(err, res) {
@@ -217,12 +284,6 @@ Collection.getAllCollection_by_user =async function getAllCollection_by_user(req
 };
 
 
-
-
-
-
-
-
 Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(req,result) {
   
   var foodpreparationtime = constant.foodpreparationtime;
@@ -248,71 +309,40 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
         var day = moment().format("YYYY-MM-DD HH:mm:ss");;
         var currenthour  = moment(day).format("HH");
         var productquery = "";
-        var ifconditionquery = '';
-        var cycle = '' ;
-        var nextcycle ='';
-        var where_condition_query = '';
-        var orderby = '';
        // console.log(currenthour);
 
         if (currenthour < lunchcycle) {
 
           productquery = productquery + " and pt.breakfast = 1";
-          ifnextavaquery = "pt.breakfast";
-          ifnextavatimequery = "IF(pt.breakfast =1,'12 PM','16 PM')"
-          cycle = cycle + constant.breatfastcycle + 'AM';
-          nextcycle = nextcycle + constant.lunchcycle + ' PM';
-          where_condition_query = " and (pt.breakfast = 1 OR pt.lunch = 1)";
-          orderby = " order by pt.breakfast = 1 desc";
         //  console.log("breakfast");
         }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
 
           productquery = productquery + " and pt.lunch = 1";
-          ifnextavaquery ="pt.lunch";
-          ifnextavatimequery ="IF(pt.lunch =1,12 PM,16 PM)"
-          cycle =  cycle + constant.lunchcycle + ' PM';
-          nextcycle = nextcycle + constant.dinnercycle + ' PM';
-          where_condition_query =" and (pt.lunch = 1 OR pt.dinner = 1)";
-          orderby = " order by pt.lunch = 1 desc";
+        //  console.log("lunch");
         }else if( currenthour >= dinnercycle){
           
           productquery = productquery + " and pt.dinner = 1";
-          ifnextavaquery = "pt.dinner";
-          ifnextavatimequery = "IF(pt.lunch =1,12 PM,16 PM)"
-         // ifconditionquery = "IF(pt.dinner =1,false,true)";
-         // IF(pt.dinner =1,'12 PM','16 PM')
-          cycle = cycle + constant.dinnercycle + 'PM';
-          nextcycle = nextcycle +"Tomorrow "+ constant.breatfastcycle + ' AM';
-          where_condition_query = " and (pt.dinner = 1 OR  pt.breakfast = 1)";
-          orderby = " order by pt.dinner = 1 desc";
         //  console.log("dinner");
         }
       
 
       //based on logic this conditions will change
         if (req.cid === 1 || req.cid === 2) {
-          var dyQ=res[0].query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
-          var productlist = dyQ+ where_condition_query  + groupbyquery + orderby;//res[0].query;
-          //var productlist = res[0].query + productquery  + groupbyquery;
+          var productlist = res[0].query + productquery  + groupbyquery;
         }else if(req.cid === 3 ) {
-          // var dyQ=res[0].query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
-          // var productlist = dyQ+ where_condition_query  + groupbyquery + orderby;//res[0].query;
           var productlist = res[0].query + productquery  + orderbyquery;
         }
-       
-        //req.ifconditionquery = ifconditionquery.replace(/\'/gi,'')
-        console.log(productlist);
-        //console.log(req.ifconditionquery);
-       // console.log(dyQ);
-        //console.log([req.lat,req.lon,req.lat,ifconditionquery,ifconditionquery,cycle,nextcycle,req.eatuserid,req.eatuserid] );
-       
-  
-        
-         await sql.query(productlist, [req.lat,req.lon,req.lat,cycle,nextcycle,req.eatuserid,req.eatuserid] , function(err, res1) {
+          
+          console.log( productlist);
+
+          
+         await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
             if (err) {
               result(err, null);
             } else {
-              
+
+              console.log(res1);
+
               for (let i = 0; i < res1.length; i++) {
 
                 if (req.cid === 1 || req.cid === 2) {
@@ -364,7 +394,387 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
 };
 
 
+
+Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_cid_v2(req,result) {
+  
+  var foodpreparationtime = constant.foodpreparationtime;
+  var onekm = constant.onekm;
+  var radiuslimit=constant.radiuslimit;
+
+   await sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+
+      if (res.length !== 0) {
+        
+        
+        var  productquery = '';
+        var  groupbyquery = " GROUP BY pt.makeit_userid";
+        var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
+      
+        var breatfastcycle = constant.breatfastcycle;
+        var dinnercycle = constant.dinnercycle;
+        var lunchcycle = constant.lunchcycle;
+
+        var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+        var currenthour  = moment(day).format("HH");
+        var productquery = "";
+        var ifconditionquery = '';
+        var cycle = '' ;
+        var nextcycle ='';
+        var where_condition_query = '';
+        var orderby = '';
+       // console.log(currenthour);
+
+        if (currenthour < lunchcycle) {
+
+          productquery = productquery + "breakfast";
+          ifnextavaquery = "pt.breakfast";
+          ifnextavatimequery = "IF(pt.breakfast =1,'12 PM','16 PM')"
+          cycle = cycle + constant.breatfastcycle + 'AM';
+          nextcycle = nextcycle + constant.lunchcycle + ' PM';
+          where_condition_query = " and (pt.breakfast = 1 OR pt.lunch = 1)";
+          orderby = " order by pt.breakfast = 1 desc";
+        //  console.log("breakfast");
+        }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+
+          productquery = productquery + "lunch ";
+          ifnextavaquery ="pt.lunch";
+          ifnextavatimequery ="IF(pt.lunch =1,12 PM,16 PM)"
+          cycle =  cycle + constant.lunchcycle + ' PM';
+          nextcycle = nextcycle + constant.dinnercycle + ' PM';
+          where_condition_query =" and (pt.lunch = 1 OR pt.dinner = 1)";
+          orderby = " order by pt.lunch = 1 desc";
+        }else if( currenthour >= dinnercycle){
+          
+          productquery = productquery + " dinner ";
+          ifnextavaquery = "pt.dinner";
+          ifnextavatimequery = "IF(pt.lunch =1,12 PM,16 PM)"
+         // ifconditionquery = "IF(pt.dinner =1,false,true)";
+         // IF(pt.dinner =1,'12 PM','16 PM')
+          cycle = cycle + constant.dinnercycle + 'PM';
+          nextcycle = nextcycle +"Tomorrow "+ constant.breatfastcycle + ' AM';
+          where_condition_query = " and (pt.dinner = 1 OR  pt.breakfast = 1)";
+          orderby = " order by pt.dinner = 1 desc";
+        //  console.log("dinner");
+        }
+      
+
+      //based on logic this conditions will change
+        if (req.cid === 1 || req.cid === 2) {
+        //  var dyQ=res[0].query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
+          var productlist = res[0].query + where_condition_query  + groupbyquery + orderby;//res[0].query;
+          //var productlist = res[0].query + productquery  + groupbyquery;
+        }else if(req.cid === 3 ) {
+          // var dyQ=res[0].query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
+          // var productlist = dyQ+ where_condition_query  + groupbyquery + orderby;//res[0].query;
+          var productlist = res[0].query + productquery  + orderbyquery;
+        }
+       
+        //req.ifconditionquery = ifconditionquery.replace(/\'/gi,'')
+        console.log("productlist"+productlist);
+        //console.log(req.ifconditionquery);
+       // console.log(dyQ);
+        //console.log([req.lat,req.lon,req.lat,ifconditionquery,ifconditionquery,cycle,nextcycle,req.eatuserid,req.eatuserid] );
+       
+  
+        
+        await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
+          if (err) {
+            result(err, null);
+          } else {
+
+            console.log(res1);
+
+            for (let i = 0; i < res1.length; i++) {
+
+              if (req.cid === 1 || req.cid === 2) {
+
+                res1[i].productlist =JSON.parse(res1[i].productlist)
+                var products = res1[i].productlist;
+              }
+              
+
+              // for (let j = 0; j < products.length; j++) {
+                
+
+              //   if (products[i][productquery] == 1) {
+                  
+              //   }else if(){}
+                
+              // }
+
+              res1[i].distance = res1[i].distance.toFixed(2);
+              //15min Food Preparation time , 3min 1 km
+            //  eta = 15 + 3 * res[i].distance;
+              var eta = foodpreparationtime + onekm * res1[i].distance;
+              
+              res1[i].serviceablestatus = false;
+  
+              
+              if (res1[i].distance <= radiuslimit) {
+                res1[i].serviceablestatus = true;
+              } 
+             
+              res1[i].eta = Math.round(eta) + " mins";
+                  if (res1[i].cuisines) {
+                    res1[i].cuisines = JSON.parse(res1[i].cuisines);
+                  }
+            
+            }
+
+            array.forEach(element => {
+              
+            });
+
+            let resobj = {
+              success: true,
+              status:true,
+              result: res1
+            };
+            result(null, resobj);
+
+          }
+
+        });
+        }else{
+
+          let resobj = {
+            success: true,
+            status: false,
+            result: res
+          };
+          result(null, resobj);
+
+
+        }
+      }
+    });
+};
+
+
+// Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_cid_v2(req,result) {
+  
+//   var foodpreparationtime = constant.foodpreparationtime;
+//   var onekm = constant.onekm;
+//   var radiuslimit=constant.radiuslimit;
+
+//    await sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", async function(err, res) {
+//       if (err) {
+//         result(err, null);
+//       } else {
+
+//       if (res.length !== 0) {
+        
+        
+//         var  productquery = '';
+//         var  groupbyquery = " GROUP BY pt.makeit_userid";
+//         var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
+      
+//         var breatfastcycle = constant.breatfastcycle;
+//         var dinnercycle = constant.dinnercycle;
+//         var lunchcycle = constant.lunchcycle;
+
+//         var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+//         var currenthour  = moment(day).format("HH");
+//         var productquery = "";
+//         var ifconditionquery = '';
+//         var cycle = '' ;
+//         var nextcycle ='';
+//         var where_condition_query = '';
+//         var orderby = '';
+//        // console.log(currenthour);
+
+//         if (currenthour < lunchcycle) {
+
+//           productquery = productquery + " and pt.breakfast = 1";
+//           ifnextavaquery = "pt.breakfast";
+//           ifnextavatimequery = "IF(pt.breakfast =1,'12 PM','16 PM')"
+//           cycle = cycle + constant.breatfastcycle + 'AM';
+//           nextcycle = nextcycle + constant.lunchcycle + ' PM';
+//           where_condition_query = " and (pt.breakfast = 1 OR pt.lunch = 1)";
+//           orderby = " order by pt.breakfast = 1 desc";
+//         //  console.log("breakfast");
+//         }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+
+//           productquery = productquery + " and pt.lunch = 1";
+//           ifnextavaquery ="pt.lunch";
+//           ifnextavatimequery ="IF(pt.lunch =1,12 PM,16 PM)"
+//           cycle =  cycle + constant.lunchcycle + ' PM';
+//           nextcycle = nextcycle + constant.dinnercycle + ' PM';
+//           where_condition_query =" and (pt.lunch = 1 OR pt.dinner = 1)";
+//           orderby = " order by pt.lunch = 1 desc";
+//         }else if( currenthour >= dinnercycle){
+          
+//           productquery = productquery + " and pt.dinner = 1";
+//           ifnextavaquery = "pt.dinner";
+//           ifnextavatimequery = "IF(pt.lunch =1,12 PM,16 PM)"
+//          // ifconditionquery = "IF(pt.dinner =1,false,true)";
+//          // IF(pt.dinner =1,'12 PM','16 PM')
+//           cycle = cycle + constant.dinnercycle + 'PM';
+//           nextcycle = nextcycle +"Tomorrow "+ constant.breatfastcycle + ' AM';
+//           where_condition_query = " and (pt.dinner = 1 OR  pt.breakfast = 1)";
+//           orderby = " order by pt.dinner = 1 desc";
+//         //  console.log("dinner");
+//         }
+      
+
+//       //based on logic this conditions will change
+//         // if (req.cid === 1 || req.cid === 2) {
+//         //   var dyQ=res[0].query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
+//         //   var productlist = dyQ+ where_condition_query  + groupbyquery + orderby;//res[0].query;
+//         //   //var productlist = res[0].query + productquery  + groupbyquery;
+//         // }else if(req.cid === 3 ) {
+//         //   // var dyQ=res[0].query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
+//         //   // var productlist = dyQ+ where_condition_query  + groupbyquery + orderby;//res[0].query;
+//         //   var productlist = res[0].query + productquery  + orderbyquery;
+//         // }
+       
+
+        
+//         //req.ifconditionquery = ifconditionquery.replace(/\'/gi,'')
+//         console.log(productlist);
+//         //console.log(req.ifconditionquery);
+//        // console.log(dyQ);
+//         //console.log([req.lat,req.lon,req.lat,ifconditionquery,ifconditionquery,cycle,nextcycle,req.eatuserid,req.eatuserid] );
+       
+  
+        
+//          await sql.query(productlist, [req.lat,req.lon,req.lat,cycle,nextcycle,req.eatuserid,req.eatuserid] , function(err, res1) {
+//             if (err) {
+//               result(err, null);
+//             } else {
+              
+//               for (let i = 0; i < res1.length; i++) {
+
+//                 if (req.cid === 1 || req.cid === 2) {
+//                   res1[i].productlist =JSON.parse(res1[i].productlist)
+//                 }
+                
+//                 res1[i].distance = res1[i].distance.toFixed(2);
+//                 //15min Food Preparation time , 3min 1 km
+//               //  eta = 15 + 3 * res[i].distance;
+//                 var eta = foodpreparationtime + onekm * res1[i].distance;
+                
+//                 res1[i].serviceablestatus = false;
+    
+                
+//                 if (res1[i].distance <= radiuslimit) {
+//                   res1[i].serviceablestatus = true;
+//                 } 
+               
+//                 res1[i].eta = Math.round(eta) + " mins";
+//                     if (res1[i].cuisines) {
+//                       res1[i].cuisines = JSON.parse(res1[i].cuisines);
+//                     }
+              
+//               }
+
+//               let resobj = {
+//                 success: true,
+//                 status:true,
+//                 result: res1
+//               };
+//               result(null, resobj);
+
+//             }
+
+//           });
+//         }else{
+
+//           let resobj = {
+//             success: true,
+//             status: false,
+//             result: res
+//           };
+//           result(null, resobj);
+
+
+//         }
+//       }
+//     });
+// };
+
 Collection.get_all_collection_by_cid_getkichens = async function get_all_collection_by_cid_getkichens(req,result) {
+  
+  var foodpreparationtime = constant.foodpreparationtime;
+  var onekm = constant.onekm;
+  var radiuslimit=constant.radiuslimit;
+  var  productquery = '';
+  var  groupbyquery = " GROUP BY pt.makeit_userid";
+  var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
+
+  var breatfastcycle = constant.breatfastcycle;
+  var dinnercycle = constant.dinnercycle;
+  var lunchcycle = constant.lunchcycle;
+
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+  var currenthour  = moment(day).format("HH");
+  var productquery = "";
+ // console.log(currenthour);
+
+  if (currenthour < lunchcycle) {
+
+    productquery = productquery + " and pt.breakfast = 1";
+  //  console.log("breakfast");
+  }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+
+    productquery = productquery + " and pt.lunch = 1";
+  //  console.log("lunch");
+  }else if( currenthour >= dinnercycle){
+    
+    productquery = productquery + " and pt.dinner = 1";
+  //  console.log("dinner");
+  }
+
+
+//based on logic this conditions will change
+  if (req.cid === 1 || req.cid === 2) {
+    var productlist = req.query + productquery  + groupbyquery;
+  }else if(req.cid === 3 ) {
+    var productlist = req.query + productquery  + orderbyquery;
+  }
+ 
+  console.log(productlist);
+    var res1 = await query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid])
+
+        for (let i = 0; i < res1.length; i++) {
+
+          if (req.cid === 1 || req.cid === 2) {
+            res1[i].productlist =JSON.parse(res1[i].productlist)
+          }
+          
+          res1[i].distance = res1[i].distance.toFixed(2);
+          //15min Food Preparation time , 3min 1 km
+        //  eta = 15 + 3 * res[i].distance;
+          var eta = foodpreparationtime + onekm * res1[i].distance;
+          
+          res1[i].serviceablestatus = false;
+
+          
+          if (res1[i].distance <= radiuslimit) {
+            res1[i].serviceablestatus = true;
+          } 
+         
+          res1[i].eta = Math.round(eta) + " mins";
+              if (res1[i].cuisines) {
+                res1[i].cuisines = JSON.parse(res1[i].cuisines);
+              }
+        
+        }
+
+        let resobj = {
+          success: true,
+          status:true,
+          result: res1
+        };
+        result(null, resobj);
+
+  
+};
+
+Collection.get_all_collection_by_cid_getkichens_v2 = async function get_all_collection_by_cid_getkichens_v2(req,result) {
   
         var foodpreparationtime = constant.foodpreparationtime;
         var onekm = constant.onekm;
@@ -425,16 +835,27 @@ Collection.get_all_collection_by_cid_getkichens = async function get_all_collect
 
           console.log("query"+req.query);
       //based on logic this conditions will change
-        if (req.cid === 1 || req.cid === 2) {
-          var dyQ=req.query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
-          var productlist = dyQ+ where_condition_query  + groupbyquery ;
+        // if (req.cid === 1 || req.cid === 2) {
+        //   var dyQ=req.query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
+        //   var productlist = dyQ + where_condition_query  + groupbyquery ;
+        // }else if(req.cid === 3 ) {
+        //   var productlist = req.query + productquery  + orderbyquery;
+        // }
+
+
+         //based on logic this conditions will change
+         if (req.cid === 1 || req.cid === 2) {
+       //   var dyQ=req.query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);
+          var productlist = req.query + where_condition_query   ;
         }else if(req.cid === 3 ) {
-          var productlist = req.query + productquery  + orderbyquery;
+          var productlist = req.query + productquery  ;
         }
        
-      //  console.log(productlist);
-          var res1 = await query(productlist,[req.lat,req.lon,req.lat,cycle,nextcycle,req.eatuserid,req.eatuserid])
+        console.log(productlist);
+      //   var res1 = await query(productlist,[req.lat,req.lon,req.lat,cycle,nextcycle,req.eatuserid,req.eatuserid])
    
+          var res1 = await query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid])
+
               for (let i = 0; i < res1.length; i++) {
 
                 if (req.cid === 1 || req.cid === 2) {

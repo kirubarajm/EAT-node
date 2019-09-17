@@ -11,6 +11,15 @@ exports.list_all_collection = function(req, res) {
   });
 };
 
+exports.list_all_active_collection_v2 = function(req, res) {
+  Collection.list_all_active_collection_v2(req.body,function(err, result) {
+  console.log("controller");
+  if (err) res.send(err);
+  console.log("res", result);
+  res.send(result);
+});
+};
+
 // exports.list_all_collection_new = function(req, res) {
 //   Collection.list_all_active_collection(req.params,function(err, result) {
 //   console.log("controller");
@@ -57,6 +66,12 @@ exports.get_all_collection_by_cid= function(req, res) {
   });
 };
 
+exports.get_all_collection_by_cid_v2= function(req, res) {
+  Collection.get_all_collection_by_cid_v2(req.body, function(err, result) {
+  if (err) res.send(err);
+  res.json(result);
+});
+};
 
 
 exports.read_all_collection_by_userid = function(req, res) {
