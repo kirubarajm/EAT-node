@@ -322,7 +322,182 @@ Eatuser.get_eat_makeit_list = function(req, result) {
   );
 };
 
+
 Eatuser.get_eat_makeit_product_list = async function(req, result) {
+
+  var foodpreparationtime = constant.foodpreparationtime;
+  var onekm = constant.onekm;
+  var radiuslimit=constant.radiuslimit;
+  var Images=[];
+  if (req.eatuserid) {
+    var productquery =
+      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,mk.locality as localityname ,re.regionname,mk.costfortwo,mk.virutal_rating_count as rating_count,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+      req.lat +
+      "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
+      req.lon +
+      "') ) + sin( radians('" +
+      req.lat +
+      "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid', pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+      req.eatuserid +
+      "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
+      req.eatuserid +
+      "'  where mk.userid = " +
+      req.makeit_userid +
+      " and mk.ka_status = 2 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1 ";
+  } else {
+    var productquery =
+      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.img2,mk.img3,mk.img4,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+      req.lat +
+      "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
+      req.lon +
+      "') ) + sin( radians('" +
+      req.lat +
+      "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  join Fav fa on fa.makeit_userid = mk.userid  join Fav faa on faa.productid = pt.productid  where mk.userid =" +
+      req.makeit_userid +
+      " and mk.ka_status = 2 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1";
+  }
+
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+  var currenthour  = moment(day).format("HH");
+
+  console.log(currenthour);
+  var breatfastcycle = constant.breatfastcycle;
+  var dinnercycle = constant.dinnercycle;
+  var lunchcycle = constant.lunchcycle;
+  
+   if (currenthour < lunchcycle) {
+    productquery = productquery + " and pt.breakfast = 1";
+   }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+
+      productquery = productquery + " and pt.lunch = 1";
+
+    }else if( currenthour >= dinnercycle){
+
+      productquery = productquery + " and pt.dinner = 1";
+   }
+
+
+
+  if (req.vegtype === "1") {
+    productquery = productquery + " and pt.vegtype= 0";
+  }
+
+    console.log("product query"+productquery);
+  
+  sql.query(productquery, async function(err, res) {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {
+     
+        // if(res[0].makeitimg) Images.push(res[0].makeitimg);
+        // if(res[0].img2) Images.push(res[0].img2);
+        // if(res[0].img3) Images.push(res[0].img3);
+        // if(res[0].img4) Images.push(res[0].img4);
+        // if(Images.length!==0) res[0].images=Images;
+        //this code commaded due to flow changes
+        //   if (res[0].makeituserid !== null && res[0].productlist !== null) {
+
+    if (res[0].makeituserid !== null) {
+
+        for (let i = 0; i < res.length; i++) {
+
+          if (res[i].member_type === 1) {
+            res[i].member_type_name = 'Gold';
+            res[i].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713720284-badges_makeit-01.png';
+          }else if (res[i].member_type === 2){
+            res[i].member_type_name = 'Silver';
+            res[i].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713745646-badges_makeit-02.png';
+          }else if (res[i].member_type === 3){
+            res[i].member_type_name = 'bronze';
+            res[i].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
+          }
+
+          res[i].serviceablestatus = false;
+          if (res[i].distance <= radiuslimit) {
+            res[i].serviceablestatus = true;
+          }
+          if (res[i].productlist) {
+            res[i].productlist = JSON.parse(res[i].productlist);
+
+            res[i].distance = res[i].distance.toFixed(2);
+            //15min Food Preparation time , 3min 1 km
+          //  eta = 15 + 3 * res[i].distance;
+          console.log(res[i].distance);
+          var eta = foodpreparationtime + (onekm * res[i].distance);
+          //15min Food Preparation time , 3min 1 km
+         
+          res[i].eta = Math.round(eta);
+  
+         
+          if (res[i].distance <= radiuslimit) {
+            res[i].serviceablestatus = true;
+          }
+
+          if (  res[i].eta > 60) {
+            var hours =  res[i].eta / 60;
+            var rhours = Math.floor(hours);
+            var minutes = (hours - rhours) * 60;
+            var rminutes = Math.round(minutes);
+           
+            console.log(rhours);
+            console.log(rminutes);
+           // res[i].eta =   +rhours+" hour and " +rminutes +" minute."
+            res[i].eta = "above 60 Mins"
+          }else{
+            res[i].eta = Math.round(eta) + " mins";
+          }
+        //  res[i].eta = Math.round(eta) + " mins";
+           
+            
+          }
+        }
+
+        const specialitems = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 3 limit 4");
+        const kitcheninfoimage = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 2 limit 4");
+        const kitchenmenuimage = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 4 limit 4");
+        const kitchensignature = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 1 limit 1");
+        
+        const foodbadge  = await query("select mbm.Makeit_id,mbm.badge_id,mb.name,mb.url from Makeit_badges_mapping mbm join  Makeit_badges mb on mbm.badge_id = mb.id where mbm.makeit_id ="+req.makeit_userid+"");
+       // var special = await query("select * from Makeit_images ");
+        res[0].specialitems=specialitems;
+        res[0].kitcheninfoimage=kitcheninfoimage;
+        res[0].kitchenmenuimage=kitchenmenuimage;
+        res[0].kitchensignature =null
+        if (kitchensignature.length !== 0) {
+          res[0].kitchensignature=kitchensignature[0].img_url ;
+        }
+       // console.log(foodbadge);
+        res[0].foodbadge=foodbadge
+
+   // let sucobj = true;
+        let resobj = {
+          success: true,
+          status:true,
+          result: res
+        };
+
+        result(null, resobj);
+      } else {
+       
+        let message = "kitchen is not available!";
+        let resobj = {
+          success: true,
+          status:false,
+          message: message
+        };
+
+        result(null, resobj);
+      }
+    }
+    // }
+  });
+};
+
+
+
+
+Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
 
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
@@ -355,7 +530,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
       nextcycle = nextcycle + constant.dinnercycle + ' PM';
       where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
 
-    }else if(currenthour >= dinnercycle){
+   }else if(currenthour >= dinnercycle){
 
       productquery = productquery + " and pt.dinner = 1";
       ifconditionquery = "pt.dinner =1";
@@ -854,7 +1029,9 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
   var currenthour = day.getHours();
 
   if (currenthour < 12) {
+
     query = query + " and pt.breakfast = 1";
+    
   }else if(currenthour >= 12 && currenthour < 16){
 
     query = query + " and pt.lunch = 1";
@@ -2422,7 +2599,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
     };
 
 
-    Eatuser.eat_explore_kitchen_dish =async function eat_explore_kitchen_dish(req,result) {
+    Eatuser.eat_explore_kitchen_dish_v2 =async function eat_explore_kitchen_dish_v2(req,result) {
 
       var foodpreparationtime = constant.foodpreparationtime;
       var onekm = constant.onekm;
@@ -2539,7 +2716,88 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
   //  }
     };
 
+    Eatuser.eat_explore_kitchen_dish =async function eat_explore_kitchen_dish(req,result) {
 
+      var foodpreparationtime = constant.foodpreparationtime;
+      var onekm = constant.onekm;
+      var radiuslimit=constant.radiuslimit;
+
+    var regex = /^[A-Za-z0-9 ]+$/ ;
+ 
+    var isValid = regex.test(req.search);
+    // if (!isValid) {
+
+    //   let resobj = {
+    //     success: true,
+    //     status: false,
+    //     message : "search Contains Special Characters."
+        
+    // };
+
+    // result(null, resobj);
+
+    // } else {
+        
+          var query =
+            "Select pt.makeit_userid  as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+            req.lat +
+            "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
+            req.lon +
+            "') ) + sin( radians('" +
+            req.lat +
+            "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid',pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid  left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+            req.eatuserid +
+            "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
+            req.eatuserid +
+            "'  where product_name like '%" +
+            req.search +
+            "%' and pt.active_status = 1 and mk.ka_status = 2 and pt.approved_status=2 and pt.quantity != 0 and pt.delete_status != 1  group by pt.makeit_userid";
+
+          //var query ="Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid as makeit_region,re.regionname, pt.product_name,pt.vegtype,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,cu.cuisineid,ly.localityname, ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid join Cuisine cu on cu.cuisineid=pt.cuisine left join Locality ly on mu.localityid=ly.localityid join Region re on re.regionid = mu.regionid left join Fav fa on fa.productid = pt.productid and fa.eatuserid = '"+req.eatuserid+"'  where mu.appointment_status = 3 and mu.verified_status = 1 and pt.active_status =1 and pt.quantity != 0  and pt.delete_status !=1 and pt.product_name like '%"+req.search+"%'  HAVING distance <="+radiuslimit+" ORDER BY pt.product_name ASC";
+      
+
+      sql.query(query, function(err, res) {
+        if (err) {
+         // console.log("error: ", err);
+          
+          let resobj = {
+            success: true,
+            status: false,
+            result: err
+        };
+  
+        result(null, resobj);
+        } else {
+
+          for (let i = 0; i < res.length; i++) {
+            
+              res[i].productlist =JSON.parse(res[i].productlist)
+              res[i].distance = res[i].distance.toFixed(2);
+              //15min Food Preparation time , 3min 1 km
+            //  eta = 15 + 3 * res[i].distance;
+            var eta = foodpreparationtime + (onekm * res[i].distance);
+              res[i].serviceablestatus = false;
+            if (res[i].distance <= radiuslimit) {
+                        res[i].serviceablestatus = true;
+              }
+              res[i].eta = Math.round(eta) + " mins";
+            
+          }
+
+
+          let resobj = {
+              success: true,
+              status:true,
+              result:res
+          };
+    
+          result(null, resobj);
+
+        }
+      });
+
+  //  }
+    };
 
 
     Eatuser.eat_app_version_check_vid= async function eat_app_version_check_vid(req,headers,result) { 

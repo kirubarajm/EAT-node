@@ -65,6 +65,13 @@ exports.read_a_fav_dishlist = function(req, res) {
   });
 };
 
+exports.read_a_fav_dishlist_v2 = function(req, res) {
+  Fav.read_a_dishlist_byeatuserid_v2(req.params.id, function(err, fav) {
+    if (err) res.send(err);
+    res.json(fav);
+  });
+};
+
 exports.read_a_fav_kitchenlist = function(req, res) {
   Fav.read_a_fav_kitchenlist_byeatuserid(req.params.id, function(err, fav) {
     if (err) res.send(err);
