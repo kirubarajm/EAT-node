@@ -138,6 +138,7 @@ AdminUser.login = function login(req, result) {
       } else {
         if (res.length !== 0) {
           var req_push={admin_userid:res[0].admin_userid,push_token:req.push_token}
+          if(req.push_token){
           AdminUser.updatePushidByToken(req_push, function(err, res2) {
             if (err) {
               let resobj = {
@@ -152,12 +153,21 @@ AdminUser.login = function login(req, result) {
               let resobj = {
                 success: true,
                 status: true,
+                message: res[0].name+" Login Successfully",
                 result: res
               };
               result(null, resobj);
             }
           })
-         
+         }else{
+          let resobj = {
+            success: true,
+            status: true,
+            message: res[0].name+" Login Successfully",
+            result: res
+          };
+          result(null, resobj);
+         }
         } else {
           let resobj = {
             success: true,
