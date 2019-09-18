@@ -463,6 +463,7 @@ Moveituser.get_a_nearby_moveit_V2 = async function get_a_location_user(req, resu
         };
         result(null, resobj);
       }else{
+        
         MoveitFireBase.geoFireGetKeyByGeoMakeit(req.geoLocation,res,function(err, make_it_id) {
           if (err) {
             let error = {
@@ -472,9 +473,11 @@ Moveituser.get_a_nearby_moveit_V2 = async function get_a_location_user(req, resu
             };
             result(error, null);
           }else{
+
+      
             let resobj = {
               success: true,
-              status:true,
+              status: true,
               result: make_it_id
             };
           result(null, resobj);
