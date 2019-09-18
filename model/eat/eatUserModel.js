@@ -2316,10 +2316,10 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
         else {
                if (res1.length !== 0) {
                 console.log("regionid");
-                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid  group by re.regionid order by distance ASC";
+                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid  group by re.regionid order by distance ASC limit 10";
                }else if(res1.length === 0){
                 console.log("regionid1");
-                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid  group by re.regionid order by distance ASC";
+                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid  group by re.regionid order by distance ASC limit 10";
                }
              
 
