@@ -485,7 +485,6 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
             result(err, null);
           } else {
 
-            console.log(res1);
 
             for (let i = 0; i < res1.length; i++) {
 
