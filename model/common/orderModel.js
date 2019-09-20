@@ -3480,7 +3480,7 @@ Order.order_delivery_status_by_admin = function order_delivery_status_by_admin(r
             req.moveit_userid = req.moveit_user_id;
             req.status = 7
             await Order.insert_order_status(req); 
-            
+
             await Order.insert_force_delivery(req); 
 
             sql.query(
@@ -3538,7 +3538,29 @@ Order.admin_order_payment_status_by_moveituser = function(req, result) {
         result(err, null);
       } else {
         if (res1.length > 0) {
+
           // check the payment status - 1 is paid
+
+          if (res1[0].orderstatus < 3) {
+            let resobj = {
+              success: true,
+              message: "Sorry order not prepared.",
+              status:false
+            };
+            result(null, resobj);
+          }else if(res1[0].orderstatus < 5){
+
+            let resobj = {
+              success: true,
+              message: "Sorry order is not pickup.",
+              status:false
+            };
+            result(null, resobj);
+          }else{
+
+          
+
+
           if (res1[0].payment_status == 0) {
 
             req.moveitid = req.moveit_user_id;
@@ -3569,6 +3591,7 @@ Order.admin_order_payment_status_by_moveituser = function(req, result) {
             };
             result(null, resobj);
           }
+        }
         } else {
           let resobj = {
             success: true,
