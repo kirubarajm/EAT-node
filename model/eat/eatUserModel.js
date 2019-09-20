@@ -525,8 +525,8 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
        scondcycle = "pt.lunch=1";
        thirdcycle = "pt.dinner =1";
        cycle = constant.breatfastcycle + 'AM';
-       nextcycle = constant.lunchcycle + ' PM';
-       nextthirdcyclecycle =constant.dinnerstart + ' PM';
+       nextcycle = "Next available "+constant.lunchcycle + ' PM';
+       nextthirdcyclecycle = "Next available "+constant.dinnerstart + ' PM';
        where_condition_query = where_condition_query + "and (pt.breakfast = 1 OR pt.lunch = 1)";
    }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
 
@@ -534,8 +534,8 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
       ifconditionquery = "pt.lunch =1";
       scondcycle = "pt.dinner=1";
       thirdcycle = "pt.breakfast =1";
-      cycle =   constant.lunchcycle + ' PM';
-      nextcycle =  constant.dinnercycle + ' PM';
+      cycle =  "Next available "+ constant.lunchcycle + ' PM';
+      nextcycle = "Next available "+ constant.dinnercycle + ' PM';
       nextthirdcyclecycle = "Next available Tomorrow "+ constant.breatfastcycle + ' AM';
       where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
 
@@ -588,7 +588,7 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
   }
   productquery = productquery + " order by "+ifconditionquery+"";
       
-
+console.log(productquery);
   sql.query(productquery, async function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -2826,8 +2826,8 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
        scondcycle = "pt.lunch=1";
        thirdcycle = "pt.dinner =1";
        cycle = constant.breatfastcycle + 'AM';
-       nextcycle = constant.lunchcycle + ' PM';
-       nextthirdcyclecycle =constant.dinnerstart + ' PM';
+       nextcycle = "Next available "+constant.lunchcycle + ' PM';
+       nextthirdcyclecycle ="Next available "+ constant.dinnerstart + ' PM';
        where_condition_query = where_condition_query + "and (pt.breakfast = 1 OR pt.lunch = 1)";
    }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
 

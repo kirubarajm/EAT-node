@@ -49,6 +49,7 @@ var Makeituser = function(makeituser) {
   this.about = makeituser.about;
   this.virutal_rating_count = makeituser.virutal_rating_count;
   this.ka_status = makeituser.ka_status || 0;
+  this.unservicable = makeituser.unservicable || 0;
 };
 
 Makeituser.createUser = function createUser(newUser, result) {
@@ -2297,9 +2298,6 @@ Makeituser.admin_list_all_badges = function(req, result) {
   });
 };
 
-
-
-
 Makeituser.makeit_app_version_check_vid= async function makeit_app_version_check_vid(req,result) { 
  
   var updatestatus = {};
@@ -2335,5 +2333,49 @@ Makeituser.makeit_app_version_check_vid= async function makeit_app_version_check
 
 
 };
+
+
+Makeituser.admin_makeit_serviceable_status = function admin_makeit_serviceable_status(req,result) {
+
+  sql.query("select unservicable from MakeitUser where userid = " + req.userid + " ",async function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+      
+        if (res[0] === undefined) {
+   
+          let resobj = {
+            success: true,
+            status: false,
+            message: "User is not available"
+          };
+
+          result(null, resobj);
+        } else {
+        
+          var updatequery = await query("UPDATE MakeitUser SET unservicable = "+req.unservicable+"  where userid = " +req.userid+" ");
+
+       
+         if (req.unservicable == 0) {
+         message = "Kitchen is servicable";
+         }else if( res[0].unservicable ==1){
+          message = "Kitchen is un-servicable";
+         }
+
+
+          let resobj = {
+            success: true,
+            status: true,
+            message: message
+          };
+
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
 
 module.exports = Makeituser;

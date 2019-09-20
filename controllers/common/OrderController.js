@@ -293,7 +293,7 @@ exports.testPush = function(req, res) {
 };
 
 exports.read_a_proceed_to_pay = function(req, res) {
-  //console.log(req.body);
+  req.body.app_type = parseInt(req.headers.apptype);
   var orderitems = req.body.orderitems;
   if (!req.body.aid) {
     res

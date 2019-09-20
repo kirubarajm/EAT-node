@@ -115,4 +115,5 @@ app.route("/admin/pushupdate").put(routesVersioning({"1.0.0":adminController.upd
 app.route("/admin/order/delivery").put(routesVersioning({"1.0.0":orders.admin_order_delivery}));
 app.route("/admin/order/paymentstatus").put(routesVersioning({"1.0.0":orders.admin_order_payment_status}));
 app.route("/admin/moveit/ordercount").post(routesVersioning({"1.0.0":orders.admin_order_order_count_by_moveit}));
+app.route("/admin/makeit/unserviceable").post(routesVersioning({"1.0.0":makeituser.admin_makeit_serviceable_status}));
 }

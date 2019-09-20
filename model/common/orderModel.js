@@ -68,6 +68,7 @@ var Order = function(order) {
   this.rating_skip=order.rating_skip;
   this.landmark = order.landmark;
   this.flatno=order.flatno;
+  this.app_type=order.app_type;
 };
 
 
@@ -279,6 +280,7 @@ Order.OrderOnline = async function OrderOnline(req, orderitems,result) {
 
 Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnlineOrder,result) {
   var new_Order = new Order(req);
+  console.log(new_Order);
   new_Order.delivery_charge = constant.deliverycharge;
   sql.beginTransaction(function(err) {
     if (err) { 
@@ -1399,6 +1401,7 @@ Order.order_payment_status_by_moveituser = function(req, result) {
       } else {
         if (res1.length > 0) {
           // check the payment status - 1 is paid
+          console.log(res1[0].payment_status);
           if (res1[0].payment_status == 0) {
 
             req.moveitid = req.moveit_user_id;
