@@ -68,7 +68,7 @@ var Order = function(order) {
   this.rating_skip=order.rating_skip;
   this.landmark = order.landmark;
   this.flatno=order.flatno;
-  this.app_type=order.app_type;
+  this.app_type=order.app_type || 3;
 };
 
 
@@ -3452,6 +3452,13 @@ Order.order_delivery_status_by_admin = function order_delivery_status_by_admin(r
             let resobj = {
               success: true,
               message: "Sorry!  order already canceled.",
+              status:false
+            };
+            result(null, resobj);
+          }else if (res1[0].orderstatus < 3) {
+            let resobj = {
+              success: true,
+              message: "Sorry! Order not prepared",
               status:false
             };
             result(null, resobj);
