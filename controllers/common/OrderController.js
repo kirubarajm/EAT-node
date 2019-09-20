@@ -293,7 +293,12 @@ exports.testPush = function(req, res) {
 };
 
 exports.read_a_proceed_to_pay = function(req, res) {
-  req.body.app_type = parseInt(req.headers.apptype);
+  if (req.headers.apptype !== undefined) {
+    req.body.app_type = parseInt(req.headers.apptype);
+  }else{
+    req.body.app_type = 3;//admin
+  }
+ 
   var orderitems = req.body.orderitems;
   if (!req.body.aid) {
     res
