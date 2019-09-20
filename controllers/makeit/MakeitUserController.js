@@ -426,3 +426,12 @@ exports.makeit_app_version_check_vid = function(req, res) {
   });
 
 };
+
+exports.admin_makeit_serviceable_status = function(req, res) {
+  Makeituser.admin_makeit_serviceable_status(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+};

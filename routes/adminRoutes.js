@@ -112,4 +112,8 @@ app.route("/admin/stories").get(routesVersioning({"1.0.0":Stories.list_all_Stori
 app.route("/admin/login").post(routesVersioning({"1.0.0":adminController.login}));
 app.route("/admin/logout").post(routesVersioning({"1.0.0":adminController.logout}));
 app.route("/admin/pushupdate").put(routesVersioning({"1.0.0":adminController.updatePushToken}));
+app.route("/admin/order/delivery").put(routesVersioning({"1.0.0":orders.admin_order_delivery}));
+app.route("/admin/order/paymentstatus").put(routesVersioning({"1.0.0":orders.admin_order_payment_status}));
+app.route("/admin/moveit/ordercount").post(routesVersioning({"1.0.0":orders.admin_order_order_count_by_moveit}));
+app.route("/admin/makeit/unserviceable").post(routesVersioning({"1.0.0":makeituser.admin_makeit_serviceable_status}));
 }

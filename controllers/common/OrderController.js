@@ -293,7 +293,12 @@ exports.testPush = function(req, res) {
 };
 
 exports.read_a_proceed_to_pay = function(req, res) {
-  //console.log(req.body);
+  if (req.headers.apptype !== undefined) {
+    req.body.app_type = parseInt(req.headers.apptype);
+  }else{
+    req.body.app_type = 3;//admin
+  }
+ 
   var orderitems = req.body.orderitems;
   if (!req.body.aid) {
     res
@@ -518,6 +523,31 @@ exports.moveit_customer_location_reached = function(req, res) {
 exports.moveit_unaccept_orders = function(req, res) {
   console.log(req.body);
   Order.moveit_unaccept_orders_byid(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+exports.admin_order_delivery= function(req, res) {
+  if (req.body.orderid) {
+    Order.order_delivery_status_by_admin(req.body, function(err, result) {
+      if (err) res.send(err);
+      res.json(result);
+    });
+  } else {
+    res.status(400).send({ error: true,status:false, message: "Please provide orderid" });
+  }
+};
+
+exports.admin_order_payment_status = function(req, res) {
+  Order.admin_order_payment_status_by_moveituser(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+exports.admin_order_order_count_by_moveit = function(req, res) {
+  Order.admin_orders_count_by_moveit(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });

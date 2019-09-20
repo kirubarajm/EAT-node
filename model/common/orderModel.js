@@ -68,6 +68,7 @@ var Order = function(order) {
   this.rating_skip=order.rating_skip;
   this.landmark = order.landmark;
   this.flatno=order.flatno;
+  this.app_type=order.app_type;
 };
 
 
@@ -279,6 +280,7 @@ Order.OrderOnline = async function OrderOnline(req, orderitems,result) {
 
 Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnlineOrder,result) {
   var new_Order = new Order(req);
+  console.log(new_Order);
   new_Order.delivery_charge = constant.deliverycharge;
   sql.beginTransaction(function(err) {
     if (err) { 
@@ -1399,6 +1401,7 @@ Order.order_payment_status_by_moveituser = function(req, result) {
       } else {
         if (res1.length > 0) {
           // check the payment status - 1 is paid
+          console.log(res1[0].payment_status);
           if (res1[0].payment_status == 0) {
 
             req.moveitid = req.moveit_user_id;
@@ -1483,15 +1486,23 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
   }
 };
 
+
+
 Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
+
+  // const rows = await query(
+  //   "Select  ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.landmark,ors.flatno,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress,mt.status from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id left join Moveit_status mt on mt.moveitid = ors.moveit_user_id where ors.moveit_user_id =" +moveit_user_id +" and  DATE(ors.ordertime) = CURDATE() group by ors.orderid order by ors.order_assigned_time desc"
+  // );
+
   const rows = await query(
-    "Select  ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.landmark,ors.flatno,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress,mt.status from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id left join Moveit_status mt on mt.moveitid = ors.moveit_user_id where ors.moveit_user_id =" +moveit_user_id +" and  DATE(ors.ordertime) = CURDATE() order by  ors.order_assigned_time desc,mt.id desc"
-  );
+    "Select  ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.landmark,ors.flatno,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id ="+moveit_user_id+" and  DATE(ors.ordertime) = CURDATE()  group by ors.orderid order by ors.order_assigned_time desc"
+);
 
   const cod_amount = await query(
     "select sum(price) as totalamount from Orders where DATE(created_at) = CURDATE() and orderstatus = 6  and payment_status = 1 and payment_type = 0  and lock_status = 0 and  moveit_user_id = " +moveit_user_id +"");
 
-  if (rows.length=== 0) {
+    console.log(rows.length);
+  if (rows.length == 0) {
     var res = {
       result: "Order not found!",
       status: false,
@@ -1499,27 +1510,44 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
     };
     result(null, res);
     return;
-  }
+  }else{
 
-  for (let i = 0; i < rows.length; i++) {
-    var url =
-      "Select ot.productid,pt.product_name,ot.quantity from OrderItem ot join Product pt on ot.productid=pt.productid where ot.orderid = " +
-      rows[i].orderid +
-      "";
-    let products = await query(url);
-    rows[i].items = products;
-    rows[i].locality = "Guindy";
-  }
-  console.log(cod_amount);
-  let resobj = {
-    success: true,
-    status: true,
-    cod_amount :cod_amount[0].totalamount || 0,
-    result: rows
-  };
+    
 
-  result(null, resobj);
+    for (let i = 0; i < rows.length; i++) {
+
+      var moveitstatusquery ="select * from Moveit_status  where orderid = " +rows[i].orderid +" order by id desc limit 1";
+      var statuslist = await query(moveitstatusquery);
+      if (statuslist.length !==0 ) {
+        rows[i].status = statuslist[0].status
+
+      }
+     
+
+      var url =
+        "Select ot.productid,pt.product_name,ot.quantity from OrderItem ot join Product pt on ot.productid=pt.productid where ot.orderid = " +
+        rows[i].orderid +
+        "";
+      let products = await query(url);
+      rows[i].items = products;
+      rows[i].locality = "Guindy";
+
+     
+    }
+    console.log(cod_amount);
+    let resobj = {
+      success: true,
+      status: true,
+      cod_amount :cod_amount[0].totalamount || 0,
+      result: rows
+    };
+  
+    result(null, resobj);
+
+  }
 };
+
+
 
 Order.orderviewbyadmin = function(req, result) {
   sql.query(
@@ -3376,6 +3404,170 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
 Order.moveit_unaccept_orders_byid = function moveit_unaccept_orders_byid(req, result) {
  
   sql.query("Select ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.landmark,ors.flatno,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress,ors.moveit_status,ors.moveit_accept_time from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id = ?  and (ors.moveit_status IS NULL OR ors.moveit_status = '') and DATE(ors.ordertime) = CURDATE() and ors.moveit_user_id !=0 and ors.orderstatus < 5 order by  ors.order_assigned_time desc ", [req.moveit_user_id],async function(err,res1) {
+    if (err) {
+      result(err, null);
+    } else {
+      
+      if (res1.length !==0) {
+
+              let resobj = {
+                success: true,
+                status:true,
+                result: res1
+              };
+              result(null, resobj); 
+         
+      
+      } else {
+        let resobj = {
+          success: true,
+          status: false,
+          message: "Orders not found!"
+        };
+        result(null, resobj);
+      }
+    }
+  });
+};
+
+
+Order.order_delivery_status_by_admin = function order_delivery_status_by_admin(req, result) {
+  var order_delivery_time = moment().format("YYYY-MM-DD HH:mm:ss");
+  sql.query(
+    "Select * from Orders where orderid = ? and moveit_user_id = ?",
+    [req.orderid, req.moveit_user_id],async function(err, res1) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res1.length !== 0) {
+
+          if (res1[0].orderstatus == 6) {
+            let resobj = {
+              success: true,
+              message: "Sorry!  order was already deliverd.",
+              status:false
+            };
+            result(null, resobj);
+          }else if (res1[0].orderstatus == 7) {
+            let resobj = {
+              success: true,
+              message: "Sorry!  order already canceled.",
+              status:false
+            };
+            result(null, resobj);
+          }else{
+
+          if (res1[0].payment_status == 1) {
+
+            req.moveitid = req.moveit_user_id;
+            req.status = 7
+            await Order.insert_order_status(req); 
+
+
+            sql.query(
+              "UPDATE Orders SET orderstatus = 6,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
+              [ order_delivery_time, req.orderid, req.moveit_user_id],
+              async function(err, res) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  let resobj = {
+                    success: true,
+                    message: "Order Delivery successfully",
+                    status:true,
+                    orderdeliverystatus: true
+                  };
+                  await Notification.orderEatPushNotification(
+                    req.orderid,
+                    null,
+                    PushConstant.Pageid_eat_order_delivered
+                  );
+                  result(null, resobj);
+                }
+              }
+            );
+          } else {
+            let resobj = {
+              success: true,
+              status:false,
+              message: "Payment not yet paid!",
+              orderdeliverystatus: false
+            };
+            result(null, resobj);
+          }
+        }
+        } else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no order found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+Order.admin_order_payment_status_by_moveituser = function(req, result) {
+  sql.query(
+    "Select * from Orders where orderid = ? and moveit_user_id = ?",
+    [req.orderid, req.moveit_user_id],async function(err, res1) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res1.length > 0) {
+          // check the payment status - 1 is paid
+          if (res1[0].payment_status == 0) {
+
+            req.moveitid = req.moveit_user_id;
+            req.status = 6
+            await Order.insert_order_status(req); 
+
+            sql.query(
+              "UPDATE Orders SET payment_status = ? WHERE orderid = ? and moveit_user_id =?",
+              [req.payment_status, req.orderid, req.moveit_user_id],
+              function(err, res) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  let resobj = {
+                    success: true,
+                    status:true,
+                    message: "Cash received successfully"
+                  };
+                  result(null, resobj);
+                }
+              }
+            );
+          } else {
+            let resobj = {
+              success: true,
+              status:false,
+              message: "Already Payment has been paid!"
+            };
+            result(null, resobj);
+          }
+        } else {
+          let resobj = {
+            success: true,
+            status:false,
+            message: "Please check your orderid and moveit user id! / order values is null"
+          };
+
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+
+
+
+Order.admin_orders_count_by_moveit= function admin_orders_count_by_moveit(req, result) {
+ 
+  sql.query("SELECT mo.userid, mo.name, count(*) as count,CURDATE()  FROM Orders as ors JOIN MoveitUser as mo ON ors.moveit_user_id = mo.userid where ors.orderstatus=6 and Date(ors.created_at)= CURDATE() Group by mo.userid ",async function(err,res1) {
     if (err) {
       result(err, null);
     } else {

@@ -378,7 +378,7 @@ Documents.newmakeitdocumentupload = function newmakeitdocumentupload(
   result
 ) {
   //console.log(newDocument.files.lic); // the uploaded file object
-
+ 
   if (Object.keys(newDocument.files).length == 0) {
     return result.status(400).send("No files were uploaded.");
   }

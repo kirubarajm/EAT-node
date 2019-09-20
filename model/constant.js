@@ -21,6 +21,7 @@ const calculate = {
     lunchcycle : 12,//12 - 4
     dinnercycle : 16 ,//4 - 11
     dinnerend : 22,
+    dinnerstart : 4,
     max_order_rating_skip : 2,
 
     //eat version
