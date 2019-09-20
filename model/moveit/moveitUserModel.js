@@ -771,21 +771,17 @@ Moveituser.update_pushid = function(req, result) {
         console.log("error: ", err);
         result(null, err);
       } else {
-  
           
         if (userdetails.length !==0) {
-          
           var logouttime =  moment().format("YYYY-MM-DD HH:mm:ss");
-         
           updatequery = await query("Update MoveitUser set online_status = 0,pushid_android = 'null',login_status = "+req.login_status+",logout_time='"+logouttime+"'  where userid = '"+req.userid+"'");
-         
-        
+          var logoutstatusMessage='Force logout and disable Successfully!'
+          if(req.login_status===3) logoutstatusMessage= 'Enable Successfully.Please login after use.'
   
           let resobj = {
             success: true,
              status: true,
-            // message:mesobj,
-            message: 'Logout Successfully!'  
+            message: logoutstatusMessage  
           };
     
           result(null, resobj);
@@ -794,7 +790,6 @@ Moveituser.update_pushid = function(req, result) {
           let resobj = {
             success: true,
              status: false,
-            // message:mesobj,
             message: 'Please check userid'  
           };
     

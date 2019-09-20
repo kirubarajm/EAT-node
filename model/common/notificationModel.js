@@ -192,9 +192,12 @@ Notification.orderMakeItPushNotification = async function(
   if (data == null) return;
 
   if (makeituser && makeituser.pushid_android&&makeituser.virtualkey===0) {
+    console.log("Android->", makeituser.pushid_android);
     FCM_Makeit.sendNotificationAndroid(makeituser.pushid_android, data);
   }else{
+   
     var pushDetail = await Notification.getVirtualMakeitPushId(makeituser.userid);
+    console.log("Web->", pushDetail.push_token);
     if(pushDetail.push_token) FCM_ADMIN.sendNotificationWEB(pushDetail.push_token, data);
   }
 };
