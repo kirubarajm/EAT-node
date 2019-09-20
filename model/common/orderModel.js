@@ -3548,14 +3548,6 @@ Order.admin_order_payment_status_by_moveituser = function(req, result) {
               status:false
             };
             result(null, resobj);
-          }else if(res1[0].orderstatus < 5){
-
-            let resobj = {
-              success: true,
-              message: "Sorry order is not pickup.",
-              status:false
-            };
-            result(null, resobj);
           }else{
 
           
