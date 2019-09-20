@@ -18,6 +18,7 @@ var request = require('request');
 var OrderDeliveryTime = require("../../model/common/orderdeliverytimeModel");
 var MoveitReassignedOrders = require("../../model/common/moveitReassignedOrdersModel");
 var MoveitStatus = require("../../model/moveit/moveitStatusModel");
+var createForcedeliverylogs = require("../../model/common/forcedeliverylogsModel");
 // var instance = new Razorpay({
 //   key_id: "rzp_test_3cduMl5T89iR9G",
 //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
@@ -2479,6 +2480,8 @@ Order.insert_order_status = function insert_order_status(req) {
  });
 };
 
+
+
 Order.moveit_order_accept = async function moveit_order_accept(req, result) {
 
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' ");
@@ -3431,11 +3434,18 @@ Order.moveit_unaccept_orders_byid = function moveit_unaccept_orders_byid(req, re
 };
 
 
+Order.insert_force_delivery = function insert_force_delivery(req) {
+  var new_createForcedeliverylogs = new createForcedeliverylogs(req);
+  createForcedeliverylogs.createForcedeliverylogs(new_createForcedeliverylogs, function(err, res) {
+   if (err) return err;
+   else return res;
+ });
+};
+
 Order.order_delivery_status_by_admin = function order_delivery_status_by_admin(req, result) {
   var order_delivery_time = moment().format("YYYY-MM-DD HH:mm:ss");
   sql.query(
-    "Select * from Orders where orderid = ? and moveit_user_id = ?",
-    [req.orderid, req.moveit_user_id],async function(err, res1) {
+    "Select * from Orders where orderid = ? and moveit_user_id = ?",[req.orderid, req.moveit_user_id],async function(err, res1) {
       if (err) {
         result(err, null);
       } else {
@@ -3467,9 +3477,11 @@ Order.order_delivery_status_by_admin = function order_delivery_status_by_admin(r
           if (res1[0].payment_status == 1) {
 
             req.moveitid = req.moveit_user_id;
+            req.moveit_userid = req.moveit_user_id;
             req.status = 7
             await Order.insert_order_status(req); 
-
+            
+            await Order.insert_force_delivery(req); 
 
             sql.query(
               "UPDATE Orders SET orderstatus = 6,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
@@ -3516,6 +3528,8 @@ Order.order_delivery_status_by_admin = function order_delivery_status_by_admin(r
   );
 };
 
+
+
 Order.admin_order_payment_status_by_moveituser = function(req, result) {
   sql.query(
     "Select * from Orders where orderid = ? and moveit_user_id = ?",
@@ -3530,7 +3544,7 @@ Order.admin_order_payment_status_by_moveituser = function(req, result) {
             req.moveitid = req.moveit_user_id;
             req.status = 6
             await Order.insert_order_status(req); 
-
+           
             sql.query(
               "UPDATE Orders SET payment_status = ? WHERE orderid = ? and moveit_user_id =?",
               [req.payment_status, req.orderid, req.moveit_user_id],

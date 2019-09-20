@@ -1187,7 +1187,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
 
   if (req.eatuserid) {
     var query =
-      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.unservicable,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +
@@ -1198,7 +1198,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
       "' left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid ";
   } else {
     query =
-      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,( 3959 * acos( cos( radians('" +
+      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.unservicable,ly.localityname,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +
