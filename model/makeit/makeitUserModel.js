@@ -1181,8 +1181,8 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
          var gstcharge = (totalamount / 100) * constant.gst;
          gstcharge = Math.round(gstcharge);
-         var original_price = gstcharge + product_orginal_price;
-         var grandtotal = gstcharge + totalamount;
+         var original_price = gstcharge + product_orginal_price + delivery_charge;
+         var grandtotal = gstcharge + totalamount +delivery_charge;
 
         //refund coupon amount detection algorithm 
         if (req.rcid) {
