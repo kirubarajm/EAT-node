@@ -9,7 +9,7 @@ const calculate = {
     applink :'http://bit.ly/2ZcGL95',
     iosapplink : 'https://apple.co/2lna3n9',
     refferalcontent : 'Welcome to EAT. Click the link to download the EAT app from play store.',
-    radiuslimit : 3,
+    radiuslimit : 2,
     foodpreparationtime:15,//min
     onekm:6,
     servicecharge:25,

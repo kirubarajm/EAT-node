@@ -1236,23 +1236,22 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
     query = query + " and pt.lunch = 1";
 
   }else if( currenthour >= 16){
-
-    query = query + " and pt.dinner = 1";
     
+    query = query + " and pt.dinner = 1";
   }
 
 
 
   if (req.sortid == 1) {
-    query = query + " GROUP BY pt.productid  ORDER BY distance";
+    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
   } else if (req.sortid == 2) {
-    query = query + " GROUP BY pt.productid  ORDER BY mk.rating DESC";
+    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.rating DESC";
   } else if (req.sortid == 3) {
-    query = query + " GROUP BY pt.productid  ORDER BY mk.costfortwo ASC";
+    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.costfortwo ASC";
   } else if (req.sortid == 4) {
-    query = query + " GROUP BY pt.productid  ORDER BY mk.costfortwo DESC";
+    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.costfortwo DESC";
   } else {
-    query = query + " GROUP BY pt.productid  ORDER BY distance";
+    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
   }
 
   console.log(query);
@@ -1266,12 +1265,20 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
         //15min Food Preparation time , 3min 1 km
        
         res[i].eta = Math.round(eta);    
-
         res[i].serviceablestatus = false;
-
-        if (res[i].distance <= radiuslimit) {
+        console.log(res[i].unservicable);
+        if (res[i].unservicable == 0) {
           res[i].serviceablestatus = true;
         }
+        
+        if (res[i].serviceablestatus !== false) {
+          
+          if (res[i].distance <= radiuslimit) {
+            res[i].serviceablestatus = true;
+          }
+        }
+
+       
 
        
         if ( res[i].eta > 60) {

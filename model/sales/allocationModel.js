@@ -109,12 +109,8 @@ Allocation.getAllocationById = function getAllocationById(userId, result) {
 
 Allocation.getAllocationBySalesEmpId = function getAllocationBySalesEmpId( userid,result) {
   //  sql.query("Select * from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = ? ", userId, function (err, res) {
-
-  sql.query(
-    "Select alc.aid,alc.sales_emp_id,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = '" +
-      userid +
-      "' and DATE(alc.booking_date_time) = CURDATE() and alc.status !=1 ",
-    function(err, res) {
+  //Select alc.aid,alc.sales_emp_id,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = '" + userid +"' and DATE(alc.booking_date_time) = CURDATE() and alc.status !=1 
+  sql.query(" Select alc.aid,alc.sales_emp_id,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = "+userid+"   and alc.status !=1 and alc.booking_date_time >= DATE(NOW()) order by alc.booking_date_time ASC",function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(err, null);

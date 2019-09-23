@@ -141,7 +141,7 @@ Makeituser.getUserById = async function getUserById(userId, result) {
   //var query1 = "Select * from MakeitUser where userid = '" + userId + "'";
   // JSON_OBJECT('img1',mk.img1,'img2',mk.img2,'img3',mk.img3,'img4',mk.img4) As Images
   var query1 =
-    "select mk.userid, mk.ka_status,mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img1,mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mk.food_type,mk.member_type,mk.about,mk.virutal_rating_count,mkh.makeithub_id,mkh.makeithub_name, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
+    "select mk.userid, mk.ka_status,mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey,mk.unservicable, mk.img1,mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mk.food_type,mk.member_type,mk.about,mk.virutal_rating_count,mkh.makeithub_id,mkh.makeithub_name, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
     userId +
     "'";
   sql.query(query1, async function(err, res) {
@@ -2364,7 +2364,7 @@ Makeituser.admin_makeit_serviceable_status = function admin_makeit_serviceable_s
        
          if (req.unservicable == 0) {
          message = "Kitchen is servicable";
-         }else if( res[0].unservicable ==1){
+         }else if( req.unservicable == 1){
           message = "Kitchen is un-servicable";
          }
 
@@ -2407,7 +2407,7 @@ Makeituser.makeit_online_status_byid= async function makeit_online_status_byid(r
      }
         
    
-   };
+};
 
 
 module.exports = Makeituser;

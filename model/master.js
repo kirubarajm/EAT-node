@@ -148,7 +148,6 @@ const master = [
                 "followupstatussid": 4,
                 "followupstatus": "appointment-schedule"
             },
-
             {
                 "followupstatussid": 5,
                 "followupstatus": "appointment-reschedule"
