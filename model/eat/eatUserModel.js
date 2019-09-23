@@ -1236,7 +1236,9 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
     query = query + " and pt.lunch = 1";
 
   }else if( currenthour >= 16){
-      query = query + " and pt.dinner = 1";
+
+    query = query + " and pt.dinner = 1";
+    
   }
 
 

@@ -274,8 +274,8 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
     //incomplete online and release product quantity and order release by user.
    const job1 = new CronJob('*/3 * * * *',async function(){
   
-   var res = await query("select * from Orders where lock_status = 1 and payment_type = 1 and orderstatus = 0 and created_at > (NOW() - INTERVAL 10 MINUTE)");
-
+   var res = await query("select * from Orders where lock_status = 1 and payment_type = 1 and orderstatus = 0 ");//and created_at > (NOW() - INTERVAL 10 MINUTE
+ 
      // console.log("cron for product revert online orders in-complete orders"+res);
             if (res.length !== 0) {
                            

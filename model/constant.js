@@ -2,10 +2,10 @@
 
 
 const calculate = {
-    gst     : 18,// percentage
+    gst     : 5,// percentage
     food_gst     : 5,// percentage
     food_commission_cost : 18,
-    deliverycharge : 10,// cost
+    deliverycharge : 0,// cost
     applink :'http://bit.ly/2ZcGL95',
     iosapplink : 'https://apple.co/2lna3n9',
     refferalcontent : 'Welcome to EAT. Click the link to download the EAT app from play store.',

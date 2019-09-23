@@ -435,3 +435,11 @@ exports.admin_makeit_serviceable_status = function(req, res) {
     res.send(user);
   });
 };
+
+exports.makeituser_online_status = function(req, res) {
+  console.log(req.body);
+  Makeituser.makeit_online_status_byid(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

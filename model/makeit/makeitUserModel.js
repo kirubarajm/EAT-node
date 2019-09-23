@@ -1161,28 +1161,28 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         
         
       //  var gstcharge = (totalamount / 100) * gst;  // this code commanded due to gst percentage modifications 06/09/2019
-      console.log(totalamount);
-      console.log(constant.food_gst);
-   
-      var foodgstcharge = (totalamount / 100) * constant.food_gst;
 
-      console.log("foodgstcharge"+foodgstcharge);
-      
-      var total_commission_delivery_cost = total_commission_cost + delivery_charge;
+   //*this code is commaned due to business  23-09-2019
+            // var foodgstcharge = (totalamount / 100) * constant.food_gst;
 
-      console.log(total_commission_delivery_cost);
-      console.log(constant.food_commission_cost);
-      var food_commission_gst = (total_commission_delivery_cost / 100) * constant.food_commission_cost; 
+            // var total_commission_delivery_cost = total_commission_cost + delivery_charge;
 
-      console.log("food_commission_gst"+food_commission_gst);
-      var gstcharge = foodgstcharge + food_commission_gst;
+            // var food_commission_gst = (total_commission_delivery_cost / 100) * constant.food_commission_cost; 
 
-          gstcharge = Math.round(gstcharge);
+            // var gstcharge = foodgstcharge + food_commission_gst;
 
-      var original_price = gstcharge+product_orginal_price+delivery_charge;
+            //     gstcharge = Math.round(gstcharge);
 
-      var grandtotal = gstcharge+totalamount+delivery_charge;
+            // var original_price = gstcharge+product_orginal_price+delivery_charge;
 
+            // var grandtotal = gstcharge+totalamount+delivery_charge;
+//*this code is commaned due to business
+
+
+         var gstcharge = (totalamount / 100) * constant.gst;
+         gstcharge = Math.round(gstcharge);
+         var original_price = gstcharge + product_orginal_price;
+         var grandtotal = gstcharge + totalamount;
 
         //refund coupon amount detection algorithm 
         if (req.rcid) {
@@ -1261,11 +1261,16 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           gstinfo.charges = gstcharge;
           gstinfo.status = true;
           cartdetails.push(gstinfo);
-
-          deliverychargeinfo.title = "Handling charge";
-          deliverychargeinfo.charges = delivery_charge;
-          deliverychargeinfo.status = true;
-          cartdetails.push(deliverychargeinfo);
+          
+          //this code is modified 23-09-2019
+          if (delivery_charge !==0) {
+            console.log(delivery_charge);
+            deliverychargeinfo.title = "Handling charge";
+            deliverychargeinfo.charges = delivery_charge;
+            deliverychargeinfo.status = true;
+            cartdetails.push(deliverychargeinfo);
+          }
+       
 
           if (req.rcid && refundcouponstatus) {
             refundinfo.title = "Refund adjustment (-)";
@@ -2376,6 +2381,33 @@ Makeituser.admin_makeit_serviceable_status = function admin_makeit_serviceable_s
     }
   );
 };
+
+
+Makeituser.makeit_online_status_byid= async function makeit_online_status_byid(req,result) { 
+ 
+  var Makeitstatus = await query("select userid,login_status,pushid_ios,pushid_android  from MakeitUser where userid = "+req.userid+" ");
+ 
+     if (Moveitstatus.length !==0) {
+       let resobj = {
+         success: true,
+         status:true,
+         result:Makeitstatus
+     };
+ 
+     result(null, resobj);
+ 
+     }else{
+       let resobj = {
+         success: true,
+         status: false,
+         result:Makeitstatus
+     };
+ 
+     result(null, resobj);
+     }
+        
+   
+   };
 
 
 module.exports = Makeituser;

@@ -1719,11 +1719,16 @@ Order.orderviewbyeatuser = function(req, result) {
                   gstinfo.charges = res1[0].gst;
                   gstinfo.status = true;
                   cartdetails.push(gstinfo);
-        
-                  deliverychargeinfo.title = "Handling charge";
-                  deliverychargeinfo.charges = res1[0].delivery_charge;
-                  deliverychargeinfo.status = true;
-                  cartdetails.push(deliverychargeinfo);
+
+                  console.log("Handling charge" +res1[0].delivery_charge);
+
+                  if (res1[0].delivery_charge != 0) {
+                    deliverychargeinfo.title = "Handling charge";
+                    deliverychargeinfo.charges = res1[0].delivery_charge;
+                    deliverychargeinfo.status = true;
+                    cartdetails.push(deliverychargeinfo);
+                  }
+                 
         
                   if (res1[0].refund_amount) {
                     refundinfo.title = "Refund adjustment (-)";
