@@ -535,7 +535,7 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
       scondcycle = "pt.dinner=1";
       thirdcycle = "pt.breakfast =1";
       cycle =  "Next available "+ constant.lunchcycle + ' PM';
-      nextcycle = "Next available "+ constant.dinnercycle + ' PM';
+      nextcycle = "Next available "+ constant.dinnerstart + ' PM';
       nextthirdcyclecycle = "Next available Tomorrow "+ constant.breatfastcycle + ' AM';
       where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
 
