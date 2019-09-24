@@ -111,7 +111,7 @@ app.route("/eat/kitchenlist").post(middleware.checkToken,routesVersioning({"1.0.
 app.route("/eat/fav").post(middleware.checkToken,routesVersioning({"1.0.0":fav.create_a_fav}));
 app.route("/eat/fav/:id").delete(middleware.checkToken,routesVersioning({"1.0.0":fav.delete_a_fav}));
 app.route("/eat/fav/dishlist/:id").get(middleware.checkToken,routesVersioning({"1.0.0":fav.read_a_fav_dishlist,"2.0.0":fav.read_a_fav_dishlist_v2}));
-app.route("/eat/fav/kitchenlist/:id").get(middleware.checkToken,routesVersioning({"1.0.0":fav.read_a_fav_kitchenlist}));
+app.route("/eat/fav/kitchenlist/:id").get(middleware.checkToken,routesVersioning({"1.0.0":fav.read_a_fav_kitchenlist,"2.0.0":fav.read_a_fav_kitchenlist_v2}));
 app.route("/eat/liveorders/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":orders.live_order_list_byeatuser}));
 app.route("/eat/proceedtopay").post(middleware.checkToken,routesVersioning({"1.0.0":orders.read_a_proceed_to_pay}));
 app.route("/eat/referral/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_user_referral}));

@@ -78,3 +78,11 @@ exports.read_a_fav_kitchenlist = function(req, res) {
     res.json(fav);
   });
 };
+
+exports.read_a_fav_kitchenlist_v2 = function(req, res) {
+  Fav.read_a_fav_kitchenlist_byeatuserid_v2(req.params.id, function(err, fav) {
+    if (err) res.send(err);
+    res.json(fav);
+  });
+};
+

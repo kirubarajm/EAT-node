@@ -141,7 +141,7 @@ Makeituser.getUserById = async function getUserById(userId, result) {
   //var query1 = "Select * from MakeitUser where userid = '" + userId + "'";
   // JSON_OBJECT('img1',mk.img1,'img2',mk.img2,'img3',mk.img3,'img4',mk.img4) As Images
   var query1 =
-    "select mk.userid, mk.ka_status,mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img1,mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mk.food_type,mk.member_type,mk.about,mk.virutal_rating_count,mkh.makeithub_id,mkh.makeithub_name, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
+    "select mk.userid, mk.ka_status,mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey,mk.unservicable, mk.img1,mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mk.food_type,mk.member_type,mk.about,mk.virutal_rating_count,mkh.makeithub_id,mkh.makeithub_name, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
     userId +
     "'";
   sql.query(query1, async function(err, res) {
@@ -1049,7 +1049,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
  // console.log(productdetails);
   // This query is to get the makeit details and cuisine details
   var query1 =
-    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
+    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.unservicable,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
     req.userid +
     " left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +
     req.makeit_user_id;
@@ -1074,7 +1074,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         if(isMobile){
         // eat delivery avalibility check
           var makeitavailability = await query(
-            "Select distinct mk.userid,mk.brandname,mk.lat,mk.lon,( 3959 * acos( cos( radians(" +
+            "Select distinct mk.userid,mk.brandname,mk.unservicable,mk.lat,mk.lon,( 3959 * acos( cos( radians(" +
             req.lat +
               ") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians(" +
               req.lon +
@@ -1088,17 +1088,23 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             
         var eta = constant.foodpreparationtime + (constant.onekm * makeitavailability[0].distance);
         
-        
-          //15min Food Preparation time , 3min 1 km
+        if (makeitavailability[0].unservicable == 1) {
+          isAvaliablekitchen = false;
+        }else{
           if (makeitavailability[0].distance > constant.radiuslimit) {
           
-              isAvaliablekitchen = false;
-              makeit_error_message = makeitavailability[0].brandname;
-              
-          }
+            isAvaliablekitchen = false;
+            makeit_error_message = makeitavailability[0].brandname;
+            
+        }
+        }
+        
+          //15min Food Preparation time , 3min 1 km
+         
         }
 
         res2[0].isAvaliablekitchen = isAvaliablekitchen;
+
         for (let i = 0; i < res2.length; i++) {
           if (res2[i].cuisines) {
             res2[i].cuisines = JSON.parse(res2[i].cuisines);
@@ -2364,7 +2370,7 @@ Makeituser.admin_makeit_serviceable_status = function admin_makeit_serviceable_s
        
          if (req.unservicable == 0) {
          message = "Kitchen is servicable";
-         }else if( res[0].unservicable ==1){
+         }else if( req.unservicable == 1){
           message = "Kitchen is un-servicable";
          }
 
@@ -2407,7 +2413,7 @@ Makeituser.makeit_online_status_byid= async function makeit_online_status_byid(r
      }
         
    
-   };
+};
 
 
 module.exports = Makeituser;
