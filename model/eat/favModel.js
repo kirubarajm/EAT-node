@@ -414,7 +414,7 @@ Fav.read_a_fav_kitchenlist_byeatuserid_v2 = function read_a_fav_kitchenlist_byea
                 
             }else{
 
-    var query = "Select mu.userid as makeituserid,mu.name as makeitusername,mu.brandname as makeitbrandname,mu.unservicable,re.regionname,ly.localityname,mu.rating,mu.regionid,mu.costfortwo,mu.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mu left join Fav fa on fa.makeit_userid=mu.userid left join Cuisine_makeit cm on cm.makeit_userid = mu.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mu.localityid=ly.localityid left join Region re on re.regionid = mu.regionid where mu.verified_status = 1 and fa.productid= 0 and fa.eatuserid   = ?  group by mu.userid";
+    var query = "Select mu.userid as makeituserid,mu.name as makeitusername,mu.brandname as makeitbrandname,mu.unservicable,re.regionname,ly.localityname,mu.rating,mu.regionid,mu.costfortwo,mu.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mu left join Fav fa on fa.makeit_userid=mu.userid left join Cuisine_makeit cm on cm.makeit_userid = mu.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mu.localityid=ly.localityid left join Region re on re.regionid = mu.regionid where mu.verified_status = 1 and fa.productid= 0 and fa.eatuserid   = ?  group by mu.userid ORDER BY mu.unservicable = 0 desc";
     
    // console.log(query);
     
@@ -434,12 +434,12 @@ Fav.read_a_fav_kitchenlist_byeatuserid_v2 = function read_a_fav_kitchenlist_byea
                   res[i].serviceablestatus = true;
                 }
                 
-                if (res[i].serviceablestatus !== false) {
+                // if (res[i].serviceablestatus !== false) {
                   
-                  if (res[i].distance <= radiuslimit) {
-                    res[i].serviceablestatus = true;
-                  }
-                }
+                //   if (res[i].distance <= radiuslimit) {
+                //     res[i].serviceablestatus = true;
+                //   }
+                // }
                 
                 
              if (res[i].cuisines) {

@@ -1049,7 +1049,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
  // console.log(productdetails);
   // This query is to get the makeit details and cuisine details
   var query1 =
-    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
+    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.unservicable,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
     req.userid +
     " left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +
     req.makeit_user_id;
@@ -1074,7 +1074,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         if(isMobile){
         // eat delivery avalibility check
           var makeitavailability = await query(
-            "Select distinct mk.userid,mk.brandname,mk.lat,mk.lon,( 3959 * acos( cos( radians(" +
+            "Select distinct mk.userid,mk.brandname,mk.unservicable,mk.lat,mk.lon,( 3959 * acos( cos( radians(" +
             req.lat +
               ") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians(" +
               req.lon +
@@ -1088,17 +1088,23 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             
         var eta = constant.foodpreparationtime + (constant.onekm * makeitavailability[0].distance);
         
-        
-          //15min Food Preparation time , 3min 1 km
+        if (makeitavailability[0].unservicable == 1) {
+          isAvaliablekitchen = false;
+        }else{
           if (makeitavailability[0].distance > constant.radiuslimit) {
           
-              isAvaliablekitchen = false;
-              makeit_error_message = makeitavailability[0].brandname;
-              
-          }
+            isAvaliablekitchen = false;
+            makeit_error_message = makeitavailability[0].brandname;
+            
+        }
+        }
+        
+          //15min Food Preparation time , 3min 1 km
+         
         }
 
         res2[0].isAvaliablekitchen = isAvaliablekitchen;
+
         for (let i = 0; i < res2.length; i++) {
           if (res2[i].cuisines) {
             res2[i].cuisines = JSON.parse(res2[i].cuisines);
