@@ -3763,4 +3763,29 @@ Order.orders_cost = function orders_cost(req, result) {
   );
 };
 
+Order.admin_via_order_delivey = function admin_via_order_delivey(req, result) {
+  sql.query("select orderid, if(admin_id=1,'EAT','Kitchen') as who, reason, created_at from Force_delivery_logs where Date(created_at)='"+req.date+"'",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
 module.exports = Order;
