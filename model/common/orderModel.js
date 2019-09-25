@@ -2261,6 +2261,10 @@ Order.remove_used_coupon = function remove_used_coupon(removecoupon) {
 Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
   var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
+
+  console.log(req.cancel_reason);
+
+  var cancel_reason = req.cancel_reason || null ;
   if (orderdetails[0].orderstatus === 7 ) {
     let response = {
       success: true,
@@ -2277,7 +2281,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
       result(null, response);
 
   } else {
-    sql.query("UPDATE Orders SET makeit_status=0,orderstatus = 7,cancel_by = 2 ,cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",
+    sql.query("UPDATE Orders SET makeit_status=0,orderstatus = 7,cancel_by = 2 ,cancel_time = '" +ordercanceltime+"',cancel_reason='" +cancel_reason+"' WHERE orderid ='" +req.orderid +"'",
     async function(err, res) {
         if (err) {
           result(err, null);
@@ -2778,9 +2782,10 @@ Order.eat_order_item_missing_byuserid = async function eat_order_item_missing_by
       var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
   
       ///minimum 24 hours for item missing or 1 day
-      if (diffDays === 0) {
+      console.log(diffDays);  
+      if (diffDays < 3) {
 
-        console.log(diffDays);   
+       
       sql.query("UPDATE Orders SET item_missing = 1,item_missing_reason='" +req.item_missing_reason +"' WHERE orderid ='" +req.orderid +"'",async function(err, res1) {
           if (err) {
             result(err, null);

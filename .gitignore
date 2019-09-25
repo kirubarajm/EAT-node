@@ -1,3 +1,4 @@
 .vscode-janus-debug
 package-lock.json
 node_modules/
+redisConnection.js

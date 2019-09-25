@@ -47,8 +47,11 @@ Product.getTotalPrice = async function createProduct(itemlist, result) {
      var amount = menuitem[0].price * itemlist[i].quantity;
      
       totalamount = totalamount + amount;
-      var commision_price = (totalamount / 100) * product_commission_percentage; 
-      var original_price = totalamount + commision_price;
+      //var commision_price = (totalamount / 100) * product_commission_percentage; //this code is commanded 24-09-2019
+     
+      var commision_price = totalamount * (100 / product_commission_percentage); 
+      //var original_price = totalamount + commision_price;
+      var original_price =  commision_price;
     }
   }
  
@@ -234,19 +237,18 @@ Product.remove = function(id, result) {
 };
 
 Product.getAllliveProduct = function getAllliveProduct(liveproductid, result) {
-  sql.query(
-    "Select * from Product where active_status = '1' and delete_status !=1 and makeit_userid = " +
-      liveproductid.makeit_userid +
-      "",
-    function(err, res) {
+  sql.query("Select * from Product where active_status = 1 and delete_status !=1 and makeit_userid = " +liveproductid.makeit_userid +"",async function(err, res) {
       if (err) {
         console.log("error: ", err);
         result(null, err);
       } else {
-        console.log("Product : ", res);
-        let sucobj = true;
+     
+          var productcount = await query("Select count(productid) as productcount from Product where active_status = 1 and delete_status !=1 and quantity !=0 and makeit_userid = " +liveproductid.makeit_userid +" ");
+
         let resobj = {
-          success: sucobj,
+          success: true,
+          status :true,
+          productcount : productcount[0].productcount,
           result: res
         };
 
@@ -959,7 +961,7 @@ Product.getAllProductbymakeituserid = function getAllProductbymakeituserid(req,r
         console.log("error: ", err);
         result(null, err);
       } else {
-        console.log("Product : ", res);
+        
       
         let resobj = {
           success: true,
