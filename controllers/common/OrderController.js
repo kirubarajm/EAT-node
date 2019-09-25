@@ -552,3 +552,38 @@ exports.admin_order_order_count_by_moveit = function(req, res) {
     res.json(result);
   });
 };
+
+exports.admin_moveit_no_orders= function(req, res) {
+    Order.moveit_no_of_orders(req.body, function(err, result) {
+      if (err) res.send(err);
+      res.json(result);
+    });
+};
+
+exports.admin_order_turnaround_time_makeit= function(req, res) {
+  Order.order_turnaround_time_makeit(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+exports.admin_order_turnaround_time_moveit= function(req, res) {
+  Order.order_turnaround_time_moveit(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+exports.admin_order_canceled= function(req, res) {
+  Order.orders_canceled(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+exports.admin_order_cost= function(req, res) {
+  Order.orders_cost(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

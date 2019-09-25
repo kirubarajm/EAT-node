@@ -3639,4 +3639,132 @@ Order.admin_orders_count_by_moveit= function admin_orders_count_by_moveit(req, r
   });
 };
 
+
+Order.moveit_no_of_orders = function moveit_no_of_orders(req, result) {
+  sql.query(
+    "SELECT '"+req.date+"' as date,M.userid, M.name, count(*) as no_of_orders FROM Orders as Ord JOIN MoveitUser as M ON Ord.moveit_user_id = M.userid where Ord.orderstatus=6 and Date(Ord.created_at)= Date('"+req.date+"') Group by M.userid",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+Order.order_turnaround_time_makeit = function order_turnaround_time_makeit(req, result) {
+  sql.query(
+    "Select orderid,ordertime,TIMEDIFF(makeit_accept_time,ordertime) as Accep_time,TimeDiff(makeit_actual_preparing_time, makeit_accept_time) as Preparation_time , ADDTIME(TIMEDIFF(makeit_accept_time,ordertime),TimeDiff(makeit_actual_preparing_time, makeit_accept_time)) as Totaltime from Orders as Ord  where Ord.orderstatus=6 and Date(Ord.created_at)='"+req.date+"'",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, result) {
+  sql.query(
+    "Select orderid,ordertime, TIMEDIFF(moveit_accept_time,order_assigned_time) as Moveit_Accept_time, TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time , ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time) ,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) ) as Totaltime from `Orders` as Ord  where Ord.orderstatus=6 and Date(Ord.created_at)='"+req.date+"'",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+Order.orders_canceled = function orders_canceled(req, result) {
+  sql.query("Select orderid, ordertime, orderid, if(cancel_by=1,'EAT','Kitchen') as canceled_by, cancel_reason from `Orders` where orderstatus=7 and Date(created_at)='"+req.date+"'",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+Order.orders_cost = function orders_cost(req, result) {
+  sql.query("Select orderid,ordertime,original_price,discount_amount from `Orders` where orderstatus=6 and Date(created_at)='"+req.date+"'",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
 module.exports = Order;
