@@ -523,9 +523,7 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
             
             }
 
-            array.forEach(element => {
-              
-            });
+         
 
             let resobj = {
               success: true,

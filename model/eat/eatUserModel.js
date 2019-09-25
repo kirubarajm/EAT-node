@@ -540,7 +540,7 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
       thirdcycle = "pt.breakfast =1";
       cycle =  "Next available \n"+ constant.lunchcycle + ' PM';
       nextcycle = "Next available \n"+ constant.dinnerstart + ' PM';
-      nextthirdcyclecycle = "Next available Tomorrow \n"+ constant.breatfastcycle + ' AM';
+      nextthirdcyclecycle = "Next available \n"+ constant.breatfastcycle + ' AM,Tomorrow';
       where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
 
    }else if(currenthour >= dinnercycle){
@@ -550,8 +550,8 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
       scondcycle = "pt.breakfast=1";
       thirdcycle = "pt.lunch =1";
       cycle = constant.dinnercycle + 'PM';
-      nextcycle = "Next available Tomorrow \n"+ constant.breatfastcycle + ' AM';
-      nextthirdcyclecycle ="Next available Tomorrow \n"+ constant.lunchcycle + ' PM';
+      nextcycle = "Next available \n"+ constant.breatfastcycle + ' AM,Tomorrow';
+      nextthirdcyclecycle ="Next available \n"+ constant.lunchcycle + ' PM';
       where_condition_query = where_condition_query + "and (pt.dinner = 1 OR  pt.breakfast = 1)";
    }
 
@@ -2869,38 +2869,36 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       var scondcycle = '';
       var thirdcycle = '';
       
-   if (currenthour < lunchcycle) {
+      if (currenthour < lunchcycle) {
 
-     //  productquery = productquery + " and pt.breakfast = 1";
-       ifconditionquery = "pt.breakfast =1";
-       scondcycle = "pt.lunch=1";
-       thirdcycle = "pt.dinner =1";
-       cycle = constant.breatfastcycle + 'AM';
-       nextcycle = "Next available "+constant.lunchcycle + ' PM';
-       nextthirdcyclecycle ="Next available "+ constant.dinnerstart + ' PM';
-       where_condition_query = where_condition_query + "and (pt.breakfast = 1 OR pt.lunch = 1)";
-   }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
-
-     // productquery = productquery + " and pt.lunch = 1";
-      ifconditionquery = "pt.lunch =1";
-      scondcycle = "pt.dinner=1";
-      thirdcycle = "pt.breakfast =1";
-      cycle =   "Next available "+constant.lunchcycle + ' PM';
-      nextcycle =  "Next available "+ constant.dinnerstart + ' PM';
-      nextthirdcyclecycle = "Next available Tomorrow "+ constant.breatfastcycle + ' AM';
-      where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
-
-   }else if(currenthour >= dinnercycle){
-
-      //productquery = productquery + " and pt.dinner = 1";
-      ifconditionquery = "pt.dinner =1";
-      scondcycle = "pt.breakfast=1";
-      thirdcycle = "pt.lunch =1";
-      cycle = constant.dinnercycle + 'PM';
-      nextcycle = "Next available Tomorrow "+ constant.breatfastcycle + ' AM';
-      nextthirdcyclecycle ="Next available Tomorrow "+constant.lunchcycle + ' PM';
-      where_condition_query = where_condition_query + "and (pt.dinner = 1 OR  pt.breakfast = 1)";
-   }
+        ifconditionquery = "pt.breakfast =1";
+        scondcycle = "pt.lunch=1";
+        thirdcycle = "pt.dinner =1";
+        cycle = constant.breatfastcycle + 'AM';
+        nextcycle = "Next available \n"+constant.lunchcycle + ' PM';
+        nextthirdcyclecycle = "Next available \n"+constant.dinnerstart + ' PM';
+        where_condition_query = where_condition_query + "and (pt.breakfast = 1 OR pt.lunch = 1)";
+    }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+ 
+       ifconditionquery = "pt.lunch =1";
+       scondcycle = "pt.dinner=1";
+       thirdcycle = "pt.breakfast =1";
+       cycle =  "Next available \n"+ constant.lunchcycle + ' PM';
+       nextcycle = "Next available \n"+ constant.dinnerstart + ' PM';
+       nextthirdcyclecycle = "Next available \n"+ constant.breatfastcycle + ' AM,Tomorrow';
+       where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
+ 
+    }else if(currenthour >= dinnercycle){
+ 
+ 
+       ifconditionquery = "pt.dinner =1";
+       scondcycle = "pt.breakfast=1";
+       thirdcycle = "pt.lunch =1";
+       cycle = constant.dinnercycle + 'PM';
+       nextcycle = "Next available \n"+ constant.breatfastcycle + ' AM,Tomorrow';
+       nextthirdcyclecycle ="Next available \n"+ constant.lunchcycle + ' PM,Tomorrow';
+       where_condition_query = where_condition_query + "and (pt.dinner = 1 OR  pt.breakfast = 1)";
+    }
 
     var regex = /^[A-Za-z0-9 ]+$/ ;
  
