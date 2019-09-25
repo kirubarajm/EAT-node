@@ -30,6 +30,22 @@ exports.list_all_allocation_by_salesempid = function(req, res) {
 }
 };
 
+
+exports.list_all_today_tasklist_by_salesempid = function(req, res) {
+  if (!req.params.id) {
+    res
+      .status(400)
+      .send({ error: true,status:false, message: "Please provide sales_emp_id" });
+  } else {
+    console.log("V1--> 1.0.0");
+  Allocation.tasklistSalesId(req.params.id, function(err,allocation) {
+    console.log("controller");
+    if (err) res.send(err);
+    res.send(allocation);
+  });
+}
+};
+
 exports.list_all_allocation_by_salesempid_V2 = function(req, res) {
   if (!req.params.id) {
     res

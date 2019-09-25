@@ -16,7 +16,7 @@ const calculate = {
     cancellationmessage : "Cancellation charge of Rs.25 will be detected. Do you want to proceed ?",
     makeit_nearby_moveit_radius:4, // in kilometers
     eat_delivery_min:60,
-    product_commission_percentage : 20,// percentage
+    product_commission_percentage : 50,// percentage 20 has changed 50
     breatfastcycle : 8,//8 -12
     lunchcycle : 12,//12 - 4
     dinnercycle : 16 ,//4 - 11

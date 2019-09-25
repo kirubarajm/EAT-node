@@ -272,7 +272,7 @@ Fav.read_a_dishlist_byeatuserid_v2 = function read_a_dishlist_byeatuserid_v2(use
       thirdcycle = "pt.breakfast =1";
       nextthirdcyclecycle = "Next available Tomorrow "+ constant.breatfastcycle + ' AM';
       cycle =  "Next available  "+cycle + constant.lunchcycle + ' PM';
-      nextcycle = "Next available  " + constant.dinnercycle + ' PM';
+      nextcycle = "Next available  " + constant.dinnerstart + ' PM';
       where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
 
    }else if(currenthour >= dinnercycle){
@@ -281,7 +281,7 @@ Fav.read_a_dishlist_byeatuserid_v2 = function read_a_dishlist_byeatuserid_v2(use
       ifconditionquery = "pt.dinner =1";
       scondcycle = "pt.breakfast=1";
       thirdcycle = "pt.lunch =1";
-      cycle = cycle + constant.dinnercycle + 'PM';
+      cycle = cycle + constant.dinnerstart + 'PM';
       nextcycle = nextcycle +"Tomorrow "+ constant.breatfastcycle + ' AM';
       nextthirdcyclecycle ="Next available Tomorrow "+ constant.lunchcycle + ' PM';
       where_condition_query = where_condition_query + "and (pt.dinner = 1 OR  pt.breakfast = 1)";

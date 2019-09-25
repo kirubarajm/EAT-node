@@ -373,10 +373,7 @@ Documents.newsalesdocumentupload = function newsalesdocumentupload(
   Documents.documentUpload(params,result);
 };
 
-Documents.newmakeitdocumentupload = function newmakeitdocumentupload(
-  newDocument,
-  result
-) {
+Documents.newmakeitdocumentupload = function newmakeitdocumentupload(newDocument,result) {
   //console.log(newDocument.files.lic); // the uploaded file object
  
   if (Object.keys(newDocument.files).length == 0) {
@@ -409,10 +406,7 @@ Documents.newmakeitdocumentupload = function newmakeitdocumentupload(
   Documents.documentUpload(params,result);
 };
 
-Documents.makeit_product_upload_a_document = function makeit_product_upload_a_document(
-  newDocument,
-  result
-) {
+Documents.makeit_product_upload_a_document = function makeit_product_upload_a_document(newDocument,result) {
   if (Object.keys(newDocument.files).length == 0) {
     return result.status(400).send("No files were uploaded.");
   }

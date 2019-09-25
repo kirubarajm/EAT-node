@@ -29,6 +29,7 @@ app.route("/sales/login").post(routesVersioning({"1.0.0":salesuser.checklogin}))
 app.route("/sales/registration").post(routesVersioning({"1.0.0":salesuser.create_a_user}));
 app.route("/sales/trainingdocs").get(middleware.checkToken,routesVersioning({"1.0.0":documents.list_all_sales_training_documents}));
 app.route("/sales/tasklist/:id").get(middleware.checkToken,routesVersioning({"1.0.0":allocation.list_all_allocation_by_salesempid,"2.0.0":allocation.list_all_allocation_by_salesempid_V2}));
+app.route("/sales/todaytasklist/:id").get(middleware.checkToken,routesVersioning({"1.0.0":allocation.list_all_today_tasklist_by_salesempid}));
 
 app.route("/salesusers").post(routesVersioning({"1.0.0":salesuser.create_a_user}));
 //app.route("/salesusers").get(routesVersioning({"1.0.0":salesuser.list_all_user}));

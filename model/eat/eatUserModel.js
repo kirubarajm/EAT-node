@@ -331,7 +331,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
   var Images=[];
   if (req.eatuserid) {
     var productquery =
-      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,mk.locality as localityname ,re.regionname,mk.costfortwo,mk.virutal_rating_count as rating_count,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+      "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,mk.locality as localityname ,re.regionname,mk.costfortwo,mk.virutal_rating_count as rating_count,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,mk.unservicable,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +
@@ -413,10 +413,20 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
             res[i].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
           }
 
-          res[i].serviceablestatus = false;
-          if (res[i].distance <= radiuslimit) {
+          if (res[i].unservicable == 0) {
             res[i].serviceablestatus = true;
           }
+          
+          if (res[i].serviceablestatus !== false) {
+            if (res[i].distance <= radiuslimit) {
+              res[i].serviceablestatus = true;
+            }else{
+              res[i].serviceablestatus = false;
+            }
+          }
+  
+
+
           if (res[i].productlist) {
             res[i].productlist = JSON.parse(res[i].productlist);
 
@@ -429,11 +439,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
          
           res[i].eta = Math.round(eta);
   
-         
-          if (res[i].distance <= radiuslimit) {
-            res[i].serviceablestatus = true;
-          }
-
+        
           if (  res[i].eta > 60) {
             var hours =  res[i].eta / 60;
             var rhours = Math.floor(hours);
@@ -495,10 +501,8 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
 };
 
 
-
-
 Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
-  console.log('test');
+
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
   var radiuslimit=constant.radiuslimit;
@@ -525,8 +529,8 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
        scondcycle = "pt.lunch=1";
        thirdcycle = "pt.dinner =1";
        cycle = constant.breatfastcycle + 'AM';
-       nextcycle = "Next available "+constant.lunchcycle + ' PM';
-       nextthirdcyclecycle = "Next available "+constant.dinnerstart + ' PM';
+       nextcycle = "Next available \n"+constant.lunchcycle + ' PM';
+       nextthirdcyclecycle = "Next available \n"+constant.dinnerstart + ' PM';
        where_condition_query = where_condition_query + "and (pt.breakfast = 1 OR pt.lunch = 1)";
    }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
 
@@ -534,9 +538,9 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
       ifconditionquery = "pt.lunch =1";
       scondcycle = "pt.dinner=1";
       thirdcycle = "pt.breakfast =1";
-      cycle =  "Next available "+ constant.lunchcycle + ' PM';
-      nextcycle = "Next available "+ constant.dinnerstart + ' PM';
-      nextthirdcyclecycle = "Next available Tomorrow "+ constant.breatfastcycle + ' AM';
+      cycle =  "Next available \n"+ constant.lunchcycle + ' PM';
+      nextcycle = "Next available \n"+ constant.dinnerstart + ' PM';
+      nextthirdcyclecycle = "Next available Tomorrow \n"+ constant.breatfastcycle + ' AM';
       where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
 
    }else if(currenthour >= dinnercycle){
@@ -546,8 +550,8 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
       scondcycle = "pt.breakfast=1";
       thirdcycle = "pt.lunch =1";
       cycle = constant.dinnercycle + 'PM';
-      nextcycle = "Next available Tomorrow "+ constant.breatfastcycle + ' AM';
-      nextthirdcyclecycle ="Next available Tomorrow "+ constant.lunchcycle + ' PM';
+      nextcycle = "Next available Tomorrow \n"+ constant.breatfastcycle + ' AM';
+      nextthirdcyclecycle ="Next available Tomorrow \n"+ constant.lunchcycle + ' PM';
       where_condition_query = where_condition_query + "and (pt.dinner = 1 OR  pt.breakfast = 1)";
    }
 
@@ -585,7 +589,7 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
 
   if (req.vegtype === "1") {
     productquery = productquery + " and pt.vegtype= 0 ";
-  }
+     }
   productquery = productquery + " order by "+ifconditionquery+"";
       
 console.log(productquery);
@@ -1089,7 +1093,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
   if (req.sortid == 1) {
     query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
   } else if (req.sortid == 2) {
-    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.rating DESC";
+    query = query + " GROUP BY pt.productid  ORDER BY mk.rating DESC,mk.unservicable = 0 desc";
   } else if (req.sortid == 3) {
     query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.costfortwo ASC";
   } else if (req.sortid == 4) {
@@ -1111,17 +1115,18 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
         res[i].eta = Math.round(eta);    
 
         res[i].serviceablestatus = false;
-        console.log(res[i].unservicable);
+  
         if (res[i].unservicable == 0) {
           res[i].serviceablestatus = true;
         }
         
         if (res[i].serviceablestatus !== false) {
-          
+         
           if (res[i].distance <= radiuslimit) {
+          
             res[i].serviceablestatus = true;
           }else{
-            res[0].serviceablestatus = false;
+            res[i].serviceablestatus = false;
           }
         }
 
@@ -1264,7 +1269,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
   if (req.sortid == 1) {
     query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
   } else if (req.sortid == 2) {
-    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.rating DESC";
+    query = query + " GROUP BY pt.productid  ORDER BY mk.rating DESC,mk.unservicable = 0 desc";
   } else if (req.sortid == 3) {
     query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.costfortwo ASC";
   } else if (req.sortid == 4) {
@@ -1285,7 +1290,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
        
         res[i].eta = Math.round(eta);    
         res[i].serviceablestatus = false;
-        console.log(res[i].unservicable);
+
         if (res[i].unservicable == 0) {
           res[i].serviceablestatus = true;
         }
@@ -2776,7 +2781,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
                   //    }
 
                   res[i].serviceablestatus = false;
-                  console.log(res[i].unservicable);
+               
                   if (res[i].unservicable == 0) {
                     res[i].serviceablestatus = true;
                   }
@@ -2786,7 +2791,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
                     if (res[i].distance <= radiuslimit) {
                       res[i].serviceablestatus = true;
                     }else{
-                      res[0].serviceablestatus = false;
+                      res[i].serviceablestatus = false;
                     }
                   }
 
@@ -2881,7 +2886,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       scondcycle = "pt.dinner=1";
       thirdcycle = "pt.breakfast =1";
       cycle =   "Next available "+constant.lunchcycle + ' PM';
-      nextcycle =  "Next available "+ constant.dinnercycle + ' PM';
+      nextcycle =  "Next available "+ constant.dinnerstart + ' PM';
       nextthirdcyclecycle = "Next available Tomorrow "+ constant.breatfastcycle + ' AM';
       where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
 
@@ -2932,7 +2937,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
       
 
           var query =
-          "Select pt.makeit_userid  as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+          "Select pt.makeit_userid  as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,mk.unservicable,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
           req.lat +
           "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
           req.lon +
@@ -2969,10 +2974,20 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
               //15min Food Preparation time , 3min 1 km
             //  eta = 15 + 3 * res[i].distance;
             var eta = foodpreparationtime + (onekm * res[i].distance);
-              res[i].serviceablestatus = false;
-            if (res[i].distance <= radiuslimit) {
-                        res[i].serviceablestatus = true;
+            res[i].serviceablestatus = false;
+        
+            if (res[i].unservicable == 0) {
+              res[i].serviceablestatus = true;
+            }
+            
+            if (res[i].serviceablestatus !== false) {
+              
+              if (res[i].distance <= radiuslimit) {
+                res[i].serviceablestatus = true;
+              }else{
+                res[0].serviceablestatus = false;
               }
+            }
               res[i].eta = Math.round(eta) + " mins";
             
           }
@@ -3015,7 +3030,7 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
     // } else {
         
           var query =
-            "Select pt.makeit_userid  as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+            "Select pt.makeit_userid  as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,mk.unservicable,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
             req.lat +
             "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
             req.lon +
@@ -3053,9 +3068,20 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
               //15min Food Preparation time , 3min 1 km
             //  eta = 15 + 3 * res[i].distance;
             var eta = foodpreparationtime + (onekm * res[i].distance);
+      
               res[i].serviceablestatus = false;
-            if (res[i].distance <= radiuslimit) {
-                        res[i].serviceablestatus = true;
+        
+              if (res[i].unservicable == 0) {
+                res[i].serviceablestatus = true;
+              }
+              
+              if (res[i].serviceablestatus !== false) {
+                
+                if (res[i].distance <= radiuslimit) {
+                  res[i].serviceablestatus = true;
+                }else{
+                  res[i].serviceablestatus = false;
+                }
               }
               res[i].eta = Math.round(eta) + " mins";
             

@@ -127,6 +127,27 @@ Allocation.getAllocationBySalesEmpId = function getAllocationBySalesEmpId( useri
   );
 };
 
+Allocation.tasklistSalesId = function tasklistSalesId( userid,result) {
+  //  sql.query("Select * from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = ? ", userId, function (err, res) {
+  //Select alc.aid,alc.sales_emp_id,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = '" + userid +"' and DATE(alc.booking_date_time) = CURDATE() and alc.status !=1 
+  sql.query("Select alc.aid,alc.sales_emp_id,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = " + userid +" and DATE(alc.booking_date_time) = CURDATE() and alc.status !=1",function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+        let status = res.length===0?false:true;
+        let resobj = {
+          success: true,
+          status:status,
+          result: res
+        };
+        result(null, resobj);
+      }
+    }
+  );
+};
+
+
 Allocation.getAllAllocation = function getAllAllocation(result) {
   sql.query("Select * from Allocation", function(err, res) {
     if (err) {
