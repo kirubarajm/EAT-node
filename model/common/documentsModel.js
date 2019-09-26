@@ -205,24 +205,10 @@ Documents.updateNewkitchan = function updateNewkitchan(document, res) {
   );
 };
 
-Documents.createnewinfoDocument = async function createnewinfoDocument(
-  documentlist,
-  result
-) {
-  var Documentscount = await query(
-    "Select * From Documents where docid = '" +
-      documentlist.docid +
-      "' and type = '" +
-      documentlist.type +
-      "' and image_type = '" +
-      documentlist.image_type +
-      "'"
-  );
+Documents.createnewinfoDocument = async function createnewinfoDocument(documentlist,result) {
+  var Documentscount = await query("Select * From Documents where docid = '" +documentlist.docid +"' and type = '" +documentlist.type +"' and image_type = '" +documentlist.image_type +"'");
   if (Documentscount.length === 0) {
-    var newDocumentsinsert = await query(
-      "INSERT INTO Documents set ?",
-      documentlist
-    );
+    var newDocumentsinsert = await query("INSERT INTO Documents set ?",documentlist);
   } else {
     var newDocumentsinsert = await query(
       "Update Documents set url = '" +
@@ -240,7 +226,7 @@ Documents.createnewinfoDocument = async function createnewinfoDocument(
   let resobj = {
     success: true,
     status :true,
-    message: message
+    message: "Docuemnt updated successfully"
   };
   result(null, resobj);
 };
