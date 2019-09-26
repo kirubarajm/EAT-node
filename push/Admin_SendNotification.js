@@ -24,7 +24,9 @@ exports.sendNotificationWEB = function(
  console.log("token-->",token);
  const options = {
   priority: "high",
-  timeToLive: 60 * 60 * 24 // 1 day
+  //timeToLive: 60 * 60 * 24 // 1 day
+  //timeToLive: 60 * 60 * 2 // 2 hours
+  timeToLive: 60 * 60 // 1 hours
 };
 // dat.content_available = '1';
 var payload = {
