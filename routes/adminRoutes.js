@@ -122,5 +122,5 @@ app.route("/admin/reports/orderturnaroundtime/makeit").post(routesVersioning({"1
 app.route("/admin/reports/orderturnaroundtime/moveit").post(routesVersioning({"1.0.0":orders.admin_order_turnaround_time_moveit}));
 app.route("/admin/reports/ordercanceled").post(routesVersioning({"1.0.0":orders.admin_order_canceled}));
 app.route("/admin/reports/ordercost").post(routesVersioning({"1.0.0":orders.admin_order_cost}));
-
+app.route("/admin/reports/adminviadelivery").post(routesVersioning({"1.0.0":orders.admin_via_order_delivey}));
 }

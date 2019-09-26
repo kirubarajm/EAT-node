@@ -587,3 +587,10 @@ exports.admin_order_cost= function(req, res) {
     res.json(result);
   });
 };
+
+exports.admin_via_order_delivey= function(req, res) {
+  Order.admin_via_order_delivey(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
