@@ -1076,17 +1076,17 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
   var day = new Date();
   var currenthour = day.getHours();
 
-  if (currenthour < 12) {
+  // if (currenthour < 12) {
 
-    query = query + " and pt.breakfast = 1";
+  //   query = query + " and pt.breakfast = 1";
     
-  }else if(currenthour >= 12 && currenthour < 16){
+  // }else if(currenthour >= 12 && currenthour < 16){
 
-    query = query + " and pt.lunch = 1";
+  //   query = query + " and pt.lunch = 1";
 
-  }else if( currenthour >= 16){
-      query = query + " and pt.dinner = 1";
-  }
+  // }else if( currenthour >= 16){
+  //     query = query + " and pt.dinner = 1";
+  // }
 
 
 
@@ -1099,7 +1099,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
   } else if (req.sortid == 4) {
     query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc, mk.costfortwo DESC";
   } else {
-    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
+    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc";
   }
 
   console.log(query);
@@ -1251,18 +1251,18 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
   var day = new Date();
   var currenthour = day.getHours();
 
-  if (currenthour < 12) {
+  // if (currenthour < 12) {
 
-    query = query + " and pt.breakfast = 1";
+  //   query = query + " and pt.breakfast = 1";
     
-  }else if(currenthour >= 12 && currenthour < 16){
+  // }else if(currenthour >= 12 && currenthour < 16){
 
-    query = query + " and pt.lunch = 1";
+  //   query = query + " and pt.lunch = 1";
 
-  }else if( currenthour >= 16){
+  // }else if( currenthour >= 16){
     
-    query = query + " and pt.dinner = 1";
-  }
+  //   query = query + " and pt.dinner = 1";
+  // }
 
 
 
@@ -1275,7 +1275,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
   } else if (req.sortid == 4) {
     query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.costfortwo DESC";
   } else {
-    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
+    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc";
   }
 
   console.log(query);
