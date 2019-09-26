@@ -743,13 +743,7 @@ Order.get_all_orders = function get_all_orders(req, result) {
     query = query + " and " + searchquery;
   }
 
-  var limitquery =
-    query +
-    " order by od.orderid desc limit " +
-    startlimit +
-    "," +
-    orderlimit +
-    " ";
+  var limitquery =query +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
 
   sql.query(limitquery, function(err, res1) {
     if (err) {

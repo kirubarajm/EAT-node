@@ -209,7 +209,7 @@ Allocation.update_a_followupstatus = function(req, result) {
       "' ";
   }
 
-  console.log(statusquery);
+
 
   sql.query(statusquery, function(err, res) {
     if (err) {
@@ -233,7 +233,7 @@ Allocation.update_a_followupstatus = function(req, result) {
 Allocation.getHistoryBySalesEmpId = function getHistoryBySalesEmpId( userid,result) {
   //  sql.query("Select * from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = ? ", userId, function (err, res) {
 
- var  historyquery = "Select alc.aid,alc.sales_emp_id,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.branch_name,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where  alc.sales_emp_id = 5 and alc.status !=0 order by alc.info_completed_ts";
+ var  historyquery = "Select alc.aid,alc.sales_emp_id,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.branch_name,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where  alc.sales_emp_id = "+userid+" and alc.status !=0 order by alc.info_completed_ts";
   sql.query(historyquery,function(err, res) {
       if (err) {
         console.log("error: ", err);
@@ -251,5 +251,39 @@ Allocation.getHistoryBySalesEmpId = function getHistoryBySalesEmpId( userid,resu
   );
 };
 
+
+
+Allocation.list_all_allocation_by_admin = function list_all_allocation_by_admin( req,result) {
+  //  sql.query("Select * from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid  where  sales_emp_id = ? ", userId, function (err, res) {
+    var allocationlimit = 20;
+    var page = req.page || 1;
+    var startlimit = (page - 1) * allocationlimit;
+
+ var  allocationquery = "Select alc.aid,alc.sales_emp_id,sa.name as salesname,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.branch_name,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid left join Sales_QA_employees sa on alc.sales_emp_id=sa.id";
+
+  if (req.appointmentstatus) {
+    allocationquery = allocationquery +" where alc.status ="+req.appointmentstatus+""
+  }
+
+  allocationquery = allocationquery +" order by alc.aid desc limit "+startlimit+"," +allocationlimit +" ";
+
+ console.log(allocationquery);
+
+  sql.query(allocationquery,function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+        let status = res.length===0?false:true;
+        let resobj = {
+          success: true,
+          status:status,
+          result: res
+        };
+        result(null, resobj);
+      }
+    }
+  );
+};
 
 module.exports = Allocation;
