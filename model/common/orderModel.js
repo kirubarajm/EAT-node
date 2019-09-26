@@ -743,13 +743,7 @@ Order.get_all_orders = function get_all_orders(req, result) {
     query = query + " and " + searchquery;
   }
 
-  var limitquery =
-    query +
-    " order by od.orderid desc limit " +
-    startlimit +
-    "," +
-    orderlimit +
-    " ";
+  var limitquery =query +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
 
   sql.query(limitquery, function(err, res1) {
     if (err) {
@@ -1903,7 +1897,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
     if (diffDays || diffHrs || diffMins > 30) orderdetails[0].showrating = true;
 
   }
-}
+  }
   // or payment_status !=3)
   sql.query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2 order by orderid desc limit 1",function(err, res) {
       if (err) {
@@ -1943,9 +1937,8 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
               if ( res1[0].orderstatus < 6 ) {
             
                 if ( res1[0].orderstatus < 5 ){
-                 console.log("distance");
                    req.orderid  =res1[0].orderid;
-                  await Order.eat_get_delivery_time(req);
+                   await Order.eat_get_delivery_time(req);
                 }
                 
     
@@ -1954,7 +1947,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                 
                 if (orderdeliverytime.length !== 0) {
                   res1[0].deliverytime = orderdeliverytime[0].deliverytime;
-                  res1[0].eta = orderdeliverytime[0].duration;
+                  res1[0].eta = foodpreparationtime + orderdeliverytime[0].duration;
                 }else{
     
                   // we need to remove once delivery time stable

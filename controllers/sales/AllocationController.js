@@ -149,3 +149,16 @@ exports.list_all_history_by_salesempid = function(req, res) {
   });
 }
 };
+
+
+
+exports.list_all_allocation_by_admin = function(req, res) {
+
+  Allocation.list_all_allocation_by_admin(req.body, function(err,allocation) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", allocation);
+    res.send(allocation);
+  });
+
+};

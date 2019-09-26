@@ -58,14 +58,7 @@ Documentsales.createnewDocument = function createnewDocument(
   });
 };
 
-Documentsales.createkitchenDoument = async function createkitchenDoument(
-  newdocument,
-  kitchanImage,
-  kitchanApplicationImage,
-  packagingdetails,
-  document_delete_list,
-  res
-) {
+Documentsales.createkitchenDoument = async function createkitchenDoument(newdocument,kitchanImage,kitchanApplicationImage,packagingdetails,document_delete_list,res) {
   try{
     var salesdocu = await query(
       "Select * From Documents_Sales where sales_userid = '" +
@@ -132,12 +125,9 @@ Documentsales.createkitchenDoument = async function createkitchenDoument(
   
 };
 
-Documentsales.infodocumentcreate = async function infodocumentcreate(
-  newdocument,
-  new_documents_list,
-  document_delete_list,
-  res
-) {
+Documentsales.infodocumentcreate = async function infodocumentcreate(newdocument,new_documents_list,document_delete_list,res) {
+
+  
   var salesdocu = await query(
     "Select * From Documents_Sales where sales_userid = '" +
       newdocument.sales_userid +
