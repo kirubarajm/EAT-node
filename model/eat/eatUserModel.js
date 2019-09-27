@@ -640,14 +640,14 @@ console.log(productquery);
           if (res[0].productlist) {
             res[0].productlist = JSON.parse(res[0].productlist);
 
-            var productlist = res[0].productlist
+           // var productlist = res[0].productlist
          
 
-            productlist.sort(function(next_available,next_available) {
-              return next_available - next_available;
-          });
+          //   productlist.sort(function(next_available,next_available) {
+          //     return next_available - next_available;
+          // });
 
-           res[0].productlist = productlist 
+         //  res[0].productlist = productlist 
 
            res[0].productlist.sort((a, b) => parseFloat(a.next_available) - parseFloat(b.next_available));
             // for (let i = 0; i < productlist.length; i++) {
