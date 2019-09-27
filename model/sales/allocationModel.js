@@ -258,20 +258,19 @@ Allocation.list_all_allocation_by_admin = function list_all_allocation_by_admin(
     var allocationlimit = 20;
     var page = req.page || 1;
     var startlimit = (page - 1) * allocationlimit;
-
- var  allocationquery = "Select alc.aid,alc.sales_emp_id,sa.name as salesname,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.branch_name,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid left join Sales_QA_employees sa on alc.sales_emp_id=sa.id";
-
-  if (req.appointmentstatus) {
-    allocationquery = allocationquery +" where alc.status ="+req.appointmentstatus+""
-  }
-
-  allocationquery = allocationquery +" order by alc.aid desc limit "+startlimit+"," +allocationlimit +" ";
-
- console.log(allocationquery);
-
-  sql.query(allocationquery,function(err, res) {
+    var  allocationquery = "Select alc.aid,alc.sales_emp_id,sa.name as salesname,alc.makeit_userid,alc.status,alc.booking_date_time,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.lat,mu.lon,mu.appointment_status,mu.locality,mu.phoneno,mu.address,mu.verified_status from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid left join Sales_QA_employees sa on alc.sales_emp_id=sa.id";
+    if (req.appointmentstatus) {
+      allocationquery = allocationquery +" where alc.status ="+req.appointmentstatus+""
+    }
+    console.log(req.date);
+    if(req.date){
+      var qu=req.appointmentstatus?" and Date(alc.booking_date_time) ='"+req.date+"'":" where Date(alc.booking_date_time) ='"+req.date+"'";
+      allocationquery = allocationquery+qu;
+    }
+    allocationquery = allocationquery +" order by alc.aid desc limit "+startlimit+"," +allocationlimit +" ";
+    console.log(allocationquery);
+    sql.query(allocationquery,function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
       } else {
         let status = res.length===0?false:true;

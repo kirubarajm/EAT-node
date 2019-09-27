@@ -117,6 +117,7 @@ app.route("/admin/order/paymentstatus").put(routesVersioning({"1.0.0":orders.adm
 app.route("/admin/moveit/ordercount").post(routesVersioning({"1.0.0":orders.admin_order_order_count_by_moveit}));
 app.route("/admin/makeit/unserviceable").post(routesVersioning({"1.0.0":makeituser.admin_makeit_serviceable_status}));
 
+
 app.route("/admin/reports/moveitorders").post(routesVersioning({"1.0.0":orders.admin_moveit_no_orders}));
 app.route("/admin/reports/orderturnaroundtime/makeit").post(routesVersioning({"1.0.0":orders.admin_order_turnaround_time_makeit}));
 app.route("/admin/reports/orderturnaroundtime/moveit").post(routesVersioning({"1.0.0":orders.admin_order_turnaround_time_moveit}));
@@ -124,4 +125,5 @@ app.route("/admin/reports/ordercanceled").post(routesVersioning({"1.0.0":orders.
 app.route("/admin/reports/ordercost").post(routesVersioning({"1.0.0":orders.admin_order_cost}));
 app.route("/admin/reports/adminviadelivery").post(routesVersioning({"1.0.0":orders.admin_via_order_delivey}));
 app.route("/admin/appointmentlist").post(routesVersioning({"1.0.0":allocation.list_all_allocation_by_admin}));
+app.route("/admin/query/userdetail").post(routesVersioning({"1.0.0":queryquestion.get_user_by_type}));
 }
