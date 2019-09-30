@@ -1,6 +1,7 @@
 "user strict";
 var sql = require("../db.js");
 
+
 //Task object constructor
 var Region = function(region) {
   this.regionname = region.regionname;
@@ -142,5 +143,8 @@ Region.remove = function(id, result) {
     }
   });
 };
+
+
+
 
 module.exports = Region;

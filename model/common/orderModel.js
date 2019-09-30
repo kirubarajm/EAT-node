@@ -2663,8 +2663,7 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
       result(null, response);
 
   } else {
-    sql.query("UPDATE Orders SET makeit_status=0,orderstatus = 7,cancel_by = 2,cancel_reason= '"+cancel_reason+"' WHERE orderid ='" +req.orderid +"'",
-    async function(err, res) {
+    sql.query("UPDATE Orders SET makeit_status=0,orderstatus = 7,cancel_by = 2,cancel_reason= '"+cancel_reason+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
         if (err) {
           result(err, null);
         } else {

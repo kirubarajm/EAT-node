@@ -313,19 +313,19 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
         var productquery = "";
        // console.log(currenthour);
 
-        // if (currenthour < lunchcycle) {
+        if (currenthour < lunchcycle) {
 
-        //   productquery = productquery + " and pt.breakfast = 1";
-        // //  console.log("breakfast");
-        // }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+          productquery = productquery + " and pt.breakfast = 1";
+        //  console.log("breakfast");
+        }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
 
-        //   productquery = productquery + " and pt.lunch = 1";
-        // //  console.log("lunch");
-        // }else if( currenthour >= dinnercycle){
+          productquery = productquery + " and pt.lunch = 1";
+        //  console.log("lunch");
+        }else if( currenthour >= dinnercycle){
           
-        //   productquery = productquery + " and pt.dinner = 1";
-        // //  console.log("dinner");
-        // }
+          productquery = productquery + " and pt.dinner = 1";
+        //  console.log("dinner");
+        }
       
 
       //based on logic this conditions will change

@@ -10,6 +10,7 @@ var QueryQuestions = function(queryquestions) {
   this.type = queryquestions.type;
   this.userid = queryquestions.userid;
   this.admin_read = queryquestions.admin_read || 0;
+  this.orderid = queryquestions.orderid || null;
   // this.created_at = new Date();
 };
 

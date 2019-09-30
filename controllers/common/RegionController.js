@@ -26,6 +26,15 @@ exports.create_a_Region = function(req, res) {
   });
 };
 
+exports.create_a_radius_limit= function(req, res) {
+  //handles null error
+
+  Region.create_a_radius_limit_by_admin(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
 exports.read_a_question = function(req, res) {
   Region.read_a_region_id(req.body, function(err, result) {
     if (err) res.send(err);
