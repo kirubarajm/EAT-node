@@ -3033,7 +3033,7 @@ Order.eat_order_skip_count_by_uid = async function eat_order_skip_count_by_uid(r
 
 
 Order.get_sales_product_count = async function get_sales_product_count(req,result) {
-  req.date = req.date;
+  //req.date = req.date;
   // var query =
   // "Select JSON_OBJECT('productitem', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items"+ 
   // " from Orders as od"+ 
