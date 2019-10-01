@@ -460,3 +460,18 @@ exports.makeituser_appointments_reschduled= function(req, res) {
   });
 }
 };
+
+
+
+exports.makeituser_appointments_cancel= function(req, res) {
+  if (!req.body.aid) {
+    res
+      .status(400)
+      .send({ error: true,status:false, message: "Please provide aid" });
+  }else {
+  Makeituser.makeituser_appointments_cancel(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
+}
