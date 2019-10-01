@@ -145,6 +145,22 @@ Region.remove = function(id, result) {
 };
 
 
+// Region.create_a_radius_limit_by_admin = function create_a_radius_limit_by_admin(req, result) {
+ 
+ 
+//   client.set("radius", req.radius);
+//   console.log(req.radius);
+// client.quit();
+// }
 
+
+// Region.get_a_radius_limit_by_admin = function get_a_radius_limit_by_admin(req, result) {
+ 
+// // This will return a Buffer since original key is specified as a Buffer
+// client.get(new Buffer("radius"), function (err, reply) {
+//     console.log(reply.toString()); // Will print `<Buffer 4f 4b>`
+// });s
+// client.quit();
+// }
 
 module.exports = Region;

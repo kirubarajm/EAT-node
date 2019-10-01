@@ -2417,22 +2417,24 @@ Makeituser.makeit_online_status_byid= async function makeit_online_status_byid(r
 
 Makeituser.makeituser_appointments_reschduled= async function makeituser_appointments_reschduled(req,result) { 
  
-  var Makeitstatus = await query("select * from Allocation where userid = "+req.userid+" ");
+  var Allocationdetails = await query("select * from Allocation where aid = "+req.aid+" ");
  
-     if (Moveitstatus.length !==0) {
+     if (Allocationdetails.length !==0) {
+
+      var Updatedetails = await query("Update Allocation set booking_date_time= '"+req.booking_date_time+"' where aid = "+req.aid+" ");
+
        let resobj = {
          success: true,
-         status:true,
-         result:Makeitstatus
+         status: true,
+         message:"Appoinment updated successfully"
      };
- 
      result(null, resobj);
- 
      }else{
        let resobj = {
          success: true,
          status: false,
-         result:Makeitstatus
+         message:"Allcation not available!"
+
      };
  
      result(null, resobj);
