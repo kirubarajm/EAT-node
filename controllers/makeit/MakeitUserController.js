@@ -443,3 +443,11 @@ exports.makeituser_online_status = function(req, res) {
     res.json(result);
   });
 };
+
+exports.makeituser_appointments_reschduled= function(req, res) {
+  console.log(req.body);
+  Makeituser.makeituser_appointments_reschduled(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

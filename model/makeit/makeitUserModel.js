@@ -2415,5 +2415,29 @@ Makeituser.makeit_online_status_byid= async function makeit_online_status_byid(r
    
 };
 
+Makeituser.makeituser_appointments_reschduled= async function makeituser_appointments_reschduled(req,result) { 
+ 
+  var Makeitstatus = await query("select * from Allocation where userid = "+req.userid+" ");
+ 
+     if (Moveitstatus.length !==0) {
+       let resobj = {
+         success: true,
+         status:true,
+         result:Makeitstatus
+     };
+ 
+     result(null, resobj);
+ 
+     }else{
+       let resobj = {
+         success: true,
+         status: false,
+         result:Makeitstatus
+     };
+ 
+     result(null, resobj);
+     }
+};
+
 
 module.exports = Makeituser;
