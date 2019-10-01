@@ -1076,22 +1076,22 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
   var day = new Date();
   var currenthour = day.getHours();
 
-  // if (currenthour < 12) {
+  if (currenthour < 12) {
 
-  //   query = query + " and pt.breakfast = 1";
+    query = query + " and pt.breakfast = 1";
     
-  // }else if(currenthour >= 12 && currenthour < 16){
+  }else if(currenthour >= 12 && currenthour < 16){
 
-  //   query = query + " and pt.lunch = 1";
+    query = query + " and pt.lunch = 1";
 
-  // }else if( currenthour >= 16){
-  //     query = query + " and pt.dinner = 1";
-  // }
+  }else if( currenthour >= 16){
+      query = query + " and pt.dinner = 1";
+  }
 
 
 
   if (req.sortid == 1) {
-    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
+    query = query + " GROUP BY pt.productid  ORDER BY distance,mk.unservicable = 0 desc";
   } else if (req.sortid == 2) {
     query = query + " GROUP BY pt.productid  ORDER BY mk.rating DESC,mk.unservicable = 0 desc";
   } else if (req.sortid == 3) {
@@ -1115,9 +1115,11 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
         res[i].eta = Math.round(eta);    
 
         res[i].serviceablestatus = false;
+        res[i].kitchenstatus = 1;
   
         if (res[i].unservicable == 0) {
           res[i].serviceablestatus = true;
+          res[i].kitchenstatus = 0;
         }
         
         if (res[i].serviceablestatus !== false) {
@@ -1125,8 +1127,10 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
           if (res[i].distance <= radiuslimit) {
           
             res[i].serviceablestatus = true;
+            res[i].kitchenstatus = 0;
           }else{
             res[i].serviceablestatus = false;
+            res[i].kitchenstatus = 1;
           }
         }
 
@@ -1166,6 +1170,9 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
 
       }
 
+      if (!req.sortid) {
+        res.sort((a, b) => parseFloat(a.kitchenstatus) - parseFloat(b.kitchenstatus));
+      }
    
       let resobj = {
         success: true,
@@ -1251,23 +1258,23 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
   var day = new Date();
   var currenthour = day.getHours();
 
-  // if (currenthour < 12) {
+  if (currenthour < 12) {
 
-  //   query = query + " and pt.breakfast = 1";
+    query = query + " and pt.breakfast = 1";
     
-  // }else if(currenthour >= 12 && currenthour < 16){
+  }else if(currenthour >= 12 && currenthour < 16){
 
-  //   query = query + " and pt.lunch = 1";
+    query = query + " and pt.lunch = 1";
 
-  // }else if( currenthour >= 16){
+  }else if( currenthour >= 16){
     
-  //   query = query + " and pt.dinner = 1";
-  // }
+    query = query + " and pt.dinner = 1";
+  }
 
 
 
   if (req.sortid == 1) {
-    query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
+    query = query + " GROUP BY pt.productid  ORDER BY distance,mk.unservicable = 0 desc";
   } else if (req.sortid == 2) {
     query = query + " GROUP BY pt.productid  ORDER BY mk.rating DESC,mk.unservicable = 0 desc";
   } else if (req.sortid == 3) {
@@ -1290,18 +1297,25 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
        
         res[i].eta = Math.round(eta);    
         res[i].serviceablestatus = false;
+        res[i].kitchenstatus = 1;
 
         if (res[i].unservicable == 0) {
           res[i].serviceablestatus = true;
+          res[i].kitchenstatus = 0;
+          
         }
         
         if (res[i].serviceablestatus !== false) {
           
           if (res[i].distance <= radiuslimit) {
             res[i].serviceablestatus = true;
+            res[i].kitchenstatus = 0;
           }else{
-            res[0].serviceablestatus = false;
+            res[i].serviceablestatus = false;
+            res[i].kitchenstatus = 1;
           }
+
+          console.log( res[i].kitchenstatus);
         }
 
        
@@ -1343,7 +1357,11 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
 
       }
 
-   
+      if (!req.sortid) {
+        res.sort((a, b) => parseFloat(a.kitchenstatus) - parseFloat(b.kitchenstatus));
+      }
+    
+
       let resobj = {
         success: true,
         status:true,
@@ -1356,6 +1374,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = function (req, result) {
    
   });
 };
+
 Eatuser.timeConvert = function timeConvert(n,result) {
    
   console.log("minitues calculate");
@@ -3004,6 +3023,8 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
 
   //  }
     };
+
+
 
     Eatuser.eat_explore_kitchen_dish =async function eat_explore_kitchen_dish(req,result) {
 

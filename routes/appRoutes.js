@@ -21,6 +21,7 @@ module.exports = function(app) {
   //Region
   app.route("/masters/regionlist").get(routesVersioning({"1.0.0":region.list_all_region}));
   app.route("/masters/region").post(routesVersioning({"1.0.0":region.create_a_Region}));
+  app.route("/masters/radiuslimit").post(routesVersioning({"1.0.0":region.create_a_radius_limit}));
   
 
 
