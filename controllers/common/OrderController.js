@@ -604,8 +604,8 @@ exports.new_users= function(req, res) {
 };
 
 //No of orders per user 
-exports.user_orders= function(req, res) {
-  Order.user_orders(req.body, function(err, result) {
+exports.user_orders_history= function(req, res) {
+  Order.user_orders_history(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });
