@@ -3711,7 +3711,7 @@ Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, 
 };
 
 Order.orders_canceled = function orders_canceled(req, result) {
-  sql.query("Select orderid, ordertime, orderid, if(cancel_by=1,'EAT','Kitchen') as canceled_by, cancel_reason from `Orders` where orderstatus=7 and Date(created_at)='"+req.date+"'",async function(err, res) {
+  sql.query("Select orderid, ordertime, if(cancel_by=1,'EAT','Kitchen') as canceled_by, cancel_reason from `Orders` where orderstatus=7 and Date(created_at)='"+req.date+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
