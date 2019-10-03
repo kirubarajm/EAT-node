@@ -130,6 +130,10 @@ app.route("/appointments/reschduled").post(routesVersioning({"1.0.0":makeituser.
 app.route("/appointments/cancel").post(routesVersioning({"1.0.0":makeituser.makeituser_appointments_cancel}));
 
 //Praveen Reports
-app.route("/admin/reports/salesreport").post(routesVersioning({"1.0.0":orders.admin_moveit_no_orders}));
+app.route("/admin/reports/newusersreport").post(routesVersioning({"1.0.0":orders.new_users}));
+app.route("/admin/reports/userordersreport").post(routesVersioning({"1.0.0":orders.user_orders}));
+app.route("/admin/reports/datewisesalesreport").post(routesVersioning({"1.0.0":orders.datewise_sales}));
+app.route("/admin/reports/cancelordersreport").post(routesVersioning({"1.0.0":orders.cancel_orders}));
+
 
 }

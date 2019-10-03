@@ -3785,9 +3785,9 @@ Order.admin_via_order_delivey = function admin_via_order_delivey(req, result) {
   );
 };
 
-//praveen  New Users
+//New Users
 Order.new_users = function new_users(req, result) {
-  sql.query("Select u.userid, u.phoneno from User as u join Orders as o on o.userid=u.userid where o.orderstatus=6  and Date(u.created_at) = CURDATE()",async function(err, res) {
+  sql.query("Select u.userid, u.phoneno from User as u join Orders as o on o.userid=u.userid where o.orderstatus=6  and Date(u.created_at) ='"+req.date+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3810,4 +3810,83 @@ Order.new_users = function new_users(req, result) {
     }
   );
 };
+
+//No of orders per user
+Order.user_orders = function user_orders(req, result) {
+  sql.query("Select distinct o.userid,u.name,Count(o.orderid) as Total_orders from Orders as o join User as u on o.userid = u.userid where o.orderstatus=6 GROUP BY u.userid Order BY Count(DISTINCT o.orderid) DESC",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Date Wise Sales Report  
+Order.datewise_sales = function datewise_sales(req, result) {
+  sql.query("Select DATE(o.created_at) as todaysdate, count(*) as Delivered_Orders, sum(price) as Totalmoney_received,sum(gst) as gst ,sum(original_price) as Totalmoney_without_discount, sum(refund_amount) as refund_coupon_amount,sum(discount_amount) as discount_amount,sum(ro.refund_amt) as refund_online, sum(ro.cancellation_charges) as cancellation_charges,sum(delivery_charge) as delivery_charge,payment_type  from `Orders` as o left join Refund_Online as ro on ro.orderid=o.orderid where orderstatus=6  and payment_type =0 and Date(o.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by Date(o.created_at);",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Canceled orders between date
+Order.cancel_orders = function cancel_orders(req, result) {
+  sql.query("Select ordertime,count(orderid) as totalorders from `Orders` where orderstatus=6 and Date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by date(ordertime);",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
 module.exports = Order;

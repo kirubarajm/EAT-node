@@ -595,10 +595,39 @@ exports.admin_via_order_delivey= function(req, res) {
   });
 };
 
-//praveen New Users List
+//New Users List
 exports.new_users= function(req, res) {
   Order.new_users(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });
 };
+
+//No of orders per user 
+exports.user_orders= function(req, res) {
+  Order.user_orders(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+//Date Wise Sales Report 
+exports.datewise_sales= function(req, res) {
+  Order.datewise_sales(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+//Canceled orders between date
+exports.cancel_orders= function(req, res) {
+  Order.cancel_orders(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+//Total delivered orders between date
+
+
+//between dates and hub
