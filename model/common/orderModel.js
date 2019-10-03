@@ -3785,4 +3785,29 @@ Order.admin_via_order_delivey = function admin_via_order_delivey(req, result) {
   );
 };
 
+//praveen  New Users
+Order.new_users = function new_users(req, result) {
+  sql.query("Select u.userid, u.phoneno from User as u join Orders as o on o.userid=u.userid where o.orderstatus=6  and Date(u.created_at) = CURDATE()",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
 module.exports = Order;

@@ -2412,18 +2412,15 @@ Makeituser.makeit_online_status_byid= async function makeit_online_status_byid(r
    
 };
 
-Makeituser.makeituser_appointments_reschduled= async function makeituser_appointments_reschduled(req,result) { 
+Makeituser.makeituser_appointments_rescheduled= async function makeituser_appointments_rescheduled(req,result) { 
  
   var Allocationdetails = await query("select * from Allocation where aid = "+req.aid+" ");
- 
-     if (Allocationdetails.length !==0) {
-
+     if (Allocationdetails.length !==0){
       var Updatedetails = await query("Update Allocation set booking_date_time= '"+req.booking_date_time+"' where aid = "+req.aid+" ");
-
        let resobj = {
          success: true,
          status: true,
-         message:"Appoinment updated successfully"
+         message:"Appointment updated successfully"
      };
      result(null, resobj);
      }else{
@@ -2461,7 +2458,6 @@ Makeituser.makeituser_appointments_cancel= async function makeituser_appointment
          message:"Appoinment not available!"
 
      };
- 
      result(null, resobj);
      }
 };

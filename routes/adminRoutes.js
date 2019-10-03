@@ -128,4 +128,8 @@ app.route("/admin/appointmentlist").post(routesVersioning({"1.0.0":allocation.li
 app.route("/admin/query/userdetail").post(routesVersioning({"1.0.0":queryquestion.get_user_by_type}));
 app.route("/appointments/reschduled").post(routesVersioning({"1.0.0":makeituser.makeituser_appointments_reschduled}));
 app.route("/appointments/cancel").post(routesVersioning({"1.0.0":makeituser.makeituser_appointments_cancel}));
+
+//Praveen Reports
+app.route("/admin/reports/salesreport").post(routesVersioning({"1.0.0":orders.admin_moveit_no_orders}));
+
 }
