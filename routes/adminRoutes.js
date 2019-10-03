@@ -140,6 +140,8 @@ app.route("/admin/reports/datewisesalesreport").post(routesVersioning({"1.0.0":o
 
 app.route("/admin/reports/cancelordersreport").post(routesVersioning({"1.0.0":orders.cancel_orders}));
 app.route("/admin/reports/driverwisecodreport").post(routesVersioning({"1.0.0":orders.driverwise_cod}));
+app.route("/admin/reports/hubtotaldeliveryreport").post(routesVersioning({"1.0.0":orders.hub_total_delivery}));
+app.route("/admin/reports/productwisereport").post(routesVersioning({"1.0.0":orders.product_wise}));
 
 
 }

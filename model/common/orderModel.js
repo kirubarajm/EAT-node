@@ -3966,4 +3966,56 @@ Order.driverwise_cod = async function driverwise_cod(req,result) {
   );
 };
 
+//Total delivered orders between date  and hub
+Order.hub_total_delivery = async function hub_total_delivery(req,result) {
+  req.startdate = req.startdate+" 00:00:00";
+  req.enddate = req.enddate+" 23:59:59";
+  if(req.makeithub_id){
+    var selectquery = "SELECT count(*),Date(Ord.created_at) FROM Orders as Ord JOIN MakeitUser as M ON Ord.makeit_user_id = M.userid where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.startdate+"' AND '"+req.enddate+"'  and M.makeithub_id='"+req.makeithub_id+"' group by date(Ord.created_at);";
+   }else{
+    var selectquery = "Select ordertime,count(orderid) as totalorders from `Orders` where orderstatus=6 and Date(created_at) BETWEEN '"+req.startdate+"' AND '"+req.enddate+"' group by date(ordertime);";
+   }
+  sql.query(selectquery,function(err, res) {
+      if (err) {
+        result(err, null);
+      } else{
+        let resobj = {
+          success: true,
+          status:true,
+          result: res
+        };
+        result(null, resobj);
+      }
+    }
+  );
+};
+
+//Product wise report
+Order.product_wise = function product_wise(req, result) {
+  sql.query("Select o.orderid, o.created_at, o.makeit_earnings, GROUP_CONCAT(oi.quantity) as quantity,GROUP_CONCAT(p.product_name) as product_name,ma.brandname from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid  join MakeitUser as ma on o.makeit_user_id=ma.userid where o.orderstatus=6  and (DATE(o.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"' ) GROUP BY o.orderid",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+
+
 module.exports = Order;

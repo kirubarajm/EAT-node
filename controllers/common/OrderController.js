@@ -655,3 +655,19 @@ exports.driverwise_cod= function(req, res) {
     res.json(result);
   });
 };
+
+//Total delivered orders between date  and hub
+exports.hub_total_delivery= function(req, res) {
+  Order.hub_total_delivery(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+//Product wise report
+exports.product_wise= function(req, res) {
+  Order.product_wise(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
