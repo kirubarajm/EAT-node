@@ -3661,7 +3661,7 @@ Order.moveit_no_of_orders = function moveit_no_of_orders(req, result) {
 
 Order.order_turnaround_time_makeit = function order_turnaround_time_makeit(req, result) {
   sql.query(
-    "Select orderid,ordertime,TIMEDIFF(makeit_accept_time,ordertime) as Accep_time,TimeDiff(makeit_actual_preparing_time, makeit_accept_time) as Preparation_time , ADDTIME(TIMEDIFF(makeit_accept_time,ordertime),TimeDiff(makeit_actual_preparing_time, makeit_accept_time)) as Totaltime from Orders as Ord  where Ord.orderstatus=6 and Date(Ord.created_at)='"+req.date+"'",async function(err, res) {
+    "Select orderid,ordertime,TIMEDIFF(makeit_accept_time,ordertime) as Accep_time,TimeDiff(makeit_actual_preparing_time, makeit_accept_time) as Preparation_time , ADDTIME(TIMEDIFF(makeit_accept_time,ordertime),TimeDiff(makeit_actual_preparing_time, makeit_accept_time)) as Totaltime from Orders as Ord  where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3686,7 +3686,7 @@ Order.order_turnaround_time_makeit = function order_turnaround_time_makeit(req, 
 };
 Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, result) {
   sql.query(
-    "Select orderid,ordertime, TIMEDIFF(moveit_accept_time,order_assigned_time) as Moveit_Accept_time, TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time , ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time) ,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) ) as Totaltime from `Orders` as Ord  where Ord.orderstatus=6 and Date(Ord.created_at)='"+req.date+"'",async function(err, res) {
+    "Select orderid,ordertime, TIMEDIFF(moveit_accept_time,order_assigned_time) as Moveit_Accept_time, TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time , ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time) ,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) ) as Totaltime from `Orders` as Ord  where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3711,7 +3711,7 @@ Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, 
 };
 
 Order.orders_canceled = function orders_canceled(req, result) {
-  sql.query("Select orderid, ordertime, if(cancel_by=1,'EAT','Kitchen') as canceled_by, cancel_reason from `Orders` where orderstatus=7 and Date(created_at)='"+req.date+"'",async function(err, res) {
+  sql.query("Select orderid, ordertime, if(cancel_by=1,'EAT','Kitchen') as canceled_by, cancel_reason from `Orders` where orderstatus=7 and Date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3736,7 +3736,7 @@ Order.orders_canceled = function orders_canceled(req, result) {
 };
 
 Order.orders_cost = function orders_cost(req, result) {
-  sql.query("Select orderid,ordertime,original_price,discount_amount from `Orders` where orderstatus=6 and Date(created_at)='"+req.date+"'",async function(err, res) {
+  sql.query("Select orderid,ordertime,original_price,discount_amount from `Orders` where orderstatus=6 and Date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3761,7 +3761,7 @@ Order.orders_cost = function orders_cost(req, result) {
 };
 
 Order.admin_via_order_delivey = function admin_via_order_delivey(req, result) {
-  sql.query("select orderid, if(admin_id=1,'EAT','Kitchen') as who, reason, created_at from Force_delivery_logs where Date(created_at)='"+req.date+"'",async function(err, res) {
+  sql.query("select orderid, if(admin_id=1,'EAT','Kitchen') as who, reason, created_at from Force_delivery_logs where Date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3787,7 +3787,8 @@ Order.admin_via_order_delivey = function admin_via_order_delivey(req, result) {
 
 //New Users
 Order.new_users = function new_users(req, result) {
-  sql.query("Select u.userid, u.phoneno from User as u join Orders as o on o.userid=u.userid where o.orderstatus=6  and Date(u.created_at) ='"+req.date+"'",async function(err, res) {
+  //sql.query("Select u.userid, u.phoneno from User as u join Orders as o on o.userid=u.userid where o.orderstatus=6  and Date(u.created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
+  sql.query("Select u.userid, u.phoneno,u.created_at,u.name from User as u where Date(u.created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3813,7 +3814,7 @@ Order.new_users = function new_users(req, result) {
 
 //No of orders per user
 Order.user_orders = function user_orders(req, result) {
-  sql.query("Select distinct o.userid,u.name,Count(o.orderid) as Total_orders from Orders as o join User as u on o.userid = u.userid where o.orderstatus=6 GROUP BY u.userid Order BY Count(DISTINCT o.orderid) DESC",async function(err, res) {
+  sql.query("Select distinct o.userid,u.name,u.phoneno,Count(o.orderid) as Total_orders from Orders as o join User as u on o.userid = u.userid where o.orderstatus=6 GROUP BY u.userid Order BY Count(DISTINCT o.orderid) DESC",async function(err, res) {
       if (err) {
         result(err, null);
       } else {

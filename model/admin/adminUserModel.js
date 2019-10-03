@@ -87,7 +87,7 @@ AdminUser.getAllUser = function getAllUser(result) {
 };
 
 AdminUser.updatePushidByToken = function(req, result) {
-  console.log("req_push--->"+req.push_token);
+  //console.log("req_push--->"+req.push_token);
   sql.query(
     "UPDATE Admin_users SET push_token = ? WHERE admin_userid = ?",
     [req.push_token, req.admin_userid],
