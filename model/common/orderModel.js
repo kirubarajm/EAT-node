@@ -3890,4 +3890,78 @@ Order.cancel_orders = function cancel_orders(req, result) {
   );
 };
 
+//Total new user orders
+Order.new_users_orders = function new_users_orders(req, result) {
+  sql.query("Select distinct o.userid,u.name,Count(o.orderid) as Total_orders from Orders as o join User as u on o.userid = u.userid where o.orderstatus=6 and Date(u.created_at) = '"+req.date+"'  GROUP BY u.userid Order BY Count(DISTINCT o.orderid) DESC",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Total Retained Customer Report
+Order.retained_customer = function retained_customer(req, result) {
+  sql.query("Select distinct o.userid,u.name,Count(o.orderid) as Total_orders from Orders as o join User as u on o.userid = u.userid where o.orderstatus=6 and MONTH(u.created_at) = '"+req.date+"'  GROUP BY u.userid Order BY Count(DISTINCT o.orderid) DESC",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Driver wise COD Settlement 
+Order.driverwise_cod = async function driverwise_cod(req,result) {
+  req.startdate = req.startdate+" 00:00:00";
+  req.enddate = req.enddate+" 23:59:59";
+  var moveitquery = "select * from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1 and payment_type = 0  and lock_status = 0 ";
+  var moveitqueryamount = moveitquery+";"+"select sum(price) as totalamount from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1 and payment_type = 0  and lock_status = 0 ";
+  sql.query(moveitqueryamount,function(err, res) {
+      if (err) {
+        result(err, null);
+      } else{
+        let resobj = {
+          success: true,
+          status:true,
+          cod_amount:res[1][0].totalamount,
+          result: res[0]
+        };
+        result(null, resobj);
+      }
+    }
+  );
+};
+
 module.exports = Order;
