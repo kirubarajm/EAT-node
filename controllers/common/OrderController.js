@@ -631,3 +631,27 @@ exports.cancel_orders= function(req, res) {
 
 
 //between dates and hub
+
+//Total new user orders
+exports.new_users_orders= function(req, res) {
+  Order.new_users_orders(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+//Total Retained Customer Report
+exports.retained_customer= function(req, res) {
+  Order.retained_customer(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+//Driver wise COD Settlement 
+exports.driverwise_cod= function(req, res) {
+  Order.driverwise_cod(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
