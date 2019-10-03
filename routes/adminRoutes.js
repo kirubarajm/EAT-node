@@ -127,5 +127,9 @@ app.route("/admin/reports/adminviadelivery").post(routesVersioning({"1.0.0":orde
 app.route("/admin/appointmentlist").post(routesVersioning({"1.0.0":allocation.list_all_allocation_by_admin}));
 app.route("/admin/query/userdetail").post(routesVersioning({"1.0.0":queryquestion.get_user_by_type}));
 app.route("/admin/appointments/rescheduled").post(routesVersioning({"1.0.0":makeituser.makeituser_appointments_rescheduled}));
+app.route("/appointments/cancel").post(routesVersioning({"1.0.0":makeituser.makeituser_appointments_cancel}));
+
+//Praveen Reports
+app.route("/admin/reports/salesreport").post(routesVersioning({"1.0.0":orders.admin_moveit_no_orders}));
 
 }

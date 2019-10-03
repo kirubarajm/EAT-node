@@ -594,3 +594,11 @@ exports.admin_via_order_delivey= function(req, res) {
     res.json(result);
   });
 };
+
+//praveen New Users List
+exports.new_users= function(req, res) {
+  Order.new_users(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

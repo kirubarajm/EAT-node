@@ -2205,7 +2205,7 @@ Makeituser.edit_makeit_brand_identity_by_sales = async function(req,cuisines,res
       const hometown = await query(
         "Select * from Hometown where hometownid=" + req.hometownid
       );
-      console.log(hometown);
+
       req.regionid = hometown[0].regionid;
     }
 
@@ -2277,14 +2277,11 @@ Makeituser.edit_makeit_brand_identity_by_sales = async function(req,cuisines,res
         }
       });
     }
-  } catch (error) {
-    var errorCode = 402;
-    let sucobj = true;
-    let status = false;
+  } catch (error) {;
     let resobj = {
-      success: sucobj,
-      status: status,
-      errorCode: errorCode
+      success: true,
+      status: false,
+      message: error
     };
     result(null, resobj);
   }
@@ -2430,7 +2427,36 @@ Makeituser.makeituser_appointments_rescheduled= async function makeituser_appoin
        let resobj = {
          success: true,
          status: false,
-         message:"Appointment not available!"
+         message:"Appoinment not available!"
+
+     };
+ 
+     result(null, resobj);
+     }
+};
+
+Makeituser.makeituser_appointments_cancel= async function makeituser_appointments_cancel(req,result) { 
+ 
+  req.cancelled_reason = req.cancelled_reason || null;
+
+  var Allocationdetails = await query("select * from Allocation where aid = "+req.aid+" ");
+ 
+     if (Allocationdetails.length !==0) {
+
+      var Updatedetails = await query("Update Allocation set status= '"+req.status+"',cancelled_reason= '"+req.cancelled_reason+"' where aid = "+req.aid+" ");
+
+       let resobj = {
+         success: true,
+         status: true,
+         message:"Appoinment cancel successfully"
+     };
+     result(null, resobj);
+     }else{
+       let resobj = {
+         success: true,
+         status: false,
+         message:"Appoinment not available!"
+
      };
      result(null, resobj);
      }

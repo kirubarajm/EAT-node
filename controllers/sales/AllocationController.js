@@ -138,11 +138,7 @@ exports.list_all_history_by_salesempid = function(req, res) {
       .status(400)
       .send({ error: true,status:false, message: "Please provide sales_emp_id" });
   } else {
-  Allocation.getHistoryBySalesEmpId(req.params.userid, function(
-    err,
-    allocation
-  ) {
-    console.log("controller");
+  Allocation.getHistoryBySalesEmpId(req.params.userid, function(err,allocation) {
     if (err) res.send(err);
     console.log("res", allocation);
     res.send(allocation);
