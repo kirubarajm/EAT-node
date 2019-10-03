@@ -3988,6 +3988,32 @@ Order.hub_total_delivery = async function hub_total_delivery(req,result) {
   );
 };
 
+//Product wise report
+Order.product_wise = function product_wise(req, result) {
+  sql.query("Select o.orderid, o.created_at, o.makeit_earnings, GROUP_CONCAT(oi.quantity) as quantity,GROUP_CONCAT(p.product_name) as product_name,ma.brandname from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid  join MakeitUser as ma on o.makeit_user_id=ma.userid where o.orderstatus=6  and (DATE(o.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"' ) GROUP BY o.orderid",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
 
 
 module.exports = Order;
