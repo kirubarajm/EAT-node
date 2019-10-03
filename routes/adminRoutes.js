@@ -139,6 +139,7 @@ app.route("/admin/reports/newusersordersreport").post(routesVersioning({"1.0.0":
 
 app.route("/admin/reports/retainedcustomerreport").post(routesVersioning({"1.0.0":orders.retained_customer}));
 app.route("/admin/reports/driverwisecodreport").post(routesVersioning({"1.0.0":orders.driverwise_cod}));
+app.route("/admin/reports/hubtotaldeliveryreport").post(routesVersioning({"1.0.0":orders.hub_total_delivery}));
 
 
 }
