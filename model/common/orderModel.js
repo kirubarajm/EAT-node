@@ -3710,8 +3710,8 @@ Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, 
   );
 };
 
-Order.orders_canceled = function orders_canceled(req, result) {
-  sql.query("Select orderid, ordertime, if(cancel_by=1,'EAT','Kitchen') as canceled_by, cancel_reason from `Orders` where orderstatus=7 and Date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
+Order. orders_canceled= function orders_canceled(req, result) {
+  sql.query("Select ord.orderid, ord.ordertime, if(ord.cancel_by=1,'EAT','Kitchen') as canceled_by, ord.cancel_reason,m.brandname,m.makeithub_id,mh.makeithub_name,mh.address from Orders as ord join MakeitUser as m on m.userid=ord.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where ord.orderstatus=7 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3942,10 +3942,6 @@ Order.cancel_orders = function cancel_orders(req, result) {
   );
 };
 
-
-
-
-
 //Driver wise COD Settlement 
 Order.driverwise_cod = async function driverwise_cod(req,result) {
   req.fromdate = req.fromdate;
@@ -3991,7 +3987,7 @@ Order.hub_total_delivery = async function hub_total_delivery(req,result) {
 
 //Product wise report
 Order.product_wise = function product_wise(req, result) {
-  sql.query("Select pr.product_name as productname,pr.makeit_userid ,ord.productid, sum(ord.quantity) as quan, m.brandname from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid  join MakeitUser as m on m.userid=pr.makeit_userid  where (Date(ord.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"')  and  orde.orderstatus=6 group by ord.productid order by quan desc;",async function(err, res) {
+  sql.query("Select pr.product_name as productname,pr.makeit_userid ,ord.productid,mh.makeithub_name,mh.address, sum(ord.quantity) as quan, m.brandname,m.makeithub_id from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid  join MakeitUser as m on m.userid=pr.makeit_userid join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where (Date(ord.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"')  and  orde.orderstatus=6 group by ord.productid order by quan desc",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -4014,9 +4010,5 @@ Order.product_wise = function product_wise(req, result) {
     }
   );
 };
-
-
-//Test line
-
 
 module.exports = Order;
