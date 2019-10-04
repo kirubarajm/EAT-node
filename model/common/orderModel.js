@@ -223,8 +223,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
               }
             });
       }
-   }
-else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
+   }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
   let resobj = {
     success: true,
     status: false,
@@ -4017,7 +4016,156 @@ Order.product_wise = function product_wise(req, result) {
 };
 
 
-//Test line
+//tunnel order
+Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user(req,orderitems,result) {
 
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+  var currenthour  = moment(day).format("HH");
+ // var currenthour = 23
+  var breatfastcycle = constant.breatfastcycle;
+  var dinnercycle = constant.dinnercycle;
+  var lunchcycle = constant.lunchcycle;
+  var dinnerend = constant.dinnerend;
+
+  const delivery_charge = constant.deliverycharge;
+  // console.log(currenthour);
+  // console.log(dinnerend);
+ // if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
+     
+    // const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
+ 
+
+    // if (res.length === 0 ) {
+
+    //get address 
+      const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
+    //console.log("address_data-->",address_data);
+    if(address_data.length === 0) {
+      let resobj = {
+                success: true,
+                status: false,
+                message: "Sorry your selected address wrong.Please select correct address."
+              };
+              result(null, resobj);
+      }else{
+            req.lat = address_data[0].lat;
+            req.lon = address_data[0].lon;
+            Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
+              if (err) {
+                result(err, null);
+              } else {
+                if (res3.status != true) {
+                  result(null, res3);
+                } else {
+                  var amountdata = res3.result[0].amountdetails;
+
+                  req.original_price = amountdata.original_price;
+                  req.refund_balance = amountdata.refund_balance;
+                  req.refund_amount = amountdata.refundamount;
+                  req.discount_amount = amountdata.coupon_discount_amount;
+                  req.after_discount_cost = amountdata.grandtotal;
+                  req.order_cost   = amountdata.original_price;
+                  req.gst = amountdata.gstcharge;
+                  req.price = amountdata.grandtotal;
+                  req.makeit_earnings = amountdata.makeit_earnings; 
+                  req.cus_address = address_data[0].address;
+                  req.locality = address_data[0].locality;
+                  req.cus_lat = address_data[0].lat;
+                  req.cus_lon = address_data[0].lon;
+                  req.address_title = address_data[0].address_title;
+                  req.locality_name = address_data[0].locality;
+                  req.flatno = address_data[0].flatno;
+                  req.landmark = address_data[0].landmark;
+                  req.coupon = req.cid
+                  req.orderstatus = 10;
+                  req.payment_status = 3;
+
+
+                  Order.OrderInsert_tunnel_user(req, res3.result[0].item,true,false,async function(err,res){
+                    if (err) {
+                      result(err, null);
+                    } else {
+                    
+                      result(null, res);
+                    }
+                  });
+
+                 
+                }
+              }
+            });
+      }
+
+};
+
+
+Order.OrderInsert_tunnel_user = async function OrderInsert_tunnel_user(req, orderitems,isMobile,isOnlineOrder,result) {
+  var new_Order = new Order(req);
+  console.log(new_Order);
+  new_Order.delivery_charge = constant.deliverycharge;
+  sql.beginTransaction(function(err) {
+    if (err) { 
+      sql.rollback(function() {
+        result(err, null);
+      });
+      return;
+    }
+    sql.query("INSERT INTO Orders set ?", new_Order, async function(err, res1) {
+      if (err) { 
+        sql.rollback(function() {
+          result(err, null); //result.send(err);
+        });
+      }else{
+        var orderid = res1.insertId;
+        for (var i = 0; i < orderitems.length; i++) {
+          var orderitem = {};
+          orderitem.orderid = orderid;
+          orderitem.productid = orderitems[i].productid;
+          orderitem.quantity = orderitems[i].cartquantity;
+          orderitem.price = orderitems[i].price;
+          var items = new Orderitem(orderitem);
+          Orderitem.createOrderitems_by_tunnel(items, function(err, res2) {
+            //if (err) result.send(err);
+            if (err) { 
+              sql.rollback(function() {
+                result(err, null);
+              });
+            }
+          });
+
+          
+        }
+            req.orderid = orderid;
+            req.refundamount = constant.tunnel_refund_amout;
+            var rc = new RefundCoupon(req);
+           
+              RefundCoupon.createRefundCoupon_by_tunnel_user(rc, async function(err, res2) {
+                if (err) {
+                  result(err, null);
+                } 
+              });
+
+        var updatetunnel = await query("update User set first_tunnel = 0 where userid = "+req.userid+" ");
+
+        let resobj = {
+          success: true,
+          status: true,
+          message: "Order Created successfully",
+          orderid: orderid
+        };
+        sql.commit(async function(err) {
+          if (err) { 
+            sql.rollback(function() {
+              //result.send(err);
+              result(err, null);
+            });
+          }
+          
+          result(null, resobj);
+        });
+      }
+    });
+  });
+}
 
 module.exports = Order;
