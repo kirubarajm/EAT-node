@@ -3635,7 +3635,7 @@ Order.admin_orders_count_by_moveit= function admin_orders_count_by_moveit(req, r
 
 Order.moveit_no_of_orders = function moveit_no_of_orders(req, result) {
   sql.query(
-    "SELECT '"+req.date+"' as date,M.userid, M.name, count(*) as no_of_orders FROM Orders as Ord JOIN MoveitUser as M ON Ord.moveit_user_id = M.userid where Ord.orderstatus=6 and Date(Ord.created_at)= Date('"+req.date+"') Group by M.userid",async function(err, res) {
+    "SELECT M.userid, M.name, count(*) as no_of_orders FROM Orders as Ord JOIN MoveitUser as M ON Ord.moveit_user_id = M.userid where Ord.orderstatus=6 and Date(Ord.created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' Group by M.userid",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3649,7 +3649,7 @@ Order.moveit_no_of_orders = function moveit_no_of_orders(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3675,7 +3675,7 @@ Order.order_turnaround_time_makeit = function order_turnaround_time_makeit(req, 
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3685,8 +3685,8 @@ Order.order_turnaround_time_makeit = function order_turnaround_time_makeit(req, 
   );
 };
 Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, result) {
-  sql.query(
-    "Select orderid,ordertime, TIMEDIFF(moveit_accept_time,order_assigned_time) as Moveit_Accept_time, TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time , ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time) ,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) ) as Totaltime from `Orders` as Ord  where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
+  var query="Select Ord.orderid,Ord.ordertime,TIMEDIFF(moveit_accept_time,order_assigned_time) as Moveit_Accept_time, TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time , ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time) ,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) ) as Totaltime from `Orders` as Ord  where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
+  sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3700,7 +3700,7 @@ Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, 
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3725,7 +3725,7 @@ Order. orders_canceled= function orders_canceled(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3736,7 +3736,7 @@ Order. orders_canceled= function orders_canceled(req, result) {
 };
 
 Order.orders_cost = function orders_cost(req, result) {
-  sql.query("Select orderid,ordertime,original_price,discount_amount from `Orders` where orderstatus=6 and Date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
+  sql.query("Select orderid,ordertime,original_price,discount_amount from Orders where orderstatus=6 and Date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3750,7 +3750,7 @@ Order.orders_cost = function orders_cost(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3775,7 +3775,7 @@ Order.admin_via_order_delivey = function admin_via_order_delivey(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3802,7 +3802,7 @@ Order.new_users = function new_users(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3828,7 +3828,7 @@ Order.new_users_orders = function new_users_orders(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3854,7 +3854,7 @@ Order.retained_customer = function retained_customer(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3880,7 +3880,7 @@ Order.user_orders_history = function user_orders_history(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3892,7 +3892,7 @@ Order.user_orders_history = function user_orders_history(req, result) {
 
 //Date Wise Sales Report  
 Order.datewise_sales = function datewise_sales(req, result) {
-  sql.query("Select DATE(o.created_at) as todaysdate, count(*) as Delivered_Orders, sum(price) as Totalmoney_received,sum(gst) as gst ,sum(original_price) as Totalmoney_without_discount, sum(refund_amount) as refund_coupon_amount,sum(discount_amount) as discount_amount,sum(ro.refund_amt) as refund_online, sum(ro.cancellation_charges) as cancellation_charges,sum(delivery_charge) as delivery_charge,payment_type  from `Orders` as o left join Refund_Online as ro on ro.orderid=o.orderid where orderstatus=6  and payment_type =0 and Date(o.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by Date(o.created_at);",async function(err, res) {
+  sql.query("Select DATE(o.created_at) as todaysdate, count(*) as Delivered_Orders, sum(price) as Totalmoney_received,sum(gst) as gst ,sum(original_price) as Totalmoney_without_discount, sum(refund_amount) as refund_coupon_amount,sum(discount_amount) as discount_amount,sum(ro.refund_amt) as refund_online, sum(ro.cancellation_charges) as cancellation_charges,sum(delivery_charge) as delivery_charge,if(o.payment_type=1,'Online','Cash') as payment_type  from Orders as o left join Refund_Online as ro on ro.orderid=o.orderid where orderstatus=6  and payment_type = "+req.payment_type+" and Date(o.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by Date(o.created_at);",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -3906,7 +3906,7 @@ Order.datewise_sales = function datewise_sales(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3919,8 +3919,6 @@ Order.datewise_sales = function datewise_sales(req, result) {
 //Canceled orders between date
 Order.cancel_orders = function cancel_orders(req, result) {
   sql.query("Select orderid, ordertime, if(cancel_by=1,'EAT','Kitchen') as canceled_by, cancel_reason from `Orders` where orderstatus=7 and Date(ordertime) between '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
-
-    ;
       if (err) {
         result(err, null);
       } else {
@@ -3934,7 +3932,7 @@ Order.cancel_orders = function cancel_orders(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -3946,8 +3944,6 @@ Order.cancel_orders = function cancel_orders(req, result) {
 
 //Driver wise COD Settlement 
 Order.driverwise_cod = async function driverwise_cod(req,result) {
-  req.fromdate = req.fromdate;
-  req.todate = req.todate;
   var moveitqueryamount ="select mo.userid,mo.name,mo.phoneno,count(o.orderid) as ordercount ,sum(o.price) as totalamount  from Orders as o left join MoveitUser as mo on mo.userid= o.moveit_user_id where Date(o.moveit_actual_delivered_time) between '"+req.fromdate+"' and '"+req.todate+"' and o.orderstatus = 6  and o.payment_status = 1 and o.payment_type = 0 Group by mo.userid";
   sql.query(moveitqueryamount,function(err, res) {
       if (err) {
@@ -3971,7 +3967,6 @@ Order.hub_total_delivery = async function hub_total_delivery(req,result) {
     hubfilter = " and M.makeithub_id='"+req.makeithub_id+"'";
    }
   var selectquery = "SELECT count(*) as orders_count,Date(Ord.created_at) as ordertime FROM Orders as Ord JOIN MakeitUser as M ON Ord.makeit_user_id = M.userid where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'"+hubfilter+" group by date(Ord.created_at);";
-  console.log("selectquery-->"+selectquery);
   sql.query(selectquery,function(err, res) {
       if (err) {
         result(err, null);
@@ -3989,7 +3984,8 @@ Order.hub_total_delivery = async function hub_total_delivery(req,result) {
 
 //Product wise report
 Order.product_wise = function product_wise(req, result) {
-  sql.query("Select pr.product_name as productname,pr.makeit_userid ,ord.productid,mh.makeithub_name,mh.address, sum(ord.quantity) as quan, m.brandname,m.makeithub_id from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid  join MakeitUser as m on m.userid=pr.makeit_userid join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where (Date(ord.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"')  and  orde.orderstatus=6 group by ord.productid order by quan desc",async function(err, res) {
+  var query="Select pr.product_name as productname,pr.makeit_userid ,ord.productid, sum(ord.quantity) as quan, m.brandname,m.makeithub_id,mh.makeithub_name,mh.address from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid  join MakeitUser as m on m.userid=pr.makeit_userid  left outer join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where (Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  and  orde.orderstatus=6 group by ord.productid order by quan desc";
+  sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -4003,7 +3999,7 @@ Order.product_wise = function product_wise(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
@@ -4015,8 +4011,9 @@ Order.product_wise = function product_wise(req, result) {
 
 //Orders report
 Order.orders_report = function orders_report(req, result) {
-  sql.query("select ord.orderid,ord.original_price,mu.brandname,ord.refund_amount,ord.discount_amount,ord.payment_type,ord.moveit_accept_time,ord.moveit_actual_delivered_time from Orders as ord join MakeitUser as mu on ord.makeit_user_id = mu.userid where ord.orderstatus='6' and Date(ord.created_at) between '"+req.fromdate+"' AND  '"+req.todate+"';",async function(err, res) {
-    
+  var query="Select o.orderid,o.original_price,o.refund_amount,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid	where o.orderstatus=6 and (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  console.log("query-->",query);
+  sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -4030,7 +4027,7 @@ Order.orders_report = function orders_report(req, result) {
         }else {
           let resobj = {
             success: true,
-            message: "Sorry! no orders found.",
+            message: "Sorry! no data found.",
             status:false
           };
           result(null, resobj);
