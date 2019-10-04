@@ -3918,7 +3918,9 @@ Order.datewise_sales = function datewise_sales(req, result) {
 
 //Canceled orders between date
 Order.cancel_orders = function cancel_orders(req, result) {
-  sql.query("Select ordertime,count(orderid) as totalorders from `Orders` where orderstatus=6 and Date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by date(ordertime);",async function(err, res) {
+  sql.query("Select orderid, ordertime, if(cancel_by=1,'EAT','Kitchen') as canceled_by, cancel_reason from `Orders` where orderstatus=7 and Date(ordertime) between '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
+
+    ;
       if (err) {
         result(err, null);
       } else {
@@ -3992,7 +3994,7 @@ Order.hub_total_delivery = async function hub_total_delivery(req,result) {
 
 //Product wise report
 Order.product_wise = function product_wise(req, result) {
-  sql.query("Select pr.product_name as productname,pr.makeit_userid ,ord.productid, sum(ord.quantity) as quan, m.brandname from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid  join MakeitUser as m on m.userid=pr.makeit_userid  where (Date(ord.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"')  and  orde.orderstatus=6 group by ord.productid order by quan desc;",async function(err, res) {
+  sql.query("Select pr.product_name as productname,pr.makeit_userid,mh.makeithub_name ,ord.productid, sum(ord.quantity) as quan, m.brandname from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid join MakeitUser as m on m.userid = pr.makeit_userid join Makeit_hubs as mh on m.makeithub_id = mh.makeithub_id where (Date(ord.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"')  and  orde.orderstatus=6 group by ord.productid order by quan desc;",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
