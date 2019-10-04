@@ -202,6 +202,10 @@ const master = [
             {
                 "OrderStatusid": 9,
                 "OrderStatus": "Incomplete online order reject "
+            },
+            {
+                "OrderStatusid": 10,
+                "OrderStatus": "Incomplete online order reject "
             }
         ]
     },

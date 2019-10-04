@@ -23,6 +23,7 @@ const calculate = {
     dinnerend : 22,
     dinnerstart : 4,
     max_order_rating_skip : 2,
+    tunnel_refund_amout : 100,
 
     //eat version
     eatversioncodenew : 7,//normal update
