@@ -3952,7 +3952,7 @@ Order.cancel_orders = function cancel_orders(req, result) {
 Order.driverwise_cod = async function driverwise_cod(req,result) {
   req.fromdate = req.fromdate;
   req.todate = req.todate;
-  var moveitqueryamount ="select mo.userid,mo.name,count(o.orderid) as ordercount ,sum(o.price) as totalamount  from Orders as o left join MoveitUser as mo on mo.userid= o.moveit_user_id where Date(o.moveit_actual_delivered_time) between '"+req.fromdate+"' and '"+req.todate+"' and o.orderstatus = 6  and o.payment_status = 1 and o.payment_type = 0 Group by mo.userid";
+  var moveitqueryamount ="select mo.userid,mo.name,mo.phoneno,count(o.orderid) as ordercount ,sum(o.price) as totalamount  from Orders as o left join MoveitUser as mo on mo.userid= o.moveit_user_id where Date(o.moveit_actual_delivered_time) between '"+req.fromdate+"' and '"+req.todate+"' and o.orderstatus = 6  and o.payment_status = 1 and o.payment_type = 0 Group by mo.userid";
   sql.query(moveitqueryamount,function(err, res) {
       if (err) {
         result(err, null);
@@ -3970,13 +3970,12 @@ Order.driverwise_cod = async function driverwise_cod(req,result) {
 
 //Total delivered orders between date  and hub
 Order.hub_total_delivery = async function hub_total_delivery(req,result) {
-  req.startdate = req.startdate+" 00:00:00";
-  req.enddate = req.enddate+" 23:59:59";
+  var hubfilter="";
   if(req.makeithub_id){
-    var selectquery = "SELECT count(*),Date(Ord.created_at) FROM Orders as Ord JOIN MakeitUser as M ON Ord.makeit_user_id = M.userid where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.startdate+"' AND '"+req.enddate+"'  and M.makeithub_id='"+req.makeithub_id+"' group by date(Ord.created_at);";
-   }else{
-    var selectquery = "Select ordertime,count(orderid) as totalorders from `Orders` where orderstatus=6 and Date(created_at) BETWEEN '"+req.startdate+"' AND '"+req.enddate+"' group by date(ordertime);";
+    hubfilter = " and M.makeithub_id='"+req.makeithub_id+"'";
    }
+  var selectquery = "SELECT count(*) as orders_count,Date(Ord.created_at) as ordertime FROM Orders as Ord JOIN MakeitUser as M ON Ord.makeit_user_id = M.userid where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'"+hubfilter+" group by date(Ord.created_at);";
+  console.log("selectquery-->"+selectquery);
   sql.query(selectquery,function(err, res) {
       if (err) {
         result(err, null);
