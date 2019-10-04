@@ -113,4 +113,23 @@ Orderitems.remove = function(id, result) {
     }
   });
 };
+
+
+Orderitems.createOrderitems_by_tunnel = function createOrderitems_by_tunnel(order_item, res) {
+  sql.query("INSERT INTO OrderItem set ?", order_item, function(err, result) {
+    if (err) {
+      res(err, null);
+    } else {
+      
+     
+      let resobj = {
+        success: true,
+        sttus : true,
+        message: "Order Item Created successfully"
+      };
+      res(null, resobj);
+    }
+  });
+};
+
 module.exports = Orderitems;

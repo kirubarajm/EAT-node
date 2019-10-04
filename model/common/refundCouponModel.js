@@ -501,4 +501,64 @@ RefundCoupon.remove = function(rcid, result) {
 };
 
 
+RefundCoupon.createRefundCoupon_by_tunnel_user = async function createRefundCoupon_by_tunnel_user(req, result) {
+
+  const orderrefunddetails = await query("select * from Refund_Coupon where orderid =" + req.orderid + " and active_status=1");
+  console.log(orderrefunddetails.length);
+  if (orderrefunddetails.length === 0) {
+     // refund coupon
+     req.rcoupon ="Refund"+req.refundamount;
+     req.active_status = 1;
+     console.log(req);
+ 
+     sql.query("INSERT INTO Refund_Coupon set ?", req, function(err, res) {
+         if (err) {
+           result(err, null);
+         } else {
+          
+           let resobj = {
+             success: true,
+             status:true,
+             message: "RefundCoupon created successfully"
+           };
+           result(null, resobj);
+         }
+       });
+  // sql.query("Select userid,price,refund_amount,payment_status,orderstatus,lock_status from Orders where orderid=? ",[req.orderid], function(err, res) {
+  //   if (err) {
+  //     console.log("error: ", err);
+  //     result(null, err);
+  //   } else {
+     
+  //     var price = res[0].price;
+  //     var refundamount = res[0].refund_amount;
+      
+  //     req.active_status = 1;
+
+
+  //     // if (res[0].payment_status === 1) {
+  //     //   req.refund_balance = price + refundamount;
+  //     //   req.refundamount = price + refundamount;
+  //     // }else{
+  //     //    req.refund_balance = refundamount;
+  //     //   req.refundamount = refundamount;
+  //     // }
+     
+      
+     
+    
+      
+  //     };
+  //   });
+  }else{
+    let resobj = {
+      success: true,
+      status:false,
+      message: "Sorry RefundCoupon Already exist for following order! Please check once again"
+    };
+    result(null, resobj);
+  }
+
+};
+
 module.exports = RefundCoupon;
