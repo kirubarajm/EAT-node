@@ -3991,7 +3991,7 @@ Order.hub_total_delivery = async function hub_total_delivery(req,result) {
 
 //Product wise report
 Order.product_wise = function product_wise(req, result) {
-  sql.query("Select o.orderid, o.created_at, o.makeit_earnings, GROUP_CONCAT(oi.quantity) as quantity,GROUP_CONCAT(p.product_name) as product_name,ma.brandname from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid  join MakeitUser as ma on o.makeit_user_id=ma.userid where o.orderstatus=6  and (DATE(o.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"' ) GROUP BY o.orderid",async function(err, res) {
+  sql.query("Select pr.product_name as productname,pr.makeit_userid ,ord.productid, sum(ord.quantity) as quan, m.brandname from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid  join MakeitUser as m on m.userid=pr.makeit_userid  where (Date(ord.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"')  and  orde.orderstatus=6 group by ord.productid order by quan desc;",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -4015,6 +4015,8 @@ Order.product_wise = function product_wise(req, result) {
   );
 };
 
+
+//Test line
 
 
 module.exports = Order;
