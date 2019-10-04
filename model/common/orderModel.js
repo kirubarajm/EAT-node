@@ -3918,7 +3918,9 @@ Order.datewise_sales = function datewise_sales(req, result) {
 
 //Canceled orders between date
 Order.cancel_orders = function cancel_orders(req, result) {
-  sql.query("Select ordertime,count(orderid) as totalorders from `Orders` where orderstatus=6 and Date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by date(ordertime);",async function(err, res) {
+  sql.query("Select orderid, ordertime, if(cancel_by=1,'EAT','Kitchen') as canceled_by, cancel_reason from `Orders` where orderstatus=7 and Date(ordertime) between '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
+
+    ;
       if (err) {
         result(err, null);
       } else {
@@ -4010,5 +4012,33 @@ Order.product_wise = function product_wise(req, result) {
     }
   );
 };
+
+//Orders report
+Order.orders_report = function orders_report(req, result) {
+  sql.query("select ord.orderid,ord.original_price,mu.brandname,ord.refund_amount,ord.discount_amount,ord.payment_type,ord.moveit_accept_time,ord.moveit_actual_delivered_time from Orders as ord join MakeitUser as mu on ord.makeit_user_id = mu.userid where ord.orderstatus='6' and Date(ord.created_at) between '"+req.fromdate+"' AND  '"+req.todate+"';",async function(err, res) {
+    
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no orders found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
 
 module.exports = Order;

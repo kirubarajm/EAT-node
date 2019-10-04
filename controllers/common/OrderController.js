@@ -671,3 +671,11 @@ exports.product_wise= function(req, res) {
     res.json(result);
   });
 };
+
+//Orders report
+exports.orders_report= function(req, res) {
+  Order.orders_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
