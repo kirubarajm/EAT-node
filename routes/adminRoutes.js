@@ -134,11 +134,9 @@ app.route("/admin/reports/newusersreport").post(routesVersioning({"1.0.0":orders
 app.route("/admin/reports/newusersordersreport").post(routesVersioning({"1.0.0":orders.new_users_orders}));
 app.route("/admin/reports/retainedcustomerreport").post(routesVersioning({"1.0.0":orders.retained_customer}));
 app.route("/admin/reports/userorderhistoryreport").post(routesVersioning({"1.0.0":orders.user_orders_history}));
+app.route("/admin/reports/salesaccountreport").post(routesVersioning({"1.0.0":orders.datewise_sales}));
 
-app.route("/admin/reports/datewisesalesreport").post(routesVersioning({"1.0.0":orders.datewise_sales}));
-
-
-app.route("/admin/reports/cancelordersreasonreport").post(routesVersioning({"1.0.0":orders.cancel_orders}));
+app.route("/admin/reports/cancelordersreport").post(routesVersioning({"1.0.0":orders.cancel_orders}));
 app.route("/admin/reports/driverwisecodreport").post(routesVersioning({"1.0.0":orders.driverwise_cod}));
 app.route("/admin/reports/hubtotaldeliveryreport").post(routesVersioning({"1.0.0":orders.hub_total_delivery}));
 app.route("/admin/reports/productwisereport").post(routesVersioning({"1.0.0":orders.product_wise}));

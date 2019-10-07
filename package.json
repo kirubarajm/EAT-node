@@ -4,7 +4,6 @@
   "description": "eat api",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "runserver": "nodemon server.js"
   },
   "author": "param",
@@ -32,5 +31,8 @@
     "redis": "^2.8.0",
     "request": "^2.88.0",
     "util": "^0.11.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.19.3"
   }
 }
