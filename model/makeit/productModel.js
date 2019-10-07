@@ -33,45 +33,45 @@ var Product = function(product) {
   //  this.updated_at = new Date()
 };
 
-Product.getTotalPrice = async function createProduct(itemlist, result) {
+Product.getTotalPrice = async function createProduct(itemlist, makeit_userid, result) {  //=> praveen // makeit_userid
   var totalamount = 0;
-  var vegtype = 0;
-  var itemdetail = {};
-  var product_commission_percentage = constant.product_commission_percentage;
+  var vegtype     = 0;
+  var itemdetail  = {};
+  //=> praveen // var product_commission_percentage = constant.product_commission_percentage;
+  //=> praveen // var makeit_userid = "185";
+  var commission_percentage = await query("select commission from MakeitUser where userid="+makeit_userid);
+  var product_commission_percentage = commission_percentage[0].commission;
+
   for (var i = 0; i < itemlist.length; i++) {
-    const menuitem = await query(
-      "Select * From Menuitem where menuitemid = '" + itemlist[i].itemid + "'"
-    );
+    const menuitem = await query("Select * From Menuitem where menuitemid = '" + itemlist[i].itemid + "'");
     if (menuitem.length!==0) {
       if (menuitem[0].vegtype === "1") vegtype = "1";
-     var amount = menuitem[0].price * itemlist[i].quantity;
+      var amount = menuitem[0].price * itemlist[i].quantity;
      
       totalamount = totalamount + amount;
       //var commision_price = (totalamount / 100) * product_commission_percentage; //this code is commanded 24-09-2019
-     
       var commision_price = totalamount * (100 / product_commission_percentage); 
       //var original_price = totalamount + commision_price;
       var original_price =  commision_price;
     }
   }
  
-
-  itemdetail.price =  Math.round(original_price,0);
+  itemdetail.price          = Math.round(original_price,0);
   itemdetail.original_price = Math.round(totalamount,0);
-  itemdetail.vegtype = vegtype;
+  itemdetail.vegtype        = vegtype;
   return itemdetail;
 };
 
 Product.createProduct = async function createProduct(newProduct,itemlist,result) {
-  var Productdetail = await Product.getTotalPrice(itemlist);
+  //console.log(itemlist);
+  //=> praveen // var Productdetail = await Product.getTotalPrice(itemlist);
+  var Productdetail = await Product.getTotalPrice(itemlist,newProduct.makeit_userid);
 
-  
-  newProduct.price = Productdetail.price;
+  newProduct.price          = Productdetail.price;
   newProduct.original_price = Productdetail.original_price;
-  newProduct.vegtype = Productdetail.vegtype;
+  newProduct.vegtype        = Productdetail.vegtype;
   
- // console.log(Productdetail);
-
+  // console.log(Productdetail);
   sql.beginTransaction(function(err) {
     if (err) { throw err; }
     sql.query("INSERT INTO Product set ?", newProduct, function(err, res) {
@@ -581,7 +581,7 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
         console.log(res[0].active_status+"--cc--"+res[0].approved_status);
 
         if (res[0].approved_status === 1 ||res[0].active_status == 0) {
-          var Productdetail = await Product.getTotalPrice(items);
+          var Productdetail = await Product.getTotalPrice(items,req.makeit_userid);
           req.price = Productdetail.price;
           req.vegtype = Productdetail.vegtype;
           req.original_price = Productdetail.original_price;
@@ -657,7 +657,9 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
       } else {
         var approved_status= res[0].approved_status===2?4:res[0].approved_status;
         if (res[0].active_status == 0) {
-          var Productdetail = await Product.getTotalPrice(items);
+          //=>praveen // var Productdetail = await Product.getTotalPrice(items);
+          var Productdetail = await Product.getTotalPrice(items,req.makeit_userid);
+          
           req.price = Productdetail.price;
           req.original_price = Productdetail.original_price;
           req.vegtype = Productdetail.vegtype;
@@ -667,7 +669,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
 
           //make the edited product column query without productid and items array
           for (const [key, value] of Object.entries(req)) {
-        //    console.log(`${key} ${value}`);
+          //console.log(`${key} ${value}`);
 
             if (key !== "productid" && key !== "items") {
               // var value = `=${value}`;

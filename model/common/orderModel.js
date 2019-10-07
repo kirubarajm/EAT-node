@@ -4019,8 +4019,7 @@ Order.product_wise = function product_wise(req, result) {
 
 //Orders report
 Order.orders_report = function orders_report(req, result) {
-  sql.query("select ord.orderid,ord.original_price,mu.brandname,ord.refund_amount,ord.discount_amount,ord.payment_type,ord.moveit_accept_time,ord.moveit_actual_delivered_time from Orders as ord join MakeitUser as mu on ord.makeit_user_id = mu.userid where ord.orderstatus='6' and Date(ord.created_at) between '"+req.fromdate+"' AND  '"+req.todate+"';",async function(err, res) {
-    
+  sql.query("Select o.orderid,o.original_price,o.refund_amount,o.discount_amount,o.payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time, o.created_at,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,ma.brandname from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid  join MakeitUser as ma on o.makeit_user_id=ma.userid where o.orderstatus=6  and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"' ) GROUP BY o.orderid",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
