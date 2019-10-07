@@ -78,6 +78,7 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
   try {
     const res = await query( "select count(*) as count from Orders where orderstatus < 6 and lock_status = 0 and userid= '" +req.userid +"'");
     if (res[0].count === 0) {
+      console.log("error--->",req);
       Makeituser.read_a_cartdetails_makeitid(req, orderitems,false,async function(err,res3) {
         if (err) {
           result(err, null);
@@ -85,8 +86,6 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
           if (res3.status != true) {
             result(null, res3);
           } else {
-
-
             var amountdata = res3.result[0].amountdetails;
             var address_data = await query("Select * from Address where aid = '" + req.aid + "'");
             req.cus_address = address_data[0].address;
@@ -125,9 +124,11 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
     let resobj = {
       success: true,
       status: false,
-      errorCode: 402
+      errorCode: 402,
+      error:error
     };
-    result(resobj, null);
+    console.log("error--->",error);
+    result(null, resobj);
   }
 };
 

@@ -47,7 +47,7 @@ RefundOnline.createRefund = async function createRefund(req, result) {
 
 
 RefundOnline.get_all_refunds = function get_all_refunds(req, result) {
-  sql.query("select rf.*,ors.cancel_by,ors.item_missing from Refund_Online rf left join Orders as ors on ors.orderid = rf.orderid order by active_status DESC,created_at DESC", function(err, res) {
+  sql.query("select rf.*,ors.cancel_by,ors.item_missing,ors.price from Refund_Online rf left join Orders as ors on ors.orderid = rf.orderid order by active_status DESC,created_at DESC", function(err, res) {
     if (err) result(err, null);
     else {
       let response = {
