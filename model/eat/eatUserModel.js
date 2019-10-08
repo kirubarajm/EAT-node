@@ -14,9 +14,13 @@ var masters = require('../master');
 //     key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
 //   })
 
+// var instance = new Razorpay({
+//   key_id: 'rzp_live_BLJVf00DRLWexs',
+//   key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
+// })
 var instance = new Razorpay({
-  key_id: 'rzp_live_BLJVf00DRLWexs',
-  key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
+  key_id: 'rzp_live_bCMW6sG1GWp36Q',
+  key_secret: '2VAma7EVApDnLuOMerwX3ODu'
 })
 
 const query = util.promisify(sql.query).bind(sql);
@@ -2993,14 +2997,23 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
 
 
 
-Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen_list_show_more (req,result) {
-    
+Eatuser.get_eat_region_kitchen_list_show_more = async function get_eat_region_kitchen_list_show_more (req,result) {
+  
+
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
   var radiuslimit=constant.radiuslimit;
   var breatfastcycle = constant.breatfastcycle;
   var dinnercycle = constant.dinnercycle;
   var lunchcycle = constant.lunchcycle;
+  var tunnelkitchenliststatus = true;
+  const userdetails = await query("select * from User where userid = "+req.eatuserid+" ");
+
+  if (userdetails[0].first_tunnel == 1 ) {
+    
+    tunnelkitchenliststatus = false;
+
+  }
 
                       var day = moment().format("YYYY-MM-DD HH:mm:ss");;
                       var currenthour  = moment(day).format("HH");
@@ -3083,6 +3096,14 @@ Eatuser.get_eat_region_kitchen_list_show_more =  function get_eat_region_kitchen
                       res[i].serviceablestatus = false;
                     }
                   }
+
+                  if ( tunnelkitchenliststatus == false) {
+      
+                    res[i].serviceablestatus = true;
+                  
+                  }
+          
+                 
 
               if (res[i].cuisines) {
                   res[i].cuisines = JSON.parse(res[i].cuisines)

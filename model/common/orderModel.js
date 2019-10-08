@@ -24,9 +24,14 @@ var createForcedeliverylogs = require("../../model/common/forcedeliverylogsModel
 //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
 // });
 
+// var instance = new Razorpay({
+//   key_id: 'rzp_live_BLJVf00DRLWexs',
+//   key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
+// })
+
 var instance = new Razorpay({
-  key_id: 'rzp_live_BLJVf00DRLWexs',
-  key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
+  key_id: 'rzp_live_bCMW6sG1GWp36Q',
+  key_secret: '2VAma7EVApDnLuOMerwX3ODu'
 })
 const query = util.promisify(sql.query).bind(sql);
 
