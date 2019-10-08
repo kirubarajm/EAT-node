@@ -139,7 +139,7 @@ app.route("/eat/refund/:userid").get(middleware.checkToken,routesVersioning({"1.
 app.route("/eat/refundupdate").put(middleware.checkToken,routesVersioning({"1.0.0":refundcoupon.updateByRefundCouponId}));
 app.route("/eat/stories").get(middleware.checkToken,routesVersioning({"1.0.0":Stories.list_all_Stories}));
 app.route("/eat/order/refund/getlastcoupon/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":refundcoupon.read_a_refundcoupon_by_userid}));
-app.route("/eatusers").get(middleware.checkToken,routesVersioning({"1.0.0":eatuser.list_all_eatuser})).post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
+app.route("/eatusers").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser})); //.get(middleware.checkToken,routesVersioning({"1.0.0":eatuser.list_all_eatuser}))
 app.route("/eatusers/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":eatuser.read_a_user})).put(routesVersioning({"1.0.0":eatuser.update_a_user}));
 app.route("/favforeatusers/:id").get(middleware.checkToken,routesVersioning({"1.0.0":fav.list_all_fav_eatusers}));
 app

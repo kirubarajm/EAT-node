@@ -722,7 +722,7 @@ Order.get_all_orders = function get_all_orders(req, result) {
   var startlimit = (page - 1) * orderlimit;
 
   var query =
-    "Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status>0))";
+    "Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status>0) )and orderstatus < 9";
   var searchquery =
     "us.phoneno LIKE  '%" +
     req.search +
