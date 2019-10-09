@@ -50,9 +50,9 @@ const calculate = {
     distanceapiKey :'AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc',
     orderbuffertime :10, //min
 
-    //moveitstratus
+  //support number
    
-
+  customer_support :9790876528
 }
 
 

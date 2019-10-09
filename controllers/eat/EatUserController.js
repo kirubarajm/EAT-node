@@ -572,3 +572,10 @@ exports.eat_app_version_check = function(req, res) {
   });
 
 };
+
+exports.eat_customer_support = function(req, res) {
+  Eatuser.eat_app_customer_support(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
