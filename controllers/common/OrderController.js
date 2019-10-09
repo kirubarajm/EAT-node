@@ -715,3 +715,11 @@ exports.create_tunnel_order = function(req, res) {
     });
   }
 };
+
+//Kitchen Wise report
+exports.kitchenwise_report= function(req, res) {
+  Order.kitchenwise_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
