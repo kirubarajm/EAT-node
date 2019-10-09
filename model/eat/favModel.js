@@ -215,7 +215,6 @@ Fav.read_a_dishlist_byeatuserid_v2 = function read_a_dishlist_byeatuserid_v2(use
         }
         else{
           
-
             if (res.length === 0) {
 
                 let sucobj=true;
@@ -234,82 +233,82 @@ Fav.read_a_dishlist_byeatuserid_v2 = function read_a_dishlist_byeatuserid_v2(use
             }else{
 
 
-        var foodpreparationtime = constant.foodpreparationtime;
-        var onekm = constant.onekm;
-        var radiuslimit=constant.radiuslimit;
+                var foodpreparationtime = constant.foodpreparationtime;
+                var onekm = constant.onekm;
+                var radiuslimit=constant.radiuslimit;
 
-        var day = moment().format("YYYY-MM-DD HH:mm:ss");;
-        var currenthour  = moment(day).format("HH");
+                var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+                var currenthour  = moment(day).format("HH");
 
 
-        var breatfastcycle = constant.breatfastcycle;
-        var dinnercycle = constant.dinnercycle;
-        var lunchcycle = constant.lunchcycle;
-        var ifconditionquery;
-        var cycle = '' ;
-        var nextcycle ='';
-        var where_condition_query = '';
-        var nextthirdcyclecycle = '';
-        var scondcycle = '';
-        var thirdcycle = '';
+                var breatfastcycle = constant.breatfastcycle;
+                var dinnercycle = constant.dinnercycle;
+                var lunchcycle = constant.lunchcycle;
+                var ifconditionquery;
+                var cycle = '' ;
+                var nextcycle ='';
+                var where_condition_query = '';
+                var nextthirdcyclecycle = '';
+                var scondcycle = '';
+                var thirdcycle = '';
 
-        if (currenthour < lunchcycle) {
+                if (currenthour < lunchcycle) {
 
-            ifconditionquery = "pt.breakfast =1";
-            scondcycle = "pt.lunch=1";
-            thirdcycle = "pt.dinner =1";
-            cycle = constant.breatfastcycle + 'AM';
-            nextcycle = "Next available \n"+constant.lunchcycle + ' PM';
-            nextthirdcyclecycle = "Next available \n"+constant.dinnerstart + ' PM';
-            where_condition_query = where_condition_query + "and (pt.breakfast = 1 OR pt.lunch = 1)";
-        }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
-     
-           ifconditionquery = "pt.lunch =1";
-           scondcycle = "pt.dinner=1";
-           thirdcycle = "pt.breakfast =1";
-           cycle =  "Next available \n"+ constant.lunchcycle + ' PM';
-           nextcycle = "Next available \n"+ constant.dinnerstart + ' PM';
-           nextthirdcyclecycle = "Next available \n"+ constant.breatfastcycle + ' AM,Tomorrow';
-           where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
-     
-        }else if(currenthour >= dinnercycle){
-     
-           ifconditionquery = "pt.dinner =1";
-           scondcycle = "pt.breakfast=1";
-           thirdcycle = "pt.lunch =1";
-           cycle = constant.dinnercycle + 'PM';
-           nextcycle = "Next available \n"+ constant.breatfastcycle + ' AM,Tomorrow';
-           nextthirdcyclecycle ="Next available \n"+ constant.lunchcycle + ' PM,Tomorrow';
-           where_condition_query = where_condition_query + "and (pt.dinner = 1 OR  pt.breakfast = 1)";
-        }
+                    ifconditionquery = "pt.breakfast =1";
+                    scondcycle = "pt.lunch=1";
+                    thirdcycle = "pt.dinner =1";
+                    cycle = constant.breatfastcycle + 'AM';
+                    nextcycle = "Next available \n"+constant.lunchcycle + ' PM';
+                    nextthirdcyclecycle = "Next available \n"+constant.dinnerstart + ' PM';
+                    where_condition_query = where_condition_query + "and (pt.breakfast = 1 OR pt.lunch = 1)";
+                }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+            
+                ifconditionquery = "pt.lunch =1";
+                scondcycle = "pt.dinner=1";
+                thirdcycle = "pt.breakfast =1";
+                cycle =  "Next available \n"+ constant.lunchcycle + ' PM';
+                nextcycle = "Next available \n"+ constant.dinnerstart + ' PM';
+                nextthirdcyclecycle = "Next available \n"+ constant.breatfastcycle + ' AM,Tomorrow';
+                where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
+            
+                }else if(currenthour >= dinnercycle){
+            
+                ifconditionquery = "pt.dinner =1";
+                scondcycle = "pt.breakfast=1";
+                thirdcycle = "pt.lunch =1";
+                cycle = constant.dinnercycle + 'PM';
+                nextcycle = "Next available \n"+ constant.breatfastcycle + ' AM,Tomorrow';
+                nextthirdcyclecycle ="Next available \n"+ constant.lunchcycle + ' PM,Tomorrow';
+                where_condition_query = where_condition_query + "and (pt.dinner = 1 OR  pt.breakfast = 1)";
+                }
 
 
 //var query = "Select distinct pt.productid,pt.active_status,pt.prod_desc,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid,re.regionname, pt.product_name,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname  from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid=pt.cuisine  left join Locality ly on mu.localityid=ly.localityid left join Fav fa on fa.productid=pt.productid left join Region re on re.regionid = mu.regionid where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = '"+userId+"'  group by productid";
-   var query = "Select distinct pt.productid,pt.active_status,pt.prod_desc,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid,re.regionname, pt.product_name,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname,pt.breakfast,pt.lunch,pt.dinner,IF("+ifconditionquery+",false,true) as next_available,IF("+ifconditionquery+",'"+cycle+"','"+nextcycle+"') as next_available_time from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid = pt.cuisine  left join Locality ly on mu.localityid = ly.localityid left join Fav fa on fa.productid = pt.productid left join Region re on re.regionid = mu.regionid where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = "+userId+"   group by productid order by next_available = 0 desc "
-    console.log(query);
-  //  var query = "Select distinct pt.productid,pt.active_status,pt.prod_desc,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid,re.regionname, pt.product_name,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname,pt.breakfast,pt.lunch,pt.dinner,IF("+ifconditionquery+",false,true) as next_available,IF("+scondcycle+",'"+nextcycle+"',as next_available_time ),IF("+thirdcycle+",'"+nextthirdcyclecycle+"') as  next_available_time from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid = pt.cuisine  left join Locality ly on mu.localityid = ly.localityid left join Fav fa on fa.productid = pt.productid left join Region re on re.regionid = mu.regionid where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = "+userId+"   group by productid order by next_available = 0 desc "
+            var query = "Select distinct pt.productid,pt.active_status,pt.prod_desc,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid,re.regionname, pt.product_name,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname,pt.breakfast,pt.lunch,pt.dinner,IF("+ifconditionquery+",false,true) as next_available,IF("+ifconditionquery+",'"+cycle+"','"+nextcycle+"') as next_available_time from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid = pt.cuisine  left join Locality ly on mu.localityid = ly.localityid left join Fav fa on fa.productid = pt.productid left join Region re on re.regionid = mu.regionid where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = "+userId+"   group by productid order by next_available = 0 desc "
+                console.log(query);
+            //  var query = "Select distinct pt.productid,pt.active_status,pt.prod_desc,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid,re.regionname, pt.product_name,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,ly.localityname,pt.breakfast,pt.lunch,pt.dinner,IF("+ifconditionquery+",false,true) as next_available,IF("+scondcycle+",'"+nextcycle+"',as next_available_time ),IF("+thirdcycle+",'"+nextthirdcyclecycle+"') as  next_available_time from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid left join Cuisine cu on cu.cuisineid = pt.cuisine  left join Locality ly on mu.localityid = ly.localityid left join Fav fa on fa.productid = pt.productid left join Region re on re.regionid = mu.regionid where pt.active_status = 1 and fa.makeit_userid= 0 and fa.eatuserid  = "+userId+"   group by productid order by next_available = 0 desc "
 
-    sql.query(query, function (err, res) {
+                sql.query(query, function (err, res) {
 
-        if(err) {
-            console.log("error: ", err);
-            result(err, null);
-        }
-        else{
-          
-            
-            let resobj = {  
-            success: true,
-            status:true,
-            result:res   
+                    if(err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                    }
+                    else{
+                    
+                        
+                        let resobj = {  
+                        success: true,
+                        status:true,
+                        result:res   
 
-            };
-            result(null, resobj);
-      
-        }
+                        };
+                        result(null, resobj);
+                
+                    }
 
-        });   
-    }
+                });   
+     }
 }
 });   
 };

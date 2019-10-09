@@ -1612,10 +1612,11 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
       const unserviceablekitchenlist =  res.filter(res => res.kitchenstatus > 0);
 
       if (!req.sortid) {
-        serviceablekitchenlist.sort((a, b) => parseFloat(a.eta) - parseFloat(b.eta));
+        serviceablekitchenlist.sort((a, b) => parseFloat(a.etatime) - parseFloat(b.etatime));
       }
+
       if (!req.sortid) {
-        unserviceablekitchenlist.sort((a, b) => parseFloat(a.eta) - parseFloat(b.eta));
+        unserviceablekitchenlist.sort((a, b) => parseFloat(a.etatime) - parseFloat(b.etatime));
       }
      // if (res[0].serviceablestatus === false ) {
      var kitchenlist = [];
