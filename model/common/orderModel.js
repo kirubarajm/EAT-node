@@ -750,6 +750,7 @@ Order.get_all_orders = function get_all_orders(req, result) {
 
   var limitquery =query +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
 
+ 
   sql.query(limitquery, function(err, res1) {
     if (err) {
       result(err, null);
@@ -4080,9 +4081,12 @@ Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user
               if (err) {
                 result(err, null);
               } else {
+                console.log(res3);
                 if (res3.status != true) {
                   result(null, res3);
                 } else {
+
+                
                   var amountdata = res3.result[0].amountdetails;
 
                   req.original_price = amountdata.original_price;
@@ -4105,6 +4109,7 @@ Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user
                   req.coupon = req.cid
                   req.orderstatus = 10;
                   req.payment_status = 3;
+                  req.payment_type = 3;
 
 
                   Order.OrderInsert_tunnel_user(req, res3.result[0].item,true,false,async function(err,res){

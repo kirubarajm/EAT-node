@@ -70,9 +70,6 @@ Collection.list_all_active_collection = function list_all_active_collection(req,
       result(err, null);
     } else {
 
-
-     
-
       var kitchens =   await Collection.getcollectionlist(res,req)
 
       console.log("first collection");
@@ -215,6 +212,9 @@ return res
 
 Collection.getcollectionlist = async function(res,req){
 
+  var userdetails = await query("Select * From User where userid = '" +req.userid +"'");
+
+
   for (let i = 0; i < res.length; i++) {
     req.cid = res[i].cid;
     req.query = res[i].query;
@@ -228,14 +228,18 @@ Collection.getcollectionlist = async function(res,req){
           
          // console.log("kitchenlist"+res3.result);
          // res[i].kitchenlist = res3.result;
-        var kitchenlist = res3.result
+      var kitchenlist = res3.result
       //   console.log(kitchenlist.length);
+      if (userdetails[0].first_tunnel == 0) {
+        if (kitchenlist.length !==0) {
+          res[i].collectionstatus = true;
+        }else{
+          res[i].collectionstatus = false;
+        }
+      }else{
+        res[i].collectionstatus = true;
+      }
           
-          if (kitchenlist.length !==0) {
-            res[i].collectionstatus = true;
-          }else{
-            res[i].collectionstatus = false;
-          }
            	
           delete res[i].query;
          // delete json[res[i].query]
