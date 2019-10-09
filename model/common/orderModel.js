@@ -4199,4 +4199,34 @@ Order.OrderInsert_tunnel_user = async function OrderInsert_tunnel_user(req, orde
   });
 }
 
+
+
+//Kitchen Wise report
+Order.kitchenwise_report = function kitchenwise_report(req, result) {
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 group by Date(o.created_at),makeit_user_id";
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+
 module.exports = Order;
