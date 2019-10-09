@@ -267,16 +267,20 @@ Allocation.list_all_allocation_by_admin = function list_all_allocation_by_admin(
       var qu=req.appointmentstatus?" and Date(alc.booking_date_time) ='"+req.date+"'":" where Date(alc.booking_date_time) ='"+req.date+"'";
       allocationquery = allocationquery+qu;
     }
-    allocationquery = allocationquery +" order by alc.aid desc limit "+startlimit+"," +allocationlimit +" ";
+    var limtquery = allocationquery +" order by alc.aid desc limit "+startlimit+"," +allocationlimit +" ";
     console.log(allocationquery);
-    sql.query(allocationquery,function(err, res) {
+    
+    sql.query(limtquery,async function(err, res) {
       if (err) {
         result(err, null);
       } else {
+        var orderdetails = await query(allocationquery);
         let status = res.length===0?false:true;
+        let appointmentcount= orderdetails.length;
         let resobj = {
           success: true,
           status:status,
+          appointmentcount:appointmentcount||0,
           result: res
         };
         result(null, resobj);
