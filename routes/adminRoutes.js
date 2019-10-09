@@ -144,7 +144,4 @@ app.route("/admin/reports/ordersreport").post(routesVersioning({"1.0.0":orders.o
 app.route("/admin/ordersrating").post(routesVersioning({"1.0.0":orders.orders_rating}));
 app.route("/admin/reports/kitchenwisereport").post(routesVersioning({"1.0.0":orders.kitchenwise_report}));
 
-
-
-
 }
