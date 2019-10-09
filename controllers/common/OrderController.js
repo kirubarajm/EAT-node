@@ -680,6 +680,14 @@ exports.orders_report= function(req, res) {
   });
 }
 
+//Orders Rating
+exports.orders_rating= function(req, res) {
+  Order.orders_rating(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
+
 exports.create_tunnel_order = function(req, res) {
   if (req.headers.apptype !== undefined) {
     req.body.app_type = parseInt(req.headers.apptype);

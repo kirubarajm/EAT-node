@@ -727,7 +727,7 @@ Order.get_all_orders = function get_all_orders(req, result) {
   var startlimit = (page - 1) * orderlimit;
 
   var query =
-    "Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status>0) )and orderstatus < 9";
+    "Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
   var searchquery =
     "us.phoneno LIKE  '%" +
     req.search +
@@ -4017,7 +4017,7 @@ Order.product_wise = function product_wise(req, result) {
 
 //Orders report
 Order.orders_report = function orders_report(req, result) {
-  var query="Select o.orderid,o.original_price,o.refund_amount,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid	where o.orderstatus=6 and (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.orderid,o.original_price,o.refund_amount,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.moveit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid	where o.orderstatus=6 and (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -4042,6 +4042,8 @@ Order.orders_report = function orders_report(req, result) {
     }
   );
 };
+
+
 
 //tunnel order
 Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user(req,orderitems,result) {
@@ -4228,5 +4230,39 @@ Order.kitchenwise_report = function kitchenwise_report(req, result) {
   );
 };
 
+//Orders rating
+Order.orders_rating = function orders_rating(req, result) {
+  var pagelimt = 20;
+  var page = req.page || 1;
+  var date = req.date;
+  var startlimit = (page - 1) * pagelimt;
+  var ratingquery="Select * from Order_rating"
+  if(date) ratingquery=ratingquery+" where Date(created_at) = "+date;
+  var limtquery=ratingquery+" order by orid desc limit "+startlimit+"," +pagelimt;
+  sql.query(limtquery,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        var orderrating = await query(ratingquery);
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            totalcount:orderrating.length,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
 
 module.exports = Order;
