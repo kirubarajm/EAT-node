@@ -52,7 +52,7 @@ const calculate = {
 
   //support number
    
-  customer_support :9790876528
+  customer_support :7358531315
 }
 
 
