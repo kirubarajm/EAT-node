@@ -24,9 +24,14 @@ var createForcedeliverylogs = require("../../model/common/forcedeliverylogsModel
 //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
 // });
 
+// var instance = new Razorpay({
+//   key_id: 'rzp_live_BLJVf00DRLWexs',
+//   key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
+// })
+
 var instance = new Razorpay({
-  key_id: 'rzp_live_BLJVf00DRLWexs',
-  key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
+  key_id: 'rzp_live_bCMW6sG1GWp36Q',
+  key_secret: '2VAma7EVApDnLuOMerwX3ODu'
 })
 const query = util.promisify(sql.query).bind(sql);
 
@@ -745,6 +750,7 @@ Order.get_all_orders = function get_all_orders(req, result) {
 
   var limitquery =query +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
 
+ 
   sql.query(limitquery, function(err, res1) {
     if (err) {
       result(err, null);
@@ -1490,7 +1496,7 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
   // );
 
   const rows = await query(
-    "Select  ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.landmark,ors.flatno,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id ="+moveit_user_id+" and  DATE(ors.ordertime) = CURDATE()  group by ors.orderid order by ors.order_assigned_time desc"
+    "Select  ors.orderid,ors.userid as cus_userid,us.name as cus_name,us.phoneno as cus_phoneno,us.Locality as cus_Locality,ors.price,ors.gst,ors.payment_type,ors.payment_status,ors.ordertime,ors.delivery_charge,ors.cus_lat,ors.cus_lon,ors.cus_address,ors.landmark,ors.flatno,ors.orderstatus,ors.moveit_actual_delivered_time,ms.name as makeitname,ms.lat as makitlat,ms.lon as makitlon,ms.address as makeitaddress,ms.phoneno as makeitphone,ms.userid as makeituserid,ms.virtualkey as makeitvirtualkey,ms.brandName as makeitbrandname,ms.localityid as makeitlocalityid,ms.makeithub_id as makeithubid,mh.makeithub_name as makeithubname,mh.lat as makeithublat,mh.lon as makeithublon,mh.address as makeithubaddress,ms.locality from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join Makeit_hubs mh on mh.makeithub_id = ms.makeithub_id where ors.moveit_user_id ="+moveit_user_id+" and  DATE(ors.ordertime) = CURDATE()  group by ors.orderid order by ors.order_assigned_time desc"
 );
 
   const cod_amount = await query(
@@ -1525,7 +1531,7 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
         "";
       let products = await query(url);
       rows[i].items = products;
-      rows[i].locality = "Guindy";
+     // rows[i].locality = "Guindy";
 
      
     }
@@ -4077,9 +4083,12 @@ Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user
               if (err) {
                 result(err, null);
               } else {
+                console.log(res3);
                 if (res3.status != true) {
                   result(null, res3);
                 } else {
+
+                
                   var amountdata = res3.result[0].amountdetails;
 
                   req.original_price = amountdata.original_price;
@@ -4102,6 +4111,7 @@ Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user
                   req.coupon = req.cid
                   req.orderstatus = 10;
                   req.payment_status = 3;
+                  req.payment_type = 3;
 
 
                   Order.OrderInsert_tunnel_user(req, res3.result[0].item,true,false,async function(err,res){
@@ -4191,6 +4201,35 @@ Order.OrderInsert_tunnel_user = async function OrderInsert_tunnel_user(req, orde
   });
 }
 
+
+
+//Kitchen Wise report
+Order.kitchenwise_report = function kitchenwise_report(req, result) {
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 group by Date(o.created_at),makeit_user_id";
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
 //Orders rating
 Order.orders_rating = function orders_rating(req, result) {
   var pagelimt = 20;
@@ -4200,7 +4239,6 @@ Order.orders_rating = function orders_rating(req, result) {
   var ratingquery="Select * from Order_rating"
   if(date) ratingquery=ratingquery+" where Date(created_at) = "+date;
   var limtquery=ratingquery+" order by orid desc limit "+startlimit+"," +pagelimt;
-  console.log("query-->",ratingquery)
   sql.query(limtquery,async function(err, res) {
       if (err) {
         result(err, null);

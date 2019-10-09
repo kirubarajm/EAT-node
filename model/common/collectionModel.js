@@ -70,9 +70,6 @@ Collection.list_all_active_collection = function list_all_active_collection(req,
       result(err, null);
     } else {
 
-
-     
-
       var kitchens =   await Collection.getcollectionlist(res,req)
 
       console.log("first collection");
@@ -215,6 +212,9 @@ return res
 
 Collection.getcollectionlist = async function(res,req){
 
+  var userdetails = await query("Select * From User where userid = '" +req.userid +"'");
+
+
   for (let i = 0; i < res.length; i++) {
     req.cid = res[i].cid;
     req.query = res[i].query;
@@ -228,14 +228,18 @@ Collection.getcollectionlist = async function(res,req){
           
          // console.log("kitchenlist"+res3.result);
          // res[i].kitchenlist = res3.result;
-        var kitchenlist = res3.result
+      var kitchenlist = res3.result
       //   console.log(kitchenlist.length);
+      if (userdetails[0].first_tunnel == 0) {
+        if (kitchenlist.length !==0) {
+          res[i].collectionstatus = true;
+        }else{
+          res[i].collectionstatus = false;
+        }
+      }else{
+        res[i].collectionstatus = true;
+      }
           
-          if (kitchenlist.length !==0) {
-            res[i].collectionstatus = true;
-          }else{
-            res[i].collectionstatus = false;
-          }
            	
           delete res[i].query;
          // delete json[res[i].query]
@@ -289,6 +293,14 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
   var radiuslimit = constant.radiuslimit;
+  var tunnelkitchenliststatus = true;
+  const userdetails = await query("select * from User where userid = "+req.eatuserid+" ");
+
+  if (userdetails[0].first_tunnel == 1 ) {
+    
+    tunnelkitchenliststatus = false;
+
+  }
 
    await sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", async function(err, res) {
       if (err) {
@@ -335,15 +347,12 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
           var productlist = res[0].query + productquery  + orderbyquery;
         }
           
-          console.log( productlist);
 
           
          await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
             if (err) {
               result(err, null);
             } else {
-
-              console.log(res1);
 
               for (let i = 0; i < res1.length; i++) {
 
@@ -382,7 +391,10 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
                   }
                 }
 
-              
+              if (tunnelkitchenliststatus == false) {
+                res1[i].status = 0;
+                res1[i].serviceablestatus = true;
+              }
                
                 res1[i].eta = Math.round(eta) + " mins";
                     if (res1[i].cuisines) {

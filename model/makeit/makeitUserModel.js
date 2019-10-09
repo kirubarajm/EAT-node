@@ -552,7 +552,7 @@ Makeituser.orderlistbyuserid = function(id, result) {
     var query =
       "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid WHERE ors.makeit_user_id  = '" +
       id +
-      "' and ors.lock_status = 0 and ors.payment_status !=2 and DATE(ors.ordertime) = CURDATE() group by orderid order by orderid  desc";
+      "' and ors.lock_status = 0 and ors.payment_status < 3 and DATE(ors.ordertime) = CURDATE() group by orderid order by orderid  desc";
   } else {
     var query = "select * from Orders order by orderid desc";
   }
@@ -563,6 +563,7 @@ Makeituser.orderlistbyuserid = function(id, result) {
       result(null, err);
     } else {
       for (let i = 0; i < res1.length; i++) {
+
         if (res1[i].userdetail) {
           res1[i].userdetail = JSON.parse(res1[i].userdetail);
         }
@@ -570,6 +571,7 @@ Makeituser.orderlistbyuserid = function(id, result) {
         if (res1[i].makeitdetail) {
           res1[i].makeitdetail = JSON.parse(res1[i].makeitdetail);
         }
+        
         if (res1[i].moveitdetail) {
           res1[i].moveitdetail = JSON.parse(res1[i].moveitdetail);
         }
@@ -993,7 +995,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   if (userdetails.length !==0) {
       console.log(userdetails[0].first_tunnel);
       if (userdetails[0].first_tunnel == 0) {
-        console.log("normal flow");
+        console.log("userdetails[0].first_tunnel" + userdetails[0].first_tunnel);
       for (let i = 0; i < orderitems.length; i++) {
 
         const res1 = await query("Select pt.*,cu.cuisinename From Product pt left join Cuisine cu on cu.cuisineid = pt.cuisine where pt.productid = '" +orderitems[i].productid +"'  ");
@@ -1297,7 +1299,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         res2[0].item = productdetails;
         res2[0].ordercount = ordercount;
         res2[0].cartdetails = cartdetails;
-
+        res2[0].first_tunnel = userdetails[0].first_tunnel;
 
         let resobj = {
           success: true,
