@@ -9,6 +9,7 @@ const CronJob = require('cron').CronJob;
 var moment = require("moment");
 const Razorpay = require("razorpay");
 var masters = require('../master');
+var Locationtracking = require("../../model/common/usersfirstlocationtrackingModel");
 // var instance = new Razorpay({
 //     key_id: 'rzp_test_3cduMl5T89iR9G',
 //     key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
@@ -499,6 +500,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
     // }
   });
 };
+
 
 
 Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
@@ -1399,6 +1401,16 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
 //   });
 // };
 
+Eatuser.create_first_tunnel_user_location = function create_first_tunnel_user_location(locationdetails) {
+
+  var locationdetails = new Locationtracking(locationdetails);
+  Locationtracking.createLocationtracking(locationdetails, function(err, res) {
+    if (err) return err;
+    else return res;
+  });
+}
+
+
 Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
   
   //console.log(res3.result[0].amountdetails);
@@ -1428,7 +1440,14 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
 
       if (tunnelkitchenlist.length == 0) {
         tunnelkitchenliststatus = false;
+        var locationdetails = {};
+        locationdetails.lat=req.lat;
+        locationdetails.lon=req.lon;
+        locationdetails.address= req.address;
+        locationdetails.locality= req.locality ||'';
+        locationdetails.city= req.city || '';
 
+        await Eatuser.create_first_tunnel_user_location(locationdetails);
       }else{
 
         const usertunnelupdate = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
