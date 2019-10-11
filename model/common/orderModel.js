@@ -30,8 +30,8 @@ var createForcedeliverylogs = require("../../model/common/forcedeliverylogsModel
 // })
 
 var instance = new Razorpay({
-  key_id: 'rzp_live_bCMW6sG1GWp36Q',
-  key_secret: '2VAma7EVApDnLuOMerwX3ODu'
+  key_id: constant.razorpay_key_id,
+  key_secret: constant.razorpay_key_secret
 })
 const query = util.promisify(sql.query).bind(sql);
 
@@ -220,7 +220,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                         if (err) {
                           result(err, null);
                         } else {
-                          result(null, res);
+                            result(null, res);
                         }
                       });
                       //ordercreateonline(req, res3.result[0].item);
@@ -276,6 +276,7 @@ Order.OrderOnline = async function OrderOnline(req, orderitems,result) {
     if (err) {
       result(err, null);
     } else {
+
       res.price=req.price;
       res.razer_customerid=customerid,
       res.refund_balance=req.refund_balance,
@@ -302,7 +303,7 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
         });
       }else{
         var orderid = res1.insertId;
-        for (var i = 0; i < orderitems.length; i++) {
+          for (var i = 0; i < orderitems.length; i++) {
           var orderitem = {};
           orderitem.orderid = orderid;
           orderitem.productid = orderitems[i].productid;
@@ -4018,7 +4019,7 @@ Order.product_wise = function product_wise(req, result) {
 //Orders report
 Order.orders_report = function orders_report(req, result) {
   var query="Select o.orderid,o.original_price,o.refund_amount,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid	where o.orderstatus=6 and (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
-  console.log("query-->",query);
+  //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -4199,11 +4200,173 @@ Order.OrderInsert_tunnel_user = async function OrderInsert_tunnel_user(req, orde
   });
 }
 
-
-
 //Kitchen Wise report
 Order.kitchenwise_report = function kitchenwise_report(req, result) {
   var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 group by Date(o.created_at),makeit_user_id";
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Product wise Virual Kitchen report
+Order.product_wise_virtual = function product_wise_virtual(req, result) {
+  var query="Select pr.product_name as productname,pr.makeit_userid,mh.makeithub_name ,ord.productid, sum(ord.quantity) as quan, m.brandname,m.address as hub_location from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid join MakeitUser as m on m.userid = pr.makeit_userid join Makeit_hubs as mh on m.makeithub_id = mh.makeithub_id where (Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  and m.virtualkey=1 and  orde.orderstatus=6 group by ord.productid order by quan desc;";
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Product wise Real Kitchen report
+Order.product_wise_real = function product_wise_real(req, result) {
+  var query="Select pr.product_name as productname,pr.makeit_userid,mh.makeithub_name ,ord.productid, sum(ord.quantity) as quan, m.brandname,m.address as hub_location from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid join MakeitUser as m on m.userid = pr.makeit_userid left join Makeit_hubs as mh on m.makeithub_id = mh.makeithub_id where (Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  and m.virtualkey=0 and  orde.orderstatus=6 group by ord.productid order by quan desc;";
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Virtual Kitchen Orders report
+Order.virtual_orders_report = function virtual_orders_report(req, result) {
+  var query="Select o.orderid,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,ma.address as hub_location from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  //console.log("query-->",query);
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Real Kitchen Orders report
+Order.real_orders_report = function real_orders_report(req, result) {
+  var query="Select o.orderid,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid left join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey='0' and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  //console.log("query-->",query);
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Daywise Virtual Makeit Earnings report
+Order.virtual_makeit_earnings = function virtual_makeit_earnings(req, result) {
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Daywise Real Makeit Earnings report
+Order.real_makeit_earnings = function real_makeit_earnings(req, result) {
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);

@@ -723,3 +723,51 @@ exports.kitchenwise_report= function(req, res) {
     res.json(result);
   });
 }
+
+//Product wise Virual Kitchen report
+exports.product_wise_virtual= function(req, res) {
+  Order.product_wise_virtual(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+//Product wise Real Kitchen report
+exports.product_wise_real= function(req, res) {
+  Order.product_wise_real(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+//Virtual Kitchen Orders report
+exports.virtual_orders_report= function(req, res) {
+  Order.virtual_orders_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
+
+//Real Kitchen Orders report
+exports.real_orders_report= function(req, res) {
+  Order.real_orders_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
+
+//Daywise Virtual Makeit Earnings report
+exports.virtual_makeit_earnings= function(req, res) {
+  Order.virtual_makeit_earnings(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
+
+//Daywise Real Makeit Earnings report
+exports.real_makeit_earnings= function(req, res) {
+  Order.real_makeit_earnings(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
