@@ -19,8 +19,8 @@ var masters = require('../master');
 //   key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
 // })
 var instance = new Razorpay({
-  key_id: 'rzp_live_bCMW6sG1GWp36Q',
-  key_secret: '2VAma7EVApDnLuOMerwX3ODu'
+  key_id: constant.razorpay_key_id,
+  key_secret: constant.razorpay_key_secret
 })
 
 const query = util.promisify(sql.query).bind(sql);

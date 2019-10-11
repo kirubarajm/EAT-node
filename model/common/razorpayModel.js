@@ -15,8 +15,8 @@ var constant = require("../constant.js");
 // })
 
 var instance = new Rpay({
-  key_id: 'rzp_live_bCMW6sG1GWp36Q',
-  key_secret: '2VAma7EVApDnLuOMerwX3ODu'
+  key_id: constant.razorpay_key_id,
+  key_secret: constant.razorpay_key_secret
 })
 
   const query = util.promisify(sql.query).bind(sql);
@@ -160,4 +160,14 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
   }
 };
 
-  module.exports = Razorpay;
+
+//Razorpay Capture Fuction  /**Praveen*/
+Razorpay.razorpaycapture = async function razorpaycapture(req, result) {
+  var payment_id = "pay_DRvQzTw3y9Xeuq";
+  var amount   = parseInt(1 * 100);
+  instance.payments.capture(payment_id, parseInt(amount))
+
+ 
+};
+
+module.exports = Razorpay;

@@ -2,7 +2,6 @@
 var sql = require("../db.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
-var request = require('request');
 
 var RefundOnline = function(refund) {
   this.orderid = refund.orderid;
@@ -88,6 +87,5 @@ RefundOnline.get_success_refunds = function get_success_refunds(req, result) {
     }
   });
 };
-
 
 module.exports = RefundOnline;

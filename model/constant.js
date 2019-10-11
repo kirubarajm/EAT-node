@@ -53,6 +53,10 @@ const calculate = {
     //moveitstratus
    
 
+    //Razorpay Details
+    razorpay_key_id : 'rzp_live_bCMW6sG1GWp36Q',
+    razorpay_key_secret : '2VAma7EVApDnLuOMerwX3ODu',
+
 }
 
 

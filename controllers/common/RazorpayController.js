@@ -31,3 +31,11 @@ exports.razorpay_refund_payment = function(req, res) {
     });
   }
 };
+
+//Razorpay Capture
+exports.razorpaycapture = function(req, res) {
+  Razorpay.razorpaycapture(req.body,function(err, result) {
+      if (err) res.send(err);
+      res.send(result);
+  }); 
+};
