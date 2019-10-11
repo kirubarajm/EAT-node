@@ -4599,4 +4599,39 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
    }
  };
 
+
+ //Orders rating
+Order.orders_rating = function orders_rating(req, result) {
+  var pagelimt = 20;
+  var page = req.page || 1;
+  var date = req.date;
+  var startlimit = (page - 1) * pagelimt;
+  var ratingquery="Select * from Order_rating"
+  if(date) ratingquery=ratingquery+" where Date(created_at) = "+date;
+  var limtquery=ratingquery+" order by orid desc limit "+startlimit+"," +pagelimt;
+  sql.query(limtquery,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        var orderrating = await query(ratingquery);
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            totalcount:orderrating.length,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
 module.exports = Order;
