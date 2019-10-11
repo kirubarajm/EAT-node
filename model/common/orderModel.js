@@ -395,8 +395,10 @@ var paymentid = order_place.transactionid;
 var amount    = order_place.price*100;
 instance.payments.capture(paymentid, parseInt(amount))
 .then((data)=>{
+  console.log(data);
 
 }).catch((err)=>{
+  console.log(err);
 
 });
 ///////////////////////////////////
