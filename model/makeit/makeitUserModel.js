@@ -563,6 +563,7 @@ Makeituser.orderlistbyuserid = function(id, result) {
       result(null, err);
     } else {
       for (let i = 0; i < res1.length; i++) {
+
         if (res1[i].userdetail) {
           res1[i].userdetail = JSON.parse(res1[i].userdetail);
         }
@@ -570,6 +571,7 @@ Makeituser.orderlistbyuserid = function(id, result) {
         if (res1[i].makeitdetail) {
           res1[i].makeitdetail = JSON.parse(res1[i].makeitdetail);
         }
+        
         if (res1[i].moveitdetail) {
           res1[i].moveitdetail = JSON.parse(res1[i].moveitdetail);
         }

@@ -50,10 +50,10 @@ const calculate = {
     distanceapiKey :'AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc',
     orderbuffertime :10, //min
 
-    //moveitstratus
-   
+  //support number
+    customer_support :7358531315,
 
-    //Razorpay Details
+  //Razorpay Details
     razorpay_key_id : 'rzp_live_bCMW6sG1GWp36Q',
     razorpay_key_secret : '2VAma7EVApDnLuOMerwX3ODu',
 

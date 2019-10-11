@@ -145,6 +145,7 @@ app.route("/admin/reports/productwiserealreport").post(routesVersioning({"1.0.0"
 app.route("/admin/reports/ordersreport").post(routesVersioning({"1.0.0":orders.orders_report}));
 app.route("/admin/reports/virtualordersreport").post(routesVersioning({"1.0.0":orders.virtual_orders_report}));
 app.route("/admin/reports/realordersreport").post(routesVersioning({"1.0.0":orders.real_orders_report}));
+app.route("/admin/ordersrating").post(routesVersioning({"1.0.0":orders.orders_rating}));
 app.route("/admin/reports/kitchenwisereport").post(routesVersioning({"1.0.0":orders.kitchenwise_report}));
 app.route("/admin/reports/virtualmakeitearningsreport").post(routesVersioning({"1.0.0":orders.virtual_makeit_earnings}));
 app.route("/admin/reports/realmakeitearningsreport").post(routesVersioning({"1.0.0":orders.real_makeit_earnings}));

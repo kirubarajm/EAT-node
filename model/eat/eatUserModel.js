@@ -3416,9 +3416,6 @@ Eatuser.get_eat_region_kitchen_list_show_more = async function get_eat_region_ki
 
     Eatuser.eat_app_version_check_vid= async function eat_app_version_check_vid(req,headers,result) { 
       
-      console.log(req);
-      console.log(headers.apptype);
-
       var updatestatus = {};
       var versionstatus = false;
       var eatforceupdatestatus =false;
@@ -3472,4 +3469,19 @@ Eatuser.get_eat_region_kitchen_list_show_more = async function get_eat_region_ki
     };
 
  
+  Eatuser.eat_app_customer_support= async function eat_app_customer_support(req,result) { 
+     
+
+          let resobj = {
+              success: true,
+              status:true,
+              customer_support : constant.customer_support
+          };
+    
+          result(null, resobj);
+
+    
+    };
+
+
 module.exports = Eatuser;
