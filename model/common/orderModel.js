@@ -4608,7 +4608,6 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
    }
  };
 
-
  //Orders rating
 Order.orders_rating = function orders_rating(req, result) {
   var pagelimt = 20;
