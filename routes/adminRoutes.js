@@ -139,13 +139,17 @@ app.route("/admin/reports/salesaccountreport").post(routesVersioning({"1.0.0":or
 app.route("/admin/reports/cancelordersreport").post(routesVersioning({"1.0.0":orders.cancel_orders}));
 app.route("/admin/reports/driverwisecodreport").post(routesVersioning({"1.0.0":orders.driverwise_cod}));
 app.route("/admin/reports/hubtotaldeliveryreport").post(routesVersioning({"1.0.0":orders.hub_total_delivery}));
+
 app.route("/admin/reports/productwisereport").post(routesVersioning({"1.0.0":orders.product_wise}));
 app.route("/admin/reports/productwisevirtualreport").post(routesVersioning({"1.0.0":orders.product_wise_virtual}));
 app.route("/admin/reports/productwiserealreport").post(routesVersioning({"1.0.0":orders.product_wise_real}));
+
 app.route("/admin/reports/ordersreport").post(routesVersioning({"1.0.0":orders.orders_report}));
 app.route("/admin/reports/virtualordersreport").post(routesVersioning({"1.0.0":orders.virtual_orders_report}));
 app.route("/admin/reports/realordersreport").post(routesVersioning({"1.0.0":orders.real_orders_report}));
+
 app.route("/admin/ordersrating").post(routesVersioning({"1.0.0":orders.orders_rating}));
+
 app.route("/admin/reports/kitchenwisereport").post(routesVersioning({"1.0.0":orders.kitchenwise_report}));
 app.route("/admin/reports/virtualmakeitearningsreport").post(routesVersioning({"1.0.0":orders.virtual_makeit_earnings}));
 app.route("/admin/reports/realmakeitearningsreport").post(routesVersioning({"1.0.0":orders.real_makeit_earnings}));
