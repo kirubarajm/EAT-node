@@ -389,7 +389,16 @@ Order.online_order_place_conformation = async function(order_place, result) {
   "' WHERE orderid = '" +
   order_place.orderid +
   "' ";
+////= Razorpay caption =////// 
+var paymentid = order_place.transactionid;
+var amount    = order_place.price*100;
+instance.payments.capture(paymentid, parseInt(amount))
+.then((data)=>{
 
+}).catch((err)=>{
+
+});
+///////////////////////////////////
   sql.query(orderUpdateQuery, async function(err, res1) {
     if (err) {
       result(err, null);
