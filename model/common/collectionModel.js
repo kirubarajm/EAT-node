@@ -252,7 +252,46 @@ Collection.getcollectionlist = async function(res,req){
 return res
 }
 
+// Collection.getcollectionlist = async function(res,req){
 
+//   var userdetails = await query("Select * From User where userid = '" +req.eatuserid +"'");
+
+
+//   for (let i = 0; i < res.length; i++) {
+//     req.cid = res[i].cid;
+//     req.query = res[i].query;
+//     await Collection.get_all_collection_by_cid_getkichens(req, async function(err,res3) {
+//       if (err) {
+//         result(err, null);
+//       } else {
+//         if (res3.status != true) {
+//           result(null, res3);
+//         } else {
+          
+//          // console.log("kitchenlist"+res3.result);
+//          // res[i].kitchenlist = res3.result;
+//       var kitchenlist = res3.result
+//       //   console.log(kitchenlist.length);
+//       if (userdetails[0].first_tunnel == 0) {
+//         if (kitchenlist.length !==0) {
+//           res[i].collectionstatus = true;
+//         }else{
+//           res[i].collectionstatus = false;
+//         }
+//       }else{
+//         res[i].collectionstatus = true;
+//       }
+          
+//           delete res[i].query;
+//          // delete json[res[i].query]
+//         }
+//       }
+//     });
+
+//   }
+
+// return res
+// }
 
 
 
