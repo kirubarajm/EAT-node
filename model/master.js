@@ -736,6 +736,17 @@ const master = [
 
         ]
     },
+    {
+        'cancelstatus': [{
+                "cancelstatusid": 1,
+                "cancelstatus": "kitchen prepared cancel"
+            },
+            {
+                "cancelstatusid": 2,
+                "cancelstatus": "moveit pickup cancel"
+            }
+        ]
+    }
 
 
 ]

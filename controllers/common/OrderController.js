@@ -707,3 +707,17 @@ exports.create_tunnel_order = function(req, res) {
     });
   }
 };
+
+exports.admin_order_pickup_cancel = function(req, res) {
+  Order.admin_order_pickup_cancel(req.body, function(err, ordercancel) {
+    if (err) res.send(err);
+    res.send(ordercancel);
+  });
+};
+
+exports.admin_order_prepared_cancel = function(req, res) {
+  Order.admin_order_prepared_cancel(req.body, function(err, ordercancel) {
+    if (err) res.send(err);
+    res.send(ordercancel);
+  });
+};

@@ -1128,7 +1128,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
     query = query + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc";
   }
 
-  console.log(query);
+ 
   sql.query(query, function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -1412,7 +1412,7 @@ Eatuser.create_first_tunnel_user_location = function create_first_tunnel_user_lo
 
 
 Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
-  
+  console.log(req);
   //console.log(res3.result[0].amountdetails);
   //var userdetails = await query("");
 
@@ -1441,11 +1441,13 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
       if (tunnelkitchenlist.length == 0) {
         tunnelkitchenliststatus = false;
         var locationdetails = {};
+    
         locationdetails.lat=req.lat;
         locationdetails.lon=req.lon;
         locationdetails.address= req.address;
         locationdetails.locality= req.locality ||'';
         locationdetails.city= req.city || '';
+        locationdetails.userid=req.eatuserid;
 
         await Eatuser.create_first_tunnel_user_location(locationdetails);
       }else{
