@@ -154,5 +154,8 @@ app.route("/admin/reports/realmakeitearningsreport").post(routesVersioning({"1.0
 ////Razorpay Capture
 app.route("/admin/orders/razorpaycapture").post(routesVersioning({"1.0.0":Razorpay.razorpaycapture}));
 
+app.route("/admin/order/pickupcancel").put(routesVersioning({"1.0.0":orders.admin_order_pickup_cancel}));
+app.route("/admin/order/preparedcancel").put(routesVersioning({"1.0.0":orders.admin_order_prepared_cancel}));
+
 
 }
