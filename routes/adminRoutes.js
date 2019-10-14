@@ -149,6 +149,10 @@ app.route("/admin/ordersrating").post(routesVersioning({"1.0.0":orders.orders_ra
 app.route("/admin/reports/kitchenwisereport").post(routesVersioning({"1.0.0":orders.kitchenwise_report}));
 app.route("/admin/reports/virtualmakeitearningsreport").post(routesVersioning({"1.0.0":orders.virtual_makeit_earnings}));
 app.route("/admin/reports/realmakeitearningsreport").post(routesVersioning({"1.0.0":orders.real_makeit_earnings}));
+app.route("/admin/reports/virtualkitchenprepareaftercancel").post(routesVersioning({"1.0.0":orders.virtual_after_cancel}));
+app.route("/admin/reports/realkitchenprepareaftercancel").post(routesVersioning({"1.0.0":orders.real_after_cancel}));
+app.route("/admin/reports/virtualkitchenpreparebeforecancel").post(routesVersioning({"1.0.0":orders.virtual_before_cancel}));
+app.route("/admin/reports/realkitchenpreparebeforecancel").post(routesVersioning({"1.0.0":orders.real_before_cancel}));
 
 
 ////Razorpay Capture

@@ -779,6 +779,7 @@ exports.real_makeit_earnings= function(req, res) {
     res.json(result);
   });
 }
+
 exports.admin_order_pickup_cancel = function(req, res) {
   Order.admin_order_pickup_cancel(req.body, function(err, ordercancel) {
     if (err) res.send(err);
@@ -792,3 +793,36 @@ exports.admin_order_prepared_cancel = function(req, res) {
     res.send(ordercancel);
   });
 };
+
+//Makeit Earnings Virtual Kitchen Prepare After Cancel Report
+exports.virtual_after_cancel= function(req, res) {
+  Order.virtual_after_cancel(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
+
+//Makeit Earnings Real Kitchen Prepare After Cancel Report
+exports.real_after_cancel= function(req, res) {
+  Order.real_after_cancel(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
+
+//Makeit Earnings Virtual Kitchen Prepare Before Cancel Report
+exports.virtual_before_cancel= function(req, res) {
+  Order.virtual_before_cancel(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
+
+//Makeit Earnings Real Kitchen Prepare Before Cancel Report
+exports.real_before_cancel= function(req, res) {
+  Order.real_before_cancel(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+}
+
