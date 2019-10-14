@@ -165,6 +165,7 @@ app.route("/eat/collection").post(middleware.checkToken,routesVersioning({"1.0.0
 app.route("/eat/orderskip").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eat_order_skip_count}));
 app.route("/eat/order/deliverytime").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eat_get_delivery_time}));
 app.route("/eat/order/distance").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eat_order_distance_calculation}));
+app.route("/eat/customersupport").post(routesVersioning({"1.0.0":eatuser.eat_customer_support}));
 app.route("/eat/tunnelorder").post(middleware.checkToken,routesVersioning({"1.0.0":orders.create_tunnel_order}));
 
 

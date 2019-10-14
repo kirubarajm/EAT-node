@@ -33,7 +33,7 @@ var Product = function(product) {
   //  this.updated_at = new Date()
 };
 
-Product.getTotalPrice = async function createProduct(itemlist, result) {
+Product.getTotalPrice = async function getTotalPrice(itemlist, result) {
   var totalamount = 0;
   var vegtype = 0;
   var itemdetail = {};

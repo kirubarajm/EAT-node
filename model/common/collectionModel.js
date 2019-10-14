@@ -463,11 +463,9 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
     });
 };
 
-
-
 Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_cid_v2(req,result) {
   
-  Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(req,result) {
+  //Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(req,result) {
   
     var foodpreparationtime = constant.foodpreparationtime;
     var onekm = constant.onekm;
@@ -613,7 +611,7 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
           }
         }
       });
-  };
+  //};
 };
 
 

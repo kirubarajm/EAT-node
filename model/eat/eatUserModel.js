@@ -4093,5 +4093,19 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
     
     };
 
+    Eatuser.eat_app_customer_support= async function eat_app_customer_support(req,result) { 
+     
+
+      let resobj = {
+          success: true,
+          status:true,
+          customer_support : constant.customer_support
+      };
+
+      result(null, resobj);
+
+
+};
  
+
 module.exports = Eatuser;
