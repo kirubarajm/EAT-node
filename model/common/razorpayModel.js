@@ -9,11 +9,15 @@ var constant = require("../constant.js");
 //     key_secret: "BSdpKV1M07sH9cucL5uzVnol"
 //   });
 
-var instance = new Rpay({
-  key_id: 'rzp_live_BLJVf00DRLWexs',
-  key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
-})
+// var instance = new Rpay({
+//   key_id: 'rzp_live_BLJVf00DRLWexs',
+//   key_secret: 'WLqR1JqCdQwnmYs6FI9nzLdD'
+// })
 
+var instance = new Rpay({
+  key_id: constant.razorpay_key_id,
+  key_secret: constant.razorpay_key_secret
+})
   const query = util.promisify(sql.query).bind(sql);
 
 
@@ -139,7 +143,7 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
 
 //  result(null, resobj);
 // }
-}else if (onlinerefunddetails[0].active_status===0) {
+    }else if (onlinerefunddetails[0].active_status===0) {
     
     var  message = "Sorry your refund amount has been already refunded!"
           

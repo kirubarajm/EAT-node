@@ -93,7 +93,7 @@ module.exports = function(app) {
 
 
 // Eat
-app.route("/eat/products").post(middleware.checkToken,routesVersioning({"1.0.0": eatuser.eat_makeit_product_list,"2.0.0": eatuser.get_eat_makeit_product_list_v_2}));
+app.route("/eat/products").post(middleware.checkToken,routesVersioning({"1.0.0": eatuser.eat_makeit_product_list,"2.0.0": eatuser.get_eat_makeit_product_list_v_2,"2.0.1": eatuser.get_eat_makeit_product_list_v_2_1}));
 //app.route("/eat/placeorder").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eatuser_order_create}));
 app.route("/eat/order/:orderid").get(middleware.checkToken,routesVersioning({"1.0.0":orders.order_view_eatuser}));
 app.route("/eat/orders/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":orders.order_list_eatuser}));
@@ -106,7 +106,7 @@ app.route("/eat/makeituser/:userid").get(middleware.checkToken,routesVersioning(
 app.route("/eat/orderplace").post(middleware.checkToken,routesVersioning({"1.0.0":orders.online_order_place_conformation}));
 app.route("/eat/cartdetails").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.read_a_cartdetails}));
 app.route("/eat/dishlist").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_dish_sort_filter}));
-app.route("/eat/kitchenlist").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_kitchen_sort_filter,"2.0.0":eatuser.eat_kitchen_sort_filter_v2}));
+app.route("/eat/kitchenlist").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_kitchen_sort_filter,"2.0.0":eatuser.eat_kitchen_sort_filter_v2,"2.0.1":eatuser.eat_kitchen_sort_filter_v_2_1}));
 //app.route("/eat/kitchenlist").post(middleware.checkToken,routesVersioning({"2.0.0":eatuser.eat_kitchen_sort_filter_2}));
 app.route("/eat/fav").post(middleware.checkToken,routesVersioning({"1.0.0":fav.create_a_fav}));
 app.route("/eat/fav/:id").delete(middleware.checkToken,routesVersioning({"1.0.0":fav.delete_a_fav}));
@@ -130,7 +130,7 @@ app.route("/eat/defaultaddress").put(middleware.checkToken,routesVersioning({"1.
 app.route("/eat/payment/customerid").get(middleware.checkToken,routesVersioning({"1.0.0":eatuser.create_customerid_by_razorpay}));
 app.route("/eat/region/kitchenlist").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_region_list_sort_filter}));
 app.route("/eat/regionlist").post(middleware.checkToken,routesVersioning({"2.0.0": eatuser.eat_region_list2,"1.0.0": eatuser.eat_region_list}));
-app.route("/eat/kitche/showmore").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_region_kitchen_showmore}));
+app.route("/eat/kitche/showmore").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_region_kitchen_showmore,"2.0.0":eatuser.eat_region_kitchen_showmore_v2}));
 app.route("/eat/product/search").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_explore_dish,"2.0.0":eatuser.eat_explore_dish_v2}));
 app.route("/eat/explore").get(middleware.checkToken,routesVersioning({"1.0.0":quicksearch.eat_explore_store_data}));
 app.route("/eat/quicksearch").post(middleware.checkToken,routesVersioning({"1.0.0":quicksearch.eat_explore_quick_search}));
@@ -161,7 +161,7 @@ app.route("/eat/coupon/:eatuserid").get(middleware.checkToken,routesVersioning({
 app.route("/eat/collectionlist").post(middleware.checkToken,routesVersioning({"1.0.0":collection.read_all_collection_by_userid}));
 app.route("/eat/collectiondetails").post(middleware.checkToken,routesVersioning({"1.0.0":collection.get_all_collection_by_cid,"2.0.0":collection.get_all_collection_by_cid_v2}));
 app.route("/eat/versioncheck").post(routesVersioning({"1.0.0": eatuser.eat_app_version_check}));
-app.route("/eat/collection").post(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection,"2.0.0":collection.list_all_active_collection_v2}));
+app.route("/eat/collection").post(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection}));
 app.route("/eat/orderskip").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eat_order_skip_count}));
 app.route("/eat/order/deliverytime").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eat_get_delivery_time}));
 app.route("/eat/order/distance").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eat_order_distance_calculation}));

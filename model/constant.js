@@ -13,7 +13,8 @@ const calculate = {
     foodpreparationtime:15,//min
     onekm:6,
     servicecharge:25,
-    cancellationmessage : "Cancellation charge of Rs.25 will be detected. Do you want to proceed ?",
+  //  cancellationmessage : "Cancellation charge of Rs.25 will be detected. Do you want to proceed ?",
+    cancellationmessage : "Are you sure! you want to cancel the order?",
     makeit_nearby_moveit_radius:4, // in kilometers
     eat_delivery_min:60,
     product_commission_percentage : 50,// percentage 20 has changed 50
@@ -51,7 +52,12 @@ const calculate = {
     orderbuffertime :10, //min
 
     //moveitstratus
-   
+    //support number
+    customer_support :7358531315,
+
+  //Razorpay Details
+    razorpay_key_id : 'rzp_live_bCMW6sG1GWp36Q',
+    razorpay_key_secret : '2VAma7EVApDnLuOMerwX3ODu',
 
 }
 

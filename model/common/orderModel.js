@@ -84,7 +84,7 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
   try {
     const res = await query( "select count(*) as count from Orders where orderstatus < 6 and lock_status = 0 and userid= '" +req.userid +"'");
     if (res[0].count === 0) {
-      console.log("error--->",req);
+      
       Makeituser.read_a_cartdetails_makeitid(req, orderitems,false,async function(err,res3) {
         if (err) {
           result(err, null);
@@ -376,8 +376,9 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
   });
 }
 
+
 Order.online_order_place_conformation = async function(order_place, result) {
-  console.log(order_place);
+
   var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
   var transaction_status= order_place.payment_status === 1? 'success':'failed';
   var orderUpdateQuery =
@@ -390,16 +391,33 @@ Order.online_order_place_conformation = async function(order_place, result) {
   "' WHERE orderid = '" +
   order_place.orderid +
   "' ";
-////= Razorpay caption =////// 
-var paymentid = order_place.transactionid;
-var amount    = order_place.price*100;
-instance.payments.capture(paymentid, parseInt(amount))
-.then((data)=>{
 
-}).catch((err)=>{
+  //////////= Razorpay caption =////////// 
+if(order_place.payment_status === 1){
+  const getprice = await query("select price from Orders where orderid ='"+order_place.orderid+"'");
+  if (getprice.err) {
+ 
+  }else{
+    var paymentid  = order_place.transactionid;
+    var amount     = getprice[0].price*100;
+    instance.payments.capture(paymentid, parseInt(amount))
+    .then((data)=>{
 
-});
+      captionupdate = "update Orders set captured_status=1 where transactionid='"+order_place.transactionid+"'";
+      sql.query(captionupdate, async function(err, captionresult) {
+        if (err) {
+          result(err, null);
+        }else{
+          console.log(captionresult);
+        }
+      });
+    }).catch((err)=>{
+      console.log(err);      
+    });
+  }
+}
 ///////////////////////////////////
+
   sql.query(orderUpdateQuery, async function(err, res1) {
     if (err) {
       result(err, null);
@@ -2103,7 +2121,6 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
 
   var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  console.log(ordercanceltime);
   if (orderdetails[0].orderstatus < 5) {
     sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 1,cancel_reason= '" +req.cancel_reason +"',cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
         if (err) {
@@ -2133,20 +2150,16 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           /// check the order refunded amount and payment status
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status === 1) {
             
-
-
-
             /// check the order refunded amount and payment type 
           if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
  
                 
               if (orderdetails[0].refund_amount  > constant.servicecharge) {
                 //online user paid and used refund coupon amount so after he cancel order . so detect the serivice charge
-                console.log("refund_amount service charge");
+               
                 await Order.cod_create_refund_coupon_servicecharge(refundDetail);
                 await Order.create_refund(refundDetail);
-                await Notification.orderEatPushNotification(
-                  req.orderid,
+                await Notification.orderEatPushNotification(req.orderid,
                   null,
                   PushConstant.Pageid_eat_order_cancel
                 );
@@ -2201,7 +2214,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             });
           }
       
- }
+          }
                    
           if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
             removecoupon = {};
@@ -2272,7 +2285,6 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
   var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  console.log(req.cancel_reason);
 
   var cancel_reason = req.cancel_reason || null ;
   if (orderdetails[0].orderstatus === 7 ) {
@@ -2320,7 +2332,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
 
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
-            if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
+            if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
               
               await Order.create_refund(refundDetail);
               if (orderdetails[0].refund_amount !== 0) {
@@ -2330,7 +2342,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
               }
 
 
-          }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
+            }else if (orderdetails[0].payment_type === "0" && orderdetails[0].payment_status === 0) {
             var rc = new RefundCoupon(req);
             RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
               if (err) {

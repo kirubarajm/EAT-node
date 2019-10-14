@@ -991,9 +991,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var userdetails = await query("Select * From User where userid = '" +req.userid +"'");
 
   if (userdetails.length !==0) {
-      console.log(userdetails[0].first_tunnel);
+   
       if (userdetails[0].first_tunnel == 0) {
-        console.log("normal flow");
+        
+
       for (let i = 0; i < orderitems.length; i++) {
 
         const res1 = await query("Select pt.*,cu.cuisinename From Product pt left join Cuisine cu on cu.cuisineid = pt.cuisine where pt.productid = '" +orderitems[i].productid +"'  ");

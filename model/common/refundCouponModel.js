@@ -291,9 +291,6 @@ RefundCoupon.create_Refund_Coupon_online_orders_servicecharge = async function c
      // refund coupon
       req.rcoupon ="Refund"+req.refundamount;
     
-      console.log(req);
-      
-
       sql.query("INSERT INTO Refund_Coupon set ?", req,async function(err, res) {
           if (err) {
             result(err, null);
