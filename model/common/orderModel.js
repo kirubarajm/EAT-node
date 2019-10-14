@@ -4667,7 +4667,7 @@ Order.orders_rating = function orders_rating(req, result) {
 
 //Makeit Earnings Virtual Kitchen Prepare After Cancel Report
 Order.virtual_after_cancel = function virtual_after_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '2019-10-14' AND  '2019-10-14') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -4694,7 +4694,7 @@ Order.virtual_after_cancel = function virtual_after_cancel(req, result) {
 
 //Makeit Earnings Real Kitchen Prepare After Cancel Report
 Order.real_after_cancel = function real_after_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -4721,7 +4721,7 @@ Order.real_after_cancel = function real_after_cancel(req, result) {
 
 //Makeit Earnings Virtual Kitchen Prepare Before Cancel Report
 Order.virtual_before_cancel = function virtual_before_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) THEN makeit_earnings ELSE 0 END) as BeforeCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -4748,7 +4748,7 @@ Order.virtual_before_cancel = function virtual_before_cancel(req, result) {
 
 //Makeit Earnings Real Kitchen Prepare Before Cancel Report
 Order.real_before_cancel = function real_before_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) THEN makeit_earnings ELSE 0 END) as BeforeCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
