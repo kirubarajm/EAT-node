@@ -390,18 +390,33 @@ Order.online_order_place_conformation = async function(order_place, result) {
   "' WHERE orderid = '" +
   order_place.orderid +
   "' ";
+
 ////= Razorpay caption =////// 
-var paymentid = order_place.transactionid;
-var amount    = order_place.price*100;
-instance.payments.capture(paymentid, parseInt(amount))
-.then((data)=>{
-  console.log(data);
-
-}).catch((err)=>{
-  console.log(err);
-
-});
+if(order_place.payment_status === 1){
+  const getprice = await query("select price from Orders where orderid ='" +order_place.orderid +"'");
+  if (getprice.err) {
+    console.log(getprice);
+  }else{
+    var paymentid  = order_place.transactionid;
+    var amount     = getprice[0].price*100;
+    instance.payments.capture(paymentid, parseInt(amount))
+    .then((data)=>{
+      console.log(data); //razor_orderid
+      captionupdate = "update Orders set razor_orderid='1' where transactionid="+order_place.transactionid;
+      sql.query(captionupdate, async function(err, captionresult) {
+        if (err) {
+          result(err, null);
+        }else{
+          console.log(captionresult);
+        }
+      });
+    }).catch((err)=>{
+      console.log(err);
+    });
+  }
+}
 ///////////////////////////////////
+
   sql.query(orderUpdateQuery, async function(err, res1) {
     if (err) {
       result(err, null);
@@ -4649,4 +4664,113 @@ Order.orders_rating = function orders_rating(req, result) {
     }
   );
 };
+
+//Makeit Earnings Virtual Kitchen Prepare After Cancel Report
+Order.virtual_after_cancel = function virtual_after_cancel(req, result) {
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+    sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Makeit Earnings Real Kitchen Prepare After Cancel Report
+Order.real_after_cancel = function real_after_cancel(req, result) {
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
+    sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Makeit Earnings Virtual Kitchen Prepare Before Cancel Report
+Order.virtual_before_cancel = function virtual_before_cancel(req, result) {
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+    sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Makeit Earnings Real Kitchen Prepare Before Cancel Report
+Order.real_before_cancel = function real_before_cancel(req, result) {
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
+    sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
 module.exports = Order;
