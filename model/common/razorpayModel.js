@@ -163,7 +163,7 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
 
 //Razorpay Capture Fuction  /**Praveen*/
 Razorpay.razorpaycapture = async function razorpaycapture(req, result) {
-  /*
+  /* 
   var payment_id = "pay_DRvQzTw3y9Xeuq";
   var amount   = parseInt(1 * 100);
   instance.payments.capture(payment_id, parseInt(amount))
@@ -171,7 +171,7 @@ Razorpay.razorpaycapture = async function razorpaycapture(req, result) {
   var orderid = 433;
  const getprice = await query("select price from Orders where orderid ='" +orderid+"'");
  console.log(getprice[0].price);
- 
+
 };
 
 module.exports = Razorpay;

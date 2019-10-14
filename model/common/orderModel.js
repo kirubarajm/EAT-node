@@ -393,16 +393,16 @@ Order.online_order_place_conformation = async function(order_place, result) {
 
 ////= Razorpay caption =////// 
 if(order_place.payment_status === 1){
-  const getprice = await query("select price from Orders where orderid ='" +order_place.orderid +"'");
+  const getprice = await query("select price from Orders where orderid ='"+order_place.orderid+"'");
   if (getprice.err) {
-    console.log(getprice);
+    console.log(err);
   }else{
     var paymentid  = order_place.transactionid;
     var amount     = getprice[0].price*100;
     instance.payments.capture(paymentid, parseInt(amount))
     .then((data)=>{
-      console.log(data); //razor_orderid
-      captionupdate = "update Orders set razor_orderid='1' where transactionid="+order_place.transactionid;
+      console.log(data); 
+      captionupdate = "update Orders set razor_orderid='1' where transactionid='"+order_place.transactionid+"'";
       sql.query(captionupdate, async function(err, captionresult) {
         if (err) {
           result(err, null);
