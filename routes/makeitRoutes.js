@@ -58,4 +58,5 @@ app.route("/makeit/product").get(middleware.checkToken,routesVersioning({"1.0.0"
 app.route("/makeit/badgescreate").post(middleware.checkToken,routesVersioning({"1.0.0":makeitbadges.createMakeitBadges}));
 app.route("/makeit/versioncheck").post(routesVersioning({"1.0.0": makeituser.makeit_app_version_check_vid}));
 app.route("/makeit/loginstatus").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.makeituser_online_status}));
+app.route("/makeit/liveproductstatus/:makeit_userid").get(middleware.checkToken,routesVersioning({"1.0.0":product.live_product_status}));
 }

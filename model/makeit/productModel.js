@@ -977,4 +977,28 @@ Product.getAllProductbymakeituserid = function getAllProductbymakeituserid(req,r
   );
 };
 
+
+//Live Product Status
+Product.getliveProductstatus = function getliveProductstatus(liveproductid, result) {
+  sql.query("Select * from Product where active_status = 1 and delete_status !=1 and makeit_userid = " +liveproductid.makeit_userid +"",async function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(null, err);
+      } else {
+     
+          var productcount = await query("Select count(productid) as productcount from Product where active_status = 1 and delete_status !=1 and quantity !=0 and makeit_userid = " +liveproductid.makeit_userid +" ");
+
+        let resobj = {
+          success: true,
+          status :true,
+          productcount : productcount[0].productcount,
+          result: res
+        };
+
+        result(null, resobj);
+      }
+    }
+  );
+};
+
 module.exports = Product;
