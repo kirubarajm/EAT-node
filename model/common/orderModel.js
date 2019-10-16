@@ -4152,10 +4152,8 @@ Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user
 
 };
 
-
 Order.OrderInsert_tunnel_user = async function OrderInsert_tunnel_user(req, orderitems,isMobile,isOnlineOrder,result) {
   var new_Order = new Order(req);
-  console.log(new_Order);
   new_Order.delivery_charge = constant.deliverycharge;
   sql.beginTransaction(function(err) {
     if (err) { 
