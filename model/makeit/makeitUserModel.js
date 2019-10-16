@@ -2693,5 +2693,19 @@ Makeituser.makeituser_appointments_cancel= async function makeituser_appointment
      }
 };
 
+Makeituser.makeit_app_customer_support= async function makeit_app_customer_support(req,result) { 
+     
+
+  let resobj = {
+      success: true,
+      status:true,
+      customer_support : constant.makeit_customer_support
+  };
+
+  result(null, resobj);
+
+
+};
+
 
 module.exports = Makeituser;

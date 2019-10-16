@@ -1879,10 +1879,10 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
       const unserviceablekitchenlist =  res.filter(res => res.kitchenstatus > 0);
 
       if (!req.sortid) {
-        serviceablekitchenlist.sort((a, b) => parseFloat(a.eta) - parseFloat(b.eta));
+        serviceablekitchenlist.sort((a, b) => parseFloat(a.etatime) - parseFloat(b.etatime));
       }
       if (!req.sortid) {
-        unserviceablekitchenlist.sort((a, b) => parseFloat(a.eta) - parseFloat(b.eta));
+        unserviceablekitchenlist.sort((a, b) => parseFloat(a.etatime) - parseFloat(b.etatime));
       }
      // if (res[0].serviceablestatus === false ) {
      var kitchenlist = [];
@@ -1985,7 +1985,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
 
   if (req.eatuserid) {
     var kitchenquery =
-      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.unservicable,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.unservicable,ly.localityname,mk.virtualkey,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +
@@ -1996,7 +1996,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
       "' left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid ";
   } else {
     kitchenquery =
-      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.unservicable,ly.localityname,( 3959 * acos( cos( radians('" +
+      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.unservicable,ly.localityname,mk.virtualkey,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +
@@ -2022,21 +2022,21 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
   }
 
  
-  var day = new Date();
-  var currenthour = day.getHours();
+  // var day = new Date();
+  // var currenthour = day.getHours();
 
-  if (currenthour < 12) {
+  // if (currenthour < 12) {
 
-    kitchenquery = kitchenquery + " and pt.breakfast = 1";
+  //   kitchenquery = kitchenquery + " and pt.breakfast = 1";
     
-  }else if(currenthour >= 12 && currenthour < 16){
+  // }else if(currenthour >= 12 && currenthour < 16){
 
-    kitchenquery = kitchenquery + " and pt.lunch = 1";
+  //   kitchenquery = kitchenquery + " and pt.lunch = 1";
 
-  }else if( currenthour >= 16){
+  // }else if( currenthour >= 16){
     
-    kitchenquery = kitchenquery + " and pt.dinner = 1";
-  }
+  //   kitchenquery = kitchenquery + " and pt.dinner = 1";
+  // }
 
 
 
@@ -2052,7 +2052,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
     kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc";
   }
 
-  console.log(kitchenquery);
+
 
   sql.query(kitchenquery, async function(err, res) {
     if (err) {
@@ -2132,7 +2132,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
       const unserviceablekitchenlist =  res.filter(res => res.kitchenstatus > 0);
 
       if (!req.sortid) {
-        serviceablekitchenlist.sort((a, b) => parseFloat(a.etatime) - parseFloat(b.etatime));
+        serviceablekitchenlist.sort((a, b) => parseFloat(a.virtualkey) - parseFloat(b.virtualkey));
       }
 
       if (!req.sortid) {
@@ -2219,7 +2219,7 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,headers,res
          
            }
            });   
-   };
+};
 /********************************************************************/
 // this working code please don't remove this code. i just commanded due to login flow change 04-07-2019
 //  Eatuser.eatuser_login = function eatuser_login(newUser, result) { 
@@ -4118,19 +4118,7 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
 
 };
  
-  Eatuser.eat_app_customer_support= async function eat_app_customer_support(req,result) { 
-     
-
-          let resobj = {
-              success: true,
-              status:true,
-              customer_support : constant.customer_support
-          };
-    
-          result(null, resobj);
-
-    
-    };
+ 
 
 
 module.exports = Eatuser;

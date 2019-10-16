@@ -4105,7 +4105,7 @@ Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user
               if (err) {
                 result(err, null);
               } else {
-                console.log(res3);
+           
                 if (res3.status != true) {
                   result(null, res3);
                 } else {
