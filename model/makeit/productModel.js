@@ -977,4 +977,33 @@ Product.getAllProductbymakeituserid = function getAllProductbymakeituserid(req,r
   );
 };
 
+
+//Live Product Status
+Product.getliveProductstatus = function getliveProductstatus(liveproductid, result) {
+  var query="select prd.makeit_userid,prd.productid,prd.product_name,prd.quantity as actival_quantity,if(oi.quantity,oi.quantity,0) as ordered_quantity,(prd.quantity+if(oi.quantity,oi.quantity,0)) as total_quantity  from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on oi.orderid = ord.orderid where prd.active_status = 1 and prd.delete_status !=1 and  prd.makeit_userid="+liveproductid.makeit_userid+" group by prd.productid";
+  console.log(query);
+    sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
 module.exports = Product;

@@ -201,3 +201,14 @@ exports.list_all_product_makeit_userid = function(req, res) {
     res.send(product);
   });
 };
+
+//Live Product Status
+exports.live_product_status = function(req, res) {
+  //console.log(req.params);
+  Product.getliveProductstatus(req.params, function(err, product) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", product);
+    res.send(product);
+  });
+};
