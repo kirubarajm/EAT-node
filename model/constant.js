@@ -52,6 +52,8 @@ const calculate = {
 
   //support number
     customer_support :7358531315,
+   //support number
+    makeit_customer_support :7358531315,
 
   //Razorpay Details
     razorpay_key_id : 'rzp_live_bCMW6sG1GWp36Q',

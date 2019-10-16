@@ -475,3 +475,10 @@ exports.makeituser_appointments_cancel= function(req, res) {
   });
 }
 }
+
+exports.makeit_customer_support = function(req, res) {
+  Makeituser.makeit_app_customer_support(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

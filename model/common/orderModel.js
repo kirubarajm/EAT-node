@@ -84,7 +84,7 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
   try {
     const res = await query( "select count(*) as count from Orders where orderstatus < 6 and lock_status = 0 and userid= '" +req.userid +"'");
     if (res[0].count === 0) {
-      console.log("error--->",req);
+      
       Makeituser.read_a_cartdetails_makeitid(req, orderitems,false,async function(err,res3) {
         if (err) {
           result(err, null);
@@ -376,8 +376,9 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
   });
 }
 
+
 Order.online_order_place_conformation = async function(order_place, result) {
-  console.log(order_place);
+
   var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
   var transaction_status= order_place.payment_status === 1? 'success':'failed';
   var orderUpdateQuery =
@@ -391,17 +392,16 @@ Order.online_order_place_conformation = async function(order_place, result) {
   order_place.orderid +
   "' ";
 
-//////////= Razorpay caption =////////// 
+  //////////= Razorpay caption =////////// 
 if(order_place.payment_status === 1){
   const getprice = await query("select price from Orders where orderid ='"+order_place.orderid+"'");
   if (getprice.err) {
-    console.log(err);
+ 
   }else{
     var paymentid  = order_place.transactionid;
     var amount     = getprice[0].price*100;
     instance.payments.capture(paymentid, parseInt(amount))
     .then((data)=>{
-      console.log(data); 
       captionupdate = "update Orders set captured_status=1 where transactionid='"+order_place.transactionid+"'";
       sql.query(captionupdate, async function(err, captionresult) {
         if (err) {
@@ -411,7 +411,7 @@ if(order_place.payment_status === 1){
         }
       });
     }).catch((err)=>{
-      console.log(err);
+      console.log(err);      
     });
   }
 }
@@ -2127,7 +2127,6 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
 
   var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  console.log(ordercanceltime);
   if (orderdetails[0].orderstatus < 5) {
     sql.query("UPDATE Orders SET orderstatus = 7,cancel_by = 1,cancel_reason= '" +req.cancel_reason +"',cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
         if (err) {
@@ -2157,20 +2156,16 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           /// check the order refunded amount and payment status
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status === 1) {
             
-
-
-
             /// check the order refunded amount and payment type 
           if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
  
                 
               if (orderdetails[0].refund_amount  > constant.servicecharge) {
                 //online user paid and used refund coupon amount so after he cancel order . so detect the serivice charge
-                console.log("refund_amount service charge");
+               
                 await Order.cod_create_refund_coupon_servicecharge(refundDetail);
                 await Order.create_refund(refundDetail);
-                await Notification.orderEatPushNotification(
-                  req.orderid,
+                await Notification.orderEatPushNotification(req.orderid,
                   null,
                   PushConstant.Pageid_eat_order_cancel
                 );
@@ -2225,7 +2220,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             });
           }
       
- }
+          }
                    
           if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
             removecoupon = {};
@@ -2296,7 +2291,6 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
   var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  console.log(req.cancel_reason);
 
   var cancel_reason = req.cancel_reason || null ;
   if (orderdetails[0].orderstatus === 7 ) {
@@ -2344,7 +2338,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
 
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
-            if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
+            if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
               
               await Order.create_refund(refundDetail);
               if (orderdetails[0].refund_amount !== 0) {
@@ -2354,7 +2348,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
               }
 
 
-          }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
+            }else if (orderdetails[0].payment_type === "0" && orderdetails[0].payment_status === 0) {
             var rc = new RefundCoupon(req);
             RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
               if (err) {
@@ -3752,7 +3746,7 @@ Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, 
 };
 
 Order. orders_canceled= function orders_canceled(req, result) {
-  sql.query("Select ord.orderid,ord.original_price,ord.gst,ord.price,ord.refund_amount,ord.discount_amount,ord.ordertime,if(ord.cancel_by=1,'EAT','Kitchen') as canceled_by,ord.cancel_charge,ord.cancel_reason,m.brandname,m.makeithub_id,mh.makeithub_name,mh.address from Orders as ord join MakeitUser as m on m.userid=ord.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where ord.orderstatus=7 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
+  sql.query("Select ord.orderid, ord.ordertime, if(ord.cancel_by=1,'EAT','Kitchen') as canceled_by, ord.cancel_reason,m.brandname,m.makeithub_id,mh.makeithub_name,mh.address from Orders as ord join MakeitUser as m on m.userid=ord.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where ord.orderstatus=7 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -4116,7 +4110,7 @@ Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user
               if (err) {
                 result(err, null);
               } else {
-                console.log(res3);
+           
                 if (res3.status != true) {
                   result(null, res3);
                 } else {
@@ -4164,10 +4158,8 @@ Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user
 
 };
 
-
 Order.OrderInsert_tunnel_user = async function OrderInsert_tunnel_user(req, orderitems,isMobile,isOnlineOrder,result) {
   var new_Order = new Order(req);
-  console.log(new_Order);
   new_Order.delivery_charge = constant.deliverycharge;
   sql.beginTransaction(function(err) {
     if (err) { 
@@ -4235,8 +4227,7 @@ Order.OrderInsert_tunnel_user = async function OrderInsert_tunnel_user(req, orde
 }
 
 Order.kitchenwise_report = function kitchenwise_report(req, result) {
-
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 group by Date(o.created_at),makeit_user_id";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -4263,7 +4254,7 @@ Order.kitchenwise_report = function kitchenwise_report(req, result) {
 
 //Product wise Virual Kitchen report
 Order.product_wise_virtual = function product_wise_virtual(req, result) {
-  var query="Select pr.product_name as productname,pr.makeit_userid,mh.makeithub_name ,ord.productid, sum(ord.quantity) as quan, m.brandname,mh.address as hub_location from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid join MakeitUser as m on m.userid = pr.makeit_userid join Makeit_hubs as mh on m.makeithub_id = mh.makeithub_id where (Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  and m.virtualkey=1 and  orde.orderstatus=6 group by ord.productid order by quan desc;";
+  var query="Select pr.product_name as productname,pr.makeit_userid,mh.makeithub_name ,ord.productid, sum(ord.quantity) as quan, m.brandname,m.address as hub_location from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid join MakeitUser as m on m.userid = pr.makeit_userid join Makeit_hubs as mh on m.makeithub_id = mh.makeithub_id where (Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  and m.virtualkey=1 and  orde.orderstatus=6 group by ord.productid order by quan desc;";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -4290,7 +4281,7 @@ Order.product_wise_virtual = function product_wise_virtual(req, result) {
 
 //Product wise Real Kitchen report
 Order.product_wise_real = function product_wise_real(req, result) {
-  var query="Select pr.product_name as productname,pr.makeit_userid,ord.productid, sum(ord.quantity) as quan, m.brandname from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid join MakeitUser as m on m.userid = pr.makeit_userid where (Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  and m.virtualkey=0 and  orde.orderstatus=6 group by ord.productid order by quan desc;";
+  var query="Select pr.product_name as productname,pr.makeit_userid,mh.makeithub_name ,ord.productid, sum(ord.quantity) as quan, m.brandname,m.address as hub_location from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid join MakeitUser as m on m.userid = pr.makeit_userid left join Makeit_hubs as mh on m.makeithub_id = mh.makeithub_id where (Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  and m.virtualkey=0 and  orde.orderstatus=6 group by ord.productid order by quan desc;";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -4317,7 +4308,7 @@ Order.product_wise_real = function product_wise_real(req, result) {
 
 //Virtual Kitchen Orders report
 Order.virtual_orders_report = function virtual_orders_report(req, result) {
-  var query="Select o.orderid,o.original_price,o.gst,o.price,o.refund_amount,o.makeit_earnings as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.moveit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.orderid,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,ma.address as hub_location from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -4345,7 +4336,7 @@ Order.virtual_orders_report = function virtual_orders_report(req, result) {
 
 //Real Kitchen Orders report
 Order.real_orders_report = function real_orders_report(req, result) {
-  var query="Select o.orderid,o.original_price,o.gst,o.price,o.refund_amount,o.makeit_earnings as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.moveit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid left join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey='0' and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.orderid,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid left join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey='0' and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -4373,7 +4364,7 @@ Order.real_orders_report = function real_orders_report(req, result) {
 
 //Daywise Virtual Makeit Earnings report
 Order.virtual_makeit_earnings = function virtual_makeit_earnings(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission,mh.address as hub_location from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id join Makeit_hubs as mh on mu.makeithub_id = mh.makeithub_id  where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
