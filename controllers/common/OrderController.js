@@ -794,6 +794,8 @@ exports.admin_order_prepared_cancel = function(req, res) {
   });
 };
 
+
+
 //Makeit Earnings Virtual Kitchen Prepare After Cancel Report
 exports.virtual_after_cancel= function(req, res) {
   Order.virtual_after_cancel(req.body, function(err, result) {

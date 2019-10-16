@@ -123,6 +123,35 @@ async function getRandomNumber(make_it_id,geoLocation) {
   return make_it_id;
 }
 
+exports.geoFireGetMoveitLocation= async function(make_it_list,result){
+  initializeAppName();
+   var make_it_id=[];
+   make_it_id=await getcurrentLocation(make_it_list);
+   result(null,make_it_id)
+}
+
+async function getcurrentLocation(make_it_id) {
+  var filterarray=[]
+  await Promise.all(make_it_id.map(async function(item){
+    await geoFire.get(""+item.userid).then(function(location) {
+      if (location === null) {
+        console.log("Provided key is not in GeoFire");
+        item.islocation=false;
+        item.distance=0;
+      }else{
+        item.location= location;
+        item.islocation=true;
+       
+      }
+    }, function(error) {
+      item.islocation=false;
+      item.distance=0;
+    });
+    console.log("make-it--->",make_it_id);
+  }))
+  return make_it_id;
+}
+
 exports.sendNotificationAndroid = function(
   token,
   dat,

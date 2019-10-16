@@ -164,6 +164,6 @@ app.route("/admin/orders/razorpaycapture").post(routesVersioning({"1.0.0":Razorp
 
 app.route("/admin/order/pickupcancel").put(routesVersioning({"1.0.0":orders.admin_order_pickup_cancel}));
 app.route("/admin/order/preparedcancel").put(routesVersioning({"1.0.0":orders.admin_order_prepared_cancel}));
-
+app.route("/admin/moveit/current_location").post(routesVersioning({"1.0.0":moveituser.admin_moveit_current_location}));
 
 }
