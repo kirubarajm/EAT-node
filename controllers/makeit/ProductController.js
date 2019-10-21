@@ -206,9 +206,28 @@ exports.list_all_product_makeit_userid = function(req, res) {
 exports.live_product_status = function(req, res) {
   //console.log(req.params);
   Product.getliveProductstatus(req.params, function(err, product) {
-    console.log("controller");
     if (err) res.send(err);
-    console.log("res", product);
+    //console.log("res", product);
+    res.send(product);
+  });
+};
+
+//Live Product History Add and Edit Status
+exports.create_live_product_status_history = function(req, res) {
+  //console.log(req.body);
+  Product.createliveproductstatushistory(req.body, function(err, product) {
+    if (err) res.send(err);
+    //console.log("res", product);
+    res.send(product);
+  });
+};
+
+//Cron for Live Product Status
+exports.cron_create_live_product_status_history = function(req, res) {
+  //console.log(req.body);
+  Product.croncreateliveproductstatushistory(req.body, function(err, product) {
+    if (err) res.send(err);
+    //console.log("res", product);
     res.send(product);
   });
 };

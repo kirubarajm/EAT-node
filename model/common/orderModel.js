@@ -3746,7 +3746,7 @@ Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, 
 };
 
 Order. orders_canceled= function orders_canceled(req, result) {
-  sql.query("Select ord.orderid, ord.ordertime, if(ord.cancel_by=1,'EAT','Kitchen') as canceled_by, ord.cancel_reason,m.brandname,m.makeithub_id,mh.makeithub_name,mh.address from Orders as ord join MakeitUser as m on m.userid=ord.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where ord.orderstatus=7 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
+  sql.query("Select ord.orderid,ord.original_price,ord.gst,ord.price,ord.refund_amount,ord.discount_amount,ord.ordertime,if(ord.cancel_by=1,'EAT','Kitchen') as canceled_by,ord.cancel_charge,ord.cancel_reason,m.brandname,m.makeithub_id,mh.makeithub_name,mh.address from Orders as ord join MakeitUser as m on m.userid=ord.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where ord.orderstatus=7 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -4746,6 +4746,58 @@ Order.virtual_before_cancel = function virtual_before_cancel(req, result) {
 Order.real_before_cancel = function real_before_cancel(req, result) {
   var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) THEN makeit_earnings ELSE 0 END) as BeforeCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//////////////Virtual Cancel Orders////////////////////
+Order.virtual_order_canceled= function virtual_order_canceled(req, result) {
+  sql.query("Select ord.orderid, ord.ordertime, if(ord.cancel_by=1,'EAT','Kitchen') as canceled_by,ord.cancel_charge,ord.cancel_reason,m.brandname,m.makeithub_id,mh.makeithub_name,mh.address from Orders as ord join MakeitUser as m on m.userid=ord.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where ord.orderstatus=7 and m.virtualkey=1 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//////////////Real Cancel Orders/////////////////
+Order.real_order_canceled= function real_order_canceled(req, result) {
+  sql.query("Select ord.orderid, ord.ordertime, if(ord.cancel_by=1,'EAT','Kitchen') as canceled_by,ord.cancel_charge,ord.cancel_reason,m.brandname,m.makeithub_id,mh.makeithub_name,mh.address from Orders as ord join MakeitUser as m on m.userid=ord.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where ord.orderstatus=7 and m.virtualkey=0 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {

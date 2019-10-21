@@ -828,3 +828,19 @@ exports.real_before_cancel= function(req, res) {
   });
 }
 
+////Virtual Cancel Orders
+exports.virtual_order_canceled= function(req, res) {
+  Order.virtual_order_canceled(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+////Real Cancel Orders
+exports.real_order_canceled= function(req, res) {
+  Order.real_order_canceled(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
