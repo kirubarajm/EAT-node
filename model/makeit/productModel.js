@@ -1,9 +1,15 @@
 "user strict";
 var sql = require("../db.js");
 var Productitem = require("../../model/makeit/productitemsModel.js");
+var producthistory = require("../../model/makeit/liveproducthistoryModel.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 var constant = require("../constant.js");
+
+
+var moment    = require("moment");
+
+
 //Task object constructor
 var Product = function(product) {
   this.makeit_userid = product.makeit_userid;
@@ -301,13 +307,11 @@ Product.moveliveproduct = function(req, result) {
                 } else {
                   let sucobj = true;
                   var mesobj = "Product added to live successfully";
-                  
                   let resobj = {
                     success: sucobj,
                     status: true,
                     message: mesobj
                   };
-
                   result(null, resobj);
                 }
               }
@@ -425,6 +429,16 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
                 console.log("error: ", err);
                 result(null, err);
               } else {
+                /////=Edit Live Product History =//////////
+                req.action=2;
+                Product.liveproducthistory(req, function(err,result2){
+                  if (err) {
+                      result(err, null);
+                  } else{
+                      console.log(result2);
+                  }
+                });
+                //////////////////////////////////////////
                 let message = "Quantity added successfully";
                 let resobj = {
                   success: true,
@@ -519,6 +533,16 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
                   console.log("error: ", err);
                   result(null, err);
                 } else {
+                  /////=Add Live Product History =//////////
+                  req.action=1;
+                  Product.liveproducthistory(req, function(err,result2){
+                    if (err) {
+                          result(err, null);
+                        } else{
+                          console.log(result2);
+                        }
+                  });
+                  /////////////////////////////////////////
                   let message =
                     "Quantity added and product moved to live successfully";
                   let resobj = {
@@ -977,33 +1001,156 @@ Product.getAllProductbymakeituserid = function getAllProductbymakeituserid(req,r
   );
 };
 
-
-//Live Product Status
+//////// Live Product Status ////////
 Product.getliveProductstatus = function getliveProductstatus(liveproductid, result) {
-  var query="select prd.makeit_userid,prd.productid,prd.product_name,prd.quantity as actival_quantity,if(oi.quantity,oi.quantity,0) as ordered_quantity,(prd.quantity+if(oi.quantity,oi.quantity,0)) as total_quantity  from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on oi.orderid = ord.orderid where prd.active_status = 1 and prd.delete_status !=1 and  prd.makeit_userid="+liveproductid.makeit_userid+" group by prd.productid";
-  console.log(query);
+  //console.log(liveproductid);
+  if(liveproductid.makeit_userid){
+    var query="select prd.makeit_userid,prd.productid,prd.product_name,prd.quantity as actival_quantity,if(oi.quantity,oi.quantity,0) as ordered_quantity,(prd.quantity+if(oi.quantity,oi.quantity,0)) as total_quantity  from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on oi.orderid = ord.orderid where prd.active_status = 1 and prd.delete_status !=1 and  prd.makeit_userid="+liveproductid.makeit_userid+" group by prd.productid";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
       } else {
         if (res.length !== 0) {
           let resobj = {
-            success: true,
-            status:true,
-            result:res
+            success : true,
+            status  : true,
+            result  : res
           };
           result(null, resobj);
         }else {
           let resobj = {
-            success: true,
-            message: "Sorry! no data found.",
-            status:false
+            success : true,
+            message : "Sorry! no data found.",
+            status  : false
           };
           result(null, resobj);
         }
       }
+    });
+  }else{
+    result(err, null);
+  } 
+};
+
+///////////// Log History add and edit /////////////////////////
+Product.createliveproductstatushistory = async function(req, result) {
+  //console.log(req);
+  if(req.productid && req.action){
+    const getproductdetails = await query("select "+req.action+" as action,prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 and prd.productid="+req.productid+" group by prd.productid");
+    if (getproductdetails.err) {
+      result(err, null);
+    }else{
+      var inserthistory = await producthistory.createProducthistory(getproductdetails);
+      let resobj = {
+        success : true,
+        message : "Live Product History Created Successfully",
+        status  : false,
+        result  : inserthistory
+      };
+      result(null, resobj);
     }
-  );
+  }else{
+    result(err, null);
+  }
+};
+
+///////////// Cron Log History /////////////////////////
+Product.croncreateliveproductstatushistory = async function(req, result) {
+  var breatfastcycle = constant.breatfastcycle;
+  var lunchcycle     = constant.lunchcycle;
+  var dinnercycle    = constant.dinnerend+1; //22+1
+  var day            = moment().format("YYYY-MM-DD HH:mm:ss");
+  var currenthour    = moment(day).format("HH");
+  var CSselectquery  = "";
+  var CSwherequery   = "";
+  var CEselectquery  = "";
+  var CEwherequery   = "";
+  var cyclestart = 0;
+  var cycleend   = 0;
+  
+  if(currenthour==breatfastcycle){
+    cyclestart = 1;
+    /////Cycle Start ////
+    CSselectquery = " 3 as action,";
+    CSwherequery  = " and prd.breakfast=1";
+  }else if(currenthour==lunchcycle){
+    cycleend   = 1;
+    cyclestart = 1;
+    /////Cycle End ////
+    CEselectquery = " 4 as action,";
+    CEwherequery  = " and prd.breakfast=1";
+    /////Cycle Start ////
+    CSselectquery = " 3 as action,";
+    CSwherequery  = " and prd.lunch=1";      
+  }else if(currenthour==dinnercycle){
+    cycleend   = 1;
+    cyclestart = 1;
+    /////Cycle End ////
+    CEselectquery = " 4 as action,";
+    CEwherequery  = " and prd.lunch=1";
+    /////Cycle Start ////
+    CSselectquery = " 3 as action,";
+    CSwherequery  = " and prd.dinner=1";      
+  }else if(currenthour==23){
+    cycleend = 1;
+    /////Cycle End ////
+    CEselectquery = " 4 as action,";
+    CEwherequery  = " and prd.dinner=1";
+  }else{ }
+
+  if(breatfastcycle && lunchcycle && dinnercycle){
+    if(cyclestart == 1){
+      const getproductdetailscs = await query("select"+CSselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CSwherequery+" group by prd.productid");
+      if (getproductdetailscs.err) {
+        result(err, null);
+      }else{
+        for(var i=0; i<getproductdetailscs.length; i++){
+          var inserthistory = await producthistory.createProducthistory(getproductdetailscs[i]);
+        }
+        let resobjcs = {
+          success : true,
+          message : "Cycle Start Live Product History Created Successfully",
+          status  : false,
+          result  : inserthistory
+        };
+        result(null, resobjcs);
+      }
+    }else{
+      let resobj = {
+        success : true,
+        message : "This is not a time for run this cron job",
+        status  : false
+      };
+      result(null, resobj);
+    }
+
+    if(cycleend == 1){
+      const getproductdetailsce = await query("select"+CEselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CEwherequery+" group by prd.productid");
+      if (getproductdetailsce.err) {
+        result(err, null);
+      }else{
+        for(var i=0; i<getproductdetailsce.length; i++){
+          var inserthistory = await producthistory.createProducthistory(getproductdetailsce);
+        }
+        let resobjce = {
+          success : true,
+          message : "Cycle End Live Product History Created Successfully",
+          status  : false,
+          result  : inserthistory
+        };
+        result(null, resobjce);
+      }
+    }else{
+      let resobj = {
+        success : true,
+        message : "This is not a time for run this cron job",
+        status  : false
+      };
+      result(null, resobj);
+    }
+  }else{
+    result(err, null);
+  } 
 };
 
 module.exports = Product;

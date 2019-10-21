@@ -746,7 +746,26 @@ const master = [
                 "cancelstatus": "moveit pickup cancel"
             }
         ]
-    }
+    },
+    {
+        'liveproducthistoryaction': [{
+                "actionid": 1,
+                "status": "live product add"
+            },
+            {
+                "actionid": 2,
+                "status": "live product edit"
+            },
+            {
+                "actionid": 3,
+                "status": "cycle start"
+            },
+            {
+                "actionid": 4,
+                "status": "cycle end"
+            }
+        ]
+    },
 
 
 ]

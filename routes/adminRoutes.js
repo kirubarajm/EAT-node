@@ -165,5 +165,8 @@ app.route("/admin/orders/razorpaycapture").post(routesVersioning({"1.0.0":Razorp
 app.route("/admin/order/pickupcancel").put(routesVersioning({"1.0.0":orders.admin_order_pickup_cancel}));
 app.route("/admin/order/preparedcancel").put(routesVersioning({"1.0.0":orders.admin_order_prepared_cancel}));
 
+app.route("/admin/reports/virtualordercanceled").post(routesVersioning({"1.0.0":orders.virtual_order_canceled}));
+app.route("/admin/reports/realordercanceled").post(routesVersioning({"1.0.0":orders.real_order_canceled}));
+
 
 }

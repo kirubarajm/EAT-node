@@ -59,4 +59,7 @@ app.route("/makeit/badgescreate").post(middleware.checkToken,routesVersioning({"
 app.route("/makeit/versioncheck").post(routesVersioning({"1.0.0": makeituser.makeit_app_version_check_vid}));
 app.route("/makeit/loginstatus").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.makeituser_online_status}));
 app.route("/makeit/liveproductstatus/:makeit_userid").get(middleware.checkToken,routesVersioning({"1.0.0":product.live_product_status}));
+app.route("/makeit/createliveproducthistory").post(middleware.checkToken,routesVersioning({"1.0.0":product.create_live_product_status_history}));
+
+app.route("/makeit/cronliveproducthistory").post(routesVersioning({"1.0.0":product.cron_create_live_product_status_history}));
 }
