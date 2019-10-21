@@ -489,6 +489,48 @@ Moveituser.get_a_nearby_moveit_V2 = async function get_a_location_user(req, resu
 });
 };
 
+Moveituser.admin_moveit_current_location = async function admin_moveit_current_location(req, result) {
+  var query= "select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where online_status = 1";
+  sql.query(query, function (err, res) {
+    if (err) {
+      let error = {
+        success: true,
+        status:false,
+    };
+        result(error, null);
+    }
+    else {
+      if(res.length===0){
+        let resobj = {
+          success: true,
+          status:false,
+          message:"No Move-it found,please try after some time"
+        };
+        result(null, resobj);
+      }else{
+        MoveitFireBase.geoFireGetMoveitLocation(res,function(err, make_it_id) {
+          if (err) {
+            let error = {
+              success: true,
+              status:false,
+              message:"No Move-it found,please after some time"
+            };
+            result(error, null);
+          }else{
+            let resobj = {
+              success: true,
+              status: true,
+              result: make_it_id
+            };
+            result(null, resobj);
+          }
+        });
+     }
+        
+    }
+});
+};
+
 
 Moveituser.edit_moveit_user = function (req, result) {
     if (req.email || req.password || req.phoneno) {

@@ -168,5 +168,6 @@ app.route("/admin/order/preparedcancel").put(routesVersioning({"1.0.0":orders.ad
 app.route("/admin/reports/virtualordercanceled").post(routesVersioning({"1.0.0":orders.virtual_order_canceled}));
 app.route("/admin/reports/realordercanceled").post(routesVersioning({"1.0.0":orders.real_order_canceled}));
 
+app.route("/admin/moveit/current_location").post(routesVersioning({"1.0.0":moveituser.admin_moveit_current_location}));
 
 }

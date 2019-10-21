@@ -39,7 +39,7 @@ var Product = function(product) {
   //  this.updated_at = new Date()
 };
 
-Product.getTotalPrice = async function createProduct(itemlist, makeit_userid, result) {  //=> praveen // makeit_userid
+Product.getTotalPrice = async function getTotalPrice(itemlist, makeit_userid, result) {  //=> praveen // makeit_userid
   var totalamount = 0;
   var vegtype     = 0;
   var itemdetail  = {};

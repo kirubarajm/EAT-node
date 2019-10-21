@@ -62,4 +62,6 @@ app.route("/makeit/liveproductstatus/:makeit_userid").get(middleware.checkToken,
 app.route("/makeit/createliveproducthistory").post(middleware.checkToken,routesVersioning({"1.0.0":product.create_live_product_status_history}));
 
 app.route("/makeit/cronliveproducthistory").post(routesVersioning({"1.0.0":product.cron_create_live_product_status_history}));
+app.route("/makeit/customersupport").post(routesVersioning({"1.0.0": makeituser.makeit_customer_support}));
+
 }

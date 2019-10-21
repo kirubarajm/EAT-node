@@ -175,6 +175,13 @@ exports.getNearByMoveit = function(req, res) {
   });
 };
 
+exports.admin_moveit_current_location = function(req, res) {
+  Moveituser.admin_moveit_current_location(req.body, function(err, ordercancel) {
+    if (err) res.send(err);
+    res.send(ordercancel);
+  });
+};
+
 exports.edit_moveit_user_byid = function(req, res) {
   if (!req.body.userid) {
     res
