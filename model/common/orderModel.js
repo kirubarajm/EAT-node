@@ -755,7 +755,7 @@ Order.get_all_orders = function get_all_orders(req, result) {
   var startlimit = (page - 1) * orderlimit;
 
   var query =
-  "Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
+  "Select od.*,us.*,mu.brandname,mu.virtualkey as kitchentype from Orders as od left join User as us on od.userid=us.userid join MakeitUser as mu on mu.userid=od.makeit_user_id where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
  // var query =
     //"Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status>0) )and orderstatus < 9";
   var searchquery =
@@ -4761,6 +4761,33 @@ Order.real_before_cancel = function real_before_cancel(req, result) {
             success: true,
             message: "Sorry! no data found.",
             status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//Check Orders in queue 
+Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
+  var query="Select count(*) ordercount from Orders as ors where ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( "+req.lat+" ) )  * cos( radians( "+req.lon+" ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians("+req.lat+")) ) )<2 and (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2))";
+    sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            ordercount:res[0].ordercount
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            status:true,
+            ordercount:0
           };
           result(null, resobj);
         }
