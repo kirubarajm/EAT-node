@@ -4254,7 +4254,7 @@ Order.kitchenwise_report = function kitchenwise_report(req, result) {
 
 //Product wise Virual Kitchen report
 Order.product_wise_virtual = function product_wise_virtual(req, result) {
-  var query="Select pr.product_name as productname,pr.makeit_userid,mh.makeithub_name ,ord.productid, sum(ord.quantity) as quan, m.brandname,m.address as hub_location from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid join MakeitUser as m on m.userid = pr.makeit_userid join Makeit_hubs as mh on m.makeithub_id = mh.makeithub_id where (Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  and m.virtualkey=1 and  orde.orderstatus=6 group by ord.productid order by quan desc;";
+  var query="Select pr.product_name as productname,pr.makeit_userid,mh.makeithub_name ,ord.productid, sum(ord.quantity) as quan, m.brandname,mh.address as hub_location from OrderItem as ord join Orders as orde on orde.orderid= ord.orderid join Product as pr on pr.productid = ord.productid join MakeitUser as m on m.userid = pr.makeit_userid join Makeit_hubs as mh on m.makeithub_id = mh.makeithub_id where (Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  and m.virtualkey=1 and  orde.orderstatus=6 group by ord.productid order by quan desc;";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
