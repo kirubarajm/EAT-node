@@ -929,6 +929,7 @@ Product.approve_product_status = function(req, result) {
   );
 };
 
+
 Product.admin_list_all__unapproval_product = function admin_list_all__unapproval_product(req,result) {
   console.log(req);
 

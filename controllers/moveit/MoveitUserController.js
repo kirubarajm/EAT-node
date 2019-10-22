@@ -272,4 +272,9 @@ exports.moveit_online_status = function(req, res) {
   });
 };
 
-
+exports.getNearByMoveit_auto_assign = function(req, res) {
+  Moveituser.getNearByMoveit_auto_assign_moveit_V2(req.body,function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

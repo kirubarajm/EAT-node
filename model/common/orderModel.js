@@ -379,6 +379,31 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
 
 Order.online_order_place_conformation = async function(order_place, result) {
 
+  var orderdetails = await query("select * from Orders where orderid ='"+order_place.orderid+"'");
+
+  if (orderdetails.length!==0) {
+    
+    if (orderdetails[0].payment_status==2) {   
+      let resobj = {
+        success: true,
+        message: "Sorry Order is already payment failed!",
+        status: false,
+        orderid: order_place.orderid
+      };
+      result(null, resobj);
+    }else  if (orderdetails[0].payment_status==1) {
+      
+      let resobj = {
+        success: true,
+        message: "Sorry Order is already payment paid",
+        status: false,
+        orderid: order_place.orderid
+      };
+      result(null, resobj);
+    }else{
+
+    
+  
   var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
   var transaction_status= order_place.payment_status === 1? 'success':'failed';
   var orderUpdateQuery =
@@ -539,11 +564,18 @@ if(order_place.payment_status === 1){
       }
     }
   });
+}
+}else{
+  let resobj = {
+    success: true,
+    message: "Sorry Order is not found!",
+    status: false
+  };
+  result(null, resobj);
+}
 };
 
-Order.create_customerid_by_razorpay = async function create_customerid_by_razorpay(
-  userid
-) {
+Order.create_customerid_by_razorpay = async function create_customerid_by_razorpay(userid) {
   const userinfo = await query("Select * from User where userid = '" + userid + "'");
   var customerid = userinfo[0].razer_customerid;
   console.log("customerid-->",customerid);
@@ -2093,8 +2125,6 @@ Order.create_refund = function create_refund(refundDetail) {
   });
 };
 
-
-
 Order.cod_create_refund_coupon_servicecharge = function cod_create_refund_coupon_servicecharge(refundDetail) {
 
   var rc = new RefundCoupon(refundDetail);
@@ -2104,7 +2134,6 @@ Order.cod_create_refund_coupon_servicecharge = function cod_create_refund_coupon
     else return res;
   });
 };
-
 
 Order.create_Refund_Coupon_by_totalamount_servicecharge = function create_Refund_Coupon_by_totalamount_servicecharge(refundDetail) {
 
@@ -2909,8 +2938,6 @@ Order.eat_order_item_missing_byuserid = async function eat_order_item_missing_by
 };
 
 
-
-
 Order.get_order_waiting_list = function get_order_waiting_list(req, result) {
   var waitinglistquery = "SELECT ors.orderid,ors.ordertime,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail from Orders as ors left join MakeitUser ms on ors.makeit_user_id = ms.userid WHERE  ors.orderstatus=0 and ors.lock_status = 0 and ors.payment_status!=2 and (ors.created_at+ INTERVAL 6 MINUTE) < now() group by ors.orderid order by ors.orderid  desc";
   sql.query(waitinglistquery, function(err,res1) {
@@ -2983,8 +3010,6 @@ Order.get_orders_cash_online_amount = async function get_orders_cash_online_amou
     }
   );
 };
-
-
 
 Order.eat_order_skip_count_by_uid = async function eat_order_skip_count_by_uid(req,result) {
 
@@ -3386,8 +3411,6 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
   // }
 };
 
-
-
 Order.moveit_customer_location_reached_by_userid = function(req, result) {
   var customerlocationreachtime = moment().format("YYYY-MM-DD HH:mm:ss");
   console.log(customerlocationreachtime);
@@ -3434,7 +3457,6 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
     }
   });
 };
-
 
 Order.moveit_unaccept_orders_byid = function moveit_unaccept_orders_byid(req, result) {
  
@@ -3560,8 +3582,6 @@ Order.order_delivery_status_by_admin = function order_delivery_status_by_admin(r
   );
 };
 
-
-
 Order.admin_order_payment_status_by_moveituser = function(req, result) {
   sql.query(
     "Select * from Orders where orderid = ? and moveit_user_id = ?",
@@ -3629,8 +3649,6 @@ Order.admin_order_payment_status_by_moveituser = function(req, result) {
     }
   );
 };
-
-
 
 
 Order.admin_orders_count_by_moveit= function admin_orders_count_by_moveit(req, result) {
@@ -3714,6 +3732,8 @@ Order.order_turnaround_time_makeit = function order_turnaround_time_makeit(req, 
     }
   );
 };
+
+
 Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, result) {
   var query="Select Ord.orderid,Ord.ordertime,TIMEDIFF(moveit_accept_time,order_assigned_time) as Moveit_Accept_time, TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time , ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time) ,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) ) as Totaltime from `Orders` as Ord  where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
   sql.query(query,async function(err, res) {

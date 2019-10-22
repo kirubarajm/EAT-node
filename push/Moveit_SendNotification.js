@@ -142,3 +142,45 @@ exports.sendNotificationAndroid = function(
   console.log("moveit notification payload:"+payload);
   Move_it.messaging().sendToDevice(token, payload, options);
 };
+
+
+// exports.geoFireGetKeyByGeomoveitbydistance= async function(geoLocation,radius,result){
+//   initializeAppName();
+   
+  
+
+//   // var timeoutid = setTimeout(async function () {
+  
+//   //   move_it_id = await getmoveitlist(geoLocation,radius);
+//   //   console.log(move_it_id);
+//   //   result(null,move_it_id)
+//   // },2000);
+  
+// }
+
+
+exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomoveitbydistance(geoLocation,radius) {
+  initializeAppName();
+   
+  var move_it_id={};
+  var geoQuery = geoFire.query({
+    center: geoLocation,
+    radius: radius
+  });
+  
+ var timeoutid = setTimeout(function () {
+  
+    var onKeyEnteredRegistration = geoQuery.on("key_entered",async function(data) {
+      //console.log(key + " entered query at " + location + " (" + distance + " km from center)")
+    
+     move_it_id.id = data;
+     console.log(move_it_id);
+  
+    });
+
+  },1000);
+  return move_it_id; 
+ 
+
+  
+}

@@ -882,4 +882,57 @@ Moveituser.update_pushid = function(req, result) {
        
   
   };
+
+
+  Moveituser.getNearByMoveit_auto_assign_moveit_V2 = async function getNearByMoveit_auto_assign_moveit_V2(req, result) {
+
+  var geoLocation = [];;
+  geoLocation.push(req.lat);
+  geoLocation.push(req.lon);
+
+//   moveitlist= await  MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,Constant.nearby_moveit_radius);
+
+//   console.log("moveitlist"+moveitlist);
+//   let resobj = {
+//     success: true,
+//     status: true,
+//     result: moveitlist
+//   };
+// result(null, resobj);
+
+
+// var move_it_id = await MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,Constant.nearby_moveit_radius);
+
+// console.log(move_it_id);
+
+// let resobj = {
+//   success: true,
+//   status: true,
+//   result: move_it_id
+// };
+// result(null, resobj);
+
+  MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,Constant.nearby_moveit_radius,async function(err, move_it_id) {
+    if (err) {
+      let error = {
+        success: true,
+        status:false,
+        message:"No Move-it found,please after some time"
+      };
+      result(error, null);
+    }else{
+ 
+    
+     // console.log(move_it_id);
+      let resobj = {
+        success: true,
+        status: true,
+        result: move_it_id
+      };
+    result(null, resobj);
+    }
+  })
+  };
+
+
 module.exports = Moveituser;
