@@ -2694,18 +2694,37 @@ Makeituser.makeituser_appointments_cancel= async function makeituser_appointment
 };
 
 Makeituser.makeit_app_customer_support= async function makeit_app_customer_support(req,result) { 
-     
-
-  let resobj = {
+   let resobj = {
       success: true,
       status:true,
       customer_support : constant.makeit_customer_support
   };
-
   result(null, resobj);
-
-
 };
 
+//Get Live Product Status
+Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(req,result) {
+  sql.query("select lph.makeit_id,lph.product_id, MAX(actual_quantity+pending_quantity+ordered_quantity) as total_quantity, SUM(CASE WHEN (ord.orderstatus<=6 and date(ord.created_at)=CURDATE()) THEN oi.quantity ELSE 0 END) as soldout_quantity, ((SUM(CASE WHEN (ord.orderstatus<=6 and date(ord.created_at)=CURDATE()) THEN oi.quantity ELSE 0 END)/MAX(actual_quantity+pending_quantity+ordered_quantity))*100)as percentage from Live_Product_History lph join OrderItem as oi on oi.productid=lph.product_id join Orders as ord on ord.orderid=oi.orderid where date(lph.created_at)=CURDATE() and lph.makeit_id="+req.makeit_id+" group by lph.product_id",async function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      if (res.length !== 0) {
+        let resobj = {
+          success: true,
+          status : true,
+          result : res
+        };
+        result(null, resobj);
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status : false
+        };
+        result(null, resobj);
+      }
+    }
+  });
+};
 
 module.exports = Makeituser;

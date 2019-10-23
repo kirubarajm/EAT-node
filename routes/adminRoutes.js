@@ -170,4 +170,6 @@ app.route("/admin/reports/realkitchenordercanceled").post(routesVersioning({"1.0
 
 app.route("/admin/moveit/current_location").post(routesVersioning({"1.0.0":moveituser.admin_moveit_current_location}));
 
+app.route("/admin/makeit/liveproductstatus").post(routesVersioning({"1.0.0":makeituser.makeit_liveproduct_status}));
+
 }

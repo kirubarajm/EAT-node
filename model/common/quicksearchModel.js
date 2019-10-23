@@ -195,7 +195,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
   };
 
   ///// Cron For BreakFast, Lunch, Dinner Every Cycle Start and End ///////////
-  const liveproducthistory = new CronJob('* *8,12,16,23 * * *',async function(req,result){
+  const liveproducthistory = new CronJob('0 0 8,12,16,23 * * *',async function(req,result){
     var breatfastcycle = constant.breatfastcycle;
     var lunchcycle     = constant.lunchcycle;
     var dinnercycle    = constant.dinnerend+1; //22+1
@@ -235,7 +235,6 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
     if(breatfastcycle && lunchcycle && dinnercycle){
       if(cyclestart == 1){
         const getproductdetailscs = await query("select"+CSselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CSwherequery+" group by prd.productid");
-        console.log(getproductdetailscs);
         if (getproductdetailscs.err) {
           //result(err, null); 
           console.log(getproductdetailscs.err);
@@ -248,7 +247,8 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
       if(cycleend == 1){
         const getproductdetailsce = await query("select"+CEselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CEwherequery+" group by prd.productid");
         if (getproductdetailsce.err) { 
-
+          //result(err, null); 
+          console.log(getproductdetailsce.err);
         }else{
           for(var i=0; i<getproductdetailsce.length; i++){
             var inserthistory = await producthistory.createProducthistory(getproductdetailsce[i]);
@@ -257,6 +257,6 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
       }
     } 
   });
-  //liveproducthistory.start();
+  liveproducthistory.start();
 
 module.exports = QuickSearch;

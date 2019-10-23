@@ -250,3 +250,11 @@ exports.Salesuser_logout = function(req, res) {
     });
   }
 };
+
+//Sales Customer Support
+exports.sales_customer_support = function(req, res) {
+  Salesuser.sales_app_customer_support(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

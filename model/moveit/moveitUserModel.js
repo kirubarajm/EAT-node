@@ -924,4 +924,15 @@ Moveituser.update_pushid = function(req, result) {
        
   
   };
+
+  //Moveit Customer Support
+  Moveituser.moveit_app_customer_support= async function moveit_app_customer_support(req,result) { 
+    let resobj = {
+        success: true,
+        status:true,
+        customer_support : constant.moveit_customer_support
+    };
+    result(null, resobj);
+  };
+
 module.exports = Moveituser;

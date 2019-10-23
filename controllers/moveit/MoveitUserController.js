@@ -279,4 +279,11 @@ exports.moveit_online_status = function(req, res) {
   });
 };
 
+//Moveit Customer Support
+exports.moveit_customer_support = function(req, res) {
+  Moveituser.moveit_app_customer_support(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
 
