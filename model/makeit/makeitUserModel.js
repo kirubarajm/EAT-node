@@ -599,7 +599,7 @@ Makeituser.orderhistorybyuserid = function(id, result) {
     var query =
       "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid WHERE makeit_user_id  = '" +
       id +
-      "' and (ors.orderstatus = 6 or ors.orderstatus = 7) group by orderid order by orderid  desc";
+      "' and (ors.orderstatus = 6 or ors.orderstatus = 7 and payment_status > 2) group by orderid order by orderid  desc";
   } else {
     var query = "select * from Orders order by orderid desc";
   }
@@ -1092,7 +1092,9 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               req.makeit_user_id +
               "' and mk.appointment_status = 3 and mk.verified_status = 1 and mk.ka_status = 2"
           );
-
+          makeitavailability[0].distance = makeitavailability[0].distance * constant.onemile;
+          makeitavailability[0].distance = makeitavailability[0].distance.toFixed(2) ;
+          console.log(makeitavailability[0].distance);
             
         var eta = constant.foodpreparationtime + (constant.onekm * makeitavailability[0].distance);
         
@@ -1149,7 +1151,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                 }
 
               if (totalamount >= discount_amount) {
-                console.log(discount_amount);
+                
                 totalamount = totalamount - discount_amount;
                 coupon_discount_amount = discount_amount;
               }else{
@@ -1381,7 +1383,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
       } else {
         
       
-        res2[0].first_tunnel = 1;
+         res2[0].first_tunnel = 1;
           res2[0].isAvaliablekitchen = isAvaliablekitchen;
 
           for (let i = 0; i < res2.length; i++) {
@@ -1503,7 +1505,6 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             
             //this code is modified 23-09-2019
             if (delivery_charge !==0) {
-              console.log(delivery_charge);
               deliverychargeinfo.title = "Handling charge";
               deliverychargeinfo.charges = delivery_charge;
               deliverychargeinfo.status = true;
@@ -2694,18 +2695,37 @@ Makeituser.makeituser_appointments_cancel= async function makeituser_appointment
 };
 
 Makeituser.makeit_app_customer_support= async function makeit_app_customer_support(req,result) { 
-     
-
-  let resobj = {
+   let resobj = {
       success: true,
       status:true,
       customer_support : constant.makeit_customer_support
   };
-
   result(null, resobj);
-
-
 };
 
+//Get Live Product Status
+Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(req,result) {
+  sql.query("select lph.makeit_id,lph.product_id, MAX(actual_quantity+pending_quantity+ordered_quantity) as total_quantity, SUM(CASE WHEN (ord.orderstatus<=6 and date(ord.created_at)=CURDATE()) THEN oi.quantity ELSE 0 END) as soldout_quantity, ((SUM(CASE WHEN (ord.orderstatus<=6 and date(ord.created_at)=CURDATE()) THEN oi.quantity ELSE 0 END)/MAX(actual_quantity+pending_quantity+ordered_quantity))*100)as percentage from Live_Product_History lph join OrderItem as oi on oi.productid=lph.product_id join Orders as ord on ord.orderid=oi.orderid where date(lph.created_at)=CURDATE() and lph.makeit_id="+req.makeit_id+" group by lph.product_id",async function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      if (res.length !== 0) {
+        let resobj = {
+          success: true,
+          status : true,
+          result : res
+        };
+        result(null, resobj);
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status : false
+        };
+        result(null, resobj);
+      }
+    }
+  });
+};
 
 module.exports = Makeituser;

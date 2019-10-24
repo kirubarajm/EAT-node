@@ -41,5 +41,5 @@ app.route("/sales/versioncheck").post(routesVersioning({"1.0.0": salesuser.sales
 app.route("/sales/logout").post(middleware.checkToken,routesVersioning({"1.0.0":salesuser.Salesuser_logout}));
 //app.route("/salesusers/:userid").delete(routesVersioning({"1.0.0":salesuser.delete_a_user}));
 
-
+app.route("/sales/customersupport").post(routesVersioning({"1.0.0": salesuser.sales_customer_support}));
 }

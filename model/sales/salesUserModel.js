@@ -617,5 +617,14 @@ Salesuser.Salesuser_logout = async function Salesuser_logout(req, result) {
  
 };
 
+//Sales Customer Support
+Salesuser.sales_app_customer_support= async function sales_app_customer_support(req,result) { 
+  let resobj = {
+      success: true,
+      status:true,
+      customer_support : constant.sales_customer_support
+  };
+  result(null, resobj);
+};
 
 module.exports = Salesuser;

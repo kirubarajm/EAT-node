@@ -476,9 +476,17 @@ exports.makeituser_appointments_cancel= function(req, res) {
 }
 }
 
-exports.makeit_customer_support = function(req, res) {
-  Makeituser.makeit_app_customer_support(req.body, function(err, user) {
+exports.sales_customer_support = function(req, res) {
+  Makeituser.sales_app_customer_support(req.body, function(err, user) {
     if (err) res.send(err);
     res.json(user);
+  });
+};
+
+//Get Live Product Status
+exports.makeit_liveproduct_status = function(req, res) {
+  Makeituser.makeit_liveproduct_status(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.send(user);
   });
 };
