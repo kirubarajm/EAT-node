@@ -174,5 +174,9 @@ app.route("/admin/makeit/liveproductstatus").post(routesVersioning({"1.0.0":make
 
 app.route("/admin/moveit/nearbymoveit").post(routesVersioning({"1.0.0":moveituser.getNearByMoveit_auto_assign}));
 
+app.route("/admin/makeit/kitchenliveproductstatus").post(routesVersioning({"1.0.0":makeituser.kitchen_liveproduct_status}));
+
+app.route("/admin/makeituserspercentage").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage}));
+
 
 }

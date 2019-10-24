@@ -2729,26 +2729,29 @@ Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(r
 };
 */
 
-//Get Live Product Status
+//Get Live Product Status Based on the Makeit
 Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(req,result) {
-  let resobj;
   if(req.makeit_id){
-    var getmaxquantity = await query("select makeit_id,product_id, MAX(actual_quantity+pending_quantity+ordered_quantity) as total_quantity, 0 as sold_quantity,0 as percentage from Live_Product_History where date(created_at)=CURDATE() and makeit_id="+req.makeit_id+" group by product_id order by product_id ASC");
+    var getmaxquantity = await query("select makeit_id,product_id, MAX(actual_quantity+pending_quantity+ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage from Live_Product_History where date(created_at)=CURDATE() and makeit_id="+req.makeit_id+" group by product_id order by product_id ASC");
   
     var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)=CURDATE() and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+req.makeit_id+" group by oi.productid order by oi.productid ASC");
     
     if(getmaxquantity.length !=0){
+      var product_count = 0;
       for(var i=0; i<getmaxquantity.length; i++){
+        product_count = parseInt(product_count) + parseInt(getmaxquantity[i].total_quantity);
         for(var j=0; j<getsoldquantity.length; j++){
           if(getmaxquantity[i].product_id==getsoldquantity[j].productid){
             getmaxquantity[i].sold_quantity = getsoldquantity[j].sold_quantity;
-            getmaxquantity[i].percentage = (getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100;
+            getmaxquantity[i].product_percentage = (getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100;
+              
           }
         }
       }
       let resobj = {
         success: true,
         message: "Success",
+        product_count: product_count,
         status : true,
         result : getmaxquantity
       };
@@ -2771,5 +2774,131 @@ Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(r
   }
 };
 
+//Get Live Product Status Based on the Kitchen 
+Makeituser.kitchen_liveproduct_status= async function kitchen_liveproduct_status(req,result) {
+  console.log(req);
+  if(req.makeit_id){
+    var getmaxquantity = await query("select makeit_id,product_id, MAX(actual_quantity+pending_quantity+ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage,0 as kitchen_product_count_percentage,0 as kitchen_product_percentage from Live_Product_History where date(created_at)='2019-10-23'and makeit_id="+req.makeit_id+" group by product_id order by product_id ASC");
+  
+    var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)='2019-10-23' and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+req.makeit_id+" group by oi.productid order by oi.productid ASC");
+    //result(null, getsoldquantity);
+    var product_count = 0;
+    var kitchen_percentage = 0;
+    if(getmaxquantity.length !=0){
+      ////Calculation For Product Count
+      for(var i=0; i<getmaxquantity.length; i++){
+        product_count = parseInt(product_count) + parseInt(getmaxquantity[i].total_quantity);
+      }
+
+      for(var i=0; i<getmaxquantity.length; i++){
+        for(var j=0; j<getsoldquantity.length; j++){
+          if(getmaxquantity[i].product_id==getsoldquantity[j].productid){
+            ////Set Soldout Quantity
+            getmaxquantity[i].sold_quantity = getsoldquantity[j].sold_quantity;
+            ////Calculation For Product Percentage
+            getmaxquantity[i].product_percentage = ((getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100).toFixed(2);
+            ////Calculation For Kitchen Product Percentage
+            getmaxquantity[i].kitchen_product_count_percentage = ((getmaxquantity[i].total_quantity/product_count)*100).toFixed(2);
+            ////Calculation For Kitchen Percentage
+            getmaxquantity[i].kitchen_product_percentage = (getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100)).toFixed(2);
+            ////Calcualtion For kitchen percentage
+            kitchen_percentage = kitchen_percentage+(getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100));
+          }
+        }
+      }
+      let resobj = {
+        success: true,
+        message: "Success",
+        status : true,
+        product_count: product_count,
+        kitchen_percentage: kitchen_percentage.toFixed(2),
+        result : getmaxquantity
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }
+  }else{
+    let resobj = {
+      success: true,
+      message: "Invalid Makeit_id",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+
+//Makeit List with  Live Product Status Based on the Kitchen
+Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
+  var orderlimit = 10;
+  var page = req.page || 1;
+  var startlimit = (page - 1) * orderlimit;
+
+  req.appointment_status = req.appointment_status || "all";
+  req.virtualkey = req.virtualkey;
+//console.log(req);
+ 
+  var query = "select mk.* from MakeitUser mk";
+  var searchquery = "mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE  '%" + req.search + "%'";
+
+  if(req.active_status){
+    query = query + " LEFT JOIN Product p on p.makeit_userid=mk.userid where p.active_status=1" ;
+  }
+
+  if(req.appointment_status!=="all"){
+    if(query.toLowerCase().includes('where')) query =query +" and mk.appointment_status  = '" + req.appointment_status+"'"
+    else query =query +" where mk.appointment_status  = '" + req.appointment_status+"'"
+  }
+
+  if(req.virtualkey!=="all"){
+    if(query.toLowerCase().includes('where'))
+    query =query +" and mk.virtualkey  = '" + req.virtualkey+"'"
+    else query =query +" where mk.virtualkey  = '" + req.virtualkey+"'"
+  }
+
+  if(req.search){
+    if(query.toLowerCase().includes('where'))
+    query =query +" and "+searchquery
+    else query =query +" where "+searchquery
+  }
+
+  if(req.active_status){
+    query = query + " group by userid";
+  }
+
+  query = query +" order by userid ASC limit " +startlimit +"," +orderlimit;
+
+  //console.log(query);
+  sql.query(query, async function(err, res) {
+    if (err) {
+      //console.log("error: ", err);
+      result(null, err);
+    } else {
+      ////Get Kitchen Percentage
+      for(var i=0; i<res.length; i++){
+        res[i].makeit_id=res[i].userid;
+        await Makeituser.kitchen_liveproduct_status(res[i],function(err,percentage){
+          console.log(percentage)
+          res[i].kitchen_percentage=percentage.kitchen_percentage;
+        });
+        
+      }
+
+      let sucobj = true;
+      let resobj = {
+        success: sucobj,
+        result: res
+      };
+
+      result(null, resobj);
+    }
+  });
+  
+};
 
 module.exports = Makeituser;
