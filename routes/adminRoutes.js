@@ -172,4 +172,7 @@ app.route("/admin/moveit/current_location").post(routesVersioning({"1.0.0":movei
 
 app.route("/admin/makeit/liveproductstatus").post(routesVersioning({"1.0.0":makeituser.makeit_liveproduct_status}));
 
+app.route("/admin/moveit/nearbymoveit").post(routesVersioning({"1.0.0":moveituser.getNearByMoveit_auto_assign}));
+
+
 }

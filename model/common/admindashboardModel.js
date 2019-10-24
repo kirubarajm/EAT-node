@@ -13,7 +13,7 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
         //makeit allocated count
         // Select alc.*,mu.address,mu.brandname,mu.email,mu.flatno,mu.appointment_status,mu.name,mu.phoneno,mu.pincode,mu.userid from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1
        // var new_sales_appointment_count = await query("Select count(aid) as count  From Allocation where DATE(booking_date_time) = CURDATE() and status =1"); 
-        var new_sales_appointment_count = await query("Select count(aid) as count from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1"); 
+        var new_sales_appointment_count = await query("Select count(aid) as count from Allocation as alc left join MakeitUser as mu on alc.makeit_userid=mu.userid where mu.appointment_status = 1 and alc.status<6"); 
         countlist.new_sales_appointment_count  = new_sales_appointment_count[0].count;
         //new product count
         var product_approved_count = await query("Select count(productid) as count from Product  where delete_status !=1  and approved_status != 2  and approved_status != 3 "); 
