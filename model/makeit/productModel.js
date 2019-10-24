@@ -431,7 +431,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
               } else {
                 /////=Edit Live Product History =//////////
                 req.action=2;
-                Product.liveproducthistory(req, function(err,result2){
+                Product.createliveproductstatushistory(req, function(err,result2){
                   if (err) {
                       result(err, null);
                   } else{
@@ -535,7 +535,7 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
                 } else {
                   /////=Add Live Product History =//////////
                   req.action=1;
-                  Product.liveproducthistory(req, function(err,result2){
+                  Product.createliveproductstatushistory(req, function(err,result2){
                     if (err) {
                           result(err, null);
                         } else{

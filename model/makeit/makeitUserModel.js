@@ -2701,10 +2701,10 @@ Makeituser.makeit_app_customer_support= async function makeit_app_customer_suppo
   };
   result(null, resobj);
 };
-
+/*
 //Get Live Product Status
 Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(req,result) {
-  sql.query("select lph.makeit_id,lph.product_id, MAX(actual_quantity+pending_quantity+ordered_quantity) as total_quantity, SUM(CASE WHEN (ord.orderstatus<=6 and date(ord.created_at)=CURDATE()) THEN oi.quantity ELSE 0 END) as soldout_quantity, ((SUM(CASE WHEN (ord.orderstatus<=6 and date(ord.created_at)=CURDATE()) THEN oi.quantity ELSE 0 END)/MAX(actual_quantity+pending_quantity+ordered_quantity))*100)as percentage from Live_Product_History lph join OrderItem as oi on oi.productid=lph.product_id join Orders as ord on ord.orderid=oi.orderid where date(lph.created_at)=CURDATE() and lph.makeit_id="+req.makeit_id+" group by lph.product_id",async function(err, res) {
+  sql.query("select lph.makeit_id,lph.product_id, MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as total_quantity, SUM(CASE WHEN (ord.orderstatus<=6 and ord.orderstatus!=0 and date(ord.created_at)=CURDATE() and lph.product_id=oi.productid) THEN oi.quantity ELSE 0 END) as soldout_quantity, ((SUM(CASE WHEN (ord.orderstatus<=6 and ord.orderstatus!=0 and date(ord.created_at)=CURDATE() and lph.product_id=oi.productid) THEN oi.quantity ELSE 0 END)/MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity))*100)as percentage from Live_Product_History lph left join OrderItem as oi on oi.productid=lph.product_id left join Orders as ord on ord.orderid=oi.orderid where date(lph.created_at)=CURDATE() and lph.makeit_id="+req.makeit_id+" group by lph.product_id",async function(err, res) {
     if (err) {
       result(err, null);
     } else {
@@ -2726,5 +2726,49 @@ Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(r
     }
   });
 };
+*/
+
+//Get Live Product Status
+Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(req,result) {
+  let resobj;
+  if(req.makeit_id){
+    var getmaxquantity = await query("select makeit_id,product_id, MAX(actual_quantity+pending_quantity+ordered_quantity) as total_quantity, 0 as sold_quantity,0 as percentage from Live_Product_History where date(created_at)=CURDATE() and makeit_id="+req.makeit_id+" group by product_id order by product_id ASC");
+  
+    var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)=CURDATE() and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+req.makeit_id+" group by oi.productid order by oi.productid ASC");
+    
+    if(getmaxquantity.length !=0){
+      for(var i=0; i<getmaxquantity.length; i++){
+        for(var j=0; j<getsoldquantity.length; j++){
+          if(getmaxquantity[i].product_id==getsoldquantity[j].productid){
+            getmaxquantity[i].sold_quantity = getsoldquantity[j].sold_quantity;
+            getmaxquantity[i].percentage = (getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100;
+          }
+        }
+      }
+      let resobj = {
+        success: true,
+        message: "Success",
+        status : true,
+        result : getmaxquantity
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }
+  }else{
+    let resobj = {
+      success: true,
+      message: "Invalid Makeit_id",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+
 
 module.exports = Makeituser;
