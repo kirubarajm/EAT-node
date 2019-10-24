@@ -138,8 +138,25 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
   }
 };
 
+/*Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
+  //makeit_user_id
+    var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+    var currenthour  = moment(day).format("HH");
+   // var currenthour = 23
+    var breatfastcycle = constant.breatfastcycle;
+    var dinnercycle = constant.dinnercycle;
+    var lunchcycle = constant.lunchcycle;
+    var dinnerend = constant.dinnerend;
+    const delivery_charge = constant.deliverycharge;
+    // console.log(currenthour);
+    // console.log(dinnerend);
+    Order.getXfactors(req,function(err,res){
+      console.log('Res--->'+res.order_queue);
+    });
+    
+  };*/
 Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
-
+//makeit_user_id
   var day = moment().format("YYYY-MM-DD HH:mm:ss");;
   var currenthour  = moment(day).format("HH");
  // var currenthour = 23
@@ -149,15 +166,12 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
   var dinnerend = constant.dinnerend;
 
   const delivery_charge = constant.deliverycharge;
+  
   // console.log(currenthour);
   // console.log(dinnerend);
   if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
-     
     const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
- 
-
     if (res.length === 0 ) {
-
     //get address 
       const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
     //console.log("address_data-->",address_data);
@@ -4308,7 +4322,7 @@ Order.product_wise_real = function product_wise_real(req, result) {
 
 //Virtual Kitchen Orders report
 Order.virtual_orders_report = function virtual_orders_report(req, result) {
-  var query="Select o.orderid,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,ma.address as hub_location from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.orderid,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -4822,30 +4836,59 @@ Order.real_order_canceled= function real_order_canceled(req, result) {
 };
 
 //Check Orders in queue 
-Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
-  var query="Select count(*) ordercount from Orders as ors where ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( "+req.lat+" ) )  * cos( radians( "+req.lon+" ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians("+req.lat+")) ) )<2 and (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2))";
-    sql.query(query,async function(err, res) {
-      if (err) {
-        result(err, null);
-      } else {
-        if (res.length !== 0) {
-          let resobj = {
-            success: true,
-            status:true,
-            ordercount:res[0].ordercount
-          };
-          result(null, resobj);
-        }else {
-          let resobj = {
-            success: true,
-            status:true,
-            ordercount:0
-          };
-          result(null, resobj);
-        }
-      }
-    }
-  );
+Order.getXfactors = async function getXfactors(req, result) {
+  //X factor Algorithm
+  //(Total no of orders in Queue) = (X-1) * (No of Drivers in hub)
+  //Note X value in hub based.
+
+  var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
+  var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
+  var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
+
+  var xfactorValue = (constant.Xfactor_value-constant.Xfactor_subtraction_value) * get_moveit_list_based_on_hub[0].no_of_move_it_count
+  console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
+  console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
+  console.log("xfactorValue-->",Math.round(xfactorValue));
+  var fValue= Math.round(xfactorValue);
+  if(get_orders_queue_based_on_hub[0].no_of_orders_count<fValue){
+    let resobj = {
+      success: true,
+      status:true,
+      order_queue:0,
+    };
+    result(null, resobj);
+  }else{
+    let resobj = {
+      success: true,
+      status:false,
+      order_queue:1,
+      message:'Sorry your area unserviceable',
+    };
+    result(null, resobj);
+  }
+  // var query="Select count(*) ordercount from Orders as ors where ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( "+req.lat+" ) )  * cos( radians( "+req.lon+" ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians("+req.lat+")) ) )<2 and (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2))";
+  //   sql.query(query,async function(err, res) {
+  //     if (err) {
+  //       result(err, null);
+  //     } else {
+  //       if (res.length !== 0) {
+  //         let resobj = {
+  //           success: true,
+  //           status:true,
+  //           ordercount:res[0].ordercount
+  //         };
+  //         result(null, resobj);
+  //       }else {
+  //         let resobj = {
+  //           success: true,
+  //           status:true,
+  //           ordercount:0
+  //         };
+  //         result(null, resobj);
+  //       }
+  //     }
+  //   }
+  // );
 };
 
 module.exports = Order;

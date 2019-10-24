@@ -59,6 +59,8 @@ const calculate = {
     razorpay_key_id : 'rzp_live_bCMW6sG1GWp36Q',
     razorpay_key_secret : '2VAma7EVApDnLuOMerwX3ODu',
 
+    Xfactor_value:1.9,
+    Xfactor_subtraction_value:1,
 }
 
 

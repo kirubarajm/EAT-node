@@ -430,14 +430,14 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
                 result(null, err);
               } else {
                 /////=Edit Live Product History =//////////
-                req.action=2;
-                Product.liveproducthistory(req, function(err,result2){
-                  if (err) {
-                      result(err, null);
-                  } else{
-                      console.log(result2);
-                  }
-                });
+                // req.action=2;
+                // Product.liveproducthistory(req, function(err,result2){
+                //   if (err) {
+                //       result(err, null);
+                //   } else{
+                //       console.log(result2);
+                //   }
+                // });
                 //////////////////////////////////////////
                 let message = "Quantity added successfully";
                 let resobj = {
@@ -534,14 +534,14 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
                   result(null, err);
                 } else {
                   /////=Add Live Product History =//////////
-                  req.action=1;
-                  Product.liveproducthistory(req, function(err,result2){
-                    if (err) {
-                          result(err, null);
-                        } else{
-                          console.log(result2);
-                        }
-                  });
+                  // req.action=1;
+                  // Product.liveproducthistory(req, function(err,result2){
+                  //   if (err) {
+                  //         result(err, null);
+                  //       } else{
+                  //         console.log(result2);
+                  //       }
+                  // });
                   /////////////////////////////////////////
                   let message =
                     "Quantity added and product moved to live successfully";
