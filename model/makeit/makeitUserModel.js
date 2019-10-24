@@ -2742,7 +2742,9 @@ Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(r
         product_count = parseInt(product_count) + parseInt(getmaxquantity[i].total_quantity);
         for(var j=0; j<getsoldquantity.length; j++){
           if(getmaxquantity[i].product_id==getsoldquantity[j].productid){
+            ////Set Soldout Quantity
             getmaxquantity[i].sold_quantity = getsoldquantity[j].sold_quantity;
+            ////Calculation For Product Percentage
             getmaxquantity[i].product_percentage = (getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100;
               
           }
@@ -2879,19 +2881,20 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
       //console.log("error: ", err);
       result(null, err);
     } else {
-      ////Get Kitchen Percentage
+      ////Get Kitchen Percentage////////
       for(var i=0; i<res.length; i++){
         res[i].makeit_id=res[i].userid;
         await Makeituser.kitchen_liveproduct_status(res[i],function(err,percentage){
           console.log(percentage)
           res[i].kitchen_percentage=percentage.kitchen_percentage;
         });
-        
       }
+      //////////////////////////////////
 
       let sucobj = true;
       let resobj = {
         success: sucobj,
+        totalcount:res.length,
         result: res
       };
 
