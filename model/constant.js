@@ -9,7 +9,7 @@ const calculate = {
     applink :'http://bit.ly/2ZcGL95',
     iosapplink : 'https://apple.co/2lna3n9',
     refferalcontent : 'Welcome to EAT. Click the link to download the EAT app from play store.',
-    radiuslimit : 3,
+    radiuslimit : 2.5,
     foodpreparationtime:15,//min
     onekm:10,// one km per 10 min
     servicecharge:0,
@@ -62,6 +62,8 @@ const calculate = {
   //Radius limit  2km
   nearby_moveit_radius: 2,
 
+  //Miles to km
+  onemile : 1.6,
 }
 
 

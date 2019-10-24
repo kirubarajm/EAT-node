@@ -19,6 +19,8 @@ var OrderDeliveryTime = require("../../model/common/orderdeliverytimeModel");
 var MoveitReassignedOrders = require("../../model/common/moveitReassignedOrdersModel");
 var MoveitStatus = require("../../model/moveit/moveitStatusModel");
 var createForcedeliverylogs = require("../../model/common/forcedeliverylogsModel");
+var MoveitFireBase =require("../../push/Moveit_SendNotification");
+var Ordersqueue = require("../../model/common/ordersqueueModel");
 // var instance = new Razorpay({
 //   key_id: "rzp_test_3cduMl5T89iR9G",
 //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
@@ -2429,19 +2431,18 @@ Order.insert_delivery_time = function insert_delivery_time(req) {
 };
 
 Order.makeit_order_accept = async function makeit_order_accept(req, result) {
-  const orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
+  const orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon,mk.makeithub_id from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
   var makeitaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
   // d.setHours(d.getHours() + 5);
   if (orderdetails.length !== 0) {
     if (orderdetails[0].orderstatus < 1) {
       var orderaccepttime = moment()
         .add(0, "seconds")
-        .add(15, "minutes")
+        .add(constant.foodpreparationtime, "minutes")
         .format("YYYY-MM-DD HH:mm:ss");
       // deliverytime.setMinutes(transaction_time.getMinutes() + 15);     
       updatequery ="UPDATE Orders SET makeit_status=1,orderstatus = 1 ,makeit_expected_preparing_time= '" + orderaccepttime +"',makeit_accept_time= '" + makeitaccepttime +"' WHERE orderid ='" +req.orderid +"'";
      
-
       sql.query(updatequery, async function(err, res) {
         if (err) {
           result(err, null);
@@ -2456,6 +2457,8 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
           req.orglon = orderdetails[0].makeit_lon;
           req.deslat = orderdetails[0].cus_lat;
           req.deslon = orderdetails[0].cus_lon;
+          req.hubid= orderdetails[0].makeithub_id;
+
 
           Order.eat_order_distance_calculation(req ,async function(err,res3) {
             if (err) {
@@ -2465,7 +2468,6 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
                 result(null, res3);
               } else {
     
-                
                 var routes = res3.result;
                 var caldistance = routes.routes;
                 var deliverytimedata = caldistance[0].legs;
@@ -2473,32 +2475,47 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
                 req.distance = parseInt(deliverytimedata[0].distance.text);
                 req.duration = parseInt(deliverytimedata[0].duration.text);
 
-                 console.log(req.duration);
-                 console.log(constant.foodpreparationtime);
-                 console.log(constant.orderbuffertime);
-
+              
                  req.duration = constant.foodpreparationtime + req.duration + constant.orderbuffertime;
-                 req.deliverytime  = moment()
-                 .add(0, "seconds")
-                 .add(req.duration, "minutes")
-                 .format("YYYY-MM-DD HH:mm:ss");
+                 req.deliverytime  = moment().add(0, "seconds").add(req.duration, "minutes").format("YYYY-MM-DD HH:mm:ss");
 
                  await Order.insert_delivery_time(req);
 
-                let response = {
-                  success: true,
-                  status: true,
-                  message: "Order accepted successfully.",
-                 // result :deliverytimedata 
-                };
-                result(null, response);
+                 Order.auto_order_assign(req ,async function(err,auto_order_data) {
+                  if (err) {
+                    result(err, null);
+                  } else {
+                    if (auto_order_data.status != true) {
+                      result(null, auto_order_data);
+                    } else {
+
+
+
+                      let response = {
+                        success: true,
+                        status: true,
+                        message: "Order accepted successfully."
+                       // result :deliverytimedata 
+                      };
+                      result(null, response);
+                    }
+                  }
+                });
+      
+
+
+
+                // let response = {
+                //   success: true,
+                //   status: true,
+                //   message: "Order accepted successfully.",
+                //  // result :deliverytimedata 
+                // };
+                // result(null, response);
               }
             }
           });
 
-
-
-         
         }
       });
     } else if (orderdetails[0].orderstatus == 1) {
@@ -2540,8 +2557,6 @@ Order.insert_order_status = function insert_order_status(req) {
    else return res;
  });
 };
-
-
 
 Order.moveit_order_accept = async function moveit_order_accept(req, result) {
 
@@ -3152,12 +3167,12 @@ Order.moveit_notification_time_orderid = async function moveit_notification_time
 
 
 Order.eat_order_distance_calculation = async function eat_order_distance_calculation(req,result) {
-  console.log(req);
+ 
 //https://maps.googleapis.com/maps/api/directions/json?origin=12.9801,80.2184&destination=13.0072,80.2064&key=AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc
   var diatnceurl =
   "https://maps.googleapis.com/maps/api/directions/json?origin="+req.orglat+","+req.orglon+"&destination="+req.deslat+","+req.deslon+"&key="+constant.distanceapiKey+"";
 
-  console.log(diatnceurl);
+  
   request(  
     {
       method: "GET",
@@ -3172,8 +3187,7 @@ Order.eat_order_distance_calculation = async function eat_order_distance_calcula
       
         if (data.statusCode === 200) {
           routesdata = JSON.parse(data.body)
-          console.log(routesdata);
-          
+    
           let resobj = {
             success: true,
             status:true,
@@ -4782,6 +4796,142 @@ Order.real_before_cancel = function real_before_cancel(req, result) {
       }
     }
   );
+};
+
+
+Order.auto_order_assign = function auto_order_assign(req, result) {
+
+  
+  var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+
+  var geoLocation = [];;
+  geoLocation.push(req.orglat);
+  geoLocation.push(req.orglon);
+
+  MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,constant.nearby_moveit_radius,async function(err, move_it_id_list) {
+    if (err) {
+      let error = {
+        success: true,
+        status: false,
+        message:"No Move-it found,please after some time"
+      };
+      result(error, null);
+    }else{
+ 
+      
+      var moveitlist = move_it_id_list.moveitid;
+      
+    if (moveitlist.length > 0) {
+    //  console.log("moveitlist"+moveitlist.length);
+      var moveitlistquery = ("select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid");
+
+      var nearbymoveit = await query(moveitlistquery);
+
+      if (nearbymoveit.length !==0) {
+        
+        
+        nearbymoveit.sort((a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout));
+        
+        console.log(nearbymoveit[0].userid);
+
+      // sql.query("Select online_status,pushid_android,pushid_ios,login_status From MoveitUser where userid= '" +req.moveit_user_id +"' ",function(err, res1) {
+      //   if (err) {
+      //     result(err, null);
+      //   } else {
+      //     var online_status = res1[0].online_status;
+      //     if (res1[0].login_status == 1) {
+                   
+      //     if (online_status == 1) {
+            sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, req.orderid],async function(err, res2) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+
+                  await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
+  
+                  let resobj = {
+                    success: true,
+                    status:true,
+                    message: "Order Assign Successfully",
+                    
+                  };
+                  result(null, resobj);
+               }
+              }
+            );
+      //     } else {
+      //       let resobj = {
+      //         success: true,
+      //         status: false,
+      //         message: "Move it user is offline"
+      //       };
+      //       result(null, resobj);
+      //     }
+      //   }else if(res1[0].login_status == 2){
+      //     let resobj = {
+      //       success: true,
+      //       status: false,
+      //       message: "Please login"
+      //   };
+      
+      //   result(null, resobj);
+      //   }else if(res1[0].login_status == 3){
+      //     let resobj = {
+      //       success: true,
+      //       status: false,
+      //       message: "Please contact Administrator"
+      //   };
+      
+      //   result(null, resobj);
+      //   }
+      //   }
+      //  }
+      // );
+
+      }else{
+
+        var new_Ordersqueue = new Ordersqueue(req);
+      new_Ordersqueue.status = 0;
+      Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+        if (err) { 
+          result(err, null);
+        }else{
+
+          let resobj = {
+            success: true,
+            status: true,
+            message: "Order moved to Queue"
+        };
+      
+        result(null, resobj);
+        }
+      });
+      }
+
+    }else{
+
+      var new_Ordersqueue = new Ordersqueue(req);
+      new_Ordersqueue.status = 0;
+      Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+        if (err) { 
+          result(err, null);
+        }else{
+
+          let resobj = {
+            success: true,
+            status: true,
+            message: "Order moved to Queue"
+        };
+      
+        result(null, resobj);
+        }
+      });
+
+    }
+    }
+  })
+  
 };
 
 module.exports = Order;

@@ -890,27 +890,24 @@ Moveituser.update_pushid = function(req, result) {
   geoLocation.push(req.lat);
   geoLocation.push(req.lon);
 
-//   moveitlist= await  MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,Constant.nearby_moveit_radius);
+  // try {
+  //   moveitlist= await MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,Constant.nearby_moveit_radius);
 
-//   console.log("moveitlist"+moveitlist);
-//   let resobj = {
-//     success: true,
-//     status: true,
-//     result: moveitlist
-//   };
-// result(null, resobj);
+  //   let resobj = {
+  //     success: true,
+  //     status: true,
+  //     result: moveitlist
+  //   };
+  // result(null, resobj);
+  
+  // } catch (error) {
+  //   console.log("moveitlist"+error);
+  // }
+
+  //console.log("moveitlist"+moveitlist);
+ 
 
 
-// var move_it_id = await MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,Constant.nearby_moveit_radius);
-
-// console.log(move_it_id);
-
-// let resobj = {
-//   success: true,
-//   status: true,
-//   result: move_it_id
-// };
-// result(null, resobj);
 
   MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,Constant.nearby_moveit_radius,async function(err, move_it_id) {
     if (err) {
@@ -923,7 +920,7 @@ Moveituser.update_pushid = function(req, result) {
     }else{
  
     
-     // console.log(move_it_id);
+      console.log("test3"+move_it_id);
       let resobj = {
         success: true,
         status: true,
