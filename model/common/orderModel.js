@@ -4969,13 +4969,14 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
   var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
   var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
+  var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
 
-  var xfactorValue = (constant.Xfactor_value - constant.Xfactor_subtraction_value) * get_moveit_list_based_on_hub[0].no_of_move_it_count
+  var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
   console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
   console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
   console.log("xfactorValue-->",Math.round(xfactorValue));
   var fValue= Math.round(xfactorValue);
-  if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
+  if(get_orders_queue_based_on_hub[0].no_of_orders_count > fValue){
     let resobj = {
       success: true,
       status:true,
