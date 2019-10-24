@@ -83,7 +83,7 @@ var Order = function(order) {
 
 
 Order.createOrder = async function createOrder(req, orderitems, result) {
-  try {
+  //try {
     const res = await query( "select count(*) as count from Orders where orderstatus < 6 and lock_status = 0 and userid= '" +req.userid +"'");
     if (res[0].count === 0) {
       
@@ -103,6 +103,8 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
 
             req.gst = amountdata.gstcharge;
             req.price = amountdata.grandtotal;
+            req.makeit_earnings = amountdata.makeit_earnings;
+            
             
            Order.OrderInsert(req, res3.result[0].item,false,false,async function(err,res){
             if (err) {
@@ -126,18 +128,18 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
         status: false,
         message: "Already you have one order, So please try once delivered exiting order"
       };
-      result(resobj,null);
+      result(null,resobj);
     }
-  } catch (error) {
-    let resobj = {
-      success: true,
-      status: false,
-      errorCode: 402,
-      error:error
-    };
-    console.log("error--->",error);
-    result(null, resobj);
-  }
+  // } catch (error) {
+  //   let resobj = {
+  //     success: true,
+  //     status: false,
+  //     errorCode: 402,
+  //     error:error
+  //   };
+  //   console.log("error--->",error);
+  //   result(null, resobj);
+  // }
 };
 
 /*Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
@@ -736,8 +738,8 @@ Order.getOrderById = function getOrderById(orderid, result) {
 
 Order.updateOrderStatus =async function updateOrderStatus(req, result) {
 
-var orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
-
+//var orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
+const orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon,mk.makeithub_id from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
 if (orderdetails[0].orderstatus < 5) {
   var updatequery = "Update Orders set orderstatus = ? where orderid = ?"
   var values=[req.orderstatus, req.orderid];
@@ -745,7 +747,7 @@ if (orderdetails[0].orderstatus < 5) {
     var makeit_accept_time = moment().format("YYYY-MM-DD HH:mm:ss");
       var makeit_expected_preparing_time = moment()
       .add(0, "seconds")
-      .add(15, "minutes")
+      .add(constant.foodpreparationtime, "minutes")
       .format("YYYY-MM-DD HH:mm:ss");
   values=[req.orderstatus, makeit_expected_preparing_time,makeit_accept_time,req.orderid];
   updatequery = "Update Orders set orderstatus = ?,makeit_expected_preparing_time= ?,makeit_accept_time=?,makeit_status=1 where orderid = ? "
@@ -777,6 +779,7 @@ if (orderdetails[0].orderstatus < 5) {
         req.orglon = orderdetails[0].makeit_lon;
         req.deslat = orderdetails[0].cus_lat;
         req.deslon = orderdetails[0].cus_lon;
+        req.hubid= orderdetails[0].makeithub_id;
 
         Order.eat_order_distance_calculation(req ,async function(err,res3) {
           if (err) {
@@ -801,13 +804,31 @@ if (orderdetails[0].orderstatus < 5) {
 
                await Order.insert_delivery_time(req);
 
-              let response = {
-                success: true,
-                status: true,
-                message: "Order accepted successfully.",
-             //   result :deliverytimedata 
-              };
-              result(null, response);
+               Order.auto_order_assign(req ,async function(err,auto_order_data) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  if (auto_order_data.status != true) {
+                    result(null, auto_order_data);
+                  } else {
+
+                    let response = {
+                      success: true,
+                      status: true,
+                      message: "Order accepted successfully."
+                     // result :deliverytimedata 
+                    };
+                    result(null, response);
+                  }
+                }
+              });
+            //   let response = {
+            //     success: true,
+            //     status: true,
+            //     message: "Order accepted successfully.",
+            //  //   result :deliverytimedata 
+            //   };
+            //   result(null, response);
             }
           }
         });
@@ -2288,7 +2309,10 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           };
 
           var totalrefund = orderdetails[0].price + orderdetails[0].refund_amount;
+          var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+
           var querycancel_charge ="update Orders set cancel_charge = "+constant.servicecharge+"  where orderid =" +req.orderid+"";
+
           /// check the order refunded amount and payment status
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status === 1) {
             
@@ -4589,6 +4613,8 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              payment_id: orderdetails[0].transactionid
            };
            var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+           var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+
            for (let i = 0; i < orderitemdetails.length; i++) {
              var productquantityadd =
                "update Product set quantity = quantity+" +
@@ -4694,6 +4720,8 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              payment_id: orderdetails[0].transactionid
            };
            var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+           var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+
            for (let i = 0; i < orderitemdetails.length; i++) {
              var productquantityadd =
                "update Product set quantity = quantity+" +
@@ -4976,11 +5004,12 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
   console.log("xfactorValue-->",Math.round(xfactorValue));
   var fValue= Math.round(xfactorValue);
-  if(get_orders_queue_based_on_hub[0].no_of_orders_count > fValue){
+  if(get_orders_queue_based_on_hub[0].no_of_orders_count >= fValue){
     let resobj = {
       success: true,
       status:true,
       order_queue:0,
+      title:"Available",
       message:'Delivery boys are available!'
     };
     
@@ -5001,7 +5030,8 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
           success: true,
           status:false,
           order_queue:1,
-          message:'Sorry currently delivery boys are highly demand your location!'
+          title:"IN HIGH DEMAND",
+          message:'We are facing high demand. We will let you know when we are back to our best!'
         };
         result(null, resobj)
       
