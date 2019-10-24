@@ -2694,6 +2694,7 @@ Makeituser.makeituser_appointments_cancel= async function makeituser_appointment
      }
 };
 
+//Makeit Customer Support
 Makeituser.makeit_app_customer_support= async function makeit_app_customer_support(req,result) { 
    let resobj = {
       success: true,
@@ -2702,32 +2703,6 @@ Makeituser.makeit_app_customer_support= async function makeit_app_customer_suppo
   };
   result(null, resobj);
 };
-/*
-//Get Live Product Status
-Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(req,result) {
-  sql.query("select lph.makeit_id,lph.product_id, MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as total_quantity, SUM(CASE WHEN (ord.orderstatus<=6 and ord.orderstatus!=0 and date(ord.created_at)=CURDATE() and lph.product_id=oi.productid) THEN oi.quantity ELSE 0 END) as soldout_quantity, ((SUM(CASE WHEN (ord.orderstatus<=6 and ord.orderstatus!=0 and date(ord.created_at)=CURDATE() and lph.product_id=oi.productid) THEN oi.quantity ELSE 0 END)/MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity))*100)as percentage from Live_Product_History lph left join OrderItem as oi on oi.productid=lph.product_id left join Orders as ord on ord.orderid=oi.orderid where date(lph.created_at)=CURDATE() and lph.makeit_id="+req.makeit_id+" group by lph.product_id",async function(err, res) {
-    if (err) {
-      result(err, null);
-    } else {
-      if (res.length !== 0) {
-        let resobj = {
-          success: true,
-          status : true,
-          result : res
-        };
-        result(null, resobj);
-      }else {
-        let resobj = {
-          success: true,
-          message: "Sorry! no data found.",
-          status : false
-        };
-        result(null, resobj);
-      }
-    }
-  });
-};
-*/
 
 //Get Live Product Status Based on the Makeit
 Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(req,result) {
@@ -2746,7 +2721,6 @@ Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(r
             getmaxquantity[i].sold_quantity = getsoldquantity[j].sold_quantity;
             ////Calculation For Product Percentage
             getmaxquantity[i].product_percentage = (getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100;
-              
           }
         }
       }
@@ -2778,11 +2752,10 @@ Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(r
 
 //Get Live Product Status Based on the Kitchen 
 Makeituser.kitchen_liveproduct_status= async function kitchen_liveproduct_status(req,result) {
-  console.log(req);
   if(req.makeit_id){
-    var getmaxquantity = await query("select makeit_id,product_id, MAX(actual_quantity+pending_quantity+ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage,0 as kitchen_product_count_percentage,0 as kitchen_product_percentage from Live_Product_History where date(created_at)='2019-10-23'and makeit_id="+req.makeit_id+" group by product_id order by product_id ASC");
+    var getmaxquantity = await query("select makeit_id,product_id, MAX(actual_quantity+pending_quantity+ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage,0 as kitchen_product_count_percentage,0 as kitchen_product_percentage from Live_Product_History where date(created_at)=CURDATE()and makeit_id="+req.makeit_id+" group by product_id order by product_id ASC");
   
-    var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)='2019-10-23' and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+req.makeit_id+" group by oi.productid order by oi.productid ASC");
+    var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)=CURDATE() and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+req.makeit_id+" group by oi.productid order by oi.productid ASC");
     //result(null, getsoldquantity);
     var product_count = 0;
     var kitchen_percentage = 0;
@@ -2843,8 +2816,7 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
 
   req.appointment_status = req.appointment_status || "all";
   req.virtualkey = req.virtualkey;
-//console.log(req);
- 
+
   var query = "select mk.* from MakeitUser mk";
   var searchquery = "mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE  '%" + req.search + "%'";
 
@@ -2873,10 +2845,8 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
     query = query + " group by userid";
   }
 
-  query = query +" order by userid ASC limit " +startlimit +"," +orderlimit;
-
-  //console.log(query);
-  sql.query(query, async function(err, res) {
+  limitquery = query +" order by userid ASC limit " +startlimit +"," +orderlimit;
+  sql.query(limitquery, async function(err, res) {
     if (err) {
       //console.log("error: ", err);
       result(null, err);
@@ -2890,18 +2860,19 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
         });
       }
       //////////////////////////////////
-
-      let sucobj = true;
-      let resobj = {
-        success: sucobj,
-        totalcount:res.length,
-        result: res
-      };
-
-      result(null, resobj);
+      var totalcount = 0;
+      sql.query(query, function(err, res1) {
+        totalcount = res1.length;
+        let resobj = {
+          success: true,
+          status:true,
+          totalorder: totalcount,
+          result: res
+        };
+        result(null, resobj);
+      });
     }
   });
-  
 };
 
 module.exports = Makeituser;
