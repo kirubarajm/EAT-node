@@ -12,22 +12,24 @@ var Orderitems = function(orderitems) {
   this.orderid = orderitems.orderid;
 };
 
-Orderitems.createOrderitems = function createOrderitems(order_item, res) {
+Orderitems.createOrderitems = function createOrderitems(order_item,payment_type, res) {
   sql.query("INSERT INTO OrderItem set ?", order_item, function(err, result) {
     if (err) {
       res(err, null);
     } else {
       var OrderItemid = result.insertId;
-      sql.query(
-        "update Product set quantity= quantity-? WHERE productid = ?",
-        [order_item.quantity, order_item.productid],
-        function(err, res1) {
+      if (payment_type !== 3) {
+        
+        console.log(order_item.payment_type);
+        sql.query("update Product set quantity= quantity-? WHERE productid = ?",[order_item.quantity, order_item.productid],function(err, res1) {
           if (err) {
             res(err, null);
             return;
           }
         }
       );
+      }
+      
       let resobj = {
         success: true,
         message: "Order Item Created successfully",

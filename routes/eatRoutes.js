@@ -168,5 +168,7 @@ app.route("/eat/order/distance").post(middleware.checkToken,routesVersioning({"1
 app.route("/eat/customersupport").post(routesVersioning({"1.0.0":eatuser.eat_customer_support}));
 app.route("/eat/tunnelorder").post(middleware.checkToken,routesVersioning({"1.0.0":orders.create_tunnel_order}));
 app.route("/eat/customersupport").post(routesVersioning({"1.0.0":eatuser.eat_customer_support}));
+app.route("/eat/getXfactors").post(middleware.checkToken,routesVersioning({"1.0.0":orders.getXfactors_by_userid}));
+
 
 }

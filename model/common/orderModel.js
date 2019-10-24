@@ -212,27 +212,27 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                   req.cus_lon = address_data[0].lon;
                   req.address_title = address_data[0].address_title;
                   req.locality_name = address_data[0].locality;
-
-                  console.log(address_data[0].flatno);
-                  console.log(address_data[0].landmark);
                   req.flatno = address_data[0].flatno;
                   req.landmark = address_data[0].landmark;
                   req.coupon = req.cid
-                    if (req.payment_type === 0) {
+                    if (req.payment_type == 0 || req.payment_type == 3) {
                       Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                         if (err) {
                           result(err, null);
                         } else {
-                          await Notification.orderMakeItPushNotification(
-                            res.orderid,
-                            req.makeit_user_id,
-                            PushConstant.pageidMakeit_Order_Post
-                          );
+                          if (req.payment_type == 0) {
+                            await Notification.orderMakeItPushNotification(
+                              res.orderid,
+                              req.makeit_user_id,
+                              PushConstant.pageidMakeit_Order_Post
+                            );
+                          }
+                         
                           result(null, res);
                         }
                       });
                       //ordercreatecashondelivery(req, res3.result[0].item);
-                    } else if (req.payment_type === 1) {
+                    } else if (req.payment_type == 1) {
                       Order.OrderOnline(req, res3.result[0].item,function(err,res){
                         if (err) {
                           result(err, null);
@@ -327,7 +327,9 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
           orderitem.quantity = orderitems[i].cartquantity;
           orderitem.price = orderitems[i].price;
           var items = new Orderitem(orderitem);
-          Orderitem.createOrderitems(items, function(err, res2) {
+        
+         
+          Orderitem.createOrderitems(items,req.payment_type, function(err, res2) {
             //if (err) result.send(err);
             if (err) { 
               sql.rollback(function() {
@@ -392,6 +394,95 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
   });
 }
 
+// Order.intelligentOrderInsert = async function intelligentOrderInsert(req, orderitems,isMobile,isOnlineOrder,result) {
+//   var new_Order = new Order(req);
+//   console.log(new_Order);
+//   new_Order.delivery_charge = constant.deliverycharge;
+//   sql.beginTransaction(function(err) {
+//     if (err) { 
+//       sql.rollback(function() {
+//         result(err, null);
+//       });
+//       return;
+//     }
+//     sql.query("INSERT INTO Orders set ?", new_Order, async function(err, res1) {
+//       if (err) { 
+//         sql.rollback(function() {
+//           result(err, null); //result.send(err);
+//         });
+//       }else{
+//         var orderid = res1.insertId;
+//           for (var i = 0; i < orderitems.length; i++) {
+//           var orderitem = {};
+//           orderitem.orderid = orderid;
+//           orderitem.productid = orderitems[i].productid;
+//           orderitem.quantity = orderitems[i].cartquantity;
+//           orderitem.price = orderitems[i].price;
+//           var items = new Orderitem(orderitem);
+//           Orderitem.createOrderitems(items, function(err, res2) {
+//             //if (err) result.send(err);
+//             if (err) { 
+//               sql.rollback(function() {
+//                 result(err, null);
+//               });
+//             }
+//           });
+
+//           // if(isOnlineOrder) {
+//           //   var orderitemlock = new Orderlock(orderitem);
+//           //   Orderlock.lockOrderitems(orderitemlock, function(
+//           //     err,
+//           //     orderlockresponce
+//           //   ) {
+//           //     if (err) { 
+//           //       sql.rollback(function() {
+//           //         result(err, null);
+//           //       });
+//           //     }//result.send(err);
+//           //   });
+//           // }
+//         }
+
+//         // if(isMobile&&!isOnlineOrder){
+//         //   if (req.cid) {
+//         //     var new_createCouponUsed = new CouponUsed(req); 
+//         //     new_createCouponUsed.orderid = res1.insertId;
+//         //     CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
+//         //        //if (err) result.send(err);
+//         //        if (err) { 
+//         //         sql.rollback(function() {
+//         //           result.send(err);
+//         //         });
+//         //       }
+//         //      });
+//         //    }
+
+
+//         //  if (req.rcid) {
+//         //    var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(req.rcid,req.refund_balance,res1.insertId);
+//         //  }
+//         // }
+
+//         let resobj = {
+//           success: true,
+//           status: true,
+//           message: "Order Created successfully",
+//           orderid: orderid
+//         };
+//         sql.commit(async function(err) {
+//           if (err) { 
+//             sql.rollback(function() {
+//               //result.send(err);
+//               result(err, null);
+//             });
+//           }
+          
+//           result(null, resobj);
+//         });
+//       }
+//     });
+//   });
+// }
 
 Order.online_order_place_conformation = async function(order_place, result) {
 
@@ -4870,7 +4961,7 @@ Order.real_order_canceled= function real_order_canceled(req, result) {
 };
 
 //Check Orders in queue 
-Order.getXfactors = async function getXfactors(req, result) {
+Order.getXfactors = async function getXfactors(req,orderitems, result) {
   //X factor Algorithm
   //(Total no of orders in Queue) = (X-1) * (No of Drivers in hub)
   //Note X value in hub based.
@@ -4879,26 +4970,44 @@ Order.getXfactors = async function getXfactors(req, result) {
   var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
   var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
 
-  var xfactorValue = (constant.Xfactor_value-constant.Xfactor_subtraction_value) * get_moveit_list_based_on_hub[0].no_of_move_it_count
+  var xfactorValue = (constant.Xfactor_value - constant.Xfactor_subtraction_value) * get_moveit_list_based_on_hub[0].no_of_move_it_count
   console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
   console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
   console.log("xfactorValue-->",Math.round(xfactorValue));
   var fValue= Math.round(xfactorValue);
-  if(get_orders_queue_based_on_hub[0].no_of_orders_count<fValue){
+  if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
     let resobj = {
       success: true,
       status:true,
       order_queue:0,
+      message:'Delivery boys are available!'
     };
-    result(null, resobj);
+    
+   result(null, resobj);
   }else{
-    let resobj = {
-      success: true,
-      status:false,
-      order_queue:1,
-      message:'Sorry your area unserviceable',
-    };
-    result(null, resobj);
+
+    req.payment_type=3;
+    req.payment_status=3;
+    req.orderstatus = 11;
+
+    Order.read_a_proceed_to_pay(req, orderitems,async function(err,res){
+      if (err) {
+        result(err, null);
+      } else {
+       
+        console.log(res);
+        let resobj = {
+          success: true,
+          status:false,
+          order_queue:1,
+          message:'Sorry currently delivery boys are highly demand your location!'
+        };
+        result(null, resobj)
+      
+      }
+    });
+
+  ;
   }
   // var query="Select count(*) ordercount from Orders as ors where ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( "+req.lat+" ) )  * cos( radians( "+req.lon+" ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians("+req.lat+")) ) )<2 and (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2))";
   //   sql.query(query,async function(err, res) {
@@ -4923,6 +5032,8 @@ Order.getXfactors = async function getXfactors(req, result) {
   //     }
   //   }
   // );
+};
+
 Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
   var query="Select count(*) ordercount from Orders as ors where ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( "+req.lat+" ) )  * cos( radians( "+req.lon+" ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians("+req.lat+")) ) )<2 and (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2))";
     sql.query(query,async function(err, res) {
@@ -4947,8 +5058,9 @@ Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
       }
     }
   );
-}
+};
 
+//auto order assign to moveit 
 Order.auto_order_assign = function auto_order_assign(req, result) {
 
   
@@ -4968,7 +5080,6 @@ Order.auto_order_assign = function auto_order_assign(req, result) {
       result(error, null);
     }else{
  
-      
       var moveitlist = move_it_id_list.moveitid;
       
     if (moveitlist.length > 0) {
