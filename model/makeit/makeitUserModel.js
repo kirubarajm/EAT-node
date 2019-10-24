@@ -2707,7 +2707,7 @@ Makeituser.makeit_app_customer_support= async function makeit_app_customer_suppo
 //Get Live Product Status Based on the Makeit
 Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(req,result) {
   if(req.makeit_id){
-    var getmaxquantity = await query("select makeit_id,product_id, MAX(actual_quantity+pending_quantity+ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage from Live_Product_History where date(created_at)=CURDATE() and makeit_id="+req.makeit_id+" group by product_id order by product_id ASC");
+    var getmaxquantity = await query("select lph.makeit_id,lph.product_id,p.product_name,MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage from Live_Product_History lph left join Product as p on p.productid=lph.product_id where date(lph.created_at)=CURDATE()and lph.makeit_id="+req.makeit_id+" group by lph.product_id order by lph.product_id ASC");
   
     var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)=CURDATE() and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+req.makeit_id+" group by oi.productid order by oi.productid ASC");
     
@@ -2720,7 +2720,7 @@ Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(r
             ////Set Soldout Quantity
             getmaxquantity[i].sold_quantity = getsoldquantity[j].sold_quantity;
             ////Calculation For Product Percentage
-            getmaxquantity[i].product_percentage = (getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100;
+            getmaxquantity[i].product_percentage = ((getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100).toFixed(2);
           }
         }
       }
@@ -2753,7 +2753,7 @@ Makeituser.makeit_liveproduct_status= async function makeit_liveproduct_status(r
 //Get Live Product Status Based on the Kitchen 
 Makeituser.kitchen_liveproduct_status= async function kitchen_liveproduct_status(req,result) {
   if(req.makeit_id){
-    var getmaxquantity = await query("select makeit_id,product_id, MAX(actual_quantity+pending_quantity+ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage,0 as kitchen_product_count_percentage,0 as kitchen_product_percentage from Live_Product_History where date(created_at)=CURDATE()and makeit_id="+req.makeit_id+" group by product_id order by product_id ASC");
+    var getmaxquantity = await query("select lph.makeit_id,lph.product_id,p.product_name,MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage,0 as kitchen_product_count_percentage,0 as kitchen_product_percentage from Live_Product_History lph left join Product as p on p.productid=lph.product_id where date(lph.created_at)=CURDATE()and lph.makeit_id="+req.makeit_id+" group by lph.product_id order by lph.product_id ASC");
   
     var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)=CURDATE() and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+req.makeit_id+" group by oi.productid order by oi.productid ASC");
     //result(null, getsoldquantity);
