@@ -171,3 +171,137 @@ exports.sendNotificationAndroid = function(
   console.log("moveit notification payload:"+payload);
   Move_it.messaging().sendToDevice(token, payload, options);
 };
+
+
+// exports.geoFireGetKeyByGeomoveitbydistance= async function(geoLocation,radius,result){
+//   initializeAppName();
+   
+  
+
+//   // var timeoutid = setTimeout(async function () {
+  
+//   //   move_it_id = await getmoveitlist(geoLocation,radius);
+//   //   console.log(move_it_id);
+//   //   result(null,move_it_id)
+//   // },2000);
+  
+// }
+
+
+exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomoveitbydistance(geoLocation,radius,result) {
+  initializeAppName();
+
+  // var move_it_id=[];
+  // var geoQuery = geoFire.query({
+  //   center: geoLocation,
+  //   radius: radius
+  // });
+  
+  // var onKeyEnteredRegistration = geoQuery.on("key_entered",async function(key, location, distance) {
+  //   console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+  //  move_it_id.push(key);
+  //  //console.log(move_it_id);
+  // });
+  var move_it_id=[];
+  var move_data={};
+  var geoQuery = geoFire.query({
+    center: geoLocation,
+    radius: radius
+  });
+
+  const delay = ms => new Promise(res => setTimeout(res, ms))
+  var onKeyEnteredRegistration = geoQuery.on("key_entered",async function(key, location, distance) {
+  ///  console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+  
+    move_it_id.push(key);
+    move_data[key] = {};
+    move_data[key].distance=distance;
+    move_data[key].location=location;
+  });
+ 
+ await delay(2000);
+ // console.log(move_data[112]);
+ // move_it_id = move_it_id.toString()
+ move_data.moveitid=move_it_id.toString();
+ result(null,move_data)
+
+    
+       
+  // moveit_it_id=await get_moveit_list(geoLocation,radius);
+  
+  // return(null,moveit_it_id)
+
+ // const timeoutObj =async setTimeout(() async=> {
+    
+  // make_it_id=await get_moveit_list(geoLocation,radius);
+  //  result(null,make_it_id)
+
+  //}, 3000);
+//   console.log("test2"+move_it_id);
+//  // return(move_it_id);
+//  result(null,move_it_id)
+  
+}
+
+async function get_moveit_list(geoLocation,radius) {
+ 
+  var move_it_id=[];
+  var geoQuery = geoFire.query({
+    center: geoLocation,
+    radius: radius
+  });
+
+  const delay = ms => new Promise(res => setTimeout(res, ms))
+  var onKeyEnteredRegistration = geoQuery.on("key_entered",async function(key, location, distance) {
+    console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+  
+    move_it_id.push(key);
+  
+  });
+ 
+ await delay(5000);
+  console.log("test2"+move_it_id);
+  return move_it_id;
+
+  //return move_it_id;
+}
+// return new Promise(resolve => {
+//   geoQuery.on("key_entered", function(key, location, distance) {
+//       var temp = key;
+//       temp.subscribe(data =>{
+//          self.finalData.push(data);
+//       });
+//   });
+// });
+
+async function get_moveit_distance(move_it_id,geoLocation) {
+  var filterarray=[]
+  await Promise.all(move_it_id.map(async function(item){
+    await geoFire.get(""+item.userid).then(function(location) {
+      if (location === null) {
+        console.log("Provided key is not in GeoFire");
+        item.islocation=false;
+        item.distance=0;
+      }else{
+        var dist = geodist(geoLocation, location,{exact: true, unit: 'km'});
+        console.log("Provided key has a location of " +geoLocation);
+        item.distance= dist.toFixed(2);//new geoFires.GeoFire.distance(location1,location2);
+        item.location= location;
+        item.islocation=true;
+       
+      }
+    }, function(error) {
+      console.log("Error: " + error);
+      item.islocation=false;
+      item.distance=0;
+    });
+    // await firebaseRef.child(item).once('value').then(function(snapshot) {
+    //     console.log(snapshot.val().online_status + "username at order_status--"+snapshot.val().order_status);
+    //     if(snapshot.val().online_status===1&&snapshot.val().order_status===0)
+    //     filterarray.push(item)
+    //     console.log("make_it_id--",filterarray)
+    //   });
+    }))
+    console.log("make-it--->",move_it_id);
+  return move_it_id;
+}
