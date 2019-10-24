@@ -83,7 +83,7 @@ var Order = function(order) {
 
 
 Order.createOrder = async function createOrder(req, orderitems, result) {
-  try {
+  //try {
     const res = await query( "select count(*) as count from Orders where orderstatus < 6 and lock_status = 0 and userid= '" +req.userid +"'");
     if (res[0].count === 0) {
       
@@ -103,6 +103,8 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
 
             req.gst = amountdata.gstcharge;
             req.price = amountdata.grandtotal;
+            req.makeit_earnings = amountdata.makeit_earnings;
+            
             
            Order.OrderInsert(req, res3.result[0].item,false,false,async function(err,res){
             if (err) {
@@ -126,18 +128,18 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
         status: false,
         message: "Already you have one order, So please try once delivered exiting order"
       };
-      result(resobj,null);
+      result(null,resobj);
     }
-  } catch (error) {
-    let resobj = {
-      success: true,
-      status: false,
-      errorCode: 402,
-      error:error
-    };
-    console.log("error--->",error);
-    result(null, resobj);
-  }
+  // } catch (error) {
+  //   let resobj = {
+  //     success: true,
+  //     status: false,
+  //     errorCode: 402,
+  //     error:error
+  //   };
+  //   console.log("error--->",error);
+  //   result(null, resobj);
+  // }
 };
 
 /*Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
@@ -212,27 +214,27 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                   req.cus_lon = address_data[0].lon;
                   req.address_title = address_data[0].address_title;
                   req.locality_name = address_data[0].locality;
-
-                  console.log(address_data[0].flatno);
-                  console.log(address_data[0].landmark);
                   req.flatno = address_data[0].flatno;
                   req.landmark = address_data[0].landmark;
                   req.coupon = req.cid
-                    if (req.payment_type === 0) {
+                    if (req.payment_type == 0 || req.payment_type == 3) {
                       Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                         if (err) {
                           result(err, null);
                         } else {
-                          await Notification.orderMakeItPushNotification(
-                            res.orderid,
-                            req.makeit_user_id,
-                            PushConstant.pageidMakeit_Order_Post
-                          );
+                          if (req.payment_type == 0) {
+                            await Notification.orderMakeItPushNotification(
+                              res.orderid,
+                              req.makeit_user_id,
+                              PushConstant.pageidMakeit_Order_Post
+                            );
+                          }
+                         
                           result(null, res);
                         }
                       });
                       //ordercreatecashondelivery(req, res3.result[0].item);
-                    } else if (req.payment_type === 1) {
+                    } else if (req.payment_type == 1) {
                       Order.OrderOnline(req, res3.result[0].item,function(err,res){
                         if (err) {
                           result(err, null);
@@ -327,7 +329,9 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
           orderitem.quantity = orderitems[i].cartquantity;
           orderitem.price = orderitems[i].price;
           var items = new Orderitem(orderitem);
-          Orderitem.createOrderitems(items, function(err, res2) {
+        
+         
+          Orderitem.createOrderitems(items,req.payment_type, function(err, res2) {
             //if (err) result.send(err);
             if (err) { 
               sql.rollback(function() {
@@ -392,6 +396,95 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
   });
 }
 
+// Order.intelligentOrderInsert = async function intelligentOrderInsert(req, orderitems,isMobile,isOnlineOrder,result) {
+//   var new_Order = new Order(req);
+//   console.log(new_Order);
+//   new_Order.delivery_charge = constant.deliverycharge;
+//   sql.beginTransaction(function(err) {
+//     if (err) { 
+//       sql.rollback(function() {
+//         result(err, null);
+//       });
+//       return;
+//     }
+//     sql.query("INSERT INTO Orders set ?", new_Order, async function(err, res1) {
+//       if (err) { 
+//         sql.rollback(function() {
+//           result(err, null); //result.send(err);
+//         });
+//       }else{
+//         var orderid = res1.insertId;
+//           for (var i = 0; i < orderitems.length; i++) {
+//           var orderitem = {};
+//           orderitem.orderid = orderid;
+//           orderitem.productid = orderitems[i].productid;
+//           orderitem.quantity = orderitems[i].cartquantity;
+//           orderitem.price = orderitems[i].price;
+//           var items = new Orderitem(orderitem);
+//           Orderitem.createOrderitems(items, function(err, res2) {
+//             //if (err) result.send(err);
+//             if (err) { 
+//               sql.rollback(function() {
+//                 result(err, null);
+//               });
+//             }
+//           });
+
+//           // if(isOnlineOrder) {
+//           //   var orderitemlock = new Orderlock(orderitem);
+//           //   Orderlock.lockOrderitems(orderitemlock, function(
+//           //     err,
+//           //     orderlockresponce
+//           //   ) {
+//           //     if (err) { 
+//           //       sql.rollback(function() {
+//           //         result(err, null);
+//           //       });
+//           //     }//result.send(err);
+//           //   });
+//           // }
+//         }
+
+//         // if(isMobile&&!isOnlineOrder){
+//         //   if (req.cid) {
+//         //     var new_createCouponUsed = new CouponUsed(req); 
+//         //     new_createCouponUsed.orderid = res1.insertId;
+//         //     CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
+//         //        //if (err) result.send(err);
+//         //        if (err) { 
+//         //         sql.rollback(function() {
+//         //           result.send(err);
+//         //         });
+//         //       }
+//         //      });
+//         //    }
+
+
+//         //  if (req.rcid) {
+//         //    var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(req.rcid,req.refund_balance,res1.insertId);
+//         //  }
+//         // }
+
+//         let resobj = {
+//           success: true,
+//           status: true,
+//           message: "Order Created successfully",
+//           orderid: orderid
+//         };
+//         sql.commit(async function(err) {
+//           if (err) { 
+//             sql.rollback(function() {
+//               //result.send(err);
+//               result(err, null);
+//             });
+//           }
+          
+//           result(null, resobj);
+//         });
+//       }
+//     });
+//   });
+// }
 
 Order.online_order_place_conformation = async function(order_place, result) {
 
@@ -645,8 +738,8 @@ Order.getOrderById = function getOrderById(orderid, result) {
 
 Order.updateOrderStatus =async function updateOrderStatus(req, result) {
 
-var orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
-
+//var orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
+const orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon,mk.makeithub_id from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
 if (orderdetails[0].orderstatus < 5) {
   var updatequery = "Update Orders set orderstatus = ? where orderid = ?"
   var values=[req.orderstatus, req.orderid];
@@ -654,7 +747,7 @@ if (orderdetails[0].orderstatus < 5) {
     var makeit_accept_time = moment().format("YYYY-MM-DD HH:mm:ss");
       var makeit_expected_preparing_time = moment()
       .add(0, "seconds")
-      .add(15, "minutes")
+      .add(constant.foodpreparationtime, "minutes")
       .format("YYYY-MM-DD HH:mm:ss");
   values=[req.orderstatus, makeit_expected_preparing_time,makeit_accept_time,req.orderid];
   updatequery = "Update Orders set orderstatus = ?,makeit_expected_preparing_time= ?,makeit_accept_time=?,makeit_status=1 where orderid = ? "
@@ -686,6 +779,7 @@ if (orderdetails[0].orderstatus < 5) {
         req.orglon = orderdetails[0].makeit_lon;
         req.deslat = orderdetails[0].cus_lat;
         req.deslon = orderdetails[0].cus_lon;
+        req.hubid= orderdetails[0].makeithub_id;
 
         Order.eat_order_distance_calculation(req ,async function(err,res3) {
           if (err) {
@@ -710,13 +804,31 @@ if (orderdetails[0].orderstatus < 5) {
 
                await Order.insert_delivery_time(req);
 
-              let response = {
-                success: true,
-                status: true,
-                message: "Order accepted successfully.",
-             //   result :deliverytimedata 
-              };
-              result(null, response);
+               Order.auto_order_assign(req ,async function(err,auto_order_data) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  if (auto_order_data.status != true) {
+                    result(null, auto_order_data);
+                  } else {
+
+                    let response = {
+                      success: true,
+                      status: true,
+                      message: "Order accepted successfully."
+                     // result :deliverytimedata 
+                    };
+                    result(null, response);
+                  }
+                }
+              });
+            //   let response = {
+            //     success: true,
+            //     status: true,
+            //     message: "Order accepted successfully.",
+            //  //   result :deliverytimedata 
+            //   };
+            //   result(null, response);
             }
           }
         });
@@ -2197,7 +2309,10 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           };
 
           var totalrefund = orderdetails[0].price + orderdetails[0].refund_amount;
+          var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+
           var querycancel_charge ="update Orders set cancel_charge = "+constant.servicecharge+"  where orderid =" +req.orderid+"";
+
           /// check the order refunded amount and payment status
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status === 1) {
             
@@ -4356,7 +4471,7 @@ Order.product_wise_real = function product_wise_real(req, result) {
 
 //Virtual Kitchen Orders report
 Order.virtual_orders_report = function virtual_orders_report(req, result) {
-  var query="Select o.orderid,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -4384,7 +4499,7 @@ Order.virtual_orders_report = function virtual_orders_report(req, result) {
 
 //Real Kitchen Orders report
 Order.real_orders_report = function real_orders_report(req, result) {
-  var query="Select o.orderid,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid left join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey='0' and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid left join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey='0' and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -4498,6 +4613,8 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              payment_id: orderdetails[0].transactionid
            };
            var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+           var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+
            for (let i = 0; i < orderitemdetails.length; i++) {
              var productquantityadd =
                "update Product set quantity = quantity+" +
@@ -4603,6 +4720,8 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              payment_id: orderdetails[0].transactionid
            };
            var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+           var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+
            for (let i = 0; i < orderitemdetails.length; i++) {
              var productquantityadd =
                "update Product set quantity = quantity+" +
@@ -4870,7 +4989,7 @@ Order.real_order_canceled= function real_order_canceled(req, result) {
 };
 
 //Check Orders in queue 
-Order.getXfactors = async function getXfactors(req, result) {
+Order.getXfactors = async function getXfactors(req,orderitems, result) {
   //X factor Algorithm
   //(Total no of orders in Queue) = (X-1) * (No of Drivers in hub)
   //Note X value in hub based.
@@ -4878,27 +4997,48 @@ Order.getXfactors = async function getXfactors(req, result) {
   var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
   var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
   var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
+  var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
 
-  var xfactorValue = (constant.Xfactor_value-constant.Xfactor_subtraction_value) * get_moveit_list_based_on_hub[0].no_of_move_it_count
+  var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
   console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
   console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
   console.log("xfactorValue-->",Math.round(xfactorValue));
   var fValue= Math.round(xfactorValue);
-  if(get_orders_queue_based_on_hub[0].no_of_orders_count<fValue){
+  if(get_orders_queue_based_on_hub[0].no_of_orders_count >= fValue){
     let resobj = {
       success: true,
       status:true,
       order_queue:0,
+      title:"Available",
+      message:'Delivery boys are available!'
     };
-    result(null, resobj);
+    
+   result(null, resobj);
   }else{
-    let resobj = {
-      success: true,
-      status:false,
-      order_queue:1,
-      message:'Sorry your area unserviceable',
-    };
-    result(null, resobj);
+
+    req.payment_type=3;
+    req.payment_status=3;
+    req.orderstatus = 11;
+
+    Order.read_a_proceed_to_pay(req, orderitems,async function(err,res){
+      if (err) {
+        result(err, null);
+      } else {
+       
+        console.log(res);
+        let resobj = {
+          success: true,
+          status:false,
+          order_queue:1,
+          title:"IN HIGH DEMAND",
+          message:'We are facing high demand. We will let you know when we are back to our best!'
+        };
+        result(null, resobj)
+      
+      }
+    });
+
+  ;
   }
   // var query="Select count(*) ordercount from Orders as ors where ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( "+req.lat+" ) )  * cos( radians( "+req.lon+" ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians("+req.lat+")) ) )<2 and (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2))";
   //   sql.query(query,async function(err, res) {
@@ -4948,8 +5088,9 @@ Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
       }
     }
   );
-}
+};
 
+//auto order assign to moveit 
 Order.auto_order_assign = function auto_order_assign(req, result) {
 
   
@@ -4969,7 +5110,6 @@ Order.auto_order_assign = function auto_order_assign(req, result) {
       result(error, null);
     }else{
  
-      
       var moveitlist = move_it_id_list.moveitid;
       
     if (moveitlist.length > 0) {

@@ -844,3 +844,38 @@ exports.real_order_canceled= function(req, res) {
   });
 };
 
+////getXfactors
+exports.getXfactors_by_userid = function(req, res) {
+  if (req.headers.apptype !== undefined) {
+    req.body.app_type = parseInt(req.headers.apptype);
+  }else{
+    req.body.app_type = 3;//admin
+  }
+  var orderitems = req.body.orderitems;
+  if (!req.body.aid) {
+    res
+      .status(400)
+      .send({
+        error: true,
+        status: false,
+        message: "Please provide Address Id"
+      });
+  } else if (!req.body.userid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide userid" });
+  } else if (!req.body.makeit_user_id) {
+    res
+      .status(400)
+      .send({
+        error: true,
+        status: false,
+        message: "Please provide makeit_user_id"
+      });
+  } else {
+    Order.getXfactors(req.body, orderitems, function(err, Xfactors) {
+      if (err) res.send(err);
+      res.json(Xfactors);
+    });
+  }
+};
