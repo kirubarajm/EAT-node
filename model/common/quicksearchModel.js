@@ -318,7 +318,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
                   console.log(res[i]);
                  res[i].orglat = res[i].lat;
                  res[i].orglon = res[i].lon;
-                 QuickSearch.order_auto_order_assign(res[i]);
+              await QuickSearch.order_auto_order_assign(res[i]);
 
                   // console.log(res[i]);
                   // var geoLocation = [];;

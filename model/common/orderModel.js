@@ -1220,6 +1220,7 @@ Order.order_assign = function order_assign(req, result) {
               if (err) {
                 result(err, null);
               } else {
+                var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
                 await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned,res1[0]);
 
@@ -5123,14 +5124,14 @@ Order.auto_order_assign = function auto_order_assign(req, result) {
       
     if (moveitlist.length > 0) {
     //  console.log("moveitlist"+moveitlist.length);
-      var moveitlistquery = ("select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid");
+      var moveitlistquery = ("select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount");
 
       var nearbymoveit = await query(moveitlistquery);
 
       if (nearbymoveit.length !==0) {
         
         
-        nearbymoveit.sort((a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout));
+       // nearbymoveit.sort((a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout));
         
         console.log("nearbymoveit[0].userid"+nearbymoveit[0].userid);
 
