@@ -239,7 +239,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
 
     if(breatfastcycle && lunchcycle && dinnercycle){
       if(cyclestart == 1){
-        const getproductdetailscs = await query("select"+CSselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CSwherequery+" group by prd.productid");
+        const getproductdetailscs = await query("select"+CSselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN IFNULL(oi.quantity,0) ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 and payment_status<2 THEN IFNULL(oi.quantity,0) ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CSwherequery+" group by prd.productid");
         if (getproductdetailscs.err) {
           //result(err, null); 
           console.log(getproductdetailscs.err);
@@ -250,7 +250,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
         }
       }
       if(cycleend == 1){
-        const getproductdetailsce = await query("select"+CEselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CEwherequery+" group by prd.productid");
+        const getproductdetailsce = await query("select"+CEselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN IFNULL(oi.quantity,0) ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 and payment_status<2 THEN IFNULL(oi.quantity,0) ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CEwherequery+" group by prd.productid");
         if (getproductdetailsce.err) { 
           //result(err, null); 
           console.log(getproductdetailsce.err);
@@ -262,7 +262,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
       }
     } 
   });
-  liveproducthistory.start();
+  //liveproducthistory.start();
 
 
   //cron run by moveit user offline every night 2 PM.
@@ -291,7 +291,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
  
      
     });
-    job1moveitlogout.start();
+    //job1moveitlogout.start();
 
 
     const order_auto_assign = new CronJob('1 7-23 * * * ',async function(){
@@ -412,7 +412,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
    
        
      });
-    order_auto_assign.start(); 
+    //order_auto_assign.start(); 
 
 
 module.exports = QuickSearch;

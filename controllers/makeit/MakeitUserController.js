@@ -490,3 +490,19 @@ exports.makeit_liveproduct_status = function(req, res) {
     res.send(user);
   });
 };
+
+//Get Live Product Status Based on the Kitchen
+exports.kitchen_liveproduct_status = function(req, res) {
+  Makeituser.kitchen_liveproduct_status(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.send(user);
+  });
+};
+
+//Makeit List with  Live Product Status Based on the Kitchen
+exports.admin_list_all_makeitusers_percentage = function(req, res) {
+  Makeituser.get_admin_list_all_makeitusers_percentage(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

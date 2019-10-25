@@ -158,7 +158,6 @@ app.route("/admin/reports/realkitchenprepareaftercancel").post(routesVersioning(
 app.route("/admin/reports/virtualkitchenpreparebeforecancel").post(routesVersioning({"1.0.0":orders.virtual_before_cancel}));
 app.route("/admin/reports/realkitchenpreparebeforecancel").post(routesVersioning({"1.0.0":orders.real_before_cancel}));
 
-
 ////Razorpay Capture
 app.route("/admin/orders/razorpaycapture").post(routesVersioning({"1.0.0":Razorpay.razorpaycapture}));
 
@@ -169,10 +168,11 @@ app.route("/admin/reports/virtualkitchenordercanceled").post(routesVersioning({"
 app.route("/admin/reports/realkitchenordercanceled").post(routesVersioning({"1.0.0":orders.real_order_canceled}));
 
 app.route("/admin/moveit/current_location").post(routesVersioning({"1.0.0":moveituser.admin_moveit_current_location}));
-
-app.route("/admin/makeit/liveproductstatus").post(routesVersioning({"1.0.0":makeituser.makeit_liveproduct_status}));
-
 app.route("/admin/moveit/nearbymoveit").post(routesVersioning({"1.0.0":moveituser.getNearByMoveit_auto_assign}));
 
+////Live Product Status History//////////////
+app.route("/admin/makeit/liveproductstatus").post(routesVersioning({"1.0.0":makeituser.makeit_liveproduct_status}));
+app.route("/admin/makeit/kitchenliveproductstatus").post(routesVersioning({"1.0.0":makeituser.kitchen_liveproduct_status}));
+app.route("/admin/makeit/kitchenpercentage").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage}));
 
 }
