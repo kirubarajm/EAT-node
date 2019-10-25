@@ -5102,7 +5102,7 @@ Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
 //auto order assign to moveit 
 Order.auto_order_assign = function auto_order_assign(req, result) {
 
-  
+  console.log("order_auto_assign new"+req);
   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
   var geoLocation = [];;
@@ -5121,7 +5121,7 @@ Order.auto_order_assign = function auto_order_assign(req, result) {
  
       var moveitlist = move_it_id_list.moveitid;
       
-    if (moveitlist.length < 0) {
+    if (moveitlist.length > 0) {
     //  console.log("moveitlist"+moveitlist.length);
       var moveitlistquery = ("select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid");
 
@@ -5132,7 +5132,7 @@ Order.auto_order_assign = function auto_order_assign(req, result) {
         
         nearbymoveit.sort((a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout));
         
-      //  console.log(nearbymoveit[0].userid);
+        console.log("nearbymoveit[0].userid"+nearbymoveit[0].userid);
 
       // sql.query("Select online_status,pushid_android,pushid_ios,login_status From MoveitUser where userid= '" +req.moveit_user_id +"' ",function(err, res1) {
       //   if (err) {
