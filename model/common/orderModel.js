@@ -101,10 +101,19 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
             req.cus_lat = address_data[0].lat;
             req.cus_lon = address_data[0].lon;
 
+            // req.gst = amountdata.gstcharge;
+            // req.price = amountdata.grandtotal;
+            // req.makeit_earnings = amountdata.makeit_earnings;
+            
+            req.original_price = amountdata.original_price;
+            req.refund_balance = amountdata.refund_balance;
+            req.refund_amount = amountdata.refundamount;
+            req.discount_amount = amountdata.coupon_discount_amount;
+            req.after_discount_cost = amountdata.grandtotal;
+            req.order_cost   = amountdata.original_price;
             req.gst = amountdata.gstcharge;
             req.price = amountdata.grandtotal;
             req.makeit_earnings = amountdata.makeit_earnings;
-            
             
            Order.OrderInsert(req, res3.result[0].item,false,false,async function(err,res){
             if (err) {
@@ -5004,7 +5013,7 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
   console.log("xfactorValue-->",Math.round(xfactorValue));
   var fValue= Math.round(xfactorValue);
-  if(get_orders_queue_based_on_hub[0].no_of_orders_count >= fValue){
+  if(get_orders_queue_based_on_hub[0].no_of_orders_count <= fValue){
     let resobj = {
       success: true,
       status:true,
@@ -5123,7 +5132,7 @@ Order.auto_order_assign = function auto_order_assign(req, result) {
         
         nearbymoveit.sort((a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout));
         
-        console.log(nearbymoveit[0].userid);
+      //  console.log(nearbymoveit[0].userid);
 
       // sql.query("Select online_status,pushid_android,pushid_ios,login_status From MoveitUser where userid= '" +req.moveit_user_id +"' ",function(err, res1) {
       //   if (err) {
@@ -5182,7 +5191,7 @@ Order.auto_order_assign = function auto_order_assign(req, result) {
 
       }else{
 
-        var new_Ordersqueue = new Ordersqueue(req);
+      var new_Ordersqueue = new Ordersqueue(req);
       new_Ordersqueue.status = 0;
       Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
         if (err) { 

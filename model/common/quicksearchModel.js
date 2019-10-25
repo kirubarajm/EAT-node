@@ -265,9 +265,9 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
   liveproducthistory.start();
 
 
-  //cron run by moveit user logout every night 2 PM.
-  const job1moveitlogout = new CronJob('0 0 2 * * *',async function(){
-  
+  //cron run by moveit user offline every night 2 PM.
+  const job1moveitlogout = new CronJob('0 2 * * *',async function(){
+  console.log("moveit offline");
     var res = await query("select * from MoveitUser where online_status = 1 and login_status = 1");//and created_at > (NOW() - INTERVAL 10 MINUTE
   
       // console.log("cron for product revert online orders in-complete orders"+res);
@@ -294,7 +294,8 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
     job1moveitlogout.start();
 
 
-    const order_auto_assign = new CronJob('*/1 * * * * ',async function(){
+    const order_auto_assign = new CronJob('1 7-23 * * * ',async function(){
+      console.log("order_auto_assign");
       var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
         
       var res = await query("select oq.*,mk.makeithub_id,mk.userid,mk.lat,mk.lon from Orders_queue as oq join Orders as ors on ors.orderid=oq.orderid join MakeitUser as mk on mk.userid = ors.makeit_user_id where status = 0  order by oq.orderid desc");//and created_at > (NOW() - INTERVAL 10 MINUTE
@@ -325,8 +326,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
                       var moveitlistquery = ("select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid");
                 
                       var nearbymoveit = await query(moveitlistquery);
-                      console.log(nearbymoveit.length);
-                      console.log(res[i].orderid);
+                  
                       if (nearbymoveit.length !==0) {
                         
                         
