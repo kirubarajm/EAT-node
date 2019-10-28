@@ -10,6 +10,8 @@ var Ordersqueue = require("../../model/common/ordersqueueModel");
 var Notification = require("../../model/common/notificationModel.js");
 var PushConstant = require("../../push/PushConstant.js");
 var isCronRun=false;
+var Order = require("../../model/common/orderModel.js");
+
 const query = util.promisify(sql.query).bind(sql);
 var QuickSearch = function(QuickSearch) {
   this.eatuserid = QuickSearch.eatuserid;
@@ -172,7 +174,7 @@ const job = new CronJob("0 */1 * * * *", async function(search, result) {
     }
   });
 });
-job.start();
+//job.start();
 
 //incomplete online and release product quantity and order release by user.
 const job1 = new CronJob("*/3 * * * *", async function() {
@@ -214,7 +216,7 @@ const job1 = new CronJob("*/3 * * * *", async function() {
     }
   }
 });
-job1.start();
+//job1.start();
 
 QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(
   req,
@@ -354,7 +356,7 @@ const job1moveitlogout = new CronJob("0 2 * * *", async function() {
     }
   }
 });
-job1moveitlogout.start();
+//job1moveitlogout.start();
 
 const order_auto_assign = new CronJob("1 7-23 * * * ", async function() {
   console.log("order_auto_assign");
