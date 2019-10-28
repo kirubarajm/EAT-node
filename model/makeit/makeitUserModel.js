@@ -2983,7 +2983,7 @@ Makeituser.kitchen_liveproduct_status_report= async function kitchen_liveproduct
   }else{
     let resobj = {
       success: true,
-      message: "Invalid Makeit_id",
+      message: "Invalid Makeit_id and date",
       status : false
     };
     result(null, resobj);
