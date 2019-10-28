@@ -412,7 +412,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
    
        
      });
-    order_auto_assign.start(); 
+    //order_auto_assign.start(); 
 
 
 module.exports = QuickSearch;

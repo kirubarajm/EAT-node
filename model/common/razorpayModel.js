@@ -167,9 +167,18 @@ Razorpay.razorpaycapture = async function razorpaycapture(req, result) {
   var amount   = parseInt(1 * 100);
   instance.payments.capture(payment_id, parseInt(amount))
   */
-  var orderid = 433;
+  var data = JSON.stringify(req);
+  console.log(JSON.stringify(req.orderlist[0]));
+  console.log(data);
+  var insertquery= "insert into Orders_webhook JSONDoc(cancel_reason) values("+JSON.stringify(req.orderlist[0])+")";
+  console.log(insertquery);
+  const insertwebhooks = await query(insertquery);
+  //console.log(insertwebhooks);
+  result(null, insertwebhooks);
+  /*var orderid = 433;
  const getprice = await query("select price from Orders where orderid ='" +orderid+"'");
  console.log(getprice[0].price);
+ */
 
 };
 
