@@ -2,20 +2,20 @@
 
 
 const calculate = {
-    gst     : 5,// percentage
-    food_gst     : 5,// percentage
+    gst : 5,// percentage
+    food_gst  : 5,// percentage
     food_commission_cost : 18,
     deliverycharge : 0,// cost
     applink :'http://bit.ly/2ZcGL95',
     iosapplink : 'https://apple.co/2lna3n9',
     refferalcontent : 'Welcome to EAT. Click the link to download the EAT app from play store.',
     radiuslimit : 2.5,
-    foodpreparationtime:15,//min
-    onekm:10,// one km per 10 min
-    servicecharge:0,
+    foodpreparationtime: 15,//min
+    onekm: 10,// one km per 10 min
+    servicecharge: 0,
     cancellationmessage : "Are you sure! you want to cancel the order?",
-    makeit_nearby_moveit_radius:4, // in kilometers
-    eat_delivery_min:60,
+    makeit_nearby_moveit_radius: 4, // in kilometers
+    eat_delivery_min: 60,
     product_commission_percentage : 50,// percentage 20 has changed 50
     breatfastcycle : 8,//8 -12
     lunchcycle : 12,//12 - 4
@@ -66,12 +66,11 @@ const calculate = {
   //Sales Support Number
     sales_customer_support:7358531315,
   //Radius limit  2km
-  nearby_moveit_radius: 2,
+  nearby_moveit_radius: 1.24,
 
     //Miles to km
     onemile : 1.6,
 }
-
 
 
 

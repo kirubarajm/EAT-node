@@ -9,6 +9,8 @@ var MoveitFireBase =require("../../push/Moveit_SendNotification");
 var Ordersqueue = require("../../model/common/ordersqueueModel");
 var Notification = require("../../model/common/notificationModel.js");
 var PushConstant = require("../../push/PushConstant.js");
+var Order = require("../../model/common/orderModel.js");
+
 
 
 const query = util.promisify(sql.query).bind(sql);
@@ -148,7 +150,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
       }
     });
   });
-  job.start();  
+  //job.start();  
    
   //incomplete online and release product quantity and order release by user.
   const job1 = new CronJob('*/3 * * * *',async function(){
@@ -176,7 +178,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
       }
     }
   });
-  job1.start();
+  //job1.start();
 
   QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(req, result) {
     // var searchquery = "select *, IF(type<3, IF(type=2, 'Kitchan', 'Product'), 'Region') as typename from QuickSearch where name LIKE  '%"+req.search+"%'";
@@ -239,7 +241,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
 
     if(breatfastcycle && lunchcycle && dinnercycle){
       if(cyclestart == 1){
-        const getproductdetailscs = await query("select"+CSselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 and payment_status<2 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CSwherequery+" group by prd.productid");
+        const getproductdetailscs = await query("select"+CSselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CSwherequery+" group by prd.productid");
         if (getproductdetailscs.err) {
           //result(err, null); 
           console.log(getproductdetailscs.err);
@@ -250,7 +252,7 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
         }
       }
       if(cycleend == 1){
-        const getproductdetailsce = await query("select"+CEselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 and payment_status<2 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CEwherequery+" group by prd.productid");
+        const getproductdetailsce = await query("select"+CEselectquery+" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CEwherequery+" group by prd.productid");
         if (getproductdetailsce.err) { 
           //result(err, null); 
           console.log(getproductdetailsce.err);
@@ -262,12 +264,12 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
       }
     } 
   });
-  liveproducthistory.start();
+ // liveproducthistory.start();
 
 
-  //cron run by moveit user logout every night 2 PM.
-  const job1moveitlogout = new CronJob('0 0 2 * * *',async function(){
-  
+  //cron run by moveit user offline every night 2 PM.
+  const job1moveitlogout = new CronJob('0 2 * * *',async function(){
+  console.log("moveit offline");
     var res = await query("select * from MoveitUser where online_status = 1 and login_status = 1");//and created_at > (NOW() - INTERVAL 10 MINUTE
   
       // console.log("cron for product revert online orders in-complete orders"+res);
@@ -291,10 +293,19 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
  
      
     });
-    job1moveitlogout.start();
+    //job1moveitlogout.start();
 
+    QuickSearch.order_auto_order_assign = function order_auto_order_assign(orderassign) {
 
-    const order_auto_assign = new CronJob('*/1 * * * * ',async function(){
+      console.log("order_auto_assign"+orderassign);
+      Order.auto_order_assign(orderassign, function(err, res) {
+        if (err) return err;
+        else return res;
+      });
+    };
+
+  const order_auto_assign = new CronJob('*/1 * * * *',async function(){
+      console.log("order_auto_assign");
       var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
         
       var res = await query("select oq.*,mk.makeithub_id,mk.userid,mk.lat,mk.lon from Orders_queue as oq join Orders as ors on ors.orderid=oq.orderid join MakeitUser as mk on mk.userid = ors.makeit_user_id where status = 0  order by oq.orderid desc");//and created_at > (NOW() - INTERVAL 10 MINUTE
@@ -304,99 +315,105 @@ QuickSearch.eat_explore_store_data_by_cron =  async function eat_explore_store_d
                               
                  for (let i = 0; i < res.length; i++) {
    
-                  var geoLocation = [];;
-                  geoLocation.push(res[i].lat);
-                  geoLocation.push(res[i].lon);
-                  MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,constant.nearby_moveit_radius,async function(err, move_it_id_list) {
-                    if (err) {
-                      let error = {
-                        success: true,
-                        status: false,
-                        message:"No Move-it found,please after some time"
-                      };
-                      result(error, null);
-                    }else{
-                 
+                  console.log(res[i]);
+                 res[i].orglat = res[i].lat;
+                 res[i].orglon = res[i].lon;
+              await QuickSearch.order_auto_order_assign(res[i]);
+
+                  // console.log(res[i]);
+                  // var geoLocation = [];;
+                  // geoLocation.push(res[i].lat);
+                  // geoLocation.push(res[i].lon);
+                  // MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,constant.nearby_moveit_radius,async function(err, move_it_id_list) {
+                  //   if (err) {
+                  //     let error = {
+                  //       success: true,
+                  //       status: false,
+                  //       message:"No Move-it found,please after some time"
+                  //     };
+                  //     result(error, null);
+                  //   }else{
+                  //     console.log(res[i]);
+                  //     console.log(move_it_id_list.moveitid);
+                  //     var moveitlist = move_it_id_list.moveitid;
                       
-                      var moveitlist = move_it_id_list.moveitid;
-                      
-                    if (moveitlist.length > 0) {
-                    //  console.log("moveitlist"+moveitlist.length);
-                      var moveitlistquery = ("select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid");
+                  //   if (moveitlist.length > 0) {
+                  //   //  console.log("moveitlist"+moveitlist.length);
+                  //     var moveitlistquery = ("select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid");
                 
-                      var nearbymoveit = await query(moveitlistquery);
-                      console.log(nearbymoveit.length);
-                      console.log(res[i].orderid);
-                      if (nearbymoveit.length !==0) {
-                        
-                        
-                        nearbymoveit.sort((a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout));
-                        
-                            sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, res[i].orderid],async function(err, res2) {
-                                if (err) {
-                                  result(err, null);
-                                } else {
+                  //     var nearbymoveit = await query(moveitlistquery);
                   
-                                  var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +res[i].orderid+"");
+                  //     if (nearbymoveit.length !==0) {
+                        
+                  //       console.log(nearbymoveit[0].userid);
+                        
+                  //       nearbymoveit.sort((a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout));
+                        
+                  //           sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, res[i].orderid],async function(err, res2) {
+                  //               if (err) {
+                  //                 result(err, null);
+                  //               } else {
+                  
+                  //                 var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +res[i].orderid+"");
 
 
-                                  await Notification.orderMoveItPushNotification(res[i].orderid,PushConstant.pageidMoveit_Order_Assigned);
+                  //                 await Notification.orderMoveItPushNotification(res[i].orderid,PushConstant.pageidMoveit_Order_Assigned);
                   
-                                  // let resobj = {
-                                  //   success: true,
-                                  //   status:true,
-                                  //   message: "Order Assign Successfully",
+                  //                 // let resobj = {
+                  //                 //   success: true,
+                  //                 //   status:true,
+                  //                 //   message: "Order Assign Successfully",
                                     
-                                  // };
-                                  // result(null, resobj);
-                               }
-                              }
-                            );
+                  //                 // };
+                  //                 // result(null, resobj);
+                  //              }
+                  //             }
+                  //           );
                       
-                      }
-                      // else{
+                  //     }
+                  //     // else{
                 
-                      // var new_Ordersqueue = new Ordersqueue(req);
-                      // new_Ordersqueue.status = 0;
-                      // Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
-                      //   if (err) { 
-                      //     result(err, null);
-                      //   }else{
+                  //     // var new_Ordersqueue = new Ordersqueue(req);
+                  //     // new_Ordersqueue.status = 0;
+                  //     // Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+                  //     //   if (err) { 
+                  //     //     result(err, null);
+                  //     //   }else{
                 
-                      //   //   let resobj = {
-                      //   //     success: true,
-                      //   //     status: true,
-                      //   //     message: "Order moved to Queue"
-                      //   // };
+                  //     //   //   let resobj = {
+                  //     //   //     success: true,
+                  //     //   //     status: true,
+                  //     //   //     message: "Order moved to Queue"
+                  //     //   // };
                       
-                      //   // result(null, resobj);
-                      //   }
-                      // });
-                      // }
+                  //     //   // result(null, resobj);
+                  //     //   }
+                  //     // });
+                  //     // }
                 
-                    }
-                    // else{
+                  //   }
+                  //   // else{
                 
-                    //   var new_Ordersqueue = new Ordersqueue(req);
-                    //   new_Ordersqueue.status = 0;
-                    //   Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
-                    //     if (err) { 
-                    //       result(err, null);
-                    //     }else{
+                  //   //   var new_Ordersqueue = new Ordersqueue(req);
+                  //   //   new_Ordersqueue.status = 0;
+                  //   //   Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+                  //   //     if (err) { 
+                  //   //       result(err, null);
+                  //   //     }else{
                 
-                    //     //   let resobj = {
-                    //     //     success: true,
-                    //     //     status: true,
-                    //     //     message: "Order moved to Queue"
-                    //     // };
+                  //   //     //   let resobj = {
+                  //   //     //     success: true,
+                  //   //     //     status: true,
+                  //   //     //     message: "Order moved to Queue"
+                  //   //     // };
                       
-                    //     // result(null, resobj);
-                    //     }
-                    //   });
+                  //   //     // result(null, resobj);
+                  //   //     }
+                  //   //   });
                 
-                    // }
-                    }
-                  })
+                  //   // }
+                  //   }
+                  // })
   
                   //  var today = moment();
                   //  var ordertime = moment(res[i].ordertime);

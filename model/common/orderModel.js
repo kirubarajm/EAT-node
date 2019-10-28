@@ -101,10 +101,19 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
             req.cus_lat = address_data[0].lat;
             req.cus_lon = address_data[0].lon;
 
+            // req.gst = amountdata.gstcharge;
+            // req.price = amountdata.grandtotal;
+            // req.makeit_earnings = amountdata.makeit_earnings;
+            
+            req.original_price = amountdata.original_price;
+            req.refund_balance = amountdata.refund_balance;
+            req.refund_amount = amountdata.refundamount;
+            req.discount_amount = amountdata.coupon_discount_amount;
+            req.after_discount_cost = amountdata.grandtotal;
+            req.order_cost   = amountdata.original_price;
             req.gst = amountdata.gstcharge;
             req.price = amountdata.grandtotal;
             req.makeit_earnings = amountdata.makeit_earnings;
-            
             
            Order.OrderInsert(req, res3.result[0].item,false,false,async function(err,res){
             if (err) {
@@ -1211,6 +1220,7 @@ Order.order_assign = function order_assign(req, result) {
               if (err) {
                 result(err, null);
               } else {
+                var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
                 await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned,res1[0]);
 
@@ -4995,7 +5005,7 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   //Note X value in hub based.
 
   var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
-  var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
+  var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
   var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
   var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
 
@@ -5004,7 +5014,7 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
   console.log("xfactorValue-->",Math.round(xfactorValue));
   var fValue= Math.round(xfactorValue);
-  if(get_orders_queue_based_on_hub[0].no_of_orders_count >= fValue){
+  if(get_orders_queue_based_on_hub[0].no_of_orders_count <= fValue){
     let resobj = {
       success: true,
       status:true,
@@ -5093,7 +5103,7 @@ Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
 //auto order assign to moveit 
 Order.auto_order_assign = function auto_order_assign(req, result) {
 
-  
+  console.log("order_auto_assign new"+req);
   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
   var geoLocation = [];;
@@ -5114,16 +5124,16 @@ Order.auto_order_assign = function auto_order_assign(req, result) {
       
     if (moveitlist.length > 0) {
     //  console.log("moveitlist"+moveitlist.length);
-      var moveitlistquery = ("select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid");
+      var moveitlistquery = ("select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount");
 
       var nearbymoveit = await query(moveitlistquery);
 
       if (nearbymoveit.length !==0) {
         
         
-        nearbymoveit.sort((a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout));
+       // nearbymoveit.sort((a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout));
         
-        console.log(nearbymoveit[0].userid);
+        console.log("nearbymoveit[0].userid"+nearbymoveit[0].userid);
 
       // sql.query("Select online_status,pushid_android,pushid_ios,login_status From MoveitUser where userid= '" +req.moveit_user_id +"' ",function(err, res1) {
       //   if (err) {
@@ -5182,7 +5192,7 @@ Order.auto_order_assign = function auto_order_assign(req, result) {
 
       }else{
 
-        var new_Ordersqueue = new Ordersqueue(req);
+      var new_Ordersqueue = new Ordersqueue(req);
       new_Ordersqueue.status = 0;
       Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
         if (err) { 

@@ -2761,8 +2761,10 @@ Makeituser.kitchen_liveproduct_status= async function kitchen_liveproduct_status
     var kitchen_percentage = 0;
     if(getmaxquantity.length !=0){
       ////Calculation For Product Count
+      
       for(var i=0; i<getmaxquantity.length; i++){
-        product_count = parseInt(product_count) + parseInt(getmaxquantity[i].total_quantity);
+        var quantity=getmaxquantity[i].total_quantity|| 0;
+        product_count = parseInt(product_count) + parseInt(quantity);
       }
 
       for(var i=0; i<getmaxquantity.length; i++){
@@ -2783,10 +2785,9 @@ Makeituser.kitchen_liveproduct_status= async function kitchen_liveproduct_status
       }
       let resobj = {
         success: true,
-        message: "Success",
         status : true,
         product_count: product_count,
-        kitchen_percentage: kitchen_percentage.toFixed(2),
+        kitchen_percentage: kitchen_percentage.toFixed(2) || 0,
         result : getmaxquantity
       };
       result(null, resobj);
@@ -2810,15 +2811,15 @@ Makeituser.kitchen_liveproduct_status= async function kitchen_liveproduct_status
 
 //Makeit List with  Live Product Status Based on the Kitchen
 Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
-  var orderlimit = 10;
+  var kitchenlimit = 10;
   var page = req.page || 1;
-  var startlimit = (page - 1) * orderlimit;
+  var startlimit = (page - 1) * kitchenlimit;
 
   req.appointment_status = req.appointment_status || "all";
   req.virtualkey = req.virtualkey;
 
   var query = "select mk.* from MakeitUser mk";
-  var searchquery = "mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE  '%" + req.search + "%'";
+  var searchquery = "mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE  '%" + req.search + "%' or mk.userid LIKE  '%" + req.search + "%'";
 
   if(req.active_status){
     query = query + " LEFT JOIN Product p on p.makeit_userid=mk.userid where p.active_status=1" ;
@@ -2845,7 +2846,7 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
     query = query + " group by userid";
   }
 
-  limitquery = query +" order by userid ASC limit " +startlimit +"," +orderlimit;
+  limitquery = query +" order by userid ASC limit " +startlimit +"," +kitchenlimit;
   sql.query(limitquery, async function(err, res) {
     if (err) {
       //console.log("error: ", err);
@@ -2856,7 +2857,7 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
         res[i].makeit_id=res[i].userid;
         await Makeituser.kitchen_liveproduct_status(res[i],function(err,percentage){
           console.log(percentage)
-          res[i].kitchen_percentage=percentage.kitchen_percentage;
+          res[i].kitchen_percentage=percentage.kitchen_percentage || 0;
         });
       }
       //////////////////////////////////
@@ -2866,7 +2867,8 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
         let resobj = {
           success: true,
           status:true,
-          totalorder: totalcount,
+          kitchenlimit:kitchenlimit,
+          totalkitchencount: totalcount,
           result: res
         };
         result(null, resobj);
