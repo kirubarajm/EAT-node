@@ -2881,7 +2881,7 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
 Makeituser.get_admin_list_all_makeitusers_percentage_report = function(req, result) {
   req.appointment_status = req.appointment_status || "all";
   req.virtualkey = req.virtualkey;
-  var query = "select mk.* from MakeitUser mk";
+  var query = "select mk.userid,mk.name,mk.brandname from MakeitUser mk";
   
   if(req.active_status){
     query = query + " LEFT JOIN Product p on p.makeit_userid=mk.userid where p.active_status=1" ;
@@ -2910,6 +2910,7 @@ Makeituser.get_admin_list_all_makeitusers_percentage_report = function(req, resu
       ////Get Kitchen Percentage////////
       for(var i=0; i<res.length; i++){
         res[i].makeit_id=res[i].userid;
+        res[i].date=req.date;
         await Makeituser.kitchen_liveproduct_status_report(res[i],function(err,percentage){
           console.log(percentage)
           res[i].kitchen_percentage=percentage.kitchen_percentage || 0;
@@ -2932,11 +2933,11 @@ Makeituser.get_admin_list_all_makeitusers_percentage_report = function(req, resu
 };
 
 //Report For Get Live Product Status Based on the Kitchen 
-Makeituser.kitchen_liveproduct_status_report= async function kitchen_liveproduct_status(req,result) {
+Makeituser.kitchen_liveproduct_status_report= async function kitchen_liveproduct_status_report(req,result) {
   if(req.makeit_id && req.date){
-    var getmaxquantity = await query("select lph.makeit_id,lph.product_id,p.product_name,MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage,0 as kitchen_product_count_percentage,0 as kitchen_product_percentage from Live_Product_History lph left join Product as p on p.productid=lph.product_id where date(lph.created_at)="+req.date+" and lph.makeit_id="+req.makeit_id+" group by lph.product_id order by lph.product_id ASC");
+    var getmaxquantity = await query("select lph.makeit_id,mu.name,mu.brandname,lph.product_id,p.product_name,MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage,0 as kitchen_product_count_percentage,0 as kitchen_product_percentage from Live_Product_History lph left join Product as p on p.productid=lph.product_id left join MakeitUser as mu on mu.userid=lph.makeit_id where date(lph.created_at)='"+req.date+"' and lph.makeit_id="+req.makeit_id+" group by lph.product_id order by lph.product_id ASC");
   
-    var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)="+req.date+" and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+req.makeit_id+" group by oi.productid order by oi.productid ASC");
+    var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)='"+req.date+"' and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+req.makeit_id+" group by oi.productid order by oi.productid ASC");
     //result(null, getsoldquantity);
     var product_count = 0;
     var kitchen_percentage = 0;
@@ -2989,5 +2990,6 @@ Makeituser.kitchen_liveproduct_status_report= async function kitchen_liveproduct
     result(null, resobj);
   }
 };
+
 
 module.exports = Makeituser;

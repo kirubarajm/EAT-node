@@ -514,3 +514,11 @@ exports.admin_list_all_makeitusers_percentage_report = function(req, res) {
     res.json(result);
   });
 };
+
+//Report For Get Live Product Status Based on the Kitchen
+exports.kitchen_liveproduct_status_report = function(req, res) {
+  Makeituser.kitchen_liveproduct_status_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.send(user);
+  });
+};
