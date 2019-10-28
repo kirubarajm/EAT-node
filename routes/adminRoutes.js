@@ -174,5 +174,6 @@ app.route("/admin/moveit/nearbymoveit").post(routesVersioning({"1.0.0":moveituse
 app.route("/admin/makeit/liveproductstatus").post(routesVersioning({"1.0.0":makeituser.makeit_liveproduct_status}));
 app.route("/admin/makeit/kitchenliveproductstatus").post(routesVersioning({"1.0.0":makeituser.kitchen_liveproduct_status}));
 app.route("/admin/makeit/kitchenpercentage").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage}));
-
+////Report
+app.route("/admin/makeit/kitchenpercentage_report").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage_report}));
 }
