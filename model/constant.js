@@ -70,6 +70,8 @@ const calculate = {
 
     //Miles to km
     onemile : 1.6,
+
+    order_assign_status:true,
 }
 
 
