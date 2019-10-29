@@ -745,145 +745,41 @@ Order.getOrderById = function getOrderById(orderid, result) {
   });
 };
 
-Order.updateOrderStatus = async function updateOrderStatus(req, result) {
-  var orderdetails = await query(
-    "select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" +
-      req.orderid +
-      "'"
-  );
+// Order.updateOrderStatus = async function updateOrderStatus(req, result) {
+//   var orderdetails = await query(
+//     "select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" +
+//       req.orderid +
+//       "'"
+//   );
 
-  if (orderdetails[0].orderstatus < 5) {
-    var updatequery = "Update Orders set orderstatus = ? where orderid = ?";
-    var values = [req.orderstatus, req.orderid];
-    if (req.orderstatus === PushConstant.masteridOrder_Accept) {
-      var makeit_accept_time = moment().format("YYYY-MM-DD HH:mm:ss");
-      var makeit_expected_preparing_time = moment()
-        .add(0, "seconds")
-        .add(15, "minutes")
-        .format("YYYY-MM-DD HH:mm:ss");
-      values = [
-        req.orderstatus,
-        makeit_expected_preparing_time,
-        makeit_accept_time,
-        req.orderid
-      ];
-      updatequery =
-        "Update Orders set orderstatus = ?,makeit_expected_preparing_time= ?,makeit_accept_time=?,makeit_status=1 where orderid = ? ";
-    } else if (req.orderstatus === PushConstant.masteridOrder_Prepared) {
-      var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
-      values = [req.orderstatus, transaction_time, req.orderid];
-      updatequery =
-        "Update Orders set orderstatus = ?,makeit_actual_preparing_time= ? where orderid = ? ";
-    }
-
-    sql.query(updatequery, values, async function(err, res) {
-      if (err) {
-        result(err, null);
-      } else {
-        if (req.orderstatus === PushConstant.masteridOrder_Accept) {
-          await Notification.orderEatPushNotification(
-            req.orderid,
-            null,
-            PushConstant.Pageid_eat_order_accept
-          );
-        } else if (req.orderstatus === PushConstant.masteridOrder_Prepared) {
-          await Notification.orderEatPushNotification(
-            req.orderid,
-            null,
-            PushConstant.masteridOrder_Prepared
-          );
-        }
-
-        req.orglat = orderdetails[0].makeit_lat;
-        req.orglon = orderdetails[0].makeit_lon;
-        req.deslat = orderdetails[0].cus_lat;
-        req.deslon = orderdetails[0].cus_lon;
-
-        Order.eat_order_distance_calculation(req, async function(err, res3) {
-          if (err) {
-            result(err, null);
-          } else {
-            if (res3.status != true) {
-              result(null, res3);
-            } else {
-              var routes = res3.result;
-              var caldistance = routes.routes;
-              var deliverytimedata = caldistance[0].legs;
-
-              req.distance = parseInt(deliverytimedata[0].distance.text);
-              req.duration = parseInt(deliverytimedata[0].duration.text);
-              req.duration = req.duration + constant.orderbuffertime;
-              req.deliverytime = moment()
-                .add(0, "seconds")
-                .add(req.duration, "minutes")
-                .format("YYYY-MM-DD HH:mm:ss");
-
-              await Order.insert_delivery_time(req);
-
-              let response = {
-                success: true,
-                status: true,
-                message: "Order accepted successfully."
-                //   result :deliverytimedata
-              };
-              result(null, response);
-            }
-          }
-        });
-      }
-    });
-  } else if (orderdetails[0].orderstatus == 5) {
-    let response = {
-      success: true,
-      status: true,
-      message: "Order already pickedup"
-      //   result :deliverytimedata
-    };
-    result(null, response);
-  } else if (orderdetails[0].orderstatus == 6) {
-    let response = {
-      success: true,
-      status: true,
-      message: "Order already delivered"
-      //   result :deliverytimedata
-    };
-    result(null, response);
-  } else {
-    let response = {
-      success: true,
-      status: true,
-      message: "Order already Canceled"
-      //   result :deliverytimedata
-    };
-    result(null, response);
-  }
-};
-
-// Order.updateOrderStatus =async function updateOrderStatus(req, result) {
-
-// //var orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
-// const orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon,mk.makeithub_id from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
-// if (orderdetails[0].orderstatus < 5) {
-//   var updatequery = "Update Orders set orderstatus = ? where orderid = ?"
-//   var values=[req.orderstatus, req.orderid];
-//   if (req.orderstatus === PushConstant.masteridOrder_Accept){
-//     var makeit_accept_time = moment().format("YYYY-MM-DD HH:mm:ss");
+//   if (orderdetails[0].orderstatus < 5) {
+//     var updatequery = "Update Orders set orderstatus = ? where orderid = ?";
+//     var values = [req.orderstatus, req.orderid];
+//     if (req.orderstatus === PushConstant.masteridOrder_Accept) {
+//       var makeit_accept_time = moment().format("YYYY-MM-DD HH:mm:ss");
 //       var makeit_expected_preparing_time = moment()
-//       .add(0, "seconds")
-//       .add(constant.foodpreparationtime, "minutes")
-//       .format("YYYY-MM-DD HH:mm:ss");
-//   values=[req.orderstatus, makeit_expected_preparing_time,makeit_accept_time,req.orderid];
-//   updatequery = "Update Orders set orderstatus = ?,makeit_expected_preparing_time= ?,makeit_accept_time=?,makeit_status=1 where orderid = ? "
-//   }else if (req.orderstatus === PushConstant.masteridOrder_Prepared){
-//     var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
-//     values=[req.orderstatus, transaction_time, req.orderid];
-//     updatequery = "Update Orders set orderstatus = ?,makeit_actual_preparing_time= ? where orderid = ? "
-//   }
+//         .add(0, "seconds")
+//         .add(15, "minutes")
+//         .format("YYYY-MM-DD HH:mm:ss");
+//       values = [
+//         req.orderstatus,
+//         makeit_expected_preparing_time,
+//         makeit_accept_time,
+//         req.orderid
+//       ];
+//       updatequery =
+//         "Update Orders set orderstatus = ?,makeit_expected_preparing_time= ?,makeit_accept_time=?,makeit_status=1 where orderid = ? ";
+//     } else if (req.orderstatus === PushConstant.masteridOrder_Prepared) {
+//       var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
+//       values = [req.orderstatus, transaction_time, req.orderid];
+//       updatequery =
+//         "Update Orders set orderstatus = ?,makeit_actual_preparing_time= ? where orderid = ? ";
+//     }
 
-//   sql.query(updatequery,values,async function(err, res) {
-//   if (err) {
-//       result(err, null);
-//   } else {
+//     sql.query(updatequery, values, async function(err, res) {
+//       if (err) {
+//         result(err, null);
+//       } else {
 //         if (req.orderstatus === PushConstant.masteridOrder_Accept) {
 //           await Notification.orderEatPushNotification(
 //             req.orderid,
@@ -902,91 +798,195 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
 //         req.orglon = orderdetails[0].makeit_lon;
 //         req.deslat = orderdetails[0].cus_lat;
 //         req.deslon = orderdetails[0].cus_lon;
-//         req.hubid= orderdetails[0].makeithub_id;
 
-//         Order.eat_order_distance_calculation(req ,async function(err,res3) {
+//         Order.eat_order_distance_calculation(req, async function(err, res3) {
 //           if (err) {
 //             result(err, null);
 //           } else {
 //             if (res3.status != true) {
 //               result(null, res3);
 //             } else {
-  
-              
 //               var routes = res3.result;
 //               var caldistance = routes.routes;
 //               var deliverytimedata = caldistance[0].legs;
-             
+
 //               req.distance = parseInt(deliverytimedata[0].distance.text);
-//                req.duration = parseInt(deliverytimedata[0].duration.text);
-//                req.duration = req.duration + constant.orderbuffertime;
-//                req.deliverytime  = moment()
-//                .add(0, "seconds")
-//                .add(req.duration, "minutes")
-//                .format("YYYY-MM-DD HH:mm:ss");
+//               req.duration = parseInt(deliverytimedata[0].duration.text);
+//               req.duration = req.duration + constant.orderbuffertime;
+//               req.deliverytime = moment()
+//                 .add(0, "seconds")
+//                 .add(req.duration, "minutes")
+//                 .format("YYYY-MM-DD HH:mm:ss");
 
-//                await Order.insert_delivery_time(req);
+//               await Order.insert_delivery_time(req);
 
-//                Order.auto_order_assign(req ,async function(err,auto_order_data) {
-//                 if (err) {
-//                   result(err, null);
-//                 } else {
-//                   if (auto_order_data.status != true) {
-//                     result(null, auto_order_data);
-//                   } else {
-
-//                     let response = {
-//                       success: true,
-//                       status: true,
-//                       message: "Order accepted successfully."
-//                      // result :deliverytimedata 
-//                     };
-//                     result(null, response);
-//                   }
-//                 }
-//               });
-//             //   let response = {
-//             //     success: true,
-//             //     status: true,
-//             //     message: "Order accepted successfully.",
-//             //  //   result :deliverytimedata 
-//             //   };
-//             //   result(null, response);
+//               let response = {
+//                 success: true,
+//                 status: true,
+//                 message: "Order accepted successfully."
+//                 //   result :deliverytimedata
+//               };
+//               result(null, response);
 //             }
 //           }
 //         });
 //       }
-//     }
-//   );
-// }else if (orderdetails[0].orderstatus == 5){
-
-//   let response = {
-//     success: true,
-//     status: true,
-//     message: "Order already pickedup",
-//  //   result :deliverytimedata 
-//   };
-//   result(null, response);
-// }else if (orderdetails[0].orderstatus == 6){
-
-//   let response = {
-//     success: true,
-//     status: true,
-//     message: "Order already delivered",
-//  //   result :deliverytimedata 
-//   };
-//   result(null, response);
-// }else{
-
-//   let response = {
-//     success: true,
-//     status: true,
-//     message: "Order already Canceled",
-//  //   result :deliverytimedata 
-//   };
-//   result(null, response);
-// }
+//     });
+//   } else if (orderdetails[0].orderstatus == 5) {
+//     let response = {
+//       success: true,
+//       status: true,
+//       message: "Order already pickedup"
+//       //   result :deliverytimedata
+//     };
+//     result(null, response);
+//   } else if (orderdetails[0].orderstatus == 6) {
+//     let response = {
+//       success: true,
+//       status: true,
+//       message: "Order already delivered"
+//       //   result :deliverytimedata
+//     };
+//     result(null, response);
+//   } else {
+//     let response = {
+//       success: true,
+//       status: true,
+//       message: "Order already Canceled"
+//       //   result :deliverytimedata
+//     };
+//     result(null, response);
+//   }
 // };
+
+Order.updateOrderStatus =async function updateOrderStatus(req, result) {
+
+//var orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
+const orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon,mk.makeithub_id from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
+if (orderdetails[0].orderstatus < 5) {
+  var updatequery = "Update Orders set orderstatus = ? where orderid = ?"
+  var values=[req.orderstatus, req.orderid];
+  if (req.orderstatus === PushConstant.masteridOrder_Accept){
+    var makeit_accept_time = moment().format("YYYY-MM-DD HH:mm:ss");
+      var makeit_expected_preparing_time = moment()
+      .add(0, "seconds")
+      .add(constant.foodpreparationtime, "minutes")
+      .format("YYYY-MM-DD HH:mm:ss");
+  values=[req.orderstatus, makeit_expected_preparing_time,makeit_accept_time,req.orderid];
+  updatequery = "Update Orders set orderstatus = ?,makeit_expected_preparing_time= ?,makeit_accept_time=?,makeit_status=1 where orderid = ? "
+  }else if (req.orderstatus === PushConstant.masteridOrder_Prepared){
+    var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
+    values=[req.orderstatus, transaction_time, req.orderid];
+    updatequery = "Update Orders set orderstatus = ?,makeit_actual_preparing_time= ? where orderid = ? "
+  }
+
+  sql.query(updatequery,values,async function(err, res) {
+  if (err) {
+      result(err, null);
+  } else {
+        if (req.orderstatus === PushConstant.masteridOrder_Accept) {
+          await Notification.orderEatPushNotification(
+            req.orderid,
+            null,
+            PushConstant.Pageid_eat_order_accept
+          );
+        } else if (req.orderstatus === PushConstant.masteridOrder_Prepared) {
+          await Notification.orderEatPushNotification(
+            req.orderid,
+            null,
+            PushConstant.masteridOrder_Prepared
+          );
+        }
+
+        req.orglat = orderdetails[0].makeit_lat;
+        req.orglon = orderdetails[0].makeit_lon;
+        req.deslat = orderdetails[0].cus_lat;
+        req.deslon = orderdetails[0].cus_lon;
+        req.hubid  = orderdetails[0].makeithub_id;
+
+        Order.eat_order_distance_calculation(req ,async function(err,res3) {
+          if (err) {
+            result(err, null);
+          } else {
+            if (res3.status != true) {
+              result(null, res3);
+            } else {
+  
+              
+              var routes = res3.result;
+              var caldistance = routes.routes;
+              var deliverytimedata = caldistance[0].legs;
+             
+              req.distance = parseInt(deliverytimedata[0].distance.text);
+               req.duration = parseInt(deliverytimedata[0].duration.text);
+               req.duration = req.duration + constant.orderbuffertime;
+               req.deliverytime  = moment()
+               .add(0, "seconds")
+               .add(req.duration, "minutes")
+               .format("YYYY-MM-DD HH:mm:ss");
+
+               await Order.insert_delivery_time(req);
+
+               Order.auto_order_assign(req ,async function(err,auto_order_data) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  if (auto_order_data.status != true) {
+                    result(null, auto_order_data);
+                  } else {
+
+                    let response = {
+                      success: true,
+                      status: true,
+                      message: "Order accepted successfully."
+                     // result :deliverytimedata 
+                    };
+                    result(null, response);
+                  }
+                }
+              });
+            //   let response = {
+            //     success: true,
+            //     status: true,
+            //     message: "Order accepted successfully.",
+            //  //   result :deliverytimedata 
+            //   };
+            //   result(null, response);
+            }
+          }
+        });
+      }
+    }
+  );
+}else if (orderdetails[0].orderstatus == 5){
+
+  let response = {
+    success: true,
+    status: true,
+    message: "Order already pickedup",
+ //   result :deliverytimedata 
+  };
+  result(null, response);
+}else if (orderdetails[0].orderstatus == 6){
+
+  let response = {
+    success: true,
+    status: true,
+    message: "Order already delivered",
+ //   result :deliverytimedata 
+  };
+  result(null, response);
+}else{
+
+  let response = {
+    success: true,
+    status: true,
+    message: "Order already Canceled",
+ //   result :deliverytimedata 
+  };
+  result(null, response);
+}
+};
 
 Order.getAllOrder = function getAllOrder(result) {
   sql.query("Select * from Orders", function(err, res) {

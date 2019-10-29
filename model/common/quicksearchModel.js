@@ -534,7 +534,7 @@ QuickSearch.order_assign= function order_assign(res,i){
                 [nearbymoveit[0].userid, assign_time, res[i].orderid],
                 async function(err, res2) {
                   if (err) {
-                    result(err, null);
+                    order_assign(res,i++);
                   } else {
                     var moveit_offline_query = await query(
                       "update Orders_queue set status = 1 where orderid =" +
