@@ -4214,7 +4214,11 @@ Order.user_orders_history = function user_orders_history(req, result) {
 
 //Date Wise Sales Report  
 Order.datewise_sales = function datewise_sales(req, result) {
-  sql.query("Select DATE(o.created_at) as todaysdate, count(*) as Delivered_Orders, sum(price) as Totalmoney_received,sum(gst) as gst ,sum(original_price) as Totalmoney_without_discount, sum(refund_amount) as refund_coupon_amount,sum(discount_amount) as discount_amount,sum(ro.refund_amt) as refund_online, sum(ro.cancellation_charges) as cancellation_charges,sum(delivery_charge) as delivery_charge,if(o.payment_type=1,'Online','Cash') as payment_type  from Orders as o left join Refund_Online as ro on ro.orderid=o.orderid where orderstatus=6  and payment_type = "+req.payment_type+" and Date(o.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by Date(o.created_at);",async function(err, res) {
+  var ordercond = "";
+  if(req.ordertype){
+    ordercond = " and ordertype = "+req.ordertype+" "; 
+  }
+  sql.query("Select DATE(o.created_at) as todaysdate, count(*) as Delivered_Orders, sum(price) as Totalmoney_received,sum(gst) as gst ,sum(original_price) as Totalmoney_without_discount, sum(refund_amount) as refund_coupon_amount,sum(discount_amount) as discount_amount,sum(ro.refund_amt) as refund_online, sum(ro.cancellation_charges) as cancellation_charges,sum(delivery_charge) as delivery_charge,if(o.payment_type=1,'Online','Cash') as payment_type  from Orders as o left join Refund_Online as ro on ro.orderid=o.orderid where orderstatus=6 "+ordercond+" and payment_type = "+req.payment_type+" and Date(o.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by Date(o.created_at)",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -4595,7 +4599,7 @@ Order.product_wise_real = function product_wise_real(req, result) {
 
 //Virtual Kitchen Orders report
 Order.virtual_orders_report = function virtual_orders_report(req, result) {
-  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,date(o.created_at) as orderdate,time(o.created_at) as ordertime,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location,date(o.ordertime) as orderdate,time(o.ordertime) as ordertime,date(o.makeit_accept_time) as makeitacceptdate,time(o.makeit_accept_time) as makeitaccepttime,date(o.makeit_actual_preparing_time) as makeitactualpreparingdate,time(o.makeit_actual_preparing_time) as makeitactualpreparingtime,date(o.order_assigned_time) as moveitassigneddate,time(o.order_assigned_time) as moveitassignedtime,date(o.moveit_pickup_time) as moveitpickupdate,time(o.moveit_pickup_time) as moveitpickuptime,date(o.moveit_actual_delivered_time) as moveitactualdelivereddate,time(o.moveit_actual_delivered_time) as moveitactualdeliveredtime from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -4623,7 +4627,7 @@ Order.virtual_orders_report = function virtual_orders_report(req, result) {
 
 //Real Kitchen Orders report
 Order.real_orders_report = function real_orders_report(req, result) {
-  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,date(o.created_at) as orderdate,time(o.created_at) as ordertime,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid left join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey='0' and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,date(o.ordertime) as orderdate,time(o.ordertime) as ordertime,date(o.makeit_accept_time) as makeitacceptdate,time(o.makeit_accept_time) as makeitaccepttime,date(o.makeit_actual_preparing_time) as makeitactualpreparingdate,time(o.makeit_actual_preparing_time) as makeitactualpreparingtime,date(o.order_assigned_time) as moveitassigneddate,time(o.order_assigned_time) as moveitassignedtime,date(o.moveit_pickup_time) as moveitpickupdate,time(o.moveit_pickup_time) as moveitpickuptime,date(o.moveit_actual_delivered_time) as moveitactualdelivereddate,time(o.moveit_actual_delivered_time) as moveitactualdeliveredtime from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid left join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and ma.virtualkey='0' and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -4954,7 +4958,7 @@ Order.orders_rating = function orders_rating(req, result) {
 
 //Makeit Earnings Virtual Kitchen Prepare After Cancel Report
 Order.virtual_after_cancel = function virtual_after_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '2019-10-14' AND  '2019-10-14') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -5347,6 +5351,64 @@ Order.auto_order_assign = function auto_order_assign(req, result) {
     }
   })
   
+};
+
+////Lost customers list/////////
+Order.lostcustomerlist_report= function lostcustomerlist_report(req, result) {
+  if(req.max && req.min){
+    var query = "select u.userid,u.name,u.email,u.phoneno,ord.orderid,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(), INTERVAL "+req.min+" DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid where u.userid!='' and (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(), INTERVAL "+req.max+" DAY) AND  CURDATE()) group by u.userid order by ord.orderid desc"
+    sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        const res_result = res.filter(re => re.with7day===0);
+        if (res_result.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res_result
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+  }
+};
+
+/////Virtual orders purchased report//////////////
+Order.virtualorderpurchased_report= function virtualorderpurchased_report(req, result) {
+  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location,date(o.ordertime) as orderdate,time(o.ordertime) as ordertime,date(o.makeit_accept_time) as makeitacceptdate,time(o.makeit_accept_time) as makeitaccepttime,date(o.makeit_actual_preparing_time) as makeitactualpreparingdate,time(o.makeit_actual_preparing_time) as makeitactualpreparingtime,date(o.order_assigned_time) as moveitassigneddate,time(o.order_assigned_time) as moveitassignedtime,date(o.moveit_pickup_time) as moveitpickupdate,time(o.moveit_pickup_time) as moveitpickuptime,date(o.moveit_actual_delivered_time) as moveitactualdelivereddate,time(o.moveit_actual_delivered_time) as moveitactualdeliveredtime from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and o.ordertype=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  //console.log("query-->",query);
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
 };
 
 module.exports = Order;

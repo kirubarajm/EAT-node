@@ -879,3 +879,19 @@ exports.getXfactors_by_userid = function(req, res) {
     });
   }
 };
+
+////Lost customers list
+exports.lostcustomerlist_report= function(req, res) {
+  Order.lostcustomerlist_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+/////Virtual orders purchased report
+exports.virtualorderpurchased_report= function(req, res) {
+  Order.virtualorderpurchased_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

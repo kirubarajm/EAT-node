@@ -170,11 +170,19 @@ app.route("/admin/reports/realkitchenordercanceled").post(routesVersioning({"1.0
 app.route("/admin/moveit/current_location").post(routesVersioning({"1.0.0":moveituser.admin_moveit_current_location}));
 app.route("/admin/moveit/nearbymoveit").post(routesVersioning({"1.0.0":moveituser.getNearByMoveit_auto_assign}));
 
-////Live Product Status History//////////////
+////Live Product Status History
 app.route("/admin/makeit/liveproductstatus").post(routesVersioning({"1.0.0":makeituser.makeit_liveproduct_status}));
 app.route("/admin/makeit/kitchenliveproductstatus").post(routesVersioning({"1.0.0":makeituser.kitchen_liveproduct_status}));
 app.route("/admin/makeit/kitchenpercentage").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage}));
-////Report
-app.route("/admin/makeit/kitchenpercentage_report").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage_report}));
-app.route("/admin/makeit/kitchenliveproductstatus_report").post(routesVersioning({"1.0.0":makeituser.kitchen_liveproduct_status_report}));
+////Live Product Status History Report
+app.route("/admin/reports/kitchenpercentage_report").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage_report}));
+app.route("/admin/reports/kitchenliveproductstatus_report").post(routesVersioning({"1.0.0":makeituser.kitchen_liveproduct_status_report}));
+
+/////Lost customers list
+app.route("/admin/reports/lostcustomerlist_report").post(routesVersioning({"1.0.0":orders.lostcustomerlist_report}));
+
+/////Virtual orders purchased report
+app.route("/admin/reports/virtualorderpurchased_report").post(routesVersioning({"1.0.0":orders.virtualorderpurchased_report}));
+
+
 }
