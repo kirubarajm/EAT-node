@@ -2912,10 +2912,13 @@ Makeituser.get_admin_list_all_makeitusers_percentage_report = function(req, resu
         res[i].makeit_id=res[i].userid;
         res[i].date=req.date;
         await Makeituser.kitchen_liveproduct_status_report(res[i],function(err,percentage){
-          console.log(percentage)
+          percentage.kitchen_percentage=percentage.kitchen_percentage==="0.00"||percentage.kitchen_percentage==='NaN'?0:percentage.kitchen_percentage;
           res[i].kitchen_percentage=percentage.kitchen_percentage || 0;
         });
       }
+      res.sort(
+        (a, b) => parseFloat(b.kitchen_percentage) - parseFloat(a.kitchen_percentage)
+      );
       //////////////////////////////////
       var totalcount = 0;
       sql.query(query, function(err, res1) {
@@ -2965,6 +2968,9 @@ Makeituser.kitchen_liveproduct_status_report= async function kitchen_liveproduct
           }
         }
       }
+      getmaxquantity.sort(
+        (a, b) => parseFloat(b.kitchen_product_percentage) - parseFloat(a.kitchen_product_percentage)
+      );
       let resobj = {
         success: true,
         status : true,
