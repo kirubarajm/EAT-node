@@ -7,7 +7,7 @@ authentication = {
   host: "35.154.249.232",
   user: "eattovo",
   password: "eattv2020",
-  database: "eatprod",
+  database: "eatdev",
   timezone: "IST",
   multipleStatements: true
 };
