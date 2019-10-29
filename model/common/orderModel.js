@@ -819,7 +819,6 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
                 .format("YYYY-MM-DD HH:mm:ss");
 
               await Order.insert_delivery_time(req);
-
               let response = {
                 success: true,
                 status: true,
@@ -859,7 +858,7 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
   }
 };
 
-// Order.updateOrderStatus =async function updateOrderStatus(req, result) {
+//Order.updateOrderStatus =async function updateOrderStatus(req, result) {
 
 // //var orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
 // const orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon,mk.makeithub_id from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" + req.orderid + "'");
@@ -902,7 +901,7 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
 //         req.orglon = orderdetails[0].makeit_lon;
 //         req.deslat = orderdetails[0].cus_lat;
 //         req.deslon = orderdetails[0].cus_lon;
-//         req.hubid= orderdetails[0].makeithub_id;
+//         req.hubid  = orderdetails[0].makeithub_id;
 
 //         Order.eat_order_distance_calculation(req ,async function(err,res3) {
 //           if (err) {
@@ -1334,7 +1333,7 @@ Order.order_assign = function order_assign(req, result) {
               if (err) {
                 result(err, null);
               } else {
-                var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+               // var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
                 await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned,res1[0]);
 
@@ -2739,28 +2738,58 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
 
                  await Order.insert_delivery_time(req);
 
-                 Order.auto_order_assign(req ,async function(err,auto_order_data) {
-                  if (err) {
-                    result(err, null);
-                  } else {
-                    if (auto_order_data.status != true) {
-                      result(null, auto_order_data);
-                    } else {
+                //  Order.auto_order_assign(req ,async function(err,auto_order_data) {
+                //   if (err) {
+                //     result(err, null);
+                //   } else {
+                //     if (auto_order_data.status != true) {
+                //       result(null, auto_order_data);
+                //     } else {
 
 
 
-                      let response = {
-                        success: true,
-                        status: true,
-                        message: "Order accepted successfully."
-                       // result :deliverytimedata 
-                      };
-                      result(null, response);
-                    }
-                  }
-                });
+                //       let response = {
+                //         success: true,
+                //         status: true,
+                //         message: "Order accepted successfully."
+                //        // result :deliverytimedata 
+                //       };
+                //       result(null, response);
+                //     }
+                //   }
+                // });
       
 
+                if (constant.order_assign_status==true) {
+                 
+                  Order.auto_order_assign(req ,async function(err,auto_order_data) {
+                    if (err) {
+                      result(err, null);
+                    } else {
+                      if (auto_order_data.status != true) {
+                        result(null, auto_order_data);
+                      } else {
+    
+                        let response = {
+                          success: true,
+                          status: true,
+                          message: "Order accepted successfully."
+                         // result :deliverytimedata 
+                        };
+                        result(null, response);
+                      }
+                    }
+                  });
+                 } else {
+                   
+                  let response = {
+                  success: true,
+                  status: true,
+                  message: "Order accepted successfully.",
+        
+                };
+                result(null, response);
+                 }
 
 
                 // let response = {
