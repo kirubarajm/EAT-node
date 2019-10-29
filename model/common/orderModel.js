@@ -4244,7 +4244,7 @@ Order.user_orders_history = function user_orders_history(req, result) {
 //Date Wise Sales Report  
 Order.datewise_sales = function datewise_sales(req, result) {
   var ordercond = "";
-  if(req.ordertype){
+  if(req.ordertype==0||req.ordertype==1){
     ordercond = " and ordertype = "+req.ordertype+" "; 
   }
   sql.query("Select DATE(o.created_at) as todaysdate, count(*) as Delivered_Orders, sum(price) as Totalmoney_received,sum(gst) as gst ,sum(original_price) as Totalmoney_without_discount, sum(refund_amount) as refund_coupon_amount,sum(discount_amount) as discount_amount,sum(ro.refund_amt) as refund_online, sum(ro.cancellation_charges) as cancellation_charges,sum(delivery_charge) as delivery_charge,if(o.payment_type=1,'Online','Cash') as payment_type  from Orders as o left join Refund_Online as ro on ro.orderid=o.orderid where orderstatus=6 "+ordercond+" and payment_type = "+req.payment_type+" and Date(o.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by Date(o.created_at)",async function(err, res) {
