@@ -5095,7 +5095,7 @@ Order.real_before_cancel = function real_before_cancel(req, result) {
 
 //////////////Virtual Cancel Orders////////////////////
 Order.virtual_order_canceled= function virtual_order_canceled(req, result) {
-  sql.query("Select ord.orderid,ord.ordertype,ord.original_price,ord.gst,ord.price,ord.refund_amount,ord.discount_amount,ord.ordertime,if(ord.cancel_by=1,'EAT','Kitchen') as canceled_by,ord.cancel_charge,ord.cancel_reason,m.brandname,m.makeithub_id,mh.makeithub_name,mh.address from Orders as ord join MakeitUser as m on m.userid=ord.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where ord.orderstatus=7 and m.virtualkey=1 and o.ordertype=0 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
+  sql.query("Select ord.orderid,ord.ordertype,ord.original_price,ord.gst,ord.price,ord.refund_amount,ord.discount_amount,ord.ordertime,if(ord.cancel_by=1,'EAT','Kitchen') as canceled_by,ord.cancel_charge,ord.cancel_reason,m.brandname,m.makeithub_id,mh.makeithub_name,mh.address from Orders as ord join MakeitUser as m on m.userid=ord.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id = m.makeithub_id where ord.orderstatus=7 and m.virtualkey=1 and ord.ordertype=0 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
@@ -5121,7 +5121,7 @@ Order.virtual_order_canceled= function virtual_order_canceled(req, result) {
 
 //////////////Real Cancel Orders/////////////////
 Order.real_order_canceled= function real_order_canceled(req, result) {
-  sql.query("Select ord.orderid,ord.ordertype,ord.original_price,ord.gst,ord.price,ord.refund_amount,ord.discount_amount,ord.ordertime,if(ord.cancel_by=1,'EAT','Kitchen') as canceled_by,ord.cancel_charge,ord.cancel_reason,m.brandname from Orders as ord join MakeitUser as m on m.userid=ord.makeit_user_id  where ord.orderstatus=7 and m.virtualkey=0 and o.ordertype=0 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
+  sql.query("Select ord.orderid,ord.ordertype,ord.original_price,ord.gst,ord.price,ord.refund_amount,ord.discount_amount,ord.ordertime,if(ord.cancel_by=1,'EAT','Kitchen') as canceled_by,ord.cancel_charge,ord.cancel_reason,m.brandname from Orders as ord join MakeitUser as m on m.userid=ord.makeit_user_id  where ord.orderstatus=7 and m.virtualkey=0 and ord.ordertype=0 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'",async function(err, res) {
       if (err) {
         result(err, null);
       } else {
