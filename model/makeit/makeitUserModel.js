@@ -2997,5 +2997,89 @@ Makeituser.kitchen_liveproduct_status_report= async function kitchen_liveproduct
   }
 };
 
+////Weekly Makeit Earnings/////////////
+Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,result) {
+  //console.log(req);
+  /////////////////////////////////////
+  var FromDate    = new Date(req.fromdate);
+  var ToDate      = new Date(req.todate);
+  var CurrentDate = new Date();
+  var timeDiff    = ToDate-FromDate;
+  var daysDiff    = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+  if(req.makeit_id && req.fromdate && req.todate){
+    /////Get First Order Date
+    var getfirstmakeitorder = await query("select orderid,date(created_at) as firstorder from Orders where makeit_user_id="+req.makeit_id+" order by orderid asc");
+    var FirstOrder = new Date(getfirstmakeitorder[0].firstorder);
+    if(((FromDate < CurrentDate) && (ToDate < CurrentDate)) && (parseInt(daysDiff) <=7) && ((FromDate >= FirstOrder) && (ToDate >= FirstOrder))){
+      var getweeklyearnings = await query("select ordertime,SUM(makeit_earnings) as makeit_earnings,userid,orderid,makeit_user_id,makeit_earnings from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
+
+        if(getweeklyearnings.length>0){
+          var Weely_eranings=0;
+          for(var i=0; i<getweeklyearnings.length; i++){
+            Weely_eranings = Weely_eranings+getweeklyearnings[i].makeit_earnings;
+          }
+          let resobj = {
+            success: true,
+            status : true,
+            First_Order_date:getfirstmakeitorder[0].firstorder,
+            Weely_eranings:Weely_eranings,
+            result : getweeklyearnings
+          };
+          result(null, resobj);
+        }else{
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status : false
+          };
+          result(null, resobj);
+        }
+      }else{
+        let resobj = {
+          success: true,
+          message: "Invalid Date Range",
+          status : false
+        };
+        result(null, resobj);
+      }
+  }else{
+    let resobj = {
+      success: true,
+      message: "Invalid post values",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+
+////Daywise Makeit Earnings/////////////
+Makeituser.makeit_daywise_earnings= async function makeit_daywise_earnings(req,result) {
+  if(req.makeit_id && req.date){
+    var getdaywiseearnings = await query("Select o.orderid,o.makeit_earnings,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,o.created_at,o.orderstatus from Orders as o left join OrderItem as oi on o.orderid=oi.orderid left join Product as p on p.productid = oi.productid left join MakeitUser as ma on o.makeit_user_id=ma.userid where o.orderstatus=6 and o.makeit_user_id="+req.makeit_id+" and Date(o.created_at)='"+req.date+"' and o.payment_status=1 GROUP BY o.orderid");
+    if(getdaywiseearnings.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        result : getdaywiseearnings
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }
+  }else{
+    let resobj = {
+      success: true,
+      message: "Invalid post values",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
 
 module.exports = Makeituser;
