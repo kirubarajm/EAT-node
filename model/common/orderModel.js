@@ -2432,7 +2432,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           };
 
           var totalrefund = orderdetails[0].price + orderdetails[0].refund_amount;
-          var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+          //var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
           var querycancel_charge ="update Orders set cancel_charge = "+constant.servicecharge+"  where orderid =" +req.orderid+"";
 
@@ -4036,7 +4036,7 @@ Order.order_turnaround_time_makeit = function order_turnaround_time_makeit(req, 
 
 
 Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, result) {
-  var query="Select Ord.orderid,Ord.ordertime,TIMEDIFF(moveit_accept_time,order_assigned_time) as Moveit_Accept_time, TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time , ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time) ,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) ) as Totaltime,time(Ord.order_assigned_time) as  moveitAssignedtime, time(Ord.moveit_accept_time) as movieitaccepttime,time(Ord.moveit_pickup_time) as movieitpickuptime,time(Ord.moveit_actual_delivered_time) as movieitdeliverdtime,(CASE WHEN Ord.ordertype=1 THEN 'Virtual' ELSE 'Real' END) as kitchen from `Orders` as Ord  where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
+  var query="Select Ord.orderid,Ord.ordertime,TIMEDIFF(moveit_accept_time,order_assigned_time) as Moveit_Accept_time, TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time,ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time) ,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) ) as Totaltime,time(Ord.order_assigned_time) as  moveitAssignedtime, time(Ord.moveit_accept_time) as moveitaccepttime,time(Ord.moveit_actual_delivered_time) as moveitdeliverdtime,time(Ord.moveit_pickup_time) as moveitpickuptime,(CASE WHEN Ord.ordertype=1 THEN 'Virtual' ELSE 'Real' END) as kitchen from `Orders` as Ord  where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -4770,7 +4770,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              payment_id: orderdetails[0].transactionid
            };
            var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
-           var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+           //var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
            for (let i = 0; i < orderitemdetails.length; i++) {
              var productquantityadd =
@@ -4877,7 +4877,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              payment_id: orderdetails[0].transactionid
            };
            var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
-           var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+           //var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
            for (let i = 0; i < orderitemdetails.length; i++) {
              var productquantityadd =

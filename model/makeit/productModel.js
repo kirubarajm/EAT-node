@@ -382,10 +382,16 @@ Product.admin_list_all_product = function admin_list_all_product(req, result) {
   if(req.approved_status){
     query = query +" and approved_status = '" +req.approved_status+ "'";
   }
-  if (req.search) {
-    query =query +"' and product_name LIKE  '%" + req.search +"%'";
+
+  if(req.active_status){
+    query =query +" and active_status = '" +req.active_status+ "'";
   }
 
+  if (req.search) {
+    query =query +" and product_name LIKE  '%" + req.search +"%'";
+  }
+
+  
   console.log(query);
 
   sql.query(query, function(err, res) {
