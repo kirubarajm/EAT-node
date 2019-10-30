@@ -2432,7 +2432,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           };
 
           var totalrefund = orderdetails[0].price + orderdetails[0].refund_amount;
-          var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+          //var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
           var querycancel_charge ="update Orders set cancel_charge = "+constant.servicecharge+"  where orderid =" +req.orderid+"";
 
@@ -4036,7 +4036,7 @@ Order.order_turnaround_time_makeit = function order_turnaround_time_makeit(req, 
 
 
 Order.order_turnaround_time_moveit = function order_turnaround_time_moveit(req, result) {
-  var query="Select Ord.orderid,Ord.ordertime,TIMEDIFF(moveit_accept_time,order_assigned_time) as Moveit_Accept_time, TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time , ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time) ,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) ) as Totaltime from `Orders` as Ord  where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
+  var query="Select Ord.orderid,Ord.ordertime,TIMEDIFF(moveit_accept_time,order_assigned_time) as Moveit_Accept_time, TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time,ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time) ,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) ) as Totaltime,time(Ord.order_assigned_time) as  moveitAssignedtime, time(Ord.moveit_accept_time) as moveitaccepttime,time(Ord.moveit_actual_delivered_time) as moveitdeliverdtime,time(Ord.moveit_pickup_time) as moveitpickuptime,(CASE WHEN Ord.ordertype=1 THEN 'Virtual' ELSE 'Real' END) as kitchen from `Orders` as Ord  where Ord.orderstatus=6 and Date(Ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -4770,7 +4770,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              payment_id: orderdetails[0].transactionid
            };
            var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
-           var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+           //var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
            for (let i = 0; i < orderitemdetails.length; i++) {
              var productquantityadd =
@@ -4877,7 +4877,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              payment_id: orderdetails[0].transactionid
            };
            var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
-           var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+           //var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
            for (let i = 0; i < orderitemdetails.length; i++) {
              var productquantityadd =
@@ -5414,7 +5414,7 @@ Order.lostcustomerlist_report= function lostcustomerlist_report(req, result) {
 
 /////Virtual orders purchased report//////////////
 Order.virtualorderpurchased_report= function virtualorderpurchased_report(req, result) {
-  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location,date(o.ordertime) as orderdate,time(o.ordertime) as ordertime,date(o.makeit_accept_time) as makeitacceptdate,time(o.makeit_accept_time) as makeitaccepttime,date(o.makeit_actual_preparing_time) as makeitactualpreparingdate,time(o.makeit_actual_preparing_time) as makeitactualpreparingtime,date(o.order_assigned_time) as moveitassigneddate,time(o.order_assigned_time) as moveitassignedtime,date(o.moveit_pickup_time) as moveitpickupdate,time(o.moveit_pickup_time) as moveitpickuptime,date(o.moveit_actual_delivered_time) as moveitactualdelivereddate,time(o.moveit_actual_delivered_time) as moveitactualdeliveredtime from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join Makeit_hubs as mh on ma.makeithub_id=mh.makeithub_id where o.orderstatus=6 and o.ordertype=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,sum(o.makeit_earnings) as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_pickup_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,date(o.ordertime) as orderdate,time(o.ordertime) as ordertime,date(o.makeit_accept_time) as makeitacceptdate,time(o.makeit_accept_time) as makeitaccepttime,date(o.makeit_actual_preparing_time) as makeitactualpreparingdate,time(o.makeit_actual_preparing_time) as makeitactualpreparingtime,date(o.order_assigned_time) as moveitassigneddate,time(o.order_assigned_time) as moveitassignedtime,date(o.moveit_pickup_time) as moveitpickupdate,time(o.moveit_pickup_time) as moveitpickuptime,date(o.moveit_actual_delivered_time) as moveitactualdelivereddate,time(o.moveit_actual_delivered_time) as moveitactualdeliveredtime from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid where o.orderstatus=6 and o.ordertype=1 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
