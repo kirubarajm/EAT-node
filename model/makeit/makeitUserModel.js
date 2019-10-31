@@ -3082,4 +3082,26 @@ Makeituser.makeit_daywise_earnings= async function makeit_daywise_earnings(req,r
   }
 };
 
+////Get First Order/////////////
+Makeituser.makeit_get_firstorder= async function makeit_get_firstorder(req,result) {
+  console.log(req); 
+    var getfirstmakeitorder = await query("select orderid,date(created_at) as firstorder from Orders where makeit_user_id="+req.makeit_userid+" order by orderid asc LIMIT 1");
+    if(getfirstmakeitorder.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        First_Order_date : getfirstmakeitorder[0].firstorder,
+        result : getfirstmakeitorder
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }
+};
+
 module.exports = Makeituser;

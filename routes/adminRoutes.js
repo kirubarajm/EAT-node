@@ -184,5 +184,9 @@ app.route("/admin/reports/lostcustomerlist_report").post(routesVersioning({"1.0.
 /////Virtual orders purchased report
 app.route("/admin/reports/virtualorderpurchased_report").post(routesVersioning({"1.0.0":orders.virtualorderpurchased_report}));
 
+/////funnel orders report
+app.route("/admin/reports/funnelorders_report").post(routesVersioning({"1.0.0":orders.funnelorders_report}));
 
+/////X-Factor orders report
+app.route("/admin/reports/xfactororders_report").post(routesVersioning({"1.0.0":orders.xfactororders_report}));
 }

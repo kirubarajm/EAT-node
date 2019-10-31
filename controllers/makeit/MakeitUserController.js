@@ -538,3 +538,11 @@ exports.makeit_daywise_earnings = function(req, res) {
     res.json(user);
   });
 };
+
+////Get First Order/////////////
+exports.makeit_get_firstorder = function(req, res) {
+  Makeituser.makeit_get_firstorder(req.params, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
