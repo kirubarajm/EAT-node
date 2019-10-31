@@ -5442,7 +5442,7 @@ Order.virtualorderpurchased_report= function virtualorderpurchased_report(req, r
 
 /////funnel orders report////////////////////
 Order.funnelorders_report= function funnelorders_report(req, result) {
-  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,o.makeit_earnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.created_at,ma.brandname, GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location,o.cus_lat,o.cus_lon,o.cus_address from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on ma.userid=o.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id=ma.makeithub_id where o.orderstatus=10 and o.ordertype=0 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,o.makeit_earnings,o.discount_amount,o.created_at,ma.brandname, GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location,o.cus_lat,o.cus_lon,o.cus_address from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on ma.userid=o.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id=ma.makeithub_id where o.orderstatus=10 and o.ordertype=0 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -5470,7 +5470,7 @@ Order.funnelorders_report= function funnelorders_report(req, result) {
 
 /////X-Factor orders report//////////////
 Order.xfactororders_report= function xfactororders_report(req, result) {
-  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,o.makeit_earnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.created_at,ma.brandname, GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location,o.cus_lat,o.cus_lon,o.cus_address from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on ma.userid=o.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id=ma.makeithub_id where o.orderstatus=11 and o.ordertype=0 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.orderid,o.gst,o.original_price,o.refund_amount,o.makeit_earnings,o.discount_amount,o.created_at,ma.brandname, GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,mh.address as hub_location,o.cus_lat,o.cus_lon,o.cus_address from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on ma.userid=o.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id=ma.makeithub_id where o.orderstatus=11 and o.ordertype=0 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
