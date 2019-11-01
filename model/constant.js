@@ -50,28 +50,31 @@ const calculate = {
     distanceapiKey :'AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc',
     orderbuffertime :10, //min
 
-  //support number
+    //support number
     customer_support :7358531315,
-  //support number
+    //support number
     makeit_customer_support :7358531315,
 
-  //Razorpay Details
+    //Razorpay Details
     razorpay_key_id : 'rzp_live_bCMW6sG1GWp36Q',
     razorpay_key_secret : '2VAma7EVApDnLuOMerwX3ODu',
 
     Xfactor_value:1.9,
     Xfactor_subtraction_value:1,
-  //Moveit Support Number
+    //Moveit Support Number
     moveit_customer_support:7358531315,
-  //Sales Support Number
+    //Sales Support Number
     sales_customer_support:7358531315,
-  //Radius limit  2km
-  nearby_moveit_radius: 1.24,
+    //Radius limit  2km
+    nearby_moveit_radius: 1.24,
 
     //Miles to km
     onemile : 1.6,
 
     order_assign_status:true,
+
+    hub_radius:2,
+
 }
 
 
