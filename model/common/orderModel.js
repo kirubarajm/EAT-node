@@ -3454,7 +3454,7 @@ Order.moveit_notification_time_orderid = async function moveit_notification_time
 
 
 Order.eat_order_distance_calculation = async function eat_order_distance_calculation(req,result) {
- 
+ console.log(req);
 //https://maps.googleapis.com/maps/api/directions/json?origin=12.9801,80.2184&destination=13.0072,80.2064&key=AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc
   var diatnceurl =
   "https://maps.googleapis.com/maps/api/directions/json?origin="+req.orglat+","+req.orglon+"&destination="+req.deslat+","+req.deslon+"&key="+constant.distanceapiKey+"";

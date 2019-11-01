@@ -189,4 +189,9 @@ app.route("/admin/reports/funnelorders_report").post(routesVersioning({"1.0.0":o
 
 /////X-Factor orders report
 app.route("/admin/reports/xfactororders_report").post(routesVersioning({"1.0.0":orders.xfactororders_report}));
+
+///////Moveit History
+app.route("/admin/moveit/getworking_dates").post(routesVersioning({"1.0.0":moveituser.getworking_dates}));
+app.route("/admin/moveit/daywise_moveit_records").post(routesVersioning({"1.0.0":moveituser.daywise_moveit_records}));
+
 }

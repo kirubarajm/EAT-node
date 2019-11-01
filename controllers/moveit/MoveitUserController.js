@@ -293,3 +293,19 @@ exports.getNearByMoveit_auto_assign = function(req, res) {
     res.json(user);
   });
 };
+
+////////////Get Working Dates
+exports.getworking_dates = function(req, res) {
+  Moveituser.getworking_dates(req.body,function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////////////Day Wise Moveit History
+exports.daywise_moveit_records = function(req, res) {
+  Moveituser.daywise_moveit_records(req.body,function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
