@@ -490,7 +490,7 @@ Moveituser.get_a_nearby_moveit_V2 = async function get_a_location_user(req, resu
 };
 
 Moveituser.admin_moveit_current_location = async function admin_moveit_current_location(req, result) {
-  var query= "select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where online_status = 1";
+  var query= "select mou.name,mou.Vehicle_no,mou.address,mou.email,mou.phoneno,mou.userid,mou.online_status,mou.moveit_hub,mkh.color,mkh.address as mkhaddress from MoveitUser mou join Makeit_hubs as mkh on mkh.makeithub_id=mou.moveit_hub where mou.online_status = 1";
   sql.query(query, function (err, res) {
     if (err) {
       let error = {

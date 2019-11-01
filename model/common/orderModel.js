@@ -2738,67 +2738,45 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
 
                  await Order.insert_delivery_time(req);
 
-                //  Order.auto_order_assign(req ,async function(err,auto_order_data) {
-                //   if (err) {
-                //     result(err, null);
-                //   } else {
-                //     if (auto_order_data.status != true) {
-                //       result(null, auto_order_data);
-                //     } else {
-
-
-
-                //       let response = {
-                //         success: true,
-                //         status: true,
-                //         message: "Order accepted successfully."
-                //        // result :deliverytimedata 
-                //       };
-                //       result(null, response);
-                //     }
-                //   }
-                // });
-      
-
-                if (constant.order_assign_status==true) {
+                // if (constant.order_assign_status==true) {
                  
-                  Order.auto_order_assign(req ,async function(err,auto_order_data) {
-                    if (err) {
-                      result(err, null);
-                    } else {
-                      if (auto_order_data.status != true) {
-                        result(null, auto_order_data);
-                      } else {
+                //   Order.auto_order_assign(req ,async function(err,auto_order_data) {
+                //     if (err) {
+                //       result(err, null);
+                //     } else {
+                //       if (auto_order_data.status != true) {
+                //         result(null, auto_order_data);
+                //       } else {
     
-                        let response = {
-                          success: true,
-                          status: true,
-                          message: "Order accepted successfully."
-                         // result :deliverytimedata 
-                        };
-                        result(null, response);
-                      }
-                    }
-                  });
-                 } else {
+                //         let response = {
+                //           success: true,
+                //           status: true,
+                //           message: "Order accepted successfully."
+                //          // result :deliverytimedata 
+                //         };
+                //         result(null, response);
+                //       }
+                //     }
+                //   });
+                //  } else {
                    
-                  let response = {
-                  success: true,
-                  status: true,
-                  message: "Order accepted successfully.",
-        
-                };
-                result(null, response);
-                 }
-
-
-                // let response = {
+                //   let response = {
                 //   success: true,
                 //   status: true,
                 //   message: "Order accepted successfully.",
-                //  // result :deliverytimedata 
+        
                 // };
                 // result(null, response);
+                //  }
+
+
+                let response = {
+                  success: true,
+                  status: true,
+                  message: "Order accepted successfully.",
+                 // result :deliverytimedata 
+                };
+                result(null, response);
               }
             }
           });
