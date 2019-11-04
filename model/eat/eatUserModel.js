@@ -1780,7 +1780,6 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
        // res[i].distance = res[i].distance * constant.onemile;
         res[i].distance = res[i].distance.toFixed(2) ;
 
-        console.log(res[i].distance);
         var eta = foodpreparationtime + (onekm * res[i].distance);
         //15min Food Preparation time , 3min 1 km
        
@@ -1939,8 +1938,6 @@ if ( headers.apptype ==1) {
 
 }
   
-
-
 
   var cuisinequery = "";
 

@@ -332,12 +332,13 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
 //liveproducthistory.start();
 
 //cron run by moveit user offline every night 2 PM.
-const job1moveitlogout = new CronJob("0 0 14 * * *", async function() {
+const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
   console.log("moveit offline");
   var res = await query(
-    "select * from MoveitUser where online_status = 1 and login_status = 1"
+    "select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1"
   ); //and created_at > (NOW() - INTERVAL 10 MINUTE
-
+  //select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1
+  //select * from MoveitUser where online_status = 1 and login_status = 1
   // console.log("cron for product revert online orders in-complete orders"+res);
   if (res.length !== 0) {
     for (let i = 0; i < res.length; i++) {

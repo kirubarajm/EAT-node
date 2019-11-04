@@ -69,7 +69,7 @@ const calculate = {
     //Miles to km
     onemile : 1.6,
 
-    order_assign_status:true,
+    order_assign_status:false,
 
     hub_radius:2,
 
