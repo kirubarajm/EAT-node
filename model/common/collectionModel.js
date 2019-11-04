@@ -399,12 +399,12 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
                   res1[i].productlist =JSON.parse(res1[i].productlist)
                 }
                 
-                res1[i].distance = res1[i].distance * constant.onemile;
-                res1[i].distance = res1[i].distance.toFixed(2) ;
-                console.log( res1[i].distance);
+                // res1[i].distance = res1[i].distance * constant.onemile;
+                // res1[i].distance = res1[i].distance.toFixed(2) ;
+                // console.log( res1[i].distance);
                 //15min Food Preparation time , 3min 1 km
               //  eta = 15 + 3 * res[i].distance;
-                var eta = foodpreparationtime + onekm * res1[i].distance;
+                var eta = foodpreparationtime + (onekm * res1[i].distance);
                 
                 // res1[i].serviceablestatus = false;
     
@@ -552,12 +552,12 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
                   }
                   
                 //  res1[i].distance = res1[i].distance.toFixed(2);
-                res1[i].distance =  res1[i].distance * constant.onemile;
-                res1[i].distance =  res1[i].distance.toFixed(2) ;
+                // res1[i].distance =  res1[i].distance * constant.onemile;
+                // res1[i].distance =  res1[i].distance.toFixed(2);
                   //console.log(res[i].distance);
                   //15min Food Preparation time , 3min 1 km
                 //  eta = 15 + 3 * res[i].distance;
-                  var eta = foodpreparationtime + onekm * res1[i].distance;
+                var eta = foodpreparationtime + onekm * res1[i].distance;
                   
                   // res1[i].serviceablestatus = false;
       
@@ -824,12 +824,12 @@ Collection.get_all_collection_by_cid_getkichens = async function get_all_collect
           }
           
          // res1[i].distance = res1[i].distance.toFixed(2);
-         res1[i].distance = res1[i].distance * constant.onemile;
-         res1[i].distance = res1[i].distance.toFixed(2) ;
-          console.log(res1[i].distance);
+        //  res1[i].distance = res1[i].distance * constant.onemile;
+        //  res1[i].distance = res1[i].distance.toFixed(2) ;
+        //   console.log(res1[i].distance);
           //15min Food Preparation time , 3min 1 km
         //  eta = 15 + 3 * res[i].distance;
-          var eta = foodpreparationtime + onekm * res1[i].distance;
+          var eta = foodpreparationtime + (onekm * res1[i].distance);
           
           res1[i].serviceablestatus = false;
 
@@ -914,7 +914,7 @@ Collection.get_all_collection_by_cid_getkichens_v2 = async function get_all_coll
         }
       
 
-          console.log("query"+req.query);
+     
       //based on logic this conditions will change
         // if (req.cid === 1 || req.cid === 2) {
         //   var dyQ=req.query.replace(new RegExp('pt.dinner', 'g'),ifnextavaquery);

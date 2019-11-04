@@ -1092,8 +1092,8 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               req.makeit_user_id +
               "' and mk.appointment_status = 3 and mk.verified_status = 1 and mk.ka_status = 2"
           );
-          makeitavailability[0].distance = makeitavailability[0].distance * constant.onemile;
-          makeitavailability[0].distance = makeitavailability[0].distance.toFixed(2) ;
+        //  makeitavailability[0].distance = makeitavailability[0].distance * constant.onemile;
+          //makeitavailability[0].distance = makeitavailability[0].distance.toFixed(2) ;
           console.log(makeitavailability[0].distance);
             
         var eta = constant.foodpreparationtime + (constant.onekm * makeitavailability[0].distance);
@@ -2912,10 +2912,13 @@ Makeituser.get_admin_list_all_makeitusers_percentage_report = function(req, resu
         res[i].makeit_id=res[i].userid;
         res[i].date=req.date;
         await Makeituser.kitchen_liveproduct_status_report(res[i],function(err,percentage){
-          console.log(percentage)
+          percentage.kitchen_percentage=percentage.kitchen_percentage==="0.00"||percentage.kitchen_percentage==='NaN'?0:percentage.kitchen_percentage;
           res[i].kitchen_percentage=percentage.kitchen_percentage || 0;
         });
       }
+      res.sort(
+        (a, b) => parseFloat(b.kitchen_percentage) - parseFloat(a.kitchen_percentage)
+      );
       //////////////////////////////////
       var totalcount = 0;
       sql.query(query, function(err, res1) {
@@ -2965,6 +2968,9 @@ Makeituser.kitchen_liveproduct_status_report= async function kitchen_liveproduct
           }
         }
       }
+      getmaxquantity.sort(
+        (a, b) => parseFloat(b.kitchen_product_percentage) - parseFloat(a.kitchen_product_percentage)
+      );
       let resobj = {
         success: true,
         status : true,
@@ -2991,5 +2997,111 @@ Makeituser.kitchen_liveproduct_status_report= async function kitchen_liveproduct
   }
 };
 
+////Weekly Makeit Earnings/////////////
+Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,result) {
+  //console.log(req);
+  /////////////////////////////////////
+  var FromDate    = new Date(req.fromdate);
+  var ToDate      = new Date(req.todate);
+  var CurrentDate = new Date();
+  var timeDiff    = ToDate-FromDate;
+  var daysDiff    = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+  if(req.makeit_id && req.fromdate && req.todate){
+    /////Get First Order Date
+    var getfirstmakeitorder = await query("select orderid,date(created_at) as firstorder from Orders where makeit_user_id="+req.makeit_id+" order by orderid asc");
+    var FirstOrder = new Date(getfirstmakeitorder[0].firstorder);
+    if(((FromDate < CurrentDate) && (ToDate < CurrentDate)) && (parseInt(daysDiff) <=7) && ((FromDate >= FirstOrder) && (ToDate >= FirstOrder))){
+      var getweeklyearnings = await query("select ordertime,SUM(makeit_earnings) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id,makeit_earnings from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
+
+        if(getweeklyearnings.length>0){
+          var weekly_earnings=0;
+          for(var i=0; i<getweeklyearnings.length; i++){
+            weekly_earnings = weekly_earnings+getweeklyearnings[i].makeit_earnings;
+          }
+          let resobj = {
+            success: true,
+            status : true,
+            First_Order_date:getfirstmakeitorder[0].firstorder,
+            weekly_earnings:weekly_earnings,
+            result : getweeklyearnings
+          };
+          result(null, resobj);
+        }else{
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status : false
+          };
+          result(null, resobj);
+        }
+      }else{
+        let resobj = {
+          success: true,
+          message: "Invalid Date Range",
+          status : false
+        };
+        result(null, resobj);
+      }
+  }else{
+    let resobj = {
+      success: true,
+      message: "Invalid post values",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+
+////Daywise Makeit Earnings/////////////
+Makeituser.makeit_daywise_earnings= async function makeit_daywise_earnings(req,result) {
+  if(req.makeit_id && req.date){
+    var getdaywiseearnings = await query("Select o.orderid,o.makeit_earnings,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,o.created_at,o.orderstatus from Orders as o left join OrderItem as oi on o.orderid=oi.orderid left join Product as p on p.productid = oi.productid left join MakeitUser as ma on o.makeit_user_id=ma.userid where o.orderstatus=6 and o.makeit_user_id="+req.makeit_id+" and Date(o.created_at)='"+req.date+"' and o.payment_status=1 GROUP BY o.orderid");
+    if(getdaywiseearnings.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        result : getdaywiseearnings
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }
+  }else{
+    let resobj = {
+      success: true,
+      message: "Invalid post values",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+
+////Get First Order/////////////
+Makeituser.makeit_get_firstorder= async function makeit_get_firstorder(req,result) {
+  console.log(req); 
+    var getfirstmakeitorder = await query("select orderid,date(created_at) as firstorder from Orders where makeit_user_id="+req.makeit_userid+" order by orderid asc LIMIT 1");
+    if(getfirstmakeitorder.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        First_Order_date : getfirstmakeitorder[0].firstorder,
+        result : getfirstmakeitorder
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }
+};
 
 module.exports = Makeituser;

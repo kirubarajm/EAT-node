@@ -64,4 +64,9 @@ app.route("/makeit/createliveproducthistory").post(middleware.checkToken,routesV
 app.route("/makeit/cronliveproducthistory").post(routesVersioning({"1.0.0":product.cron_create_live_product_status_history}));
 app.route("/makeit/customersupport").post(routesVersioning({"1.0.0": makeituser.makeit_customer_support}));
 
+////New Makeit Earnings/////////////
+app.route("/makeit/weeklyearnings").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_weekly_earnings}));
+app.route("/makeit/daywiseearnings").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_daywise_earnings}));
+app.route("/makeit/getfirstorder/:makeit_userid").get(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_get_firstorder}));
+
 }

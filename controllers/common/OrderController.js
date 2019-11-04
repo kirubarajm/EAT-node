@@ -887,3 +887,35 @@ exports.order_move_to_queue = function(req, res) {
     res.json(result);
   });
 };
+
+////Lost customers list
+exports.lostcustomerlist_report= function(req, res) {
+  Order.lostcustomerlist_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+/////Virtual orders purchased report
+exports.virtualorderpurchased_report= function(req, res) {
+  Order.virtualorderpurchased_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+/////funnel orders report
+exports.funnelorders_report= function(req, res) {
+  Order.funnelorders_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+/////X-Factor orders report
+exports.xfactororders_report= function(req, res) {
+  Order.xfactororders_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

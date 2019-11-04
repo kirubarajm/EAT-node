@@ -11,6 +11,7 @@ let config = require('../config.js');
 var constant = require('../constant.js');
 var MoveitTimelog = require("../../model/moveit/moveitTimeModel");
 var moment = require("moment");
+//var OrderModel = require('../../model/common/orderModel.js');
 
 //Task object constructor
 var Moveituser = function (moveituser) {
@@ -490,7 +491,7 @@ Moveituser.get_a_nearby_moveit_V2 = async function get_a_location_user(req, resu
 };
 
 Moveituser.admin_moveit_current_location = async function admin_moveit_current_location(req, result) {
-  var query= "select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where online_status = 1";
+  var query= "select mou.name,mou.Vehicle_no,mou.address,mou.email,mou.phoneno,mou.userid,mou.online_status,mou.moveit_hub,mkh.color,mkh.address as mkhaddress from MoveitUser mou join Makeit_hubs as mkh on mkh.makeithub_id=mou.moveit_hub where mou.online_status = 1";
   sql.query(query, function (err, res) {
     if (err) {
       let error = {
@@ -980,6 +981,165 @@ Moveituser.update_pushid = function(req, result) {
       result(null, resobj);
       }
     })
+  };
+
+////////////Get Working Dates
+Moveituser.getworking_dates = async function getworking_dates(req, result) {
+  var getdates = await query("select moveit_userid as moveit_id,date(logtime) as date,0 as TotalOrders,0 as CompletedOrders,0 as InCompletedOrders, '00:00:00' as AvgAcceptTime, '00:00:00' as AvgDeliveryTime,'00:00:00' as AvgKitchenReachTime,'00:00:00' as AvgOrderTime from Moveit_Timelog where moveit_userid="+req.moveit_id+" group by date(logtime) desc");
+
+  for(var i=0; i<getdates.length; i++){
+    requestdata = {"moveit_id":getdates[i].moveit_id,"date":getdates[i].date};
+    await Moveituser.daywise_moveit_records(requestdata, async function(err, res) {
+      if (err) {
+        //result(err, null);
+        console.log(err);
+      } else {
+        console.log(res);
+        getdates[i].TotalOrders         = res.TotalOrders;
+        getdates[i].CompletedOrders     = res.CompletedOrders;
+        getdates[i].InCompletedOrders   = res.InCompletedOrders;
+        getdates[i].AvgAcceptTime       = res.AvgAcceptTime;
+        getdates[i].AvgDeliveryTime     = res.AvgDeliveryTime;
+        getdates[i].AvgKitchenReachTime = res.AvgKitchenReachTime;
+        getdates[i].AvgOrderTime        = res.AvgOrderTime;
+      } 
+    });
+  } 
+
+  if(getdates.length>0){
+    let resobj = {
+      success: true,
+      status : true,
+      result : getdates
+    };
+    result(null, resobj);
+  }else{
+    let resobj = {
+      success: true,
+      message: "Sorry! no data found.",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+
+
+////////////Day Wise Moveit History
+  Moveituser.daywise_moveit_records = async function daywise_moveit_records(req, result) {
+    //console.log(req);
+    var getorderlist = await query("select mu.userid,ord.orderid,ord.ordertime,time(ord.order_assigned_time) as order_assigned_time,time(ord.moveit_notification_time) as moveit_notification_time,time(ord.moveit_accept_time) as moveit_accept_time,time(ord.moveit_reached_time) as moveit_reached_time,time(ord.moveit_pickup_time) as moveit_pickup_time,time(ord.moveit_expected_delivered_time) as moveit_expected_delivered_time,time(ord.moveit_customerlocation_reached_time) as moveit_customerlocation_reached_time,time(ord.moveit_actual_delivered_time) as moveit_actual_delivered_time,ord.moveit_status,CASE WHEN ord.orderstatus=0 then 'Order put' WHEN ord.orderstatus=1 then 'Order Accept' WHEN ord.orderstatus=2 then 'Order Preparing' WHEN ord.orderstatus=3 then 'Order Prepared' WHEN ord.orderstatus=4 then 'Kitchen reached' WHEN ord.orderstatus=5 then 'Order Pickedup' WHEN ord.orderstatus=6 then 'Order Delivered' WHEN ord.orderstatus=7 then 'Order Cancel' WHEN ord.orderstatus=8 then 'Order missed by kitchen' WHEN ord.orderstatus=9 then 'Incomplete online order reject' END as status,ord.orderstatus,TIMEDIFF(time(ord.moveit_accept_time),time(ord.order_assigned_time)) as avg_accept_time,TIMEDIFF(time(ord.moveit_actual_delivered_time),time(ord.moveit_pickup_time)) as avg_delivery_time,TIMEDIFF(time(ord.moveit_reached_time),time(ord.moveit_accept_time)) as avg_kitchen_reach_time,TIMEDIFF(time(ord.moveit_actual_delivered_time),time(ord.order_assigned_time)) as avg_order_time,ord.cus_lat,ord.cus_lon,mau.lat,mau.lon from MoveitUser as mu left join Orders as ord on ord.moveit_user_id=mu.userid left join MakeitUser as mau on mau.userid=ord.makeit_user_id where ord.moveit_user_id="+req.moveit_id+" and date(ord.ordertime)='"+req.date+"' order by ord.orderid desc");
+       
+    var TotalOrders         = 0;
+    var CompletedOrders     = 0;
+    var InCompletedOrders   = 0;
+    var AvgAcceptTime       = "00:00:00";
+    var AvgDeliveryTime     = "00:00:00";
+    var AvgKitchenReachTime = "00:00:00";
+    var AvgOrderTime        = "00:00:00";
+
+    for(var i=0; i<getorderlist.length; i++){
+      ////Total Orders Calculation
+      TotalOrders = TotalOrders+1;
+      ////Completed and InCompleted Order Calculation
+      if(getorderlist[i].orderstatus == 6){
+        CompletedOrders   = CompletedOrders+1;
+      }else{
+        InCompletedOrders = InCompletedOrders+1;
+      }
+      ////Avarage Accept Time Calculation
+      var aahms         = getorderlist[i].avg_accept_time || "00:00:00";   
+      var aaa           = aahms.split(':'); 
+      var aaseconds     = (+aaa[0]) * 60 * 60 + (+aaa[1]) * 60 + (+aaa[2]); 
+      AvgAcceptTime = moment(AvgAcceptTime, 'HH:mm:ss').add(aaseconds,'s').format('HH:mm:ss');
+      ////Avarage Delivery Time Calculation
+      var adhms         = getorderlist[i].avg_delivery_time || "00:00:00";   
+      var ada           = adhms.split(':'); 
+      var adseconds     = (+ada[0]) * 60 * 60 + (+ada[1]) * 60 + (+ada[2]); 
+      AvgDeliveryTime = moment(AvgDeliveryTime, 'HH:mm:ss').add(adseconds,'s').format('HH:mm:ss');
+      ////Avarage Kitchen Reached Time Calculation
+      var akhms         = getorderlist[i].avg_kitchen_reach_time || "00:00:00";   
+      var aka           = akhms.split(':'); 
+      var akseconds     = (+aka[0]) * 60 * 60 + (+aka[1]) * 60 + (+aka[2]); 
+      var AvgKitchenReachTime = moment(AvgKitchenReachTime, 'HH:mm:ss').add(akseconds,'s').format('HH:mm:ss');
+      ////Avarage Order Time Calculation
+      var aohms         = getorderlist[i].avg_order_time || "00:00:00";   
+      var aoa           = aohms.split(':'); 
+      var aoseconds     = (+aoa[0]) * 60 * 60 + (+aoa[1]) * 60 + (+aoa[2]); 
+      AvgOrderTime  = moment(AvgOrderTime, 'HH:mm:ss').add(aoseconds,'s').format('HH:mm:ss');
+
+      ////Distance Calculation 
+  /*  var RequestDistance ={"orglat":getorderlist[i].cus_lat,"orglon":getorderlist[i].cus_lon,"deslat":getorderlist[i].lat.toString(),"deslon":getorderlist[i].lon.toString()};
+      await Moveituser.distance_calculation(RequestDistance, async function(err, res3) {
+        if (err) {
+          //result(err, null);
+          console.log(err);
+        } else {
+          var diss = res3.result.routes[0].legs[0].distance.text;
+          console.log(diss);
+          getorderlist[i].distance=parseInt(9);
+        }
+      });  */
+
+    } 
+    
+    if(getorderlist.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        TotalOrders       : TotalOrders,
+        CompletedOrders   : CompletedOrders,
+        InCompletedOrders : InCompletedOrders,
+        AvgAcceptTime     : AvgAcceptTime,
+        AvgDeliveryTime   : AvgDeliveryTime,
+        AvgKitchenReachTime:AvgKitchenReachTime,
+        AvgOrderTime      : AvgOrderTime,
+        result : getorderlist,
+      };
+     
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }
+  };
+  
+  ///////Get Distance from two lat lon
+  Moveituser.distance_calculation = async function(req,result) {
+    console.log(req);
+    var diatnceurl ="https://maps.googleapis.com/maps/api/directions/json?origin="+req.orglat+","+req.orglon+"&destination="+req.deslat+","+req.deslon+"&key="+constant.distanceapiKey+"";
+    request({
+      method: "GET",
+      rejectUnauthorized: false,
+      url: diatnceurl
+    },
+    function(error,data) {
+      if (error) {
+        console.log("error: ", err);
+        result(null, err);
+      } else {
+        if (data.statusCode === 200) {
+            routesdata = JSON.parse(data.body)
+            let resobj = {
+              success: true,
+              status:true,
+              result: routesdata
+            };
+            result(null, resobj);
+        }else{
+          routes = JSON.parse(data.body)
+          let resobj = {
+            success: true,
+            status: false,
+            result: data
+          };
+          result(null, resobj);
+        }
+      }
+    });
   };
 
 module.exports = Moveituser;

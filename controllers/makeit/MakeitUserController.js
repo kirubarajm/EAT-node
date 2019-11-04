@@ -522,3 +522,27 @@ exports.kitchen_liveproduct_status_report = function(req, res) {
     res.send(user);
   });
 };
+
+////Weekly Makeit Earnings/////////////
+exports.makeit_weekly_earnings = function(req, res) {
+  Makeituser.makeit_weekly_earnings(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Daywise Makeit Earnings/////////////
+exports.makeit_daywise_earnings = function(req, res) {
+  Makeituser.makeit_daywise_earnings(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Get First Order/////////////
+exports.makeit_get_firstorder = function(req, res) {
+  Makeituser.makeit_get_firstorder(req.params, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
