@@ -13,6 +13,10 @@ var MoveitReassignedOrders = function(moveitReassignedorders) {
 
 MoveitReassignedOrders.createMoveitReassignedOrders = async function createMoveitReassignedOrders(req, result) {
 
+  // var order_Moveit_Reassigned_Orders = await query("select * from MoveitReassignedOrders where orderid = '"+req.orderid+"' ");
+
+  // if (order_Moveit_Reassigned_Orders !==0) {
+    
     sql.query("INSERT INTO MoveitReassignedOrders  set ?", req, function(err, res) {
         if (err) {
           console.log("error: ", err);
@@ -28,11 +32,16 @@ MoveitReassignedOrders.createMoveitReassignedOrders = async function createMovei
           result(null, resobj);
         }
       });
-  
+// }else{
+
+//   let resobj = {
+//     success: true,
+//     status : true,
+//     message: "Already"
+//   };
+// }
+
 };
-
-
-
 
 
 module.exports = MoveitReassignedOrders;

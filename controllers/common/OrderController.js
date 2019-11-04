@@ -879,3 +879,11 @@ exports.getXfactors_by_userid = function(req, res) {
     });
   }
 };
+
+////order_move_to_queue
+exports.order_move_to_queue = function(req, res) {
+  Order.order_move_to_queue_by_admin(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

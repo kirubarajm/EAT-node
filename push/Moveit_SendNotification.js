@@ -1,6 +1,8 @@
 const firebase = require("firebase-admin");
 var geoFires = require('geofire');
 var geodist = require('geodist')
+var moment = require("moment");
+
 var MoveitserverKey = require("../moveit-a9128-firebase-adminsdk-3h0b8-6315acfc79");
 var Move_it = null;
 var geoFire =null;
@@ -210,13 +212,18 @@ exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomo
   });
 
   const delay = ms => new Promise(res => setTimeout(res, ms))
+  //console.log("onKeyEnteredRegistration---->"+moment().format("YYYY-MM-DD HH:mm:ss"));
   var onKeyEnteredRegistration = geoQuery.on("key_entered",async function(key, location, distance) {
-  ///  console.log(key + " entered query at " + location + " (" + distance + " km from center)");
-  
+  //   console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+  //  console.log("onKeyEnteredRegistration---->"+moment().format("YYYY-MM-DD HH:mm:ss"));
+
     move_it_id.push(key);
     move_data[key] = {};
     move_data[key].distance=distance;
     move_data[key].location=location;
+  });
+  
+  var onReadyRegistration = geoQuery.on("ready", function (key, location, distance) {
   });
  
  await delay(2000);

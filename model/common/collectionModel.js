@@ -554,7 +554,7 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
                 //  res1[i].distance = res1[i].distance.toFixed(2);
                 res1[i].distance =  res1[i].distance * constant.onemile;
                 res1[i].distance =  res1[i].distance.toFixed(2) ;
-                  console.log(res[i].distance);
+                  //console.log(res[i].distance);
                   //15min Food Preparation time , 3min 1 km
                 //  eta = 15 + 3 * res[i].distance;
                   var eta = foodpreparationtime + onekm * res1[i].distance;

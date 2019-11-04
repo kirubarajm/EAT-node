@@ -901,7 +901,7 @@ Moveituser.update_pushid = function(req, result) {
 
   Moveituser.moveit_online_status_byid= async function moveit_online_status_byid(req,result) { 
  
- var Moveitstatus = await query("select userid,login_status,pushid_ios,pushid_android  from MoveitUser where userid = "+req.userid+" ");
+ var Moveitstatus = await query("select userid,online_status,login_status,pushid_ios,pushid_android  from MoveitUser where userid = "+req.userid+" ");
 
     if (Moveitstatus.length !==0) {
       let resobj = {
@@ -971,7 +971,7 @@ Moveituser.update_pushid = function(req, result) {
       }else{
    
       
-        console.log("test3"+move_it_id);
+       // console.log("test3"+move_it_id);
         let resobj = {
           success: true,
           status: true,
@@ -980,6 +980,6 @@ Moveituser.update_pushid = function(req, result) {
       result(null, resobj);
       }
     })
-    };
+  };
 
 module.exports = Moveituser;

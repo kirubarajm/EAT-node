@@ -270,6 +270,21 @@ Notification.orderMoveItPushNotification = async function(
       };
 
       break;
+      case PushConstant.pageidMoveit_Order_unassign:
+      data = {
+        title: "Order un-assigned",
+        message: "Your order has been un-assigned.",
+        pageid: "" + pageid,
+        app: "Move-it",
+        notification_type: "1",
+        name: "" + Eatuserdetail.name,
+        price: "" + orders.price,
+        orderid: "" + orders.orderid,
+        place: "" + orders.cus_address,
+     
+      };
+
+      break;
   }
 
   if (data == null) return;

@@ -177,4 +177,6 @@ app.route("/admin/makeit/kitchenpercentage").post(routesVersioning({"1.0.0":make
 ////Report
 app.route("/admin/makeit/kitchenpercentage_report").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage_report}));
 app.route("/admin/makeit/kitchenliveproductstatus_report").post(routesVersioning({"1.0.0":makeituser.kitchen_liveproduct_status_report}));
+
+app.route("/admin/order/movetoqueue").put(routesVersioning({"1.0.0":orders.order_move_to_queue}));
 }
