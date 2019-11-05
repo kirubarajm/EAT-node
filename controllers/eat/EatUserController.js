@@ -655,3 +655,11 @@ exports.eat_customer_support = function(req, res) {
     res.json(user);
   });
 };
+
+/////Eat Users History
+exports.user_history = function(req, res) {
+  Eatuser.user_history(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

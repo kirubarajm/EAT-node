@@ -1027,7 +1027,7 @@ Moveituser.getworking_dates = async function getworking_dates(req, result) {
 ////////////Day Wise Moveit History
   Moveituser.daywise_moveit_records = async function daywise_moveit_records(req, result) {
     //console.log(req);
-    var getorderlist = await query("select mu.userid,ord.orderid,ord.ordertime,time(ord.order_assigned_time) as order_assigned_time,time(ord.moveit_notification_time) as moveit_notification_time,time(ord.moveit_accept_time) as moveit_accept_time,time(ord.moveit_reached_time) as moveit_reached_time,time(ord.moveit_pickup_time) as moveit_pickup_time,time(ord.moveit_expected_delivered_time) as moveit_expected_delivered_time,time(ord.moveit_customerlocation_reached_time) as moveit_customerlocation_reached_time,time(ord.moveit_actual_delivered_time) as moveit_actual_delivered_time,ord.moveit_status,CASE WHEN ord.orderstatus=0 then 'Order put' WHEN ord.orderstatus=1 then 'Order Accept' WHEN ord.orderstatus=2 then 'Order Preparing' WHEN ord.orderstatus=3 then 'Order Prepared' WHEN ord.orderstatus=4 then 'Kitchen reached' WHEN ord.orderstatus=5 then 'Order Pickedup' WHEN ord.orderstatus=6 then 'Order Delivered' WHEN ord.orderstatus=7 then 'Order Cancel' WHEN ord.orderstatus=8 then 'Order missed by kitchen' WHEN ord.orderstatus=9 then 'Incomplete online order reject' END as status,ord.orderstatus,TIMEDIFF(time(ord.moveit_accept_time),time(ord.order_assigned_time)) as avg_accept_time,TIMEDIFF(time(ord.moveit_actual_delivered_time),time(ord.moveit_pickup_time)) as avg_delivery_time,TIMEDIFF(time(ord.moveit_reached_time),time(ord.moveit_accept_time)) as avg_kitchen_reach_time,TIMEDIFF(time(ord.moveit_actual_delivered_time),time(ord.order_assigned_time)) as avg_order_time,ord.cus_lat,ord.cus_lon,mau.lat,mau.lon from MoveitUser as mu left join Orders as ord on ord.moveit_user_id=mu.userid left join MakeitUser as mau on mau.userid=ord.makeit_user_id where ord.moveit_user_id="+req.moveit_id+" and date(ord.ordertime)='"+req.date+"' order by ord.orderid desc");
+    var getorderlist = await query("select mu.userid,ord.orderid,ord.ordertime,time(ord.order_assigned_time) as order_assigned_time,time(ord.moveit_notification_time) as moveit_notification_time,time(ord.moveit_accept_time) as moveit_accept_time,time(ord.moveit_reached_time) as moveit_reached_time,time(ord.moveit_pickup_time) as moveit_pickup_time,time(ord.moveit_expected_delivered_time) as moveit_expected_delivered_time,time(ord.moveit_customerlocation_reached_time) as moveit_customerlocation_reached_time,time(ord.moveit_actual_delivered_time) as moveit_actual_delivered_time,ord.moveit_status,CASE WHEN ord.orderstatus=0 then 'Order put' WHEN ord.orderstatus=1 then 'Order Accept' WHEN ord.orderstatus=2 then 'Order Preparing' WHEN ord.orderstatus=3 then 'Order Prepared' WHEN ord.orderstatus=4 then 'Kitchen reached' WHEN ord.orderstatus=5 then 'Order Pickedup' WHEN ord.orderstatus=6 then 'Order Delivered' WHEN ord.orderstatus=7 then 'Order Cancel' WHEN ord.orderstatus=8 then 'Order missed by kitchen' WHEN ord.orderstatus=9 then 'Incomplete online order reject' END as status,ord.orderstatus,TIMEDIFF(time(ord.moveit_accept_time),time(ord.order_assigned_time)) as avg_accept_time,TIMEDIFF(time(ord.moveit_actual_delivered_time),time(ord.moveit_pickup_time)) as avg_delivery_time,TIMEDIFF(time(ord.moveit_reached_time),time(ord.moveit_accept_time)) as avg_kitchen_reach_time,TIMEDIFF(time(ord.moveit_actual_delivered_time),time(ord.order_assigned_time)) as avg_order_time,ord.cus_lat,ord.cus_lon,mau.lat,mau.lon,ord.distance_makeit_to_eat from MoveitUser as mu left join Orders as ord on ord.moveit_user_id=mu.userid left join MakeitUser as mau on mau.userid=ord.makeit_user_id where ord.moveit_user_id="+req.moveit_id+" and date(ord.ordertime)='"+req.date+"' order by ord.orderid desc");
        
     var TotalOrders         = 0;
     var CompletedOrders     = 0;
@@ -1036,6 +1036,8 @@ Moveituser.getworking_dates = async function getworking_dates(req, result) {
     var AvgDeliveryTime     = "00:00:00";
     var AvgKitchenReachTime = "00:00:00";
     var AvgOrderTime        = "00:00:00";
+    var DistanceMitter   = 0;
+    var AvgDistance         = 0;
 
     for(var i=0; i<getorderlist.length; i++){
       ////Total Orders Calculation
@@ -1046,42 +1048,56 @@ Moveituser.getworking_dates = async function getworking_dates(req, result) {
       }else{
         InCompletedOrders = InCompletedOrders+1;
       }
-      ////Avarage Accept Time Calculation
+      ////Sum Accept Time Calculation
       var aahms         = getorderlist[i].avg_accept_time || "00:00:00";   
       var aaa           = aahms.split(':'); 
       var aaseconds     = (+aaa[0]) * 60 * 60 + (+aaa[1]) * 60 + (+aaa[2]); 
       AvgAcceptTime = moment(AvgAcceptTime, 'HH:mm:ss').add(aaseconds,'s').format('HH:mm:ss');
-      ////Avarage Delivery Time Calculation
+      ////Sum Delivery Time Calculation
       var adhms         = getorderlist[i].avg_delivery_time || "00:00:00";   
       var ada           = adhms.split(':'); 
       var adseconds     = (+ada[0]) * 60 * 60 + (+ada[1]) * 60 + (+ada[2]); 
       AvgDeliveryTime = moment(AvgDeliveryTime, 'HH:mm:ss').add(adseconds,'s').format('HH:mm:ss');
-      ////Avarage Kitchen Reached Time Calculation
+      ////Sum Kitchen Reached Time Calculation
       var akhms         = getorderlist[i].avg_kitchen_reach_time || "00:00:00";   
       var aka           = akhms.split(':'); 
       var akseconds     = (+aka[0]) * 60 * 60 + (+aka[1]) * 60 + (+aka[2]); 
       var AvgKitchenReachTime = moment(AvgKitchenReachTime, 'HH:mm:ss').add(akseconds,'s').format('HH:mm:ss');
-      ////Avarage Order Time Calculation
+      ////Sum Order Time Calculation
       var aohms         = getorderlist[i].avg_order_time || "00:00:00";   
       var aoa           = aohms.split(':'); 
       var aoseconds     = (+aoa[0]) * 60 * 60 + (+aoa[1]) * 60 + (+aoa[2]); 
       AvgOrderTime  = moment(AvgOrderTime, 'HH:mm:ss').add(aoseconds,'s').format('HH:mm:ss');
 
-      ////Distance Calculation 
-  /*  var RequestDistance ={"orglat":getorderlist[i].cus_lat,"orglon":getorderlist[i].cus_lon,"deslat":getorderlist[i].lat.toString(),"deslon":getorderlist[i].lon.toString()};
-      await Moveituser.distance_calculation(RequestDistance, async function(err, res3) {
-        if (err) {
-          //result(err, null);
-          console.log(err);
-        } else {
-          var diss = res3.result.routes[0].legs[0].distance.text;
-          console.log(diss);
-          getorderlist[i].distance=parseInt(9);
-        }
-      });  */
+      ////Sum Calculation 
+      DistanceMitter = DistanceMitter+parseFloat(getorderlist[i].distance_makeit_to_eat || 0);
+      getorderlist[i].distance_makeit_to_eat = (parseFloat(getorderlist[i].distance_makeit_to_eat)/1000.0 || 0).toFixed(2);
+      
+    }
+    ////Average Accept Time Calculation
+    var AATS      = AvgAcceptTime || "00:00:00";  
+    var AATSec    = moment(AATS, 'HH:mm:ss').diff(moment().startOf('day'), 'seconds');
+    var AATimesec = AATSec/getorderlist.length;
+    AvgAcceptTime = moment().startOf('day').seconds(AATimesec).format('H:mm:ss');
+    ////Average Delivery Time Calculation
+    var ADTS      = AvgDeliveryTime || "00:00:00";  
+    var ADTSec    = moment(ADTS, 'HH:mm:ss').diff(moment().startOf('day'), 'seconds');
+    var ADTimesec = ADTSec/getorderlist.length;
+    AvgDeliveryTime  = moment().startOf('day').seconds(ADTimesec).format('H:mm:ss');
+    ////Average Kitchen Reached Time Calculation
+    var AkTS      = AvgKitchenReachTime || "00:00:00";  
+    var AkTSec    = moment(AkTS, 'HH:mm:ss').diff(moment().startOf('day'), 'seconds');
+    var AkTimesec = AkTSec/getorderlist.length;
+    AvgKitchenReachTime  = moment().startOf('day').seconds(AkTimesec).format('H:mm:ss');
+    ////Average Order Time Calculation
+    var AOTS      = AvgOrderTime || "00:00:00";  
+    var AOTSec    = moment(AOTS, 'HH:mm:ss').diff(moment().startOf('day'), 'seconds');
+    var AOTimesec = AOTSec/getorderlist.length;
+    AvgOrderTime  = moment().startOf('day').seconds(AOTimesec).format('H:mm:ss');
+    ////Average Distance calculation
+    DistanceMitter = DistanceMitter/getorderlist.length;
+    AvgDistance    = DistanceMitter/1000.0;
 
-    } 
-    
     if(getorderlist.length>0){
       let resobj = {
         success: true,
@@ -1093,6 +1109,7 @@ Moveituser.getworking_dates = async function getworking_dates(req, result) {
         AvgDeliveryTime   : AvgDeliveryTime,
         AvgKitchenReachTime:AvgKitchenReachTime,
         AvgOrderTime      : AvgOrderTime,
+        AvgDistance       : AvgDistance.toFixed(2),
         result : getorderlist,
       };
      
@@ -1107,39 +1124,5 @@ Moveituser.getworking_dates = async function getworking_dates(req, result) {
     }
   };
   
-  ///////Get Distance from two lat lon
-  Moveituser.distance_calculation = async function(req,result) {
-    console.log(req);
-    var diatnceurl ="https://maps.googleapis.com/maps/api/directions/json?origin="+req.orglat+","+req.orglon+"&destination="+req.deslat+","+req.deslon+"&key="+constant.distanceapiKey+"";
-    request({
-      method: "GET",
-      rejectUnauthorized: false,
-      url: diatnceurl
-    },
-    function(error,data) {
-      if (error) {
-        console.log("error: ", err);
-        result(null, err);
-      } else {
-        if (data.statusCode === 200) {
-            routesdata = JSON.parse(data.body)
-            let resobj = {
-              success: true,
-              status:true,
-              result: routesdata
-            };
-            result(null, resobj);
-        }else{
-          routes = JSON.parse(data.body)
-          let resobj = {
-            success: true,
-            status: false,
-            result: data
-          };
-          result(null, resobj);
-        }
-      }
-    });
-  };
 
 module.exports = Moveituser;

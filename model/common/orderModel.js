@@ -21,6 +21,7 @@ var MoveitStatus = require("../../model/moveit/moveitStatusModel");
 var createForcedeliverylogs = require("../../model/common/forcedeliverylogsModel");
 var MoveitFireBase =require("../../push/Moveit_SendNotification");
 var Ordersqueue = require("../../model/common/ordersqueueModel");
+var MoveitUser = require("../../model/moveit/moveitUserModel");
 // var instance = new Razorpay({
 //   key_id: "rzp_test_3cduMl5T89iR9G",
 //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
@@ -1586,7 +1587,7 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
 });
 };
 
-Order.order_delivery_status_by_moveituser = function(req, result) {
+Order.order_delivery_status_by_moveituser = async function(req, result) {
   var order_delivery_time = moment().format("YYYY-MM-DD HH:mm:ss");
   sql.query(
     "Select * from Orders where orderid = ? and moveit_user_id = ?",
@@ -1613,34 +1614,53 @@ Order.order_delivery_status_by_moveituser = function(req, result) {
           }else{
 
           if (res1[0].payment_status == 1) {
-
             req.moveitid = req.moveit_user_id;
             req.status = 7
             await Order.insert_order_status(req); 
 
+            ////Start: Get Distance From geofire //////
+            sql.query("select * from MakeitUser where userid="+res1[0].makeit_user_id, async function(err,getmakeit){
+              if(err){
+                result(err, null);
+              }else{
+                var RequestDistance ={"orglat":res1[0].cus_lat,"orglon":res1[0].cus_lon,"deslat":getmakeit[0].lat.toString(),"deslon":getmakeit[0].lon.toString()};
+                await Order.eat_order_distance_calculation(RequestDistance, async function(err, getdistance) {
+                  if(err){
+                    result(err, null);
+                  }else{
+                    distance_makeit_to_eat = getdistance.result.routes[0].legs[0].distance.value || 0;
 
-            sql.query(
-              "UPDATE Orders SET orderstatus = ?,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
-              [req.orderstatus, order_delivery_time, req.orderid, req.moveit_user_id],
-              async function(err, res) {
-                if (err) {
-                  result(err, null);
-                } else {
-                  let resobj = {
-                    success: true,
-                    message: "Order Delivery successfully",
-                    status:true,
-                    orderdeliverystatus: true
-                  };
-                  await Notification.orderEatPushNotification(
-                    req.orderid,
-                    null,
-                    PushConstant.Pageid_eat_order_delivered
-                  );
-                  result(null, resobj);
-                }
+                    /////////////////////////////Start: Old Code/////////////////////////////
+                    sql.query(
+                      "UPDATE Orders SET orderstatus = ?,distance_makeit_to_eat = ?,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
+                      [req.orderstatus, distance_makeit_to_eat, order_delivery_time, req.orderid, req.moveit_user_id],
+                      async function(err, res) {
+                        if (err) {
+                          result(err, null);
+                        } else {
+                          let resobj = {
+                            success: true,
+                            message: "Order Delivery successfully",
+                            status:true,
+                            orderdeliverystatus: true
+                          };
+                          await Notification.orderEatPushNotification(
+                            req.orderid,
+                            null,
+                            PushConstant.Pageid_eat_order_delivered
+                          );
+                          result(null, resobj);
+                        }
+                      }
+                    );
+                    /////////////////////////////End: Old Code/////////////////////////////
+
+                  }
+                });
               }
-            );
+            });
+            /////End: Get Distance From geofire/////////////////////////////////
+
           } else {
             let resobj = {
               success: true,

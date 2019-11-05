@@ -34,7 +34,8 @@ var Product = function(product) {
   this.quantity = product.quantity || 0;
   this.cuisine = product.cuisine || 1;
   this.approved_status = product.approved_status || 1;
-  this.prod_desc = product.prod_desc
+  this.prod_desc = product.prod_desc;
+  this.product_desc_flag = product.product_desc_flag
 
   //  this.updated_at = new Date()
 };
