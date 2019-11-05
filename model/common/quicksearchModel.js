@@ -331,7 +331,7 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
 });
 //liveproducthistory.start();
 
-//cron run by moveit user offline every night 2 PM.
+//cron run by moveit user offline every night 2 AM.
 const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
   console.log("moveit offline");
   var res = await query(

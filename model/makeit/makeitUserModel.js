@@ -1384,7 +1384,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         
       
          res2[0].first_tunnel = 1;
-          res2[0].isAvaliablekitchen = isAvaliablekitchen;
+         res2[0].isAvaliablekitchen = isAvaliablekitchen;
 
           for (let i = 0; i < res2.length; i++) {
             if (res2[i].cuisines) {
@@ -1400,7 +1400,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         );
       
         if (couponlist.length != 0) {
-          console.log("couponlist.length: "+ couponlist.length);
+       
           var maxdiscount = couponlist[0].maxdiscount;
           var numberoftimes = couponlist[0].numberoftimes;
           var discount_percent = couponlist[0].discount_percent;
