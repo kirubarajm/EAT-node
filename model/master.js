@@ -766,6 +766,17 @@ const master = [
             }
         ]
     },
+    {
+        'product_desc_flag': [{
+                "product_desc_flag": 0,
+                "status": "auto"
+            },
+            {
+                "product_desc_flag": 1,
+                "status": "manual"
+            }
+        ]
+    },
 
 
 ]
