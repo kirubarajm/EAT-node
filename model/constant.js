@@ -63,15 +63,17 @@ const calculate = {
   Xfactor_value:1.9,
   Xfactor_subtraction_value:1,
   
-  //Radius limit  2km
-    nearby_moveit_radius: 1.24,
+    //Auto assign Radius limit  2km  - 3km
+    //miles 1.24 to 1.87
+    nearby_moveit_radius: 1.87,
 
     //Miles to km
     onemile : 1.6,
 
     order_assign_status:false,
 
-    hub_radius:2,
+    //Hub circle radius 3 km.
+    hub_radius:3,
 
 }
 
