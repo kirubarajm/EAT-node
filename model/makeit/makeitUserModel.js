@@ -2885,60 +2885,51 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
 
 //Report For Makeit List with  Live Product Status Based on the Kitchen
 Makeituser.get_admin_list_all_makeitusers_percentage_report = function(req, result) {
-  req.appointment_status = req.appointment_status || "all";
-  req.virtualkey = req.virtualkey;
-  var query = "select mk.userid,mk.name,mk.brandname from MakeitUser mk";
-  
-  if(req.active_status){
-    query = query + " LEFT JOIN Product p on p.makeit_userid=mk.userid where p.active_status=1" ;
-  }
+  //req.appointment_status
+  //req.active_status
+  if(req.virtualkey && req.date){
+    var query = "select mk.userid,mk.name,mk.brandname from MakeitUser mk LEFT JOIN Orders ord on ord.makeit_user_id=mk.userid where date(ord.created_at)='"+req.date+"' and mk.virtualkey  ="+ req.virtualkey+" group by mk.userid";
 
-  if(req.appointment_status!=="all"){
-    if(query.toLowerCase().includes('where')) query =query +" and mk.appointment_status  = '" + req.appointment_status+"'"
-    else query =query +" where mk.appointment_status  = '" + req.appointment_status+"'"
-  }
-
-  if(req.virtualkey!=="all"){
-    if(query.toLowerCase().includes('where'))
-    query =query +" and mk.virtualkey  = '" + req.virtualkey+"'"
-    else query =query +" where mk.virtualkey  = '" + req.virtualkey+"'"
-  }
-
-  if(req.active_status){
-    query = query + " group by userid";
-  }
-
-  sql.query(query, async function(err, res) {
-    if (err) {
-      //console.log("error: ", err);
-      result(null, err);
-    } else {
-      ////Get Kitchen Percentage////////
-      for(var i=0; i<res.length; i++){
-        res[i].makeit_id=res[i].userid;
-        res[i].date=req.date;
-        await Makeituser.kitchen_liveproduct_status_report(res[i],function(err,percentage){
-          percentage.kitchen_percentage=percentage.kitchen_percentage==="0.00"||percentage.kitchen_percentage==='NaN'?0:percentage.kitchen_percentage;
-          res[i].kitchen_percentage=percentage.kitchen_percentage || 0;
+    console.log("Query->"+query);
+    sql.query(query, async function(err, res) {
+      if (err) {
+        //console.log("error: ", err);
+        result(null, err);
+      } else {
+        ////Get Kitchen Percentage////////
+        for(var i=0; i<res.length; i++){
+          res[i].makeit_id=res[i].userid;
+          res[i].date=req.date;
+          await Makeituser.kitchen_liveproduct_status_report(res[i],function(err,percentage){
+            percentage.kitchen_percentage=percentage.kitchen_percentage==="0.00"||percentage.kitchen_percentage==='NaN'?0:percentage.kitchen_percentage;
+            res[i].kitchen_percentage=percentage.kitchen_percentage || 0;
+          });
+        }
+        res.sort(
+          (a, b) => parseFloat(b.kitchen_percentage) - parseFloat(a.kitchen_percentage)
+        );
+        //////////////////////////////////
+        var totalcount = 0;
+        sql.query(query, function(err, res1) {
+          totalcount = res1.length;
+          let resobj = {
+            success: true,
+            status:true,
+            totalkitchencount: totalcount,
+            result: res
+          };
+          result(null, resobj);
         });
       }
-      res.sort(
-        (a, b) => parseFloat(b.kitchen_percentage) - parseFloat(a.kitchen_percentage)
-      );
-      //////////////////////////////////
-      var totalcount = 0;
-      sql.query(query, function(err, res1) {
-        totalcount = res1.length;
-        let resobj = {
-          success: true,
-          status:true,
-          totalkitchencount: totalcount,
-          result: res
-        };
-        result(null, resobj);
-      });
-    }
-  });
+    });
+  }else{
+    let resobj = {
+      success: true,
+      message: "Sorry! no data found.",
+      status : false
+    };
+    result(null, resobj);
+  }
 };
 
 //Report For Get Live Product Status Based on the Kitchen 
