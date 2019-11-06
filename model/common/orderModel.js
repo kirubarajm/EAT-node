@@ -22,6 +22,7 @@ var createForcedeliverylogs = require("../../model/common/forcedeliverylogsModel
 var MoveitFireBase =require("../../push/Moveit_SendNotification");
 var Ordersqueue = require("../../model/common/ordersqueueModel");
 var MoveitUser = require("../../model/moveit/moveitUserModel");
+var OrderStatusHistory = require("../common/orderstatushistoryModel");
 // var instance = new Razorpay({
 //   key_id: "rzp_test_3cduMl5T89iR9G",
 //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
@@ -120,6 +121,12 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
             if (err) {
               result(err, null);
             } else {
+              console.log("Insert Order History");
+              ////Insert Order History////
+              var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+res.orderid);
+              var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+              var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+              ///////////////////////////
               await Notification.orderMakeItPushNotification(
                 res.orderid,
                 req.makeit_user_id,
@@ -232,6 +239,12 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                         if (err) {
                           result(err, null);
                         } else {
+                          ////Insert Order History////
+                          var GetOrderStatus = await query("select orderstatus from Orders where orderid="+res.orderid);
+                          var insertdata={"orderid":res.orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+                          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+                          ///////////////////////////
+
                           if (req.payment_type == 0) {
                             await Notification.orderMakeItPushNotification(
                               res.orderid,
@@ -781,6 +794,11 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
       if (err) {
         result(err, null);
       } else {
+        ////Insert Order History////
+        var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+        var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+        var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+        ///////////////////////////
         if (req.orderstatus === PushConstant.masteridOrder_Accept) {
           await Notification.orderEatPushNotification(
             req.orderid,
@@ -1517,6 +1535,11 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
             if (err) {
               result(err, null);
             } else {
+              ////Insert Order History////
+              var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+              var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+              var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+              ///////////////////////////
               await Notification.orderEatPushNotification(
                 req.orderid,
                 null,
@@ -1638,6 +1661,11 @@ Order.order_delivery_status_by_moveituser = async function(req, result) {
                         if (err) {
                           result(err, null);
                         } else {
+                          ////Insert Order History////
+                          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+                          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+                          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+                          ///////////////////////////
                           let resobj = {
                             success: true,
                             message: "Order Delivery successfully",
@@ -1706,10 +1734,15 @@ Order.moveit_kitchen_reached_status = function(req, result) {
             req.orderid,
             req.moveit_user_id
           ],
-          function(err, res) {
+         async  function(err, res) {
             if (err) {
               result(err, null);
             } else {
+              ////Insert Order History////
+              var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+              var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+              var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+              ///////////////////////////
               let resobj = {
                 success: true,
                 status:true,
@@ -2432,7 +2465,11 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
         if (err) {
           result(err, null);
         } else {
-          
+          ////Insert Order History////
+          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+          ///////////////////////////
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
                     
         //  console.log(orderitemdetails);
@@ -2724,6 +2761,11 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
         if (err) {
           result(err, null);
         } else {
+          ////Insert Order History////
+          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+          ///////////////////////////
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
@@ -2868,7 +2910,11 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
         if (err) {
           result(err, null);
         } else {
-        
+          ////Insert Order History////
+          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+          ///////////////////////////
           let response = {
             success: true,
             status: true,
@@ -2921,6 +2967,11 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
         if (err) {
           result(err, null);
         } else {
+          ////Insert Order History////
+          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+          ///////////////////////////
           var refundDetail = {
             orderid: req.orderid,
             original_amt: orderdetails[0].price,
@@ -3843,6 +3894,11 @@ Order.order_delivery_status_by_admin = function order_delivery_status_by_admin(r
                 if (err) {
                   result(err, null);
                 } else {
+                  ////Insert Order History////
+                  var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+                  var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+                  var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+                  ///////////////////////////
                   let resobj = {
                     success: true,
                     message: "Order Delivery successfully",
@@ -4463,7 +4519,11 @@ Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user
                     if (err) {
                       result(err, null);
                     } else {
-                    
+                      ////Insert Order History////
+                      var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+res.orderid);
+                      var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+                      var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+                      ///////////////////////////
                       result(null, res);
                     }
                   });
@@ -4760,6 +4820,11 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
          if (err) {
            result(err, null);
          } else {
+            ////Insert Order History////
+            var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+            var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+            var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+            ///////////////////////////
            var refundDetail = {
              orderid: req.orderid,
              original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
@@ -4867,6 +4932,11 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
          if (err) {
            result(err, null);
          } else {
+            ////Insert Order History////
+            var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+            var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+            var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+            ///////////////////////////
            var refundDetail = {
              orderid: req.orderid,
              original_amt: orderdetails[0].price + orderdetails[0].refund_amount,

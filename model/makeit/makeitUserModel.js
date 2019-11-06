@@ -13,6 +13,7 @@ var MakeitImages = require("../../model/makeit/makeitImagesModel");
 var MakeitBadges = require("../../model/makeit/makeitbadgesmappingModel");
 var PushConstant = require("../../push/PushConstant.js");
 var Notification = require("../../model/common/notificationModel.js");
+var OrderStatusHistory = require("../common/orderstatushistoryModel");
 
 //Task object constructor
 var Makeituser = function(makeituser) {
@@ -725,6 +726,11 @@ Makeituser.orderstatusbyorderid = function(req, result) {
         console.log("error: ", err);
         result(null, err);
       } else {
+        ////Insert Order History////
+        var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+        var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+        var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+        ///////////////////////////
         await Notification.orderEatPushNotification(
           req.orderid,
           null,
