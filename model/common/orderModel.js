@@ -2654,6 +2654,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
         if (err) {
           result(err, null);
         } else {
+          
           var refundDetail = {
             orderid: req.orderid,
             original_amt: orderdetails[0].price,
@@ -2722,7 +2723,11 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             );
           }
 
-        
+          ////Insert Order History////
+          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+          ///////////////////////////
 
           let response = {
             success: true,
