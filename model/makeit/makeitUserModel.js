@@ -3009,7 +3009,7 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
     var getfirstmakeitorder = await query("select orderid,date(created_at) as firstorder from Orders where makeit_user_id="+req.makeit_id+" order by orderid asc");
     var FirstOrder = new Date(getfirstmakeitorder[0].firstorder);
     if(((FromDate < CurrentDate) && (ToDate < CurrentDate)) && (parseInt(daysDiff) <=7) && ((FromDate >= FirstOrder) && (ToDate >= FirstOrder))){
-      var getweeklyearnings = await query("select ordertime,SUM(makeit_earnings) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id,makeit_earnings from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
+      var getweeklyearnings = await query("select ordertime,SUM(makeit_earnings) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
 
         if(getweeklyearnings.length>0){
           var weekly_earnings=0;
