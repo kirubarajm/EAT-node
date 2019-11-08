@@ -309,3 +309,11 @@ exports.daywise_moveit_records = function(req, res) {
     res.json(user);
   });
 };
+
+////////////Get zone based on lat and lng
+exports.get_marker_zone = function(req, res) {
+  Moveituser.get_marker_zone(req.body,function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

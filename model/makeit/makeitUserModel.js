@@ -1957,7 +1957,7 @@ Makeituser.makeituser_user_referral_code = function makeituser_user_referral_cod
           result(null, resobj);
         } else {
           res[0].applink =
-            "https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3D" +
+            "https://play.google.com/store/apps/details?id=com.eat.makeit&referrer=utm_source%3Dreferral%26utm_medium%3D"+
             res[0].referalcode +
             "%26utm_campaign%3Dreferral";
 
@@ -2773,11 +2773,11 @@ Makeituser.kitchen_liveproduct_status= async function kitchen_liveproduct_status
             ////Set Soldout Quantity
             getmaxquantity[i].sold_quantity = getsoldquantity[j].sold_quantity;
             ////Calculation For Product Percentage
-            getmaxquantity[i].product_percentage = ((getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100).toFixed(2);
+            getmaxquantity[i].product_percentage = ((getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100);
             ////Calculation For Kitchen Product Percentage
-            getmaxquantity[i].kitchen_product_count_percentage = ((getmaxquantity[i].total_quantity/product_count)*100).toFixed(2);
+            getmaxquantity[i].kitchen_product_count_percentage = ((getmaxquantity[i].total_quantity/product_count)*100);
             ////Calculation For Kitchen Percentage
-            getmaxquantity[i].kitchen_product_percentage = (getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100)).toFixed(2);
+            getmaxquantity[i].kitchen_product_percentage = (getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100));
             ////Calcualtion For kitchen percentage
             kitchen_percentage = kitchen_percentage+(getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100));
           }
@@ -2958,11 +2958,11 @@ Makeituser.kitchen_liveproduct_status_report= async function kitchen_liveproduct
             ////Set Soldout Quantity
             getmaxquantity[i].sold_quantity = getsoldquantity[j].sold_quantity;
             ////Calculation For Product Percentage
-            getmaxquantity[i].product_percentage = ((getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100).toFixed(2);
+            getmaxquantity[i].product_percentage = ((getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100);
             ////Calculation For Kitchen Product Percentage
-            getmaxquantity[i].kitchen_product_count_percentage = ((getmaxquantity[i].total_quantity/product_count)*100).toFixed(2);
+            getmaxquantity[i].kitchen_product_count_percentage = ((getmaxquantity[i].total_quantity/product_count)*100);
             ////Calculation For Kitchen Percentage
-            getmaxquantity[i].kitchen_product_percentage = (getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100)).toFixed(2);
+            getmaxquantity[i].kitchen_product_percentage = (getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100));
             ////Calcualtion For kitchen percentage
             kitchen_percentage = kitchen_percentage+(getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100));
           }
