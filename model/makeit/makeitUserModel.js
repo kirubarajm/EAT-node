@@ -1960,7 +1960,7 @@ Makeituser.makeituser_user_referral_code = function makeituser_user_referral_cod
           result(null, resobj);
         } else {
           res[0].applink =
-            "https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3D" +
+            "https://play.google.com/store/apps/details?id=com.eat.makeit&referrer=utm_source%3Dreferral%26utm_medium%3D" +
             res[0].referalcode +
             "%26utm_campaign%3Dreferral";
 
