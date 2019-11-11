@@ -311,8 +311,8 @@ exports.daywise_moveit_records = function(req, res) {
 };
 
 ////////////Get zone based on lat and lng
-exports.get_marker_zone = function(req, res) {
-  Moveituser.get_marker_zone(req.body,function(err, user) {
+exports.check_map_boundaries = function(req, res) {
+  Moveituser.check_map_boundaries(req.body,function(err, user) {
     if (err) res.send(err);
     res.json(user);
   });
