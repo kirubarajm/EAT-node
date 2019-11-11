@@ -1105,24 +1105,6 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
           
                   };
                   result(null, response);
-                  // Order.auto_order_assign(req ,async function(err,auto_order_data) {
-                  //   if (err) {
-                  //     result(err, null);
-                  //   } else {
-                  //     if (auto_order_data.status != true) {
-                  //       result(null, auto_order_data);
-                  //     } else {
-    
-                  //       let response = {
-                  //         success: true,
-                  //         status: true,
-                  //         message: "Order accepted successfully."
-                  //        // result :deliverytimedata 
-                  //       };
-                  //       result(null, response);
-                  //     }
-                  //   }
-                  // });
                  } else {
                    
                   let response = {

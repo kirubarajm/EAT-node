@@ -202,4 +202,5 @@ app.route("/admin/check/mapboundaries").post(routesVersioning({"1.0.0":moveituse
 app.route("/admin/eatuser/userhistory").post(routesVersioning({"1.0.0":eatuser.user_history}));
 
 app.route("/admin/moveit/getmarkerzone").post(routesVersioning({"1.0.0":moveituser.get_marker_zone}));
+app.route("/admin/zone/add").post(routesVersioning({"1.0.0":moveituser.get_marker_zone}));
 }
