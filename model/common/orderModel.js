@@ -181,112 +181,379 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
 
   const delivery_charge = constant.deliverycharge;
   
-  // console.log(currenthour);
-  // console.log(dinnerend);
-  if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
-    const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
-    if (res.length === 0 ) {
-    //get address 
-      const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
-    //console.log("address_data-->",address_data);
-    if(address_data.length === 0) {
-      let resobj = {
-                success: true,
-                status: false,
-                message: "Sorry your selected address wrong.Please select correct address."
-              };
-              result(null, resobj);
-      }else{
-            req.lat = address_data[0].lat;
-            req.lon = address_data[0].lon;
-            Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
-              if (err) {
-                result(err, null);
-              } else {
-                if (res3.status != true) {
-                  result(null, res3);
+  if (constant.order_assign_status==false) {
+
+    if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
+      const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
+      if (res.length === 0 ) {
+      //get address 
+        const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
+      //console.log("address_data-->",address_data);
+      if(address_data.length === 0) {
+        let resobj = {
+                  success: true,
+                  status: false,
+                  message: "Sorry your selected address wrong.Please select correct address."
+                };
+                result(null, resobj);
+        }else{
+              req.lat = address_data[0].lat;
+              req.lon = address_data[0].lon;
+              Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
+                if (err) {
+                  result(err, null);
                 } else {
-                  var amountdata = res3.result[0].amountdetails;
+                  if (res3.status != true) {
+                    result(null, res3);
+                  } else {
+                    var amountdata = res3.result[0].amountdetails;
+                   
+                    req.original_price = amountdata.original_price;
+                    req.refund_balance = amountdata.refund_balance;
+                    req.refund_amount = amountdata.refundamount;
+                    req.discount_amount = amountdata.coupon_discount_amount;
+                    req.after_discount_cost = amountdata.grandtotal;
+                    req.order_cost   = amountdata.original_price;
+                    req.gst = amountdata.gstcharge;
+                    req.price = amountdata.grandtotal;
+                    req.makeit_earnings = amountdata.makeit_earnings;
                  
-                  req.original_price = amountdata.original_price;
-                  req.refund_balance = amountdata.refund_balance;
-                  req.refund_amount = amountdata.refundamount;
-                  req.discount_amount = amountdata.coupon_discount_amount;
-                  req.after_discount_cost = amountdata.grandtotal;
-                  req.order_cost   = amountdata.original_price;
-                  req.gst = amountdata.gstcharge;
-                  req.price = amountdata.grandtotal;
-                  req.makeit_earnings = amountdata.makeit_earnings;
-               
-                  req.cus_address = address_data[0].address;
-                  req.locality = address_data[0].locality;
-                  req.cus_lat = address_data[0].lat;
-                  req.cus_lon = address_data[0].lon;
-                  req.address_title = address_data[0].address_title;
-                  req.locality_name = address_data[0].locality;
-                  req.flatno = address_data[0].flatno;
-                  req.landmark = address_data[0].landmark;
-                  req.coupon = req.cid
-                    if (req.payment_type == 0 || req.payment_type == 3) {
-                      Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
-                        if (err) {
-                          result(err, null);
-                        } else {
-                          if (req.payment_type == 0) {
-                            await Notification.orderMakeItPushNotification(
-                              res.orderid,
-                              req.makeit_user_id,
-                              PushConstant.pageidMakeit_Order_Post
-                            );
-                          }
-                         
-                          result(null, res);
-                        }
-                      });
-                      //ordercreatecashondelivery(req, res3.result[0].item);
-                    } else if (req.payment_type == 1) {
-                      Order.OrderOnline(req, res3.result[0].item,function(err,res){
-                        if (err) {
-                          result(err, null);
-                        } else {
+                    req.cus_address = address_data[0].address;
+                    req.locality = address_data[0].locality;
+                    req.cus_lat = address_data[0].lat;
+                    req.cus_lon = address_data[0].lon;
+                    req.address_title = address_data[0].address_title;
+                    req.locality_name = address_data[0].locality;
+                    req.flatno = address_data[0].flatno;
+                    req.landmark = address_data[0].landmark;
+                    req.coupon = req.cid
+                      if (req.payment_type == 0 || req.payment_type == 3) {
+                        Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
+                          if (err) {
+                            result(err, null);
+                          } else {
+                            if (req.payment_type == 0) {
+                              await Notification.orderMakeItPushNotification(
+                                res.orderid,
+                                req.makeit_user_id,
+                                PushConstant.pageidMakeit_Order_Post
+                              );
+                            }
+                           
                             result(null, res);
-                        }
-                      });
-                      //ordercreateonline(req, res3.result[0].item);
-                    }
+                          }
+                        });
+                        //ordercreatecashondelivery(req, res3.result[0].item);
+                      } else if (req.payment_type == 1) {
+                        Order.OrderOnline(req, res3.result[0].item,function(err,res){
+                          if (err) {
+                            result(err, null);
+                          } else {
+                              result(null, res);
+                          }
+                        });
+                        //ordercreateonline(req, res3.result[0].item);
+                      }
+                  }
                 }
-              }
-            });
-      }
-   }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
-  let resobj = {
-    success: true,
-    status: false,
-    message: "Please complete your payment for yor order",
-    result : res
-  };
-  result(null, resobj);
-}else {
-   
+              });
+        }
+     }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
     let resobj = {
       success: true,
       status: false,
-      message: "Already you have one order, So please try once delivered exiting order"
-      
-    
+      message: "Please complete your payment for yor order",
+      result : res
     };
     result(null, resobj);
-  }
-}else{
-
+  }else {
+     
+      let resobj = {
+        success: true,
+        status: false,
+        message: "Already you have one order, So please try once delivered exiting order"
+        
+      
+      };
+      result(null, resobj);
+    }
+    }else{
   
-  let resobj = {
-    success: true,
-    status: false,
-    message: "Sorry Currently we are not receiving orders!"
-  };
-  result(null, resobj);
-}
+    
+    let resobj = {
+      success: true,
+      status: false,
+      message: "Sorry Currently we are not receiving orders!"
+    };
+    result(null, resobj);
+    }
+  }else{
+
+    var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
+    var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
+    var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
+    var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
+  
+    var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
+    console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
+    console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
+    console.log("xfactorValue-->",Math.round(xfactorValue));
+    var fValue= Math.round(xfactorValue);
+    if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
+      
+      if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
+        const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
+        if (res.length === 0 ) {
+        //get address 
+          const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
+        //console.log("address_data-->",address_data);
+        if(address_data.length === 0) {
+          let resobj = {
+                    success: true,
+                    status: false,
+                    message: "Sorry your selected address wrong.Please select correct address."
+                  };
+                  result(null, resobj);
+          }else{
+                req.lat = address_data[0].lat;
+                req.lon = address_data[0].lon;
+                Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
+                  if (err) {
+                    result(err, null);
+                  } else {
+                    if (res3.status != true) {
+                      result(null, res3);
+                    } else {
+                      var amountdata = res3.result[0].amountdetails;
+                     
+                      req.original_price = amountdata.original_price;
+                      req.refund_balance = amountdata.refund_balance;
+                      req.refund_amount = amountdata.refundamount;
+                      req.discount_amount = amountdata.coupon_discount_amount;
+                      req.after_discount_cost = amountdata.grandtotal;
+                      req.order_cost   = amountdata.original_price;
+                      req.gst = amountdata.gstcharge;
+                      req.price = amountdata.grandtotal;
+                      req.makeit_earnings = amountdata.makeit_earnings;
+                   
+                      req.cus_address = address_data[0].address;
+                      req.locality = address_data[0].locality;
+                      req.cus_lat = address_data[0].lat;
+                      req.cus_lon = address_data[0].lon;
+                      req.address_title = address_data[0].address_title;
+                      req.locality_name = address_data[0].locality;
+                      req.flatno = address_data[0].flatno;
+                      req.landmark = address_data[0].landmark;
+                      req.coupon = req.cid
+                        if (req.payment_type == 0 || req.payment_type == 3) {
+                          Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
+                            if (err) {
+                              result(err, null);
+                            } else {
+                              if (req.payment_type == 0) {
+                                await Notification.orderMakeItPushNotification(
+                                  res.orderid,
+                                  req.makeit_user_id,
+                                  PushConstant.pageidMakeit_Order_Post
+                                );
+                              }
+                             
+                              result(null, res);
+                            }
+                          });
+                          //ordercreatecashondelivery(req, res3.result[0].item);
+                        } else if (req.payment_type == 1) {
+                          Order.OrderOnline(req, res3.result[0].item,function(err,res){
+                            if (err) {
+                              result(err, null);
+                            } else {
+                                result(null, res);
+                            }
+                          });
+                          //ordercreateonline(req, res3.result[0].item);
+                        }
+                    }
+                  }
+                });
+          }
+       }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
+      let resobj = {
+        success: true,
+        status: false,
+        message: "Please complete your payment for yor order",
+        result : res
+      };
+      result(null, resobj);
+    }else {
+       
+        let resobj = {
+          success: true,
+          status: false,
+          message: "Already you have one order, So please try once delivered exiting order"
+          
+        
+        };
+        result(null, resobj);
+      }
+      }else{
+    
+      
+      let resobj = {
+        success: true,
+        status: false,
+        message: "Sorry Currently we are not receiving orders!"
+      };
+      result(null, resobj);
+      }
+  
+  
+    }else{
+  
+      req.payment_type=3;
+      req.payment_status=3;
+      req.orderstatus = 11;
+  
+      Order.read_a_proceed_to_pay_xfactore(req, orderitems,async function(err,res){
+        if (err) {
+          result(err, null);
+        } else {
+         
+          let resobj = {
+            success: true,
+            status:false,
+            order_queue:1,
+            title:"IN HIGH DEMAND",
+            message:'We are facing high demand. We will let you know when we are back to our best!'
+          };
+          result(null, resobj)
+        
+        }
+      });
+  
+    ;
+    }
+  }
+ 
+
+};
+
+Order.read_a_proceed_to_pay_xfactore = async function read_a_proceed_to_pay_xfactore(req,orderitems,result) {
+  //makeit_user_id
+    var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+    var currenthour  = moment(day).format("HH");
+   // var currenthour = 23
+    var breatfastcycle = constant.breatfastcycle;
+    var dinnercycle = constant.dinnercycle;
+    var lunchcycle = constant.lunchcycle;
+    var dinnerend = constant.dinnerend;
+  
+    const delivery_charge = constant.deliverycharge;
+    
+  
+    if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
+      const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
+      if (res.length === 0 ) {
+      //get address 
+        const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
+      //console.log("address_data-->",address_data);
+      if(address_data.length === 0) {
+        let resobj = {
+                  success: true,
+                  status: false,
+                  message: "Sorry your selected address wrong.Please select correct address."
+                };
+                result(null, resobj);
+        }else{
+              req.lat = address_data[0].lat;
+              req.lon = address_data[0].lon;
+              Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  if (res3.status != true) {
+                    result(null, res3);
+                  } else {
+                    var amountdata = res3.result[0].amountdetails;
+                   
+                    req.original_price = amountdata.original_price;
+                    req.refund_balance = amountdata.refund_balance;
+                    req.refund_amount = amountdata.refundamount;
+                    req.discount_amount = amountdata.coupon_discount_amount;
+                    req.after_discount_cost = amountdata.grandtotal;
+                    req.order_cost   = amountdata.original_price;
+                    req.gst = amountdata.gstcharge;
+                    req.price = amountdata.grandtotal;
+                    req.makeit_earnings = amountdata.makeit_earnings;
+                 
+                    req.cus_address = address_data[0].address;
+                    req.locality = address_data[0].locality;
+                    req.cus_lat = address_data[0].lat;
+                    req.cus_lon = address_data[0].lon;
+                    req.address_title = address_data[0].address_title;
+                    req.locality_name = address_data[0].locality;
+                    req.flatno = address_data[0].flatno;
+                    req.landmark = address_data[0].landmark;
+                    req.coupon = req.cid
+                      if (req.payment_type == 0 || req.payment_type == 3) {
+                        Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
+                          if (err) {
+                            result(err, null);
+                          } else {
+                            if (req.payment_type == 0) {
+                              await Notification.orderMakeItPushNotification(
+                                res.orderid,
+                                req.makeit_user_id,
+                                PushConstant.pageidMakeit_Order_Post
+                              );
+                            }
+                           
+                            result(null, res);
+                          }
+                        });
+                        //ordercreatecashondelivery(req, res3.result[0].item);
+                      } else if (req.payment_type == 1) {
+                        Order.OrderOnline(req, res3.result[0].item,function(err,res){
+                          if (err) {
+                            result(err, null);
+                          } else {
+                              result(null, res);
+                          }
+                        });
+                        //ordercreateonline(req, res3.result[0].item);
+                      }
+                  }
+                }
+              });
+        }
+     }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
+    let resobj = {
+      success: true,
+      status: false,
+      message: "Please complete your payment for yor order",
+      result : res
+    };
+    result(null, resobj);
+  }else {
+     
+      let resobj = {
+        success: true,
+        status: false,
+        message: "Already you have one order, So please try once delivered exiting order"
+        
+      
+      };
+      result(null, resobj);
+    }
+    }else{
+  
+    
+    let resobj = {
+      success: true,
+      status: false,
+      message: "Sorry Currently we are not receiving orders!"
+    };
+    result(null, resobj);
+    }
 };
 
 Order.OrderOnline = async function OrderOnline(req, orderitems,result) {
@@ -338,6 +605,8 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
           orderitem.productid = orderitems[i].productid;
           orderitem.quantity = orderitems[i].cartquantity;
           orderitem.price = orderitems[i].price;
+          orderitem.original_price = orderitems[i].original_price;
+
           var items = new Orderitem(orderitem);
         
          
@@ -366,23 +635,30 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
         }
 
         if(isMobile&&!isOnlineOrder){
-          if (req.cid) {
-            var new_createCouponUsed = new CouponUsed(req); 
-            new_createCouponUsed.orderid = res1.insertId;
-            CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
-               //if (err) result.send(err);
-               if (err) { 
-                sql.rollback(function() {
-                  result.send(err);
-                });
-              }
-             });
-           }
+        
 
+///payment type =3 orders we can't use coupon and refund coupon
+          if (req.payment_type < 2) {
 
-         if (req.rcid) {
-           var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(req.rcid,req.refund_balance,res1.insertId);
-         }
+            if (req.cid) {
+              var new_createCouponUsed = new CouponUsed(req); 
+              new_createCouponUsed.orderid = res1.insertId;
+              CouponUsed.createCouponUsed(new_createCouponUsed, function(err, res2) {
+                 //if (err) result.send(err);
+                 if (err) { 
+                  sql.rollback(function() {
+                    result.send(err);
+                  });
+                }
+               });
+             }
+
+            if (req.rcid) {
+              var updateRefundCoupon = await RefundCoupon.updateByRefundCouponId(req.rcid,req.refund_balance,res1.insertId);
+            }
+
+          }
+       
         }
 
         let resobj = {
@@ -811,22 +1087,58 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
               var caldistance = routes.routes;
               var deliverytimedata = caldistance[0].legs;
 
-              req.distance = parseInt(deliverytimedata[0].distance.text);
-              req.duration = parseInt(deliverytimedata[0].duration.text);
-              req.duration = req.duration + constant.orderbuffertime;
-              req.deliverytime = moment()
-                .add(0, "seconds")
-                .add(req.duration, "minutes")
-                .format("YYYY-MM-DD HH:mm:ss");
+               console.log("order_status"+req.orderstatus);
+               if (req.orderstatus==1) {
+                if (constant.order_assign_status==true) {
+                   Order.auto_order_assign_byadmin_makeit(req);
 
-              await Order.insert_delivery_time(req);
-              let response = {
-                success: true,
-                status: true,
-                message: "Order accepted successfully."
-                //   result :deliverytimedata
-              };
-              result(null, response);
+                  let response = {
+                    success: true,
+                    status: true,
+                    message: "Order accepted successfully.",
+          
+                  };
+                  result(null, response);
+                  // Order.auto_order_assign(req ,async function(err,auto_order_data) {
+                  //   if (err) {
+                  //     result(err, null);
+                  //   } else {
+                  //     if (auto_order_data.status != true) {
+                  //       result(null, auto_order_data);
+                  //     } else {
+    
+                  //       let response = {
+                  //         success: true,
+                  //         status: true,
+                  //         message: "Order accepted successfully."
+                  //        // result :deliverytimedata 
+                  //       };
+                  //       result(null, response);
+                  //     }
+                  //   }
+                  // });
+                 } else {
+                   
+                  let response = {
+                  success: true,
+                  status: true,
+                  message: "Order accepted successfully.",
+        
+                };
+                result(null, response);
+                 }
+               }else{
+                let response = {
+                  success: true,
+                  status: true,
+                  message: "Order accepted successfully.",
+        
+                };
+                result(null, response);
+               }
+             
+             
+          
             }
           }
         });
@@ -1334,7 +1646,8 @@ Order.order_assign = function order_assign(req, result) {
               if (err) {
                 result(err, null);
               } else {
-               // var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+                //update to queue
+                var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
                 await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned,res1[0]);
 
@@ -1414,6 +1727,11 @@ Order.getUnassignorders =async function getUnassignorders(req,result) {
   } 
   }else if(req.id == 4){
     var res = await query("Select mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and (ors.created_at+ INTERVAL 45 MINUTE) < now() and ors.payment_status<2 and ors.orderstatus < 6 order by ors.orderid ASC");
+    if (res.err) {
+      result(err, null);
+    } 
+  }else if(req.id == 5){
+    var res = await query("Select mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors join Orders_queue oq on oq.orderid=ors.orderid left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and ors.payment_status < 2 and ors.orderstatus < 6 and oq.status=0 order by ors.ordertime ASC");
     if (res.err) {
       result(err, null);
     } 
@@ -1674,7 +1992,7 @@ Order.order_delivery_status_by_moveituser = async function(req, result) {
         } else {
           let resobj = {
             success: true,
-            message: "Sorry! no order found.",
+            message: "Following order is not assigned to you!.",
             status:false
           };
           result(null, resobj);
@@ -1825,8 +2143,6 @@ Order.orderhistorybymoveituserid = async function(moveit_user_id, result) {
   }
 };
 
-
-
 Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
 
   // const rows = await query(
@@ -1886,8 +2202,6 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
   }
 };
 
-
-
 Order.orderviewbyadmin = function(req, result) {
   sql.query(
     "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'virtualkey',ms.virtualkey) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" +
@@ -1923,7 +2237,6 @@ Order.eat_get_delivery_time = function eat_get_delivery_time(req) {
     else return res;
   });
 };
-
 
 Order.orderviewbyeatuser = function(req, result) {
 
@@ -2625,6 +2938,8 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             payment_id: orderdetails[0].transactionid
           };
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+          var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+
           for (let i = 0; i < orderitemdetails.length; i++) {
             var productquantityadd =
               "update Product set quantity = quantity+" +
@@ -2639,6 +2954,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             });
           }
 
+          if (orderdetails.ordertype==0) {
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
             if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
@@ -2669,6 +2985,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
             // await query(deletequery);
             await Order.remove_used_coupon(removecoupon);
+          }
           }
 
           await Notification.orderEatPushNotification(
@@ -2702,6 +3019,14 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
 Order.insert_delivery_time = function insert_delivery_time(req) {
   var new_OrderDeliveryTime = new OrderDeliveryTime(req);
   OrderDeliveryTime.createOrderDeliveryTime(new_OrderDeliveryTime, function(err, res) {
+   if (err) return err;
+   else return res;
+ });
+};
+
+Order.auto_order_assign_byadmin_makeit = function auto_order_assign_byadmin_makeit(req) {
+ 
+  Order.auto_order_assign(req, function(err, res) {
    if (err) return err;
    else return res;
  });
@@ -2758,8 +3083,31 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
 
                  await Order.insert_delivery_time(req);
 
+              
+                 if (constant.order_assign_status==true) {
+                  Order.auto_order_assign_byadmin_makeit(req);
+
+                 let response = {
+                   success: true,
+                   status: true,
+                   message: "Order accepted successfully.",
+         
+                 };
+                 result(null, response);
+        
+
+                } else {
+                  
+                 let response = {
+                 success: true,
+                 status: true,
+                 message: "Order accepted successfully.",
+       
+               };
+               result(null, response);
+                }
                 // if (constant.order_assign_status==true) {
-                 
+           
                 //   Order.auto_order_assign(req ,async function(err,auto_order_data) {
                 //     if (err) {
                 //       result(err, null);
@@ -2768,16 +3116,24 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
                 //         result(null, auto_order_data);
                 //       } else {
     
-                //         let response = {
-                //           success: true,
-                //           status: true,
-                //           message: "Order accepted successfully."
-                //          // result :deliverytimedata 
-                //         };
-                //         result(null, response);
+                //         // let response = {
+                //         //   success: true,
+                //         //   status: true,
+                //         //   message: "Order accepted successfully."
+                //         //  // result :deliverytimedata 
+                //         // };
+                //         // result(null, response);
                 //       }
                 //     }
                 //   });
+
+                //   let response = {
+                //     success: true,
+                //     status: true,
+                //     message: "Order accepted successfully."
+                //    // result :deliverytimedata 
+                //   };
+                //   result(null, response);
                 //  } else {
                    
                 //   let response = {
@@ -2790,13 +3146,7 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
                 //  }
 
 
-                let response = {
-                  success: true,
-                  status: true,
-                  message: "Order accepted successfully.",
-                 // result :deliverytimedata 
-                };
-                result(null, response);
+             
               }
             }
           });
@@ -2845,7 +3195,7 @@ Order.insert_order_status = function insert_order_status(req) {
 
 Order.moveit_order_accept = async function moveit_order_accept(req, result) {
 
-  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' ");
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' and moveit_user_id= '" + req.moveituserid + "'");
   const ordermoveitstatus = await query("select * from Moveit_status where orderid ='" + req.orderid + "' ");
 
   // d.setHours(d.getHours() + 5);
@@ -2889,7 +3239,7 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
       let response = {
         success: true,
         status: false,
-        message: "order not found please check test"
+        message: "Following order is not assigned to you!"
       };
       result(null, response);
     }
@@ -2897,7 +3247,7 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
     let response = {
       success: true,
       status: false,
-      message: "order not found please check "
+      message: "Following order is not assigned to you!"
     };
     result(null, response);
   }
@@ -3034,6 +3384,8 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
             payment_id: orderdetails[0].transactionid
           };
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+          var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+
           for (let i = 0; i < orderitemdetails.length; i++) {
             var productquantityadd =
               "update Product set quantity = quantity+" +
@@ -3048,6 +3400,9 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
             });
           }
 
+          if (orderdetails.ordertype==0) {
+            
+        
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
             if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
@@ -3079,6 +3434,7 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
             // await query(deletequery);
             await Order.remove_used_coupon(removecoupon);
           }
+        }
 
           await Notification.orderEatPushNotification(
             req.orderid,
@@ -3519,7 +3875,7 @@ if (orderdetails[0].orderstatus <= 5) {
       } else {
         var online_status = res1[0].online_status;
 
-        
+  
 
         if (online_status == 1) {
 
@@ -3533,9 +3889,10 @@ if (orderdetails[0].orderstatus <= 5) {
               
                 reassignorders.orderid = req.orderid;
                 reassignorders.moveit_userid = orderdetails[0].moveit_user_id;
-                reassignorders.notification_time =orderdetails[0].notification_time;
-                reassignorders.accept_time =orderdetails[0].accept_time;
+                reassignorders.notification_time =orderdetails[0].moveit_notification_time;
+                reassignorders.accept_time =orderdetails[0].moveit_accept_time;
                 reassignorders.reason = req.reason;
+
 
                 await Order.createMoveitReassignedOrders(reassignorders);
 
@@ -3549,6 +3906,9 @@ if (orderdetails[0].orderstatus <= 5) {
                   PushConstant.pageidMoveit_Order_Reassign,
                   await Notification.getMovieitDetail( orderdetails[0].moveit_user_id)
                 );
+                var order_queue_update = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+
+
                 let resobj = {
                   success: true,
                   status:true,
@@ -3610,9 +3970,7 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
     if (orderdetails.length !== 0) {
   var deliverytime = moment(orderdetails[0].deliverytime).format("YYYY-MM-DD HH:mm:ss");
   var deliveryhours = moment(deliverytime).format("HH:mm:ss");  
-
- 
-                
+             
     if (deliveryhours <= currenthour)  {
 
       
@@ -4784,6 +5142,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              });
            }
  
+           if (orderdetails.ordertype==0) {
            if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
  
              if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
@@ -4815,6 +5174,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              // await query(deletequery);
              await Order.remove_used_coupon(removecoupon);
            }
+          }
  
            await Notification.orderEatPushNotification(
              req.orderid,
@@ -4891,6 +5251,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              });
            }
  
+           if (orderdetails.ordertype==0) {
            if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
  
              if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
@@ -4922,6 +5283,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              // await query(deletequery);
              await Order.remove_used_coupon(removecoupon);
            }
+          }
  
            await Notification.orderEatPushNotification(
              req.orderid,
@@ -5149,6 +5511,19 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   //(Total no of orders in Queue) = (X-1) * (No of Drivers in hub)
   //Note X value in hub based.
 
+  if (constant.order_assign_status==false) {
+   
+    let resobj = {
+      success: true,
+      status:true,
+      order_queue:0,
+      title:"Available",
+      message:'Delivery boys are available!'
+    };
+    
+   result(null, resobj);
+  }else{
+
   var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
   var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
   var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
@@ -5159,7 +5534,7 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
   console.log("xfactorValue-->",Math.round(xfactorValue));
   var fValue= Math.round(xfactorValue);
-  if(get_orders_queue_based_on_hub[0].no_of_orders_count <= fValue){
+  if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
     let resobj = {
       success: true,
       status:true,
@@ -5175,7 +5550,7 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
     req.payment_status=3;
     req.orderstatus = 11;
 
-    Order.read_a_proceed_to_pay(req, orderitems,async function(err,res){
+    Order.read_a_proceed_to_pay_xfactore(req, orderitems,async function(err,res){
       if (err) {
         result(err, null);
       } else {
@@ -5195,6 +5570,9 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
 
   ;
   }
+
+  }
+  
   // var query="Select count(*) ordercount from Orders as ors where ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( "+req.lat+" ) )  * cos( radians( "+req.lon+" ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians("+req.lat+")) ) )<2 and (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2))";
   //   sql.query(query,async function(err, res) {
   //     if (err) {
@@ -5246,9 +5624,11 @@ Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
 };
 
 //auto order assign to moveit 
-Order.auto_order_assign = function auto_order_assign(req, result) {
-
+Order.auto_order_assign =async function auto_order_assign(req, result) {
   console.log("order_auto_assign new"+req);
+  var order_queue_query = await query("select * from Orders_queue where status = 0 and orderid =" +req.orderid+"");
+  console.log("order_queue_query.length"+order_queue_query.length );
+if (order_queue_query.length ==0) {
   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
   var geoLocation = [];;
@@ -5377,7 +5757,113 @@ Order.auto_order_assign = function auto_order_assign(req, result) {
     }
     }
   })
+}else{
+  let resobj = {
+    success: true,
+    status:true,
+    message: "already exist",
+    
+  };
+  result(null, resobj);
+}
   
+
+
+  
+  
+};
+
+//////////////Orders move to queue/////////////////
+Order.order_move_to_queue_by_admin= function order_move_to_queue_by_admin(req, result) {
+  console.log(req);
+  sql.query("select * from Orders where orderid='"+req.orderid+"' and moveit_user_id="+req.moveit_user_id+"",async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+       
+        if (res.length !== 0) {
+          var reassignorders  = {};
+            
+          reassignorders.orderid = req.orderid;
+          reassignorders.moveit_userid = res[0].moveit_user_id;
+          reassignorders.notification_time = res[0].moveit_notification_time;
+          reassignorders.accept_time = res[0].moveit_accept_time;
+          reassignorders.reason = req.reason;
+
+          await Order.createMoveitReassignedOrders(reassignorders);
+          var moveit_online_status_date = await query("Update MoveitUser set online_status = 0  where userid = '"+req.moveit_user_id+"'");
+          var Orders_update_moveit = await query("update Orders set moveit_user_id = 0,moveit_status=0 where orderid =" +req.orderid+"");
+
+          var Orders_queue_details = await query("select * from Orders_queue where orderid =" +req.orderid+"");
+
+          if (Orders_queue_details.length !==0) {
+            var order_update = await query("update Orders_queue set status = 0 where orderid =" +req.orderid+"");
+        
+            await Notification.orderMoveItPushNotification(
+              req.orderid,
+              PushConstant.pageidMoveit_Order_unassign,
+              await Notification.getMovieitDetail( res[0].moveit_user_id)
+            );
+  
+            let resobj = {
+              success: true,
+              status:true,
+              result:res
+            };
+            result(null, resobj);
+          }else{
+            var makeit_details = await query("select * from MakeitUser where userid =" +res[0].makeit_user_id+"");
+              req.hubid=makeit_details[0].makeithub_id;
+             var new_Ordersqueue = new Ordersqueue(req);
+              new_Ordersqueue.status = 0;
+              Ordersqueue.createOrdersqueue(new_Ordersqueue,async function(err, res2) {
+                if (err) { 
+                  result(err, null);
+                }else{
+               
+                  await Notification.orderMoveItPushNotification(
+                    req.orderid,
+                    PushConstant.pageidMoveit_Order_unassign,
+                    await Notification.getMovieitDetail( res[0].moveit_user_id)
+                  );
+        
+                  let resobj = {
+                    success: true,
+                    status:true,
+                    result:res
+                  };
+                  result(null, resobj);
+                }
+              });
+
+          }
+
+
+          // if(res[0]&&res[0].moveit_user_id){
+          //   await Notification.orderMoveItPushNotification(
+          //     req.orderid,
+          //     PushConstant.pageidMoveit_Order_Cancel,
+          //     null
+          //   );
+          // }
+
+          // let resobj = {
+          //   success: true,
+          //   status:true,
+          //   result:res
+          // };
+          // result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
 };
 
 ////Lost customers list/////////

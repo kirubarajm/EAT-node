@@ -9,6 +9,7 @@ var Orderitems = function(orderitems) {
   this.gst = orderitems.gst || 0;
   // this.created_at = new Date();
   this.price = orderitems.price || 0;
+  this.original_price=orderitems.original_price||0;
   this.orderid = orderitems.orderid;
 };
 

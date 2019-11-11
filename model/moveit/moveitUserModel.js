@@ -900,9 +900,9 @@ Moveituser.update_pushid = function(req, result) {
   };
 
 
-  Moveituser.moveit_online_status_byid= async function moveit_online_status_byid(req,result) { 
+Moveituser.moveit_online_status_byid= async function moveit_online_status_byid(req,result) { 
  
- var Moveitstatus = await query("select userid,login_status,pushid_ios,pushid_android  from MoveitUser where userid = "+req.userid+" ");
+ var Moveitstatus = await query("select userid,online_status,login_status,pushid_ios,pushid_android  from MoveitUser where userid = "+req.userid+" ");
 
     if (Moveitstatus.length !==0) {
       let resobj = {
@@ -942,25 +942,6 @@ Moveituser.update_pushid = function(req, result) {
     geoLocation.push(req.lat);
     geoLocation.push(req.lon);
   
-    // try {
-    //   moveitlist= await MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,Constant.nearby_moveit_radius);
-  
-    //   let resobj = {
-    //     success: true,
-    //     status: true,
-    //     result: moveitlist
-    //   };
-    // result(null, resobj);
-    
-    // } catch (error) {
-    //   console.log("moveitlist"+error);
-    // }
-  
-    //console.log("moveitlist"+moveitlist);
-   
-  
-  
-  
     MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,Constant.nearby_moveit_radius,async function(err, move_it_id) {
       if (err) {
         let error = {
@@ -972,7 +953,7 @@ Moveituser.update_pushid = function(req, result) {
       }else{
    
       
-        console.log("test3"+move_it_id);
+       // console.log("test3"+move_it_id);
         let resobj = {
           success: true,
           status: true,
@@ -981,7 +962,7 @@ Moveituser.update_pushid = function(req, result) {
       result(null, resobj);
       }
     })
-    };
+  };
 
 ////////////Get Working Dates
 Moveituser.getworking_dates = async function getworking_dates(req, result) {
@@ -1125,4 +1106,67 @@ Moveituser.getworking_dates = async function getworking_dates(req, result) {
   };
   
 
+  Moveituser.get_marker_zone = function get_marker_zone(req,result) {
+    console.log(req);
+    sql.query("Select * from Zone", function( err,res) {
+      if (err) {
+        console.log(err);
+        result(err, null);
+      } else {
+        console.log(res);
+        var isZone=false;
+        var zoneName='';
+        if(res.length>0){
+          for(var i=0; i<res.length; i++){
+            var polygon=JSON.parse(res[i].boundaries);
+            if(Moveituser.pointInPolygon(polygon,{lat:req.lat,lng:req.lng})){
+              zoneName=res[i].Zonename;
+              isZone=true;
+              break;
+            }
+          }
+          
+        }
+        if(isZone){
+          let resobj = {
+            success: true,
+            message: zoneName,
+            status : true,
+            zone_id:res[i].id
+          };
+          result(null, resobj);
+        }else{
+          let resobj = {
+            success: true,
+            message: 'No Zone Available.',
+            status : true
+          };
+          result(null, resobj);
+        }
+      }
+    });
+  };
+
+  Moveituser.pointInPolygon=function pointInPolygon(polygonPath, coordinates){
+    let numberOfVertexs = polygonPath.length - 1;
+    let inPoly = false;
+    let { lat, lng } = coordinates;
+
+    let lastVertex = polygonPath[numberOfVertexs];
+    let vertex1, vertex2;
+
+    let x = lat, y = lng;
+
+    let inside = false;
+    for (var i = 0, j = polygonPath.length - 1; i < polygonPath.length; j = i++) {
+        let xi = polygonPath[i].lat, yi = polygonPath[i].lng;
+        let xj = polygonPath[j].lat, yj = polygonPath[j].lng;
+
+        let intersect = ((yi > y) != (yj > y))
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+    }
+
+    return inside;
+}
 module.exports = Moveituser;

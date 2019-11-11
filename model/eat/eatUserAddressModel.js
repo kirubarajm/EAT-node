@@ -232,37 +232,44 @@ EatuserAddress.getaddressByadmin = function getaddressByadmin(req, result) {
         });   
 };
 
-
-
-
-EatuserAddress.eat_user_default_address_update_aid = function(req, result){
-    console.log(req);
-    sql.query("UPDATE Address SET address_default = 0 WHERE aid = '"+req.aid+"' and userid = '"+req.userid+"'", function (err, res) {
-           if(err) {
+////Start: Default Address Update////////////// 
+EatuserAddress.eat_user_default_address_update_aid = function eat_user_default_address_update_aid(req, result) {   
+    sql.query("update Address set address_default=0 WHERE userid="+req.userid+"", function (err, res) {
+    if(err) {
         console.log("error: ", err);
-        result(err, null);
-           }
-            else{
-                sql.query("UPDATE Address SET address_default = 1 WHERE aid = '"+req.aid+"' and userid = '"+req.userid+"'", function (err, res) {
-                    if(err) {
-                 console.log("error: ", err);
-                 result(err, null);
-                    }
-                     else{
-                   
+        result(null, err);
+    } else{
+        sql.query("update Address set address_default=1 WHERE aid="+req.aid+" and userid="+req.userid+"", function (err, res1) {
+            if(err) {
+                console.log("error: ", err);
+                result(null, err);
+            }else{
+                if(res1.length<0){
                     let sucobj=true;
-                    message = 'Updated successfully';
+                    let message = "Updated successfully";
                     let resobj = {  
-                   success: sucobj,
-                   status:true,
-                   message :message
-              }; 
-        
-           result(null, resobj);
-      }
-     }); 
+                        success: sucobj,
+                        status:true,
+                        message :message
+                    }; 
+                    result(null, resobj);
+                }else{
+                    let sucobj=true;
+                    let message = "Sorry No Update";
+                    let resobj = {  
+                        success: sucobj,
+                        status:true,
+                        message :message
+                    }; 
+                    result(null, resobj);
+                }
+                
+            }
+        }); 
     }
-  }); 
-  };
+    });
+};
+///////////////////////////////////////////// 
+
 
 module.exports = EatuserAddress;
