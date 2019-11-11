@@ -1,6 +1,7 @@
 'user strict';
 var sql = require('../db.js');
 
+
 //Task object constructor
 var EatuserAddress = function(eatuseraddress){
     this.userid = eatuseraddress.userid;

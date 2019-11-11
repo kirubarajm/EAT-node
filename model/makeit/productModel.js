@@ -34,7 +34,8 @@ var Product = function(product) {
   this.quantity = product.quantity || 0;
   this.cuisine = product.cuisine || 1;
   this.approved_status = product.approved_status || 1;
-  this.prod_desc = product.prod_desc
+  this.prod_desc = product.prod_desc;
+  this.product_desc_flag = product.product_desc_flag
 
   //  this.updated_at = new Date()
 };
@@ -351,7 +352,7 @@ Product.moveliveproduct = function(req, result) {
 
 Product.productitemlist = function productitemlist(req, result) {
   sql.query(
-    "select pt.itemid,pt.quantity,mi.menuitem_name from Productitem pt join Menuitem mi on pt.itemid = mi.menuitemid where pt.productid = " +
+    "select pt.itemid,pt.quantity,mi.menuitem_name,mi.price from Productitem pt join Menuitem mi on pt.itemid = mi.menuitemid where pt.productid = " +
       req.productid +
       "",
     function(err, res) {

@@ -198,4 +198,8 @@ app.route("/admin/moveit/getworking_dates").post(routesVersioning({"1.0.0":movei
 app.route("/admin/moveit/daywise_moveit_records").post(routesVersioning({"1.0.0":moveituser.daywise_moveit_records}));
 
 app.route("/admin/check/mapboundaries").post(routesVersioning({"1.0.0":moveituser.check_map_boundaries}));
+///////Eat Users History
+app.route("/admin/eatuser/userhistory").post(routesVersioning({"1.0.0":eatuser.user_history}));
+
+app.route("/admin/moveit/getmarkerzone").post(routesVersioning({"1.0.0":moveituser.get_marker_zone}));
 }

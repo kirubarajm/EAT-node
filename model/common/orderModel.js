@@ -21,6 +21,8 @@ var MoveitStatus = require("../../model/moveit/moveitStatusModel");
 var createForcedeliverylogs = require("../../model/common/forcedeliverylogsModel");
 var MoveitFireBase =require("../../push/Moveit_SendNotification");
 var Ordersqueue = require("../../model/common/ordersqueueModel");
+var MoveitUser = require("../../model/moveit/moveitUserModel");
+var OrderStatusHistory = require("../common/orderstatushistoryModel");
 // var instance = new Razorpay({
 //   key_id: "rzp_test_3cduMl5T89iR9G",
 //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
@@ -124,6 +126,9 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
                 req.makeit_user_id,
                 PushConstant.pageidMakeit_Order_Post
               );
+              ////Insert Order History////
+              await Order.addorderhistory(res.orderid);
+              ////////////////////////////
               result(null, res);
             }
            });
@@ -238,7 +243,9 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                                 PushConstant.pageidMakeit_Order_Post
                               );
                             }
-                           
+                           ////Insert Order History////
+                          await Order.addorderhistory(res.orderid);
+                          ////////////////////////////
                             result(null, res);
                           }
                         });
@@ -1141,6 +1148,9 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
             }
           }
         });
+        ////Insert Order History////
+        await Order.addorderhistory(req.orderid);
+        ////////////////////////////
       }
     });
   } else if (orderdetails[0].orderstatus == 5) {
@@ -1878,7 +1888,9 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
                   }
                 }
               });
-            
+              ////Insert Order History////
+              await Order.addorderhistory(req.orderid);
+              ////////////////////////////
             }
           }
         );
@@ -1904,7 +1916,7 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
 });
 };
 
-Order.order_delivery_status_by_moveituser = function(req, result) {
+Order.order_delivery_status_by_moveituser = async function(req, result) {
   var order_delivery_time = moment().format("YYYY-MM-DD HH:mm:ss");
   sql.query(
     "Select * from Orders where orderid = ? and moveit_user_id = ?",
@@ -1931,34 +1943,56 @@ Order.order_delivery_status_by_moveituser = function(req, result) {
           }else{
 
           if (res1[0].payment_status == 1) {
-
             req.moveitid = req.moveit_user_id;
             req.status = 7
             await Order.insert_order_status(req); 
 
+            ////Start: Get Distance From geofire //////
+            sql.query("select * from MakeitUser where userid="+res1[0].makeit_user_id, async function(err,getmakeit){
+              if(err){
+                result(err, null);
+              }else{
+                var RequestDistance ={"orglat":res1[0].cus_lat,"orglon":res1[0].cus_lon,"deslat":getmakeit[0].lat.toString(),"deslon":getmakeit[0].lon.toString()};
+                await Order.eat_order_distance_calculation(RequestDistance, async function(err, getdistance) {
+                  if(err){
+                    result(err, null);
+                  }else{
+                    distance_makeit_to_eat = getdistance.result.routes[0].legs[0].distance.value || 0;
 
-            sql.query(
-              "UPDATE Orders SET orderstatus = ?,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
-              [req.orderstatus, order_delivery_time, req.orderid, req.moveit_user_id],
-              async function(err, res) {
-                if (err) {
-                  result(err, null);
-                } else {
-                  let resobj = {
-                    success: true,
-                    message: "Order Delivery successfully",
-                    status:true,
-                    orderdeliverystatus: true
-                  };
-                  await Notification.orderEatPushNotification(
-                    req.orderid,
-                    null,
-                    PushConstant.Pageid_eat_order_delivered
-                  );
-                  result(null, resobj);
-                }
+                    /////////////////////////////Start: Old Code/////////////////////////////
+                    sql.query(
+                      "UPDATE Orders SET orderstatus = ?,distance_makeit_to_eat = ?,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
+                      [req.orderstatus, distance_makeit_to_eat, order_delivery_time, req.orderid, req.moveit_user_id],
+                      async function(err, res) {
+                        if (err) {
+                          result(err, null);
+                        } else {
+                          let resobj = {
+                            success: true,
+                            message: "Order Delivery successfully",
+                            status:true,
+                            orderdeliverystatus: true
+                          };
+                          await Notification.orderEatPushNotification(
+                            req.orderid,
+                            null,
+                            PushConstant.Pageid_eat_order_delivered
+                          );
+                          ////Insert Order History////
+                          await Order.addorderhistory(req.orderid);
+                          ////////////////////////////
+                          result(null, resobj);
+                        }
+                      }
+                    );
+                    /////////////////////////////End: Old Code/////////////////////////////
+
+                  }
+                });
               }
-            );
+            });
+            /////End: Get Distance From geofire/////////////////////////////////
+
           } else {
             let resobj = {
               success: true,
@@ -2004,7 +2038,7 @@ Order.moveit_kitchen_reached_status = function(req, result) {
             req.orderid,
             req.moveit_user_id
           ],
-          function(err, res) {
+         async  function(err, res) {
             if (err) {
               result(err, null);
             } else {
@@ -2013,6 +2047,9 @@ Order.moveit_kitchen_reached_status = function(req, result) {
                 status:true,
                 message: "kitchen reached successfully"
               };
+              ////Insert Order History////
+              await Order.addorderhistory(req.orderid);
+              ////////////////////////////
               result(null, resobj);
             }
           }
@@ -2725,10 +2762,9 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
         if (err) {
           result(err, null);
         } else {
-          
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
                     
-        //  console.log(orderitemdetails);
+          //  console.log(orderitemdetails);
           for (let i = 0; i < orderitemdetails.length; i++) {
             var productquantityadd ="update Product set quantity = quantity+" +orderitemdetails[i].quantity +" where productid =" +orderitemdetails[i].productid +"";
 
@@ -2847,6 +2883,9 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             status: true,
             message: "Your order canceled successfully."
           };
+          ////Insert Order History////
+          await Order.addorderhistory(req.orderid);
+          ////////////////////////////
           result(null, response);
         }
       }
@@ -2910,6 +2949,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
         if (err) {
           result(err, null);
         } else {
+          
           var refundDetail = {
             orderid: req.orderid,
             original_amt: orderdetails[0].price,
@@ -2981,14 +3021,14 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
               null
             );
           }
-
-        
-
           let response = {
             success: true,
             status: true,
             message: "Order canceled successfully."
           };
+          ////Insert Order History////
+          await Order.addorderhistory(req.orderid);
+          ////////////////////////////
           result(null, response);
         }
       }
@@ -3130,7 +3170,9 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
               }
             }
           });
-
+          ////Insert Order History////
+          await Order.addorderhistory(res.orderid);
+          ////////////////////////////
         }
       });
     } else if (orderdetails[0].orderstatus == 1) {
@@ -3198,12 +3240,14 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
         if (err) {
           result(err, null);
         } else {
-        
           let response = {
             success: true,
             status: true,
             message: "Order accepted successfully."
           };
+          ////Insert Order History////
+          await Order.addorderhistory(req.orderid);
+          ////////////////////////////
           result(null, response);
         }
       });
@@ -3324,6 +3368,9 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
             status: true,
             message: "Order canceled successfully."
           };
+          ////Insert Order History////
+          await Order.addorderhistory(req.orderid);
+          ////////////////////////////
           result(null, response);
         }
       }
@@ -4192,6 +4239,9 @@ Order.order_delivery_status_by_admin = function order_delivery_status_by_admin(r
                     null,
                     PushConstant.Pageid_eat_order_delivered
                   );
+                  ////Insert Order History////
+                  await Order.addorderhistory(req.orderid);
+                  ////////////////////////////
                   result(null, resobj);
                 }
               }
@@ -4801,7 +4851,9 @@ Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user
                     if (err) {
                       result(err, null);
                     } else {
-                    
+                      ////Insert Order History////
+                      await Order.addorderhistory(res.orderid);
+                      ////////////////////////////
                       result(null, res);
                     }
                   });
@@ -5098,6 +5150,11 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
          if (err) {
            result(err, null);
          } else {
+            ////Insert Order History////
+            var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
+            var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+            var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+            ///////////////////////////
            var refundDetail = {
              orderid: req.orderid,
              original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
@@ -5174,6 +5231,9 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              status: true,
              message: "Order canceled successfully."
            };
+           ////Insert Order History////
+           await Order.addorderhistory(req.orderid);
+           ////////////////////////////
            result(null, response);
          }
        }
@@ -5207,7 +5267,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
          if (err) {
            result(err, null);
          } else {
-           var refundDetail = {
+            var refundDetail = {
              orderid: req.orderid,
              original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
              active_status: 1,
@@ -5283,6 +5343,9 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              status: true,
              message: "Order canceled successfully."
            };
+           ////Insert Order History////
+           await Order.addorderhistory(req.orderid);
+           ////////////////////////////
            result(null, response);
          }
        }
@@ -5959,5 +6022,12 @@ Order.xfactororders_report= function xfactororders_report(req, result) {
     }
   );
 };
+
+//////Add Order Status History/////////////
+Order.addorderhistory = async function addorderhistory(req,result){
+  var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req);
+  var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+  var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+}
 
 module.exports = Order;

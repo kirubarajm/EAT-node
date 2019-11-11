@@ -13,6 +13,7 @@ var MakeitImages = require("../../model/makeit/makeitImagesModel");
 var MakeitBadges = require("../../model/makeit/makeitbadgesmappingModel");
 var PushConstant = require("../../push/PushConstant.js");
 var Notification = require("../../model/common/notificationModel.js");
+var Order        = require("../common/orderModel");
 
 //Task object constructor
 var Makeituser = function(makeituser) {
@@ -738,7 +739,9 @@ Makeituser.orderstatusbyorderid = function(req, result) {
           status: sucobj,
           message: mesobj
         };
-
+        ////Insert Order History////
+        await Order.addorderhistory(req.orderid);
+        ////////////////////////////
         result(null, resobj);
       }
     }
@@ -1957,7 +1960,7 @@ Makeituser.makeituser_user_referral_code = function makeituser_user_referral_cod
           result(null, resobj);
         } else {
           res[0].applink =
-            "https://play.google.com/store/apps/details?id=com.eat.makeit&referrer=utm_source%3Dreferral%26utm_medium%3D"+
+            "https://play.google.com/store/apps/details?id=com.eat.makeit&referrer=utm_source%3Dreferral%26utm_medium%3D" +
             res[0].referalcode +
             "%26utm_campaign%3Dreferral";
 
@@ -2879,60 +2882,51 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
 
 //Report For Makeit List with  Live Product Status Based on the Kitchen
 Makeituser.get_admin_list_all_makeitusers_percentage_report = function(req, result) {
-  req.appointment_status = req.appointment_status || "all";
-  req.virtualkey = req.virtualkey;
-  var query = "select mk.userid,mk.name,mk.brandname from MakeitUser mk";
-  
-  if(req.active_status){
-    query = query + " LEFT JOIN Product p on p.makeit_userid=mk.userid where p.active_status=1" ;
-  }
+  //req.appointment_status
+  //req.active_status
+  if(req.virtualkey && req.date){
+    var query = "select mk.userid,mk.name,mk.brandname from MakeitUser mk LEFT JOIN Orders ord on ord.makeit_user_id=mk.userid where date(ord.created_at)='"+req.date+"' and mk.virtualkey  ="+ req.virtualkey+" group by mk.userid";
 
-  if(req.appointment_status!=="all"){
-    if(query.toLowerCase().includes('where')) query =query +" and mk.appointment_status  = '" + req.appointment_status+"'"
-    else query =query +" where mk.appointment_status  = '" + req.appointment_status+"'"
-  }
-
-  if(req.virtualkey!=="all"){
-    if(query.toLowerCase().includes('where'))
-    query =query +" and mk.virtualkey  = '" + req.virtualkey+"'"
-    else query =query +" where mk.virtualkey  = '" + req.virtualkey+"'"
-  }
-
-  if(req.active_status){
-    query = query + " group by userid";
-  }
-
-  sql.query(query, async function(err, res) {
-    if (err) {
-      //console.log("error: ", err);
-      result(null, err);
-    } else {
-      ////Get Kitchen Percentage////////
-      for(var i=0; i<res.length; i++){
-        res[i].makeit_id=res[i].userid;
-        res[i].date=req.date;
-        await Makeituser.kitchen_liveproduct_status_report(res[i],function(err,percentage){
-          percentage.kitchen_percentage=percentage.kitchen_percentage==="0.00"||percentage.kitchen_percentage==='NaN'?0:percentage.kitchen_percentage;
-          res[i].kitchen_percentage=percentage.kitchen_percentage || 0;
+    console.log("Query->"+query);
+    sql.query(query, async function(err, res) {
+      if (err) {
+        //console.log("error: ", err);
+        result(null, err);
+      } else {
+        ////Get Kitchen Percentage////////
+        for(var i=0; i<res.length; i++){
+          res[i].makeit_id=res[i].userid;
+          res[i].date=req.date;
+          await Makeituser.kitchen_liveproduct_status_report(res[i],function(err,percentage){
+            percentage.kitchen_percentage=percentage.kitchen_percentage==="0.00"||percentage.kitchen_percentage==='NaN'?0:percentage.kitchen_percentage;
+            res[i].kitchen_percentage=percentage.kitchen_percentage || 0;
+          });
+        }
+        res.sort(
+          (a, b) => parseFloat(b.kitchen_percentage) - parseFloat(a.kitchen_percentage)
+        );
+        //////////////////////////////////
+        var totalcount = 0;
+        sql.query(query, function(err, res1) {
+          totalcount = res1.length;
+          let resobj = {
+            success: true,
+            status:true,
+            totalkitchencount: totalcount,
+            result: res
+          };
+          result(null, resobj);
         });
       }
-      res.sort(
-        (a, b) => parseFloat(b.kitchen_percentage) - parseFloat(a.kitchen_percentage)
-      );
-      //////////////////////////////////
-      var totalcount = 0;
-      sql.query(query, function(err, res1) {
-        totalcount = res1.length;
-        let resobj = {
-          success: true,
-          status:true,
-          totalkitchencount: totalcount,
-          result: res
-        };
-        result(null, resobj);
-      });
-    }
-  });
+    });
+  }else{
+    let resobj = {
+      success: true,
+      message: "Sorry! no data found.",
+      status : false
+    };
+    result(null, resobj);
+  }
 };
 
 //Report For Get Live Product Status Based on the Kitchen 
@@ -3012,21 +3006,36 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
     var getfirstmakeitorder = await query("select orderid,date(created_at) as firstorder from Orders where makeit_user_id="+req.makeit_id+" order by orderid asc");
     var FirstOrder = new Date(getfirstmakeitorder[0].firstorder);
     if(((FromDate < CurrentDate) && (ToDate < CurrentDate)) && (parseInt(daysDiff) <=7) && ((FromDate >= FirstOrder) && (ToDate >= FirstOrder))){
-      var getweeklyearnings = await query("select ordertime,SUM(makeit_earnings) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id,makeit_earnings from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
-
+      var getweeklyearnings = await query("select ordertime,IFNULL(SUM(makeit_earnings),0) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
+      var Newarray = [];
         if(getweeklyearnings.length>0){
           var weekly_earnings=0;
           for(var i=0; i<getweeklyearnings.length; i++){
             weekly_earnings = weekly_earnings+getweeklyearnings[i].makeit_earnings;
+            if(getweeklyearnings[i].makeit_earnings){
+              Newarray.push(getweeklyearnings[i]);
+            }
           }
-          let resobj = {
-            success: true,
-            status : true,
-            First_Order_date:getfirstmakeitorder[0].firstorder,
-            weekly_earnings:weekly_earnings,
-            result : getweeklyearnings
-          };
-          result(null, resobj);
+          if(weekly_earnings==0){
+            let resobj = {
+              success: true,
+              status : true,
+              First_Order_date:getfirstmakeitorder[0].firstorder,
+              weekly_earnings:weekly_earnings,
+              message : "Sorry! no data found"
+            };
+            result(null, resobj);
+          }else{
+            let resobj = {
+              success: true,
+              status : true,
+              First_Order_date:getfirstmakeitorder[0].firstorder,
+              weekly_earnings:weekly_earnings,
+              result : Newarray
+            };
+            result(null, resobj);
+          }
+          
         }else{
           let resobj = {
             success: true,

@@ -11,6 +11,7 @@ var Notification = require("../../model/common/notificationModel.js");
 var PushConstant = require("../../push/PushConstant.js");
 var isCronRun=false;
 var Order = require("../../model/common/orderModel.js");
+var OrderStatusHistory = require("../common/orderstatushistoryModel");
 
 const query = util.promisify(sql.query).bind(sql);
 var QuickSearch = function(QuickSearch) {
@@ -210,6 +211,9 @@ const job1 = new CronJob("*/3 * * * *", async function() {
                 res[i].orderid +
                 "'"
             );
+            ////Insert Order History////
+            await Order.addorderhistory(res[i].orderid);
+            ////////////////////////////
           }
         }
       }

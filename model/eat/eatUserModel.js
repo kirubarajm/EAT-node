@@ -4152,5 +4152,39 @@ Eatuser.get_otp= function get_otp(req, result) {
 };
  
 
+/////Eat Users History
+Eatuser.user_history = async function user_history(req, result) {
+  var getorderlist = await query("Select o.orderid,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,o.created_at,o.orderstatus,o.price from Orders as o left join OrderItem as oi on o.orderid=oi.orderid left join Product as p on p.productid = oi.productid left join MakeitUser as ma on o.makeit_user_id=ma.userid where o.userid="+req.userid+" GROUP BY o.orderid");
+  var CompletedOrders = 0;
+  var CancelOrders = 0;
 
+  ////Get Orders Count
+  for(var i=0;i<getorderlist.length; i++){
+    if(parseInt(getorderlist[i].orderstatus)==6){
+      CompletedOrders = CompletedOrders+1;
+    }else{
+      CancelOrders = CancelOrders+1;
+    }
+  }
+
+  if(getorderlist.length>0){
+    let resobj = {
+      success: true,
+      status : true,
+      TotalOrders : getorderlist.length,
+      CompletedOrders : CompletedOrders,
+      CancelOrders : CancelOrders,
+      result : getorderlist
+    };
+    result(null, resobj);
+  }else{
+    let resobj = {
+      success: true,
+      message: "Sorry! no data found.",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+ 
 module.exports = Eatuser;
