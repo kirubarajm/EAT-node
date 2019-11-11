@@ -212,7 +212,7 @@ const job1 = new CronJob("*/3 * * * *", async function() {
                 "'"
             );
             ////Insert Order History////
-            await Order.addorderhistory(res[i].orderid);
+            
             ////////////////////////////
           }
         }

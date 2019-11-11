@@ -740,7 +740,7 @@ Makeituser.orderstatusbyorderid = function(req, result) {
           message: mesobj
         };
         ////Insert Order History////
-        await Order.addorderhistory(req.orderid);
+        
         ////////////////////////////
         result(null, resobj);
       }
