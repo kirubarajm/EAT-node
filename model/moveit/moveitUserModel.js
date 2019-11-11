@@ -1004,7 +1004,6 @@ Moveituser.getworking_dates = async function getworking_dates(req, result) {
   }
 };
 
-
 ////////////Day Wise Moveit History
   Moveituser.daywise_moveit_records = async function daywise_moveit_records(req, result) {
     //console.log(req);
@@ -1123,8 +1122,8 @@ Moveituser.getworking_dates = async function getworking_dates(req, result) {
     });
   };
 
-  Moveituser.get_marker_zone = function get_marker_zone(req,result) {
-    console.log(req);
+  Moveituser.check_map_boundaries = function check_map_boundaries(req,result) {
+    //console.log(req);
     sql.query("Select * from Zone", function( err,res) {
       if (err) {
         console.log(err);
@@ -1147,16 +1146,16 @@ Moveituser.getworking_dates = async function getworking_dates(req, result) {
         if(isZone){
           let resobj = {
             success: true,
-            message: zoneName,
             status : true,
+            message: zoneName,
             zone_id:res[i].id
           };
           result(null, resobj);
         }else{
           let resobj = {
             success: true,
-            message: 'No Zone Available.',
-            status : true
+            status : true,
+            message: 'No Zone Available.'
           };
           result(null, resobj);
         }
