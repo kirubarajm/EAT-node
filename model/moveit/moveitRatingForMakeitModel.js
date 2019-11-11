@@ -82,28 +82,46 @@ MoveitRatingForMakeit.insert_order_status = function insert_order_status(req) {
   };
 
 MoveitRatingForMakeit.MoveitRatingForMakeit =async function(req, result){
-sql.query("UPDATE MoveitRatingForMakeit SET  rating = ? WHERE  orderid = ?", [req.rating,req.orderid],async function (err, res) {
-    if(err) {
-        console.log("error: ", err);
-        result(err, null);
-    }
-    else{
+
+    var Ordersdetails = await query("select * from Orders where orderid =" +req.orderid+" and moveit_user_id= "+req.moveit_user_id+"");
+
+    if (Ordersdetails.length !==0) {
         
-        req.moveitid = req.moveit_user_id;
-        req.status = 4 // order rating by moveit
-        await MoveitRatingForMakeit.insert_order_status(req);
+        sql.query("UPDATE MoveitRatingForMakeit SET  rating = ? WHERE  orderid = ?", [req.rating,req.orderid],async function (err, res) {
+            if(err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else{
+                
+                req.moveitid = req.moveit_user_id;
+                req.status = 4 // order rating by moveit
+                await MoveitRatingForMakeit.insert_order_status(req);
+        
+            
+                let resobj = {  
+                success: true,
+                status :true,
+                message:"Rating has been done successfully"
+                }; 
+        
+             result(null, resobj);
+          
+            }
+        }); 
+    }else{
 
-    
+        
         let resobj = {  
-        success: true,
-        status :true,
-        message:"Rating has been done successfully"
-        }; 
-
-     result(null, resobj);
-  
+            success: true,
+            status :false,
+            message:"Following order is not assigned to you!"
+            }; 
+    
+         result(null, resobj);
     }
-}); 
+
+
 };
 
 MoveitRatingForMakeit.remove = function(id, result){
