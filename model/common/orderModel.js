@@ -121,17 +121,14 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
             if (err) {
               result(err, null);
             } else {
-              console.log("Insert Order History");
-              ////Insert Order History////
-              var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+res.orderid);
-              var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-              var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-              ///////////////////////////
               await Notification.orderMakeItPushNotification(
                 res.orderid,
                 req.makeit_user_id,
                 PushConstant.pageidMakeit_Order_Post
               );
+              ////Insert Order History////
+              await Order.addorderhistory(res.orderid);
+              ////////////////////////////
               result(null, res);
             }
            });
@@ -239,12 +236,6 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                         if (err) {
                           result(err, null);
                         } else {
-                          ////Insert Order History////
-                          var GetOrderStatus = await query("select orderstatus from Orders where orderid="+res.orderid);
-                          var insertdata={"orderid":res.orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-                          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-                          ///////////////////////////
-
                           if (req.payment_type == 0) {
                             await Notification.orderMakeItPushNotification(
                               res.orderid,
@@ -252,8 +243,10 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                               PushConstant.pageidMakeit_Order_Post
                             );
                           }
-                         
-                          result(null, res);
+                          ////Insert Order History////
+                          await Order.addorderhistory(res.orderid);
+                          ////////////////////////////
+                         result(null, res);
                         }
                       });
                       //ordercreatecashondelivery(req, res3.result[0].item);
@@ -794,11 +787,6 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
       if (err) {
         result(err, null);
       } else {
-        ////Insert Order History////
-        var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
-        var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-        var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-        ///////////////////////////
         if (req.orderstatus === PushConstant.masteridOrder_Accept) {
           await Notification.orderEatPushNotification(
             req.orderid,
@@ -848,6 +836,9 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
             }
           }
         });
+        ////Insert Order History////
+        await Order.addorderhistory(req.orderid);
+        ////////////////////////////
       }
     });
   } else if (orderdetails[0].orderstatus == 5) {
@@ -1535,11 +1526,6 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
             if (err) {
               result(err, null);
             } else {
-              ////Insert Order History////
-              var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
-              var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-              var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-              ///////////////////////////
               await Notification.orderEatPushNotification(
                 req.orderid,
                 null,
@@ -1584,7 +1570,9 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
                   }
                 }
               });
-            
+              ////Insert Order History////
+              await Order.addorderhistory(req.orderid);
+              ////////////////////////////
             }
           }
         );
@@ -1661,11 +1649,6 @@ Order.order_delivery_status_by_moveituser = async function(req, result) {
                         if (err) {
                           result(err, null);
                         } else {
-                          ////Insert Order History////
-                          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
-                          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-                          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-                          ///////////////////////////
                           let resobj = {
                             success: true,
                             message: "Order Delivery successfully",
@@ -1677,6 +1660,9 @@ Order.order_delivery_status_by_moveituser = async function(req, result) {
                             null,
                             PushConstant.Pageid_eat_order_delivered
                           );
+                          ////Insert Order History////
+                          await Order.addorderhistory(req.orderid);
+                          ////////////////////////////
                           result(null, resobj);
                         }
                       }
@@ -1738,16 +1724,14 @@ Order.moveit_kitchen_reached_status = function(req, result) {
             if (err) {
               result(err, null);
             } else {
-              ////Insert Order History////
-              var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
-              var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-              var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-              ///////////////////////////
               let resobj = {
                 success: true,
                 status:true,
                 message: "kitchen reached successfully"
               };
+              ////Insert Order History////
+              await Order.addorderhistory(req.orderid);
+              ////////////////////////////
               result(null, resobj);
             }
           }
@@ -2465,14 +2449,9 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
         if (err) {
           result(err, null);
         } else {
-          ////Insert Order History////
-          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
-          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-          ///////////////////////////
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
                     
-        //  console.log(orderitemdetails);
+          //  console.log(orderitemdetails);
           for (let i = 0; i < orderitemdetails.length; i++) {
             var productquantityadd ="update Product set quantity = quantity+" +orderitemdetails[i].quantity +" where productid =" +orderitemdetails[i].productid +"";
 
@@ -2591,6 +2570,9 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             status: true,
             message: "Your order canceled successfully."
           };
+          ////Insert Order History////
+          await Order.addorderhistory(req.orderid);
+          ////////////////////////////
           result(null, response);
         }
       }
@@ -2722,18 +2704,14 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
               null
             );
           }
-
-          ////Insert Order History////
-          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
-          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-          ///////////////////////////
-
           let response = {
             success: true,
             status: true,
             message: "Order canceled successfully."
           };
+          ////Insert Order History////
+          await Order.addorderhistory(req.orderid);
+          ////////////////////////////
           result(null, response);
         }
       }
@@ -2766,11 +2744,6 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
         if (err) {
           result(err, null);
         } else {
-          ////Insert Order History////
-          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
-          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-          ///////////////////////////
           await Notification.orderEatPushNotification(
             req.orderid,
             null,
@@ -2847,7 +2820,9 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
               }
             }
           });
-
+          ////Insert Order History////
+          await Order.addorderhistory(res.orderid);
+          ////////////////////////////
         }
       });
     } else if (orderdetails[0].orderstatus == 1) {
@@ -2915,16 +2890,14 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
         if (err) {
           result(err, null);
         } else {
-          ////Insert Order History////
-          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
-          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-          ///////////////////////////
           let response = {
             success: true,
             status: true,
             message: "Order accepted successfully."
           };
+          ////Insert Order History////
+          await Order.addorderhistory(req.orderid);
+          ////////////////////////////
           result(null, response);
         }
       });
@@ -2972,11 +2945,6 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
         if (err) {
           result(err, null);
         } else {
-          ////Insert Order History////
-          var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
-          var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-          var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-          ///////////////////////////
           var refundDetail = {
             orderid: req.orderid,
             original_amt: orderdetails[0].price,
@@ -3050,6 +3018,9 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
             status: true,
             message: "Order canceled successfully."
           };
+          ////Insert Order History////
+          await Order.addorderhistory(req.orderid);
+          ////////////////////////////
           result(null, response);
         }
       }
@@ -3899,11 +3870,6 @@ Order.order_delivery_status_by_admin = function order_delivery_status_by_admin(r
                 if (err) {
                   result(err, null);
                 } else {
-                  ////Insert Order History////
-                  var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
-                  var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-                  var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-                  ///////////////////////////
                   let resobj = {
                     success: true,
                     message: "Order Delivery successfully",
@@ -3915,6 +3881,9 @@ Order.order_delivery_status_by_admin = function order_delivery_status_by_admin(r
                     null,
                     PushConstant.Pageid_eat_order_delivered
                   );
+                  ////Insert Order History////
+                  await Order.addorderhistory(req.orderid);
+                  ////////////////////////////
                   result(null, resobj);
                 }
               }
@@ -4525,10 +4494,8 @@ Order.create_tunnel_order_new_user = async function create_tunnel_order_new_user
                       result(err, null);
                     } else {
                       ////Insert Order History////
-                      var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+res.orderid);
-                      var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-                      var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-                      ///////////////////////////
+                      await Order.addorderhistory(res.orderid);
+                      ////////////////////////////
                       result(null, res);
                     }
                   });
@@ -4904,6 +4871,9 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              status: true,
              message: "Order canceled successfully."
            };
+           ////Insert Order History////
+           await Order.addorderhistory(req.orderid);
+           ////////////////////////////
            result(null, response);
          }
        }
@@ -4937,12 +4907,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
          if (err) {
            result(err, null);
          } else {
-            ////Insert Order History////
-            var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req.orderid);
-            var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-            var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-            ///////////////////////////
-           var refundDetail = {
+            var refundDetail = {
              orderid: req.orderid,
              original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
              active_status: 1,
@@ -5016,6 +4981,9 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              status: true,
              message: "Order canceled successfully."
            };
+           ////Insert Order History////
+           await Order.addorderhistory(req.orderid);
+           ////////////////////////////
            result(null, response);
          }
        }
@@ -5568,5 +5536,12 @@ Order.xfactororders_report= function xfactororders_report(req, result) {
     }
   );
 };
+
+//////Add Order Status History/////////////
+Order.addorderhistory = async function addorderhistory(req,result){
+  var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+req);
+  var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
+  var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
+}
 
 module.exports = Order;

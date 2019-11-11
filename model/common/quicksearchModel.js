@@ -212,10 +212,8 @@ const job1 = new CronJob("*/3 * * * *", async function() {
                 "'"
             );
             ////Insert Order History////
-            var GetOrderStatus = await query("select orderid,orderstatus from Orders where orderid="+res[i].orderid);
-            var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
-            var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
-            ///////////////////////////
+            await Order.addorderhistory(res[i].orderid);
+            ////////////////////////////
           }
         }
       }
