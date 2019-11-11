@@ -2776,11 +2776,11 @@ Makeituser.kitchen_liveproduct_status= async function kitchen_liveproduct_status
             ////Set Soldout Quantity
             getmaxquantity[i].sold_quantity = getsoldquantity[j].sold_quantity;
             ////Calculation For Product Percentage
-            getmaxquantity[i].product_percentage = ((getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100).toFixed(2);
+            getmaxquantity[i].product_percentage = ((getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100);
             ////Calculation For Kitchen Product Percentage
-            getmaxquantity[i].kitchen_product_count_percentage = ((getmaxquantity[i].total_quantity/product_count)*100).toFixed(2);
+            getmaxquantity[i].kitchen_product_count_percentage = ((getmaxquantity[i].total_quantity/product_count)*100);
             ////Calculation For Kitchen Percentage
-            getmaxquantity[i].kitchen_product_percentage = (getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100)).toFixed(2);
+            getmaxquantity[i].kitchen_product_percentage = (getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100));
             ////Calcualtion For kitchen percentage
             kitchen_percentage = kitchen_percentage+(getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100));
           }
@@ -3006,21 +3006,36 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
     var getfirstmakeitorder = await query("select orderid,date(created_at) as firstorder from Orders where makeit_user_id="+req.makeit_id+" order by orderid asc");
     var FirstOrder = new Date(getfirstmakeitorder[0].firstorder);
     if(((FromDate < CurrentDate) && (ToDate < CurrentDate)) && (parseInt(daysDiff) <=7) && ((FromDate >= FirstOrder) && (ToDate >= FirstOrder))){
-      var getweeklyearnings = await query("select ordertime,SUM(makeit_earnings) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
-
+      var getweeklyearnings = await query("select ordertime,IFNULL(SUM(makeit_earnings),0) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
+      var Newarray = [];
         if(getweeklyearnings.length>0){
           var weekly_earnings=0;
           for(var i=0; i<getweeklyearnings.length; i++){
             weekly_earnings = weekly_earnings+getweeklyearnings[i].makeit_earnings;
+            if(getweeklyearnings[i].makeit_earnings){
+              Newarray.push(getweeklyearnings[i]);
+            }
           }
-          let resobj = {
-            success: true,
-            status : true,
-            First_Order_date:getfirstmakeitorder[0].firstorder,
-            weekly_earnings:weekly_earnings,
-            result : getweeklyearnings
-          };
-          result(null, resobj);
+          if(weekly_earnings==0){
+            let resobj = {
+              success: true,
+              status : true,
+              First_Order_date:getfirstmakeitorder[0].firstorder,
+              weekly_earnings:weekly_earnings,
+              message : "Sorry! no data found"
+            };
+            result(null, resobj);
+          }else{
+            let resobj = {
+              success: true,
+              status : true,
+              First_Order_date:getfirstmakeitorder[0].firstorder,
+              weekly_earnings:weekly_earnings,
+              result : Newarray
+            };
+            result(null, resobj);
+          }
+          
         }else{
           let resobj = {
             success: true,
