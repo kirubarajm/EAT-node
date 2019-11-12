@@ -5,7 +5,7 @@ var sql = require("../db.js");
 //Task object constructor
 var Zone = function(zone) {
   this.Zonename = zone.Zonename;
-  this.boundaries=region.boundaries;
+  this.boundaries=zone.boundaries;
 };
 
 Zone.createZone = function createZone(req, result) {
@@ -28,17 +28,18 @@ Zone.get_all_zone = function get_all_zone(req, result) {
   var query = "Select * from Zone";
 
   if (req.boundaries==1) {
-    query = query + " where boundaries not null";
+    query = query + " where boundaries IS NOT NULL";
   }else if (req.boundaries==0) {
-    query = query + " where boundaries null";
+    query = query + " where boundaries IS NULL";
   }
 
+  console.log("Zone query-->",query);
   sql.query(query, function(err, res) {
     if (err) {
         let resobj = {
             success: true,
             status:false,
-            message:'No Boundaries Avaiable'
+            message:req.boundaries==0?'Unassign boundaries not avaiable':'No boundaries avaiable'
           };
       result(null, resobj);
     } else {
