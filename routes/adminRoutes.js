@@ -203,7 +203,7 @@ app.route("/admin/eatuser/userhistory").post(routesVersioning({"1.0.0":eatuser.u
 /////////Zone routes
 app.route("/admin/zone/add").post(routesVersioning({"1.0.0":zoneController.create_a_Zone}));
 app.route("/admin/zone/getall").post(routesVersioning({"1.0.0":zoneController.list_all_zone}));
-app.route("/admin/zone/update").post(routesVersioning({"1.0.0":zoneController.update_a_Zone}));
+app.route("/admin/zone/update").put(routesVersioning({"1.0.0":zoneController.update_a_Zone}));
 app.route("/admin/zone/checkmapboundaries").post(routesVersioning({"1.0.0":zoneController.check_map_boundaries}));
 
 }
