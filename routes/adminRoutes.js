@@ -23,6 +23,7 @@ module.exports = function(app) {
   var MakeitImages = require("../controllers/makeit/MakeitImagesController");
   var Stories = require("../controllers/common/StoryController");
   var adminController = require("../controllers/admin/adminUserController");
+  var zoneController = require("../controllers/common/ZoneController");
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));
@@ -202,5 +203,6 @@ app.route("/admin/check/mapboundaries").post(routesVersioning({"1.0.0":moveituse
 app.route("/admin/eatuser/userhistory").post(routesVersioning({"1.0.0":eatuser.user_history}));
 
 app.route("/admin/moveit/getmarkerzone").post(routesVersioning({"1.0.0":moveituser.get_marker_zone}));
-app.route("/admin/zone/add").post(routesVersioning({"1.0.0":moveituser.get_marker_zone}));
+app.route("/admin/zone/add").post(routesVersioning({"1.0.0":zoneController.create_a_Zone}));
+app.route("/admin/zone/getall").post(routesVersioning({"1.0.0":zoneController.list_all_zone}));
 }
