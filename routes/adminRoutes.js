@@ -176,7 +176,6 @@ app.route("/admin/makeit/liveproductstatus").post(routesVersioning({"1.0.0":make
 app.route("/admin/makeit/kitchenliveproductstatus").post(routesVersioning({"1.0.0":makeituser.kitchen_liveproduct_status}));
 app.route("/admin/makeit/kitchenpercentage").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage}));
 
-
 app.route("/admin/order/movetoqueue").put(routesVersioning({"1.0.0":orders.order_move_to_queue}));
 ////Live Product Status History Report
 app.route("/admin/reports/kitchenpercentage_report").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage_report}));
@@ -198,11 +197,13 @@ app.route("/admin/reports/xfactororders_report").post(routesVersioning({"1.0.0":
 app.route("/admin/moveit/getworking_dates").post(routesVersioning({"1.0.0":moveituser.getworking_dates}));
 app.route("/admin/moveit/daywise_moveit_records").post(routesVersioning({"1.0.0":moveituser.daywise_moveit_records}));
 
-app.route("/admin/check/mapboundaries").post(routesVersioning({"1.0.0":moveituser.check_map_boundaries}));
 ///////Eat Users History
 app.route("/admin/eatuser/userhistory").post(routesVersioning({"1.0.0":eatuser.user_history}));
 
-app.route("/admin/moveit/getmarkerzone").post(routesVersioning({"1.0.0":moveituser.get_marker_zone}));
+/////////Zone routes
 app.route("/admin/zone/add").post(routesVersioning({"1.0.0":zoneController.create_a_Zone}));
 app.route("/admin/zone/getall").post(routesVersioning({"1.0.0":zoneController.list_all_zone}));
+app.route("/admin/zone/update").post(routesVersioning({"1.0.0":zoneController.update_a_Zone}));
+app.route("/admin/zone/checkmapboundaries").post(routesVersioning({"1.0.0":zoneController.check_map_boundaries}));
+
 }
