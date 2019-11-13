@@ -55,7 +55,7 @@ Zone.get_all_zone = function get_all_zone(req, result) {
 };
 
 ////Update Zone
-Zone.updateZone = function createZone(req, result) {
+Zone.updateZone = function updateZone(req, result) {
   var boundaries=JSON.stringify(req.boundaries);
   sql.query("UPDATE Zone set boundaries = ? WHERE id = ?", [boundaries, req.id], function(err, res) {
     if (err) {
@@ -74,19 +74,19 @@ Zone.updateZone = function createZone(req, result) {
 
 ////Get zone based on lat and lng
 Zone.check_map_boundaries = function check_map_boundaries(req,result) {
-  //console.log(req);
-  sql.query("Select * from Zone", function( err,res) {
+  //console.log("Request =========>",req);
+  sql.query("Select * from Zone where boundaries IS NOT NULL", function( err,res) {
     if (err) {
       console.log(err);
       result(err, null);
     } else {
-      console.log(res);
+      //console.log("Response =======>",res);
       var isZone=false;
       var zoneName='';
       if(res.length>0){
         for(var i=0; i<res.length; i++){
           var polygon=JSON.parse(res[i].boundaries);
-          if(Zone.pointInPolygon(polygon,{lat:req.lat,lng:req.lng})){
+          if(Zone.pointInPolygon(polygon,{lat:req.lat,lng:req.lon})){
             zoneName=res[i].Zonename;
             isZone=true;
             break;
@@ -97,10 +97,12 @@ Zone.check_map_boundaries = function check_map_boundaries(req,result) {
         let resobj = {
           success: true,
           status : true,
-          message: zoneName,
+          message: "Inside Zone",
+          zone_name: zoneName,
           zone_id:res[i].id
         };
         result(null, resobj);
+        return resobj;
       }else{
         let resobj = {
           success: true,
@@ -126,9 +128,9 @@ Zone.pointInPolygon=function pointInPolygon(polygonPath, coordinates){
       let xi = polygonPath[i].lat, yi = polygonPath[i].lng;
       let xj = polygonPath[j].lat, yj = polygonPath[j].lng;
 
-      let intersect = ((yi > y) != (yj > y))
-          && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-      if (intersect) inside = !inside;
+      var intersect = ((yi > y) != (yj > y))
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
   }
   return inside;
 };

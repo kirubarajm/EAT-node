@@ -2884,8 +2884,9 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
 Makeituser.get_admin_list_all_makeitusers_percentage_report = function(req, result) {
   //req.appointment_status
   //req.active_status
-  if(req.virtualkey && req.date){
-    var query = "select mk.userid,mk.name,mk.brandname from MakeitUser mk LEFT JOIN Orders ord on ord.makeit_user_id=mk.userid where date(ord.created_at)='"+req.date+"' and mk.virtualkey  ="+ req.virtualkey+" group by mk.userid";
+  var virtualkey = req.virtualkey || 0;
+  if(req.date){
+    var query = "select mk.userid,mk.name,mk.brandname from MakeitUser mk LEFT JOIN Orders ord on ord.makeit_user_id=mk.userid where date(ord.created_at)='"+req.date+"' and mk.virtualkey  ="+ virtualkey+" group by mk.userid";
 
     console.log("Query->"+query);
     sql.query(query, async function(err, res) {
