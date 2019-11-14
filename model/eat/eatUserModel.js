@@ -3397,7 +3397,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
                         
                      
                        var nearbyregionquery = "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,mk.member_type,mk.about,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and mk.ka_status = 2 and pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" GROUP BY pt.productid  ORDER BY distance";
-                     //   console.log("makeitlist" +nearbyregionquery);
+                        console.log("makeitlist" +nearbyregionquery);
                           let kitchenlist = await query(nearbyregionquery);
                           var kitchendetaillist=[];
                           //this code is important
@@ -4726,6 +4726,276 @@ Eatuser.get_eat_kitchen_list_sort_filter_zone = async function (req, result) {
         });
       }else{
         Eatuser.get_eat_kitchen_list_sort_filter(req, result);
+      }
+    }
+  });
+};
+
+
+/////Zone Based Regin List Version 2.0.0
+Eatuser.get_eat_region_makeit_list_by_eatuserid_zone = async function get_eat_region_makeit_list_by_eatuserid_zone (req,result) {
+  var userzoneid = '';
+  await zoneModel.check_map_boundaries(req, async function(err,getzone) {
+    if(err){
+      console.log(err);
+    }else{
+      userzoneid = getzone.zone_id;
+      if(getzone.zone_id){
+        var foodpreparationtime = constant.foodpreparationtime;
+        var onekm         = constant.onekm;
+        var radiuslimit   = constant.radiuslimit;
+        const userinfo    = await query("select * from User where userid= "+req.eatuserid+" ");
+        if (userinfo.length !== 0 ) {
+          var getregionquery = "select lat,lon,regionid from Region where regionid = '"+userinfo[0].regionid+"'  ";
+          sql.query(getregionquery,async function (err, res1) {
+              if (err) {
+                  console.log("error: ", err);
+                  result(err, null);
+              } else {
+                  var breatfastcycle = constant.breatfastcycle;
+                  var dinnercycle = constant.dinnercycle;
+                  var lunchcycle = constant.lunchcycle;
+                  var day = moment().format("YYYY-MM-DD HH:mm:ss");
+                  var currenthour  = moment(day).format("HH");
+                  var productquery = '';
+                  if (currenthour < lunchcycle) {
+                    productquery = productquery + " and pt.breakfast = 1";
+                  }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+                    productquery = productquery + " and pt.lunch = 1";
+                  }else if( currenthour >= dinnercycle){
+                    productquery = productquery + " and pt.dinner = 1";
+                  }
+                  
+                  if (res1.length !== 0) {
+                    var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid join MakeitUser mk on mk.regionid =re.regionid join Product pt on mk.userid = pt.makeit_userid  where pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" group by re.regionid order by distance ASC limit 8";
+                  }else if(res1.length === 0){
+                    var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid join MakeitUser mk on mk.regionid =re.regionid join Product pt on mk.userid = pt.makeit_userid  where pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" group by re.regionid order by distance ASC ";
+                  }
+                  
+                  sql.query(getregionlistquery, async function (err, res2) {
+                    if (err) {
+                      console.log("error: ", err);
+                      result(err, null);
+                    }else {
+                        var temparray = [];
+                        let limit = 3;
+                        for (let i = 0; i < res2.length; i++) {
+                          var nearbyregionquery = "Select distinct mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,mk.member_type,mk.about,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid left join Zone as zo on zo.id = mk.zone where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and mk.ka_status = 2 and pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" GROUP BY pt.productid  ORDER BY distance";
+                          
+                          let kitchenlist = await query(nearbyregionquery);
+                          var kitchendetaillist=[];
+                          var kitchencount = kitchenlist.length
+                          res2[i].kitchencount = kitchenlist.length;
+                          
+                          if (kitchenlist.length  !==0 ) {
+                            for (let j = 0; j < kitchencount; j++) {
+                              var eta = foodpreparationtime + (onekm  *  kitchenlist[j].distance);
+                              kitchenlist[j].eta = Math.round(eta);
+                              //kitchenlist[j].serviceablestatus = false;
+                              if(kitchenlist[j].zone==userzoneid){
+                                kitchenlist[j].serviceablestatus = true;
+                              }else{
+                                kitchenlist[j].serviceablestatus = false;
+                              }
+                              
+                              //////Not use this radius limit
+                              /*
+                              if ( kitchenlist[j].distance <= radiuslimit) {
+                                kitchenlist[j].serviceablestatus = true;
+                              }
+                              */
+
+                              if ( kitchenlist[j].eta > 60) {
+                                var hours = kitchenlist[j].eta / 60;
+                                var rhours = Math.floor(hours);
+                                var minutes = (hours - rhours) * 60;
+                                var rminutes = Math.round(minutes);
+                                        
+                                kitchenlist[j].eta = "above 60 Mins"
+                              }else{
+                                kitchenlist[j].eta = Math.round(eta) + " mins";
+                              }
+
+                              if (kitchenlist[j].cuisines) {
+                                kitchenlist[j].cuisines = JSON.parse(kitchenlist[j].cuisines)
+                              }
+                              
+                              kitchendetaillist.push(kitchenlist[j]);
+                              if (kitchenlist[j].member_type) {
+                                if (kitchenlist[j].member_type === 1) {
+                                    kitchenlist[j].member_type_name = 'Gold';
+                                    kitchenlist[j].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713720284-badges_makeit-01.png';
+                                }else if (kitchenlist[j].member_type === 2){
+                                    kitchenlist[j].member_type_name = 'Silver';
+                                    kitchenlist[j].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713745646-badges_makeit-02.png';
+                                }else if (kitchenlist[j].member_type === 3){
+                                    kitchenlist[j].member_type_name = 'bronze';
+                                    kitchenlist[j].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
+                                }
+                              }
+                            }
+                            res2[i].kitchenlist=kitchendetaillist;
+                            temparray.push(res2[i]);
+                          }
+                        }
+
+                        const unservicablearray = res.filter(resarray => resarray.unservicable==0);
+
+                        let resobj = {
+                          success: true,
+                          status:true,
+                          result:temparray
+                        };
+                        result(null, resobj);
+                    }
+                  });
+              }
+          });
+        }else{
+          let sucobj = true;
+          let resobj = {
+            success: sucobj,
+            status:false,
+            message:"Sorry following user not found!"
+          };
+          result(null, resobj);
+        }
+      }else{
+        Eatuser.get_eat_region_makeit_list_by_eatuserid(req, result);
+      }
+    }
+  });
+};
+
+/////Zone Based Regin List Version 1.0.0
+Eatuser.get_eat_region_makeit_list_by_eatuserid_zone = async function get_eat_region_makeit_list_by_eatuserid_zone (req,result) {
+  var userzoneid = '';
+  await zoneModel.check_map_boundaries(req, async function(err,getzone) {
+    if(err){
+      console.log(err);
+    }else{
+      userzoneid = getzone.zone_id;
+      if(getzone.zone_id){
+        var foodpreparationtime = constant.foodpreparationtime;
+        var onekm = constant.onekm;
+        var radiuslimit=constant.radiuslimit;
+        const userinfo = await query("select * from User where userid= "+req.eatuserid+" ");
+        //  console.log(userinfo);
+        if (userinfo.length !== 0 ) {
+          var getregionquery = "select lat,lon,regionid from Region where regionid = '"+userinfo[0].regionid+"'  ";
+          sql.query(getregionquery,async function (err, res1) {
+            if (err) {
+              console.log("error: ", err);
+              result(err, null);
+            } else {
+              var breatfastcycle = constant.breatfastcycle;
+              var dinnercycle = constant.dinnercycle;
+              var lunchcycle = constant.lunchcycle;
+              var day = moment().format("YYYY-MM-DD HH:mm:ss");
+              var currenthour  = moment(day).format("HH");
+              var productquery = '';
+
+              if (currenthour < lunchcycle) {
+                productquery = productquery + " and pt.breakfast = 1";
+              }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+                productquery = productquery + " and pt.lunch = 1";
+              }else if( currenthour >= dinnercycle){
+                productquery = productquery + " and pt.dinner = 1";
+              }
+
+              if (res1.length !== 0) {
+                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid join MakeitUser mk on mk.regionid =re.regionid join Product pt on mk.userid = pt.makeit_userid  where pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" group by re.regionid order by distance ASC limit 8";
+              }else if(res1.length === 0){
+                var getregionlistquery = "select re.*,st.statename,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid join MakeitUser mk on mk.regionid =re.regionid join Product pt on mk.userid = pt.makeit_userid  where pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" group by re.regionid order by distance ASC ";
+              }
+                  
+              sql.query(getregionlistquery, async function (err, res2) {
+                if (err) {
+                  console.log("error: ", err);
+                  result(err, null);
+                } else {
+                  var temparray = [];
+                  let limit = 3;
+                  for (let i = 0; i < res2.length; i++) {
+                    var nearbyregionquery = "Select distinct mk.zone, mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,mk.member_type,mk.about,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid left join Zone as zo on zo.id = mk.zone where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and mk.ka_status = 2 and pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" GROUP BY pt.productid  ORDER BY distance";
+                    console.log("makeitlist" +nearbyregionquery);
+                    let kitchenlist = await query(nearbyregionquery);
+                    var kitchendetaillist=[];
+                    var kitchencount = kitchenlist.length
+                    res2[i].kitchencount = kitchenlist.length;
+                    if (kitchenlist.length  !==0 ) {
+                      for (let j = 0; j < kitchencount; j++) {
+                        var eta = foodpreparationtime + (onekm  *  kitchenlist[j].distance);
+                        kitchenlist[j].eta = Math.round(eta);
+                        //kitchenlist[j].serviceablestatus = false;
+                        if(kitchenlist[j].zone==userzoneid){
+                          kitchenlist[j].serviceablestatus = true;
+                        }else{
+                          kitchenlist[j].serviceablestatus = false;
+                        }
+
+                        //////Not use this radius limit
+                        /*
+                        if ( kitchenlist[j].distance <= radiuslimit) {
+                          kitchenlist[j].serviceablestatus = true;
+                        } */
+
+                        if ( kitchenlist[j].eta > 60) {
+                          var hours = kitchenlist[j].eta / 60;
+                          var rhours = Math.floor(hours);
+                          var minutes = (hours - rhours) * 60;
+                          var rminutes = Math.round(minutes);
+                                        
+                          kitchenlist[j].eta = "above 60 Mins"
+                        }else{
+                          kitchenlist[j].eta = Math.round(eta) + " mins";
+                        }
+
+                        if (kitchenlist[j].cuisines) {
+                          kitchenlist[j].cuisines = JSON.parse(kitchenlist[j].cuisines)
+                        }
+                        
+                        kitchendetaillist.push(kitchenlist[j]);
+                        if (kitchenlist[j].member_type) {
+                          if (kitchenlist[j].member_type === 1) {
+                            kitchenlist[j].member_type_name = 'Gold';
+                            kitchenlist[j].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713720284-badges_makeit-01.png';
+                          }else if (kitchenlist[j].member_type === 2){
+                            kitchenlist[j].member_type_name = 'Silver';
+                            kitchenlist[j].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713745646-badges_makeit-02.png';
+                          }else if (kitchenlist[j].member_type === 3){
+                            kitchenlist[j].member_type_name = 'bronze';
+                            kitchenlist[j].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
+                          }
+                        }
+                      }
+          
+                      res2[i].kitchenlist=kitchendetaillist;
+                      temparray.push(res2[i]);
+                    }
+                  }
+                  
+                  let resobj = {
+                    success: true,
+                    status:true,
+                    result:temparray
+                  };
+                  result(null, resobj);
+                }
+              });
+            }
+          });
+        }else{
+          let sucobj = true;
+          let resobj = {
+            success: sucobj,
+            status:false,
+            message:"Sorry following user not found!"
+          };
+          result(null, resobj);
+        }
+      }else{
+        Eatuser.get_eat_region_makeit_list_by_eatuserid(req, result);
       }
     }
   });
