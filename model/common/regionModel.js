@@ -163,4 +163,20 @@ Region.remove = function(id, result) {
 // client.quit();
 // }
 
+Region.search_a_search_region = function search_a_search_region(req, result) {
+  sql.query("Select * from Region where regionname LIKE '"+req.search+"'", function(err, res) {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {
+
+      let resobj = {
+        success: true,
+        status:true,
+        result: res
+      };
+      result(null, resobj);
+    }
+  });
+};
 module.exports = Region;

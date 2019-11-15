@@ -198,9 +198,6 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                   req.cus_lon = address_data[0].lon;
                   req.address_title = address_data[0].address_title;
                   req.locality_name = address_data[0].locality;
-
-                  console.log(address_data[0].flatno);
-                  console.log(address_data[0].landmark);
                   req.flatno = address_data[0].flatno;
                   req.landmark = address_data[0].landmark;
                   req.coupon = req.cid
@@ -2619,100 +2616,126 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
 };
 
 Order.order_missing_by_makeit = async function order_missing_by_makeit(req, result) {
-  const orderdetails = await query(
-    "select * from Orders where orderid ='" + req.orderid + "'"
-  );
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
   var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
-  if (orderdetails[0].orderstatus === 8) {
+  if (orderdetails[0].orderstatus == 8) {
     let response = {
       success: true,
       status: false,
       message: "Sorry! order already canceled."
     };
     result(null, response);
+  }else if (orderdetails[0].orderstatus ==1) {
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! order already accepted."
+    };
+    result(null, response);
+  }else if (orderdetails[0].orderstatus ==3) {
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! order already prepared."
+    };
+    result(null, response);
+  }else if (orderdetails[0].orderstatus ==5) {
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! order already prepared."
+    };
+    result(null, response);
   } else {
-    sql.query("UPDATE Orders SET orderstatus = 8,cancel_by = 2,cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
-        if (err) {
-          result(err, null);
-        } else {
-          var refundDetail = {
-            orderid: req.orderid,
-            original_amt: orderdetails[0].price,
-            active_status: 1,
-            userid: orderdetails[0].userid,
-            payment_id: orderdetails[0].transactionid
-          };
-          var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
-          for (let i = 0; i < orderitemdetails.length; i++) {
-            var productquantityadd =
-              "update Product set quantity = quantity+" +
-              orderitemdetails[i].quantity +
-              " where productid =" +
-              orderitemdetails[i].productid +
-              "";
-            sql.query(productquantityadd, function(err, res2) {
-              if (err) {
-                result(err, null);
-              }
-            });
-          }
 
-          if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+    let response = {
+      success: true,
+      status: true,
+      message: "Time has been extented. Please accept the order."
+    };
+    result(null, response);
+    // sql.query("UPDATE Orders SET orderstatus = 8,cancel_by = 2,cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
+    //     if (err) {
+    //       result(err, null);
+    //     } else {
+    //       var refundDetail = {
+    //         orderid: req.orderid,
+    //         original_amt: orderdetails[0].price,
+    //         active_status: 1,
+    //         userid: orderdetails[0].userid,
+    //         payment_id: orderdetails[0].transactionid
+    //       };
+    //       var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+    //       for (let i = 0; i < orderitemdetails.length; i++) {
+    //         var productquantityadd =
+    //           "update Product set quantity = quantity+" +
+    //           orderitemdetails[i].quantity +
+    //           " where productid =" +
+    //           orderitemdetails[i].productid +
+    //           "";
+    //         sql.query(productquantityadd, function(err, res2) {
+    //           if (err) {
+    //             result(err, null);
+    //           }
+    //         });
+    //       }
 
-            if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
+    //       if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+
+    //         if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
               
-              await Order.create_refund(refundDetail);
-              if (orderdetails[0].refund_amount !== 0) {
-                console.log("Online cod refund");
-               await Order.cod_create_refund_byonline(refundDetail);
+    //           await Order.create_refund(refundDetail);
+    //           if (orderdetails[0].refund_amount !== 0) {
+    //             console.log("Online cod refund");
+    //            await Order.cod_create_refund_byonline(refundDetail);
                
-              }
+    //           }
 
 
-          }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
-            var rc = new RefundCoupon(req);
-            RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
-              if (err) {
-                result(err, null);
-              } 
-            });
-          }
-          }
+    //       }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
+    //         var rc = new RefundCoupon(req);
+    //         RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+    //           if (err) {
+    //             result(err, null);
+    //           } 
+    //         });
+    //       }
+    //       }
 
           
-          if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
-            removecoupon = {};
-            removecoupon.userid = orderdetails[0].userid;
-            removecoupon.cid = orderdetails[0].coupon;
-            removecoupon.orderid = req.orderid;
-            // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
-            // await query(deletequery);
-            await Order.remove_used_coupon(removecoupon);
-          }
+    //       if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
+    //         removecoupon = {};
+    //         removecoupon.userid = orderdetails[0].userid;
+    //         removecoupon.cid = orderdetails[0].coupon;
+    //         removecoupon.orderid = req.orderid;
+    //         // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
+    //         // await query(deletequery);
+    //         await Order.remove_used_coupon(removecoupon);
+    //       }
 
-          await Notification.orderEatPushNotification(
-            req.orderid,
-            null,
-            PushConstant.Pageid_eat_order_cancel
-          );
+    //       await Notification.orderEatPushNotification(
+    //         req.orderid,
+    //         null,
+    //         PushConstant.Pageid_eat_order_cancel
+    //       );
           
-          if(orderdetails[0]&&orderdetails[0].moveit_user_id){
-            await Notification.orderMoveItPushNotification(
-              req.orderid,
-              PushConstant.pageidMoveit_Order_Cancel,
-              null
-            );
-          }
-          let response = {
-            success: true,
-            status: true,
-            message: "Order canceled successfully."
-          };
-          result(null, response);
-        }
-      }
-    );
+    //       if(orderdetails[0]&&orderdetails[0].moveit_user_id){
+    //         await Notification.orderMoveItPushNotification(
+    //           req.orderid,
+    //           PushConstant.pageidMoveit_Order_Cancel,
+    //           null
+    //         );
+    //       }
+    //       let response = {
+    //         success: true,
+    //         status: true,
+    //         message: "Order canceled successfully."
+    //       };
+    //       result(null, response);
+    //     }
+    //   }
+    // );
   }
 };
 

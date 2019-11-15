@@ -64,6 +64,8 @@ const calculate = {
 
   //Miles to km
   onemile : 1.6,
+
+  new_kitchen_days:15
 }
 
 

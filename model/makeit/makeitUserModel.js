@@ -1069,7 +1069,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
       console.log("error: ", err);
       result(err, null);
     } else {
-      console.log(res2);
+  
       if (res2[0].makeituserid === null) {
         let resobj = {
           success: true,
