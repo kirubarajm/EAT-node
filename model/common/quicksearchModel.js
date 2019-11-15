@@ -257,6 +257,7 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
 ) {
   var breatfastcycle = constant.breatfastcycle;
   var lunchcycle = constant.lunchcycle;
+  var dinnercyclestart = constant.dinnercycle;
   var dinnercycle = constant.dinnerend + 1; //22+1
   var day = moment().format("YYYY-MM-DD HH:mm:ss");
   var currenthour = moment(day).format("HH");
@@ -278,14 +279,14 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
     CEwherequery = " and prd.breakfast=1";
     CSselectquery = " 3 as action,"; ////// Cycle Start ////
     CSwherequery = " and prd.lunch=1";
-  } else if (currenthour == dinnercycle) {
+  } else if (currenthour == dinnercyclestart) {
     cycleend = 1;
     cyclestart = 1;
     CEselectquery = " 4 as action,"; ////// Cycle End ////
     CEwherequery = " and prd.lunch=1";
     CSselectquery = " 3 as action,"; ////// Cycle Start ////
     CSwherequery = " and prd.dinner=1";
-  } else if (currenthour == 23) {
+  } else if (currenthour == dinnercycle) {
     cycleend = 1;
     CEselectquery = " 4 as action,"; ////// Cycle End ////
     CEwherequery = " and prd.dinner=1";
