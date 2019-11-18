@@ -255,11 +255,10 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
   req,
   result
 ) {
-  var breatfastcycle   = constant.breatfastcycle;
-  var lunchcycle       = constant.lunchcycle;
+  var breatfastcycle = constant.breatfastcycle;
+  var lunchcycle = constant.lunchcycle;
   var dinnercyclestart = constant.dinnercycle;
-  var dinnercycle      = constant.dinnerend + 1; //22+1
-
+  var dinnercycle = constant.dinnerend + 1; //22+1
   var day = moment().format("YYYY-MM-DD HH:mm:ss");
   var currenthour = moment(day).format("HH");
   var CSselectquery = "";

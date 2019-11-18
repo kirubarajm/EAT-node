@@ -55,8 +55,23 @@ Zone.get_all_zone = function get_all_zone(req, result) {
 };
 
 ////Update Zone
-Zone.updateZone = function updateZone(req, result) {
-  var boundaries=JSON.stringify(req.boundaries);
+Zone.updateZone = function createZone(req, result) {
+  var boundaries;
+  if(req.isDelete){
+    boundaries=null;
+  }else{
+    if(req.boundaries)  boundaries=JSON.stringify(req.boundaries);
+    else {
+      let resobj = {
+        success: true,
+        status : false,
+        message: "Please send boundaries value"
+      };
+      result(null, resobj);
+      return;
+    }
+  }
+
   sql.query("UPDATE Zone set boundaries = ? WHERE id = ?", [boundaries, req.id], function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -65,7 +80,7 @@ Zone.updateZone = function updateZone(req, result) {
       let resobj = {
         success: true,
         status : true,
-        message: "Zone updated successfully"
+        message: req.isDelete?"Zone deleted successfully":"Zone updated successfully"
       };
       result(null, resobj);
     }

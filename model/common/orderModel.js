@@ -1030,7 +1030,7 @@ Order.getOrderById = function getOrderById(orderid, result) {
 
 Order.updateOrderStatus = async function updateOrderStatus(req, result) {
   var orderdetails = await query(
-    "select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" +
+    "select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon,mk.makeithub_id from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" +
       req.orderid +
       "'"
   );
@@ -1081,6 +1081,7 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
         req.orglon = orderdetails[0].makeit_lon;
         req.deslat = orderdetails[0].cus_lat;
         req.deslon = orderdetails[0].cus_lon;
+        req.hubid  = orderdetails[0].makeithub_id;
 
         Order.eat_order_distance_calculation(req, async function(err, res3) {
           if (err) {
