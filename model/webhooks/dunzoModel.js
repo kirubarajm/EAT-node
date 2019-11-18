@@ -7,8 +7,9 @@ var Dunzo = function(dunzo){
     this.rating = dunzo.rating;
 };
 
-Dunzo.testingapi = function testingapi(result) {
-    console.log("123");
+Dunzo.testingapi = function testingapi(req, result) {
+    console.log(req);
+    result(null, req);
 };
 
 module.exports= Dunzo;
