@@ -89,13 +89,17 @@ Zone.updateZone = function createZone(req, result) {
 
 ////Get zone based on lat and lng
 Zone.check_map_boundaries = function check_map_boundaries(req,result) {
-  //console.log("Request =========>",req);
+  console.log("Request =========>",req);
   sql.query("Select * from Zone where boundaries IS NOT NULL", function( err,res) {
     if (err) {
-      console.log(err);
-      result(err, null);
+      console.log("err =========>",err);
+      let resobj = {
+        success: true,
+        status : false,
+        message: 'No Zone Available.'
+      };
+      result(null, resobj);
     } else {
-      //console.log("Response =======>",res);
       var isZone=false;
       var zoneName='';
       if(res.length>0){
@@ -117,13 +121,15 @@ Zone.check_map_boundaries = function check_map_boundaries(req,result) {
           zone_id:res[i].id
         };
         result(null, resobj);
-        return resobj;
+        console.log("Response =======>",resobj);
+        //return resobj;
       }else{
         let resobj = {
           success: true,
-          status : true,
+          status : false,
           message: 'No Zone Available.'
         };
+        console.log("Response =======>",resobj);
         result(null, resobj);
       }
     }
