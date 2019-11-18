@@ -215,7 +215,7 @@ Eatuser.getAllVirtualUser = function getAllVirtualUser(req, result) {
 };
 
 Eatuser.virtual_eatusersearch = function virtual_eatusersearch(search, result) {
-  console.log(search);
+
   sql.query(
     "select * from User where phoneno LIKE  '%" +
       search +
@@ -689,7 +689,7 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
           
             res[0].distance = res[0].distance * constant.onemile;
             res[0].distance = res[0].distance.toFixed(2) ;
-            console.log(res[0].distance);
+        
             //15min Food Preparation time , 3min 1 km
           //  eta = 15 + 3 * res[i].distance;
           var eta = foodpreparationtime + (onekm * res[0].distance);
@@ -1422,7 +1422,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
         }
 
        
-        if ( res[i].eta > 60) {
+        if ( res[i].eta >  constant.eat_delivery_min) {
           var hours = res[i].eta / 60;
           var rhours = Math.floor(hours);
           var minutes = (hours - rhours) * 60;
@@ -1809,7 +1809,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
         res[i].etatime = Math.round(eta);
 
        
-        if ( res[i].eta > 60) {
+        if ( res[i].eta > constant.eat_delivery_min) {
           var hours = res[i].eta / 60;
           var rhours = Math.floor(hours);
           var minutes = (hours - rhours) * 60;
@@ -1891,11 +1891,12 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
  
   //console.log(res3.result[0].amountdetails);
   //var userdetails = await query("");
-
+  var date = moment().format("YYYY-MM-DD HH:mm:ss");
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
   var radiuslimit = constant.radiuslimit;
   var tunnelkitchenliststatus = true;
+  var new_kitchen_status = true;
   const userdetails = await query("select * from User where userid = "+req.eatuserid+" ");
  // const userdetails = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
 
@@ -1934,8 +1935,6 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
 
   }
 
-
-
   var cuisinequery = "";
 
   var cuisinelist = [];
@@ -1958,7 +1957,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
 
   if (req.eatuserid) {
     var kitchenquery =
-      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.unservicable,ly.localityname,mk.virtualkey,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+      "Select distinct mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.unservicable,ly.localityname,mk.virtualkey,fa.favid,IF(fa.favid,'1','0') as isfav,mk.created_at,( 3959 * acos( cos( radians('" +
       req.lat +
       "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
       req.lon +
@@ -2037,7 +2036,6 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
         res[i].distance = res[i].distance * constant.onemile;
         res[i].distance = res[i].distance.toFixed(2) ;
 
-        console.log(res[i].distance);
         var eta = foodpreparationtime + (onekm * res[i].distance);
         //15min Food Preparation time , 3min 1 km
        
@@ -2066,7 +2064,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
         res[i].etatime = Math.round(eta);
 
        
-        if ( res[i].eta > 60) {
+        if ( res[i].eta > constant.eat_delivery_min) {
           var hours = res[i].eta / 60;
           var rhours = Math.floor(hours);
           var minutes = (hours - rhours) * 60;
@@ -2097,7 +2095,14 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
             res[i].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
           }
         }
-
+        
+        var startDate = moment(res[i].created_at, "YYYY-MM-DD HH:mm:ss");
+        var endDate =moment().format("YYYY-MM-DD HH:mm:ss")
+        
+      
+        var result = 'Diff: ' + endDate.diff(startDate, 'days');
+        
+        console.log(result);
       }
 
      
@@ -2121,7 +2126,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
     //  kitchenlist.push(serviceablekitchenlist);
     //  kitchenlist.push(unserviceablekitchenlist);
 
-    console.log(tunnelkitchenliststatus);
+ 
         if (tunnelkitchenliststatus == false) {
           
             for (let i = 0; i < kitchenlist.length; i++) {
@@ -3559,7 +3564,7 @@ Eatuser.get_eat_region_kitchen_list_show_more = async function get_eat_region_ki
 
                res[i].distance = res[i].distance * constant.onemile;
                res[i].distance = res[i].distance.toFixed(2) ;
-               console.log(res[i].distance);
+      
                  var eta = foodpreparationtime + (onekm * res[i].distance);
                   //15min Food Preparation time , 3min 1 km 
                  res[i].eta =   Math.round(eta)  ;  
@@ -3682,7 +3687,7 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
                //  var eta = 15 + (3 * res[i].distance) ;
                res[i].distance = res[i].distance * constant.onemile;
                res[i].distance = res[i].distance.toFixed(2) ;
-               console.log(res[i].distance);
+            
                  var eta = foodpreparationtime + (onekm * res[i].distance);
                   //15min Food Preparation time , 3min 1 km 
                  res[i].eta =   Math.round(eta)  ;  
@@ -3693,8 +3698,7 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
                     var minutes = (hours - rhours) * 60;
                     var rminutes = Math.round(minutes);
                    
-                    console.log(rhours);
-                    console.log(rminutes);
+        
                   //  res[i].eta =   +rhours+" hour and " +rminutes +" minute."
                     res[i].eta = "above 60 Mins"
                   }else{
@@ -3882,7 +3886,7 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
           req.search +
           "%' and pt.active_status = 1 and mk.ka_status = 2 and pt.approved_status=2 and pt.quantity != 0 and pt.delete_status != 1  group by pt.makeit_userid";
 
-      console.log(query);
+
       sql.query(query, function(err, res) {
         if (err) {
          // console.log("error: ", err);

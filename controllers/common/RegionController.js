@@ -62,3 +62,11 @@ exports.pro_call = function(req, res) {
     res.json(faq);
   });
 };
+
+
+exports.search_a_search_region = function(req, res) {
+  Region.search_a_search_region(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.send(result);
+  });
+};
