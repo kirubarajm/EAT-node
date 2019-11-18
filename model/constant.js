@@ -75,6 +75,13 @@ const calculate = {
     //Hub circle radius 3 km.
     hub_radius:3,
 
+    ///Dunzo Authorization
+  order_assign_dunzo:true,
+  order_assign_dunzo_waiting_min:4,
+  dunzo_client_id : "c6c3acd5-e254-4404-ad06-c0c1d2aafd1e",
+  Authorization : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkIjp7InJvbGUiOjEwMCwidWlkIjoiZTRiNDU5ZTktODIxOS00M2Q2LWEyYWQtZDJlODhkOTBlYmI1In0sIm1lcmNoYW50X3R5cGUiOm51bGwsImNsaWVudF9pZCI6ImM2YzNhY2Q1LWUyNTQtNDQwNC1hZDA2LWMwYzFkMmFhZmQxZSIsImF1ZCI6Imh0dHBzOi8vaWRlbnRpdHl0b29sa2l0Lmdvb2dsZWFwaXMuY29tL2dvb2dsZS5pZGVudGl0eS5pZGVudGl0eXRvb2xraXQudjEuSWRlbnRpdHlUb29sa2l0IiwibmFtZSI6IkFQSVVTRVIiLCJ1dWlkIjoiZTRiNDU5ZTktODIxOS00M2Q2LWEyYWQtZDJlODhkOTBlYmI1Iiwicm9sZSI6MTAwLCJkdW56b19rZXkiOiIwNmRkZGU1Yy1jODlkLTRiZjgtYjBhMi0wY2Q3NWE2NTVkYWQiLCJleHAiOjE3MjkzMjc1MTAsInYiOjAsImlhdCI6MTU3MzgwNzUxMCwic2VjcmV0X2tleSI6Ik5vbmUifQ.JlCgWiNAcIC82EYqY2MtpT1eoLl-0_yQ88lEkI3j0UY",
+
+
 }
 
 
