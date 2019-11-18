@@ -1,5 +1,6 @@
 'user strict';
 var sql = require('../db.js');
+var dunzoconst = require('../../model/dunzo_constant');
 
 //Task object constructor
 var Dunzo = function(dunzo){
@@ -8,7 +9,7 @@ var Dunzo = function(dunzo){
 };
 
 Dunzo.testingapi = function testingapi(req, result) {
-    console.log(req);
+    console.log(dunzoconst);
     result(null, req);
 };
 
