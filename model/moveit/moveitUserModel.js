@@ -11,7 +11,6 @@ let config = require('../config.js');
 var constant = require('../constant.js');
 var MoveitTimelog = require("../../model/moveit/moveitTimeModel");
 var moment = require("moment");
-//var OrderModel = require('../../model/common/orderModel.js');
 
 //Task object constructor
 var Moveituser = function (moveituser) {
