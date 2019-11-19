@@ -2450,7 +2450,6 @@ Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
 
 Order.orderlistbyeatuser = async function(req,result) {
 
-console.log(req);
   var query = "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" +
             req.userid +
             "' and (ors.orderstatus = 6 or orderstatus = 7 or orderstatus = 8 ) group by ors.orderid order by ors.orderid desc";
@@ -6006,5 +6005,176 @@ Order.addorderhistory = async function addorderhistory(req,result){
   var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
   var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
 }
+
+
+//// dunzo_task_create////
+
+// Order.dunzo_task_create = async function dunzo_task_create(req,result) {
+
+//  //https://maps.googleapis.com/maps/api/directions/json?origin=12.9801,80.2184&destination=13.0072,80.2064&key=AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc
+//    var url ="https://apis-staging.dunzo.in/api/v1/tasks/9f62d62a-3a25-4b5e-8977-d695202a6002/status?test=true";
+    
+//   //  request({
+//   //      method: "post",
+//   //      url: url,
+//   //      body: {
+//   //       "request_id": "650",
+//   //       "pickup_details": {
+//   //         "lat": 13.041794,
+//   //         "lng": 80.229038,
+//   //         "address": {
+//   //           "apartment_address" : "200 Block 4",
+//   //           "street_address_1": "Suncity Apartments",
+//   //           "street_address_2": "Bellandur",
+//   //           "landmark": "Iblur lake",
+//   //           "city": "chennai",
+//   //           "state": "tamilnadu",
+//   //           "pincode": "600010",
+//   //           "country": "India"
+//   //         }
+//   //       },
+//   //       "drop_details": {
+//   //         "lat": 13.047553,
+//   //         "lng": 80.237139,
+//   //         "address": {
+//   //           "apartment_address" : "204 Block 4",
+//   //           "street_address_1": "Suncity Apartments",
+//   //           "street_address _2": "Bellandur",
+//   //           "landmark": "Iblur lake",
+//   //           "city": "chennai",
+//   //           "state": "tamilnadu",
+//   //           "pincode": "600010",
+//   //           "country": "India"
+//   //         }
+//   //       },
+//   //       "sender_details": {
+//   //         "name": "Puneet",
+//   //         "phone_number": "9999999999"
+//   //       },
+//   //       "receiver_details": {
+//   //         "name": "Vijendra",
+//   //         "phone_number": "9999999998"
+//   //       },
+//   //       "package_content": ["Documents | Books", "Clothes | Accessories", "Electronic Items"],
+//   //       "package_approx_value": 250,
+//   //       "special_instructions": "Fragile items. Handle with great care!!"
+//   //     },
+//   //      headers: {
+//   //       'Content-Type': 'application/json',
+//   //       'client-id': constant.dunzo_client_id,
+//   //       'Authorization' : constant.Authorization,
+//   //       'Accept-Language':'en_US'
+//   //     }
+//   //    },
+//   // var formData = querystring.stringify(form);
+//   // var contentLength = formData.length;
+  
+//   request({
+//            headers: {
+//         'Content-Type': 'application/json',
+//         'client-id': constant.dunzo_client_id,
+//         'Authorization' : constant.Authorization,
+//         'Accept-Language':'en_US'
+//       },
+//       url: 'https://apis-staging.dunzo.in/api/v1/tasks/9f62d62a-3a25-4b5e-8977-d695202a6002/status?test=true',
+//       //body: formData,
+//       method: 'GET'
+//     }, 
+//      function(error,data) {
+//        if (error) {
+//          console.log("error: ", error);
+//          result(null, error);  
+//        } else {
+       
+//         var formData = JSON.parse(data.body);
+//         let resobj = {
+//           success: true,
+//           status: true,
+//           result: formData
+//         };
+//         result(null, resobj);
+            
+//        }
+//      }
+//    );
+ 
+// };
+
+
+
+Order.dunzo_task_create = async function dunzo_task_create(req,result) {
+
+  
+  //var url ='https://apis-staging.dunzo.in/api/v1/tasks?test=true';
+
+  //set form data
+  var form = {
+     request_id: "1006",
+    // pickup_details: {
+    //   lat: 13.041794,
+    //   lng: 80.229038,
+    //   address: {
+    //     apartment_address : "200 Block 4",
+    //     street_address_1: "Suncity Apartments",
+    //     street_address_2: "Bellandur",
+    //     landmark: "Iblur lake",
+    //     city: "chennai",
+    //     state: "tamilnadu",
+    //     pincode: "600010",
+    //     country: "India"
+    //   }
+    // },
+    // drop_details: {
+    //   "lat": 13.047553,
+    //   "lng": 80.237139,
+    //   "address": {
+    //     "apartment_address" : "204 Block 4",
+    //     "street_address_1": "Suncity Apartments",
+    //     "street_address _2": "Bellandur",
+    //     "landmark": "Iblur lake",
+    //     "city": "chennai",
+    //     "state": "tamilnadu",
+    //     "pincode": "600010",
+    //     "country": "India"
+    //   }
+    // },
+    // sender_details: {
+    //   "name": "Puneet",
+    //   "phone_number": "9999999999"
+    // },
+    // receiver_details: {
+    //   "name": "Vijendra",
+    //   "phone_number": "9999999998"
+    // },
+    // package_content: ["Documents | Books", "Clothes | Accessories", "Electronic Items"],
+    // package_approx_value: 250,
+    // special_instructions: "Fragile items. Handle with great care!!"
+  }
+ // console.log(JSON.parse(form));
+  var headers= {
+           'Content-Type': 'application/json',
+           'client-id': constant.dunzo_client_id,
+           'Authorization' : constant.Authorization,
+           'Accept-Language':'en_US'
+         };
+
+//set request parameter
+request.post({headers: headers, url: 'https://apis-staging.dunzo.in/api/v1/tasks?test=true', body: JSON.parse(form), method: 'POST'}, function (e, r, body) {
+
+    var bodyValues = JSON.parse(body);
+    console.log('error:', e); // Print the error if one occurred
+    console.log('statusCode:', r && r.statusCode); // Print the response status code if a response was received
+    console.log('body:', body); // Print the HTML for the Google homepage.
+    console.log("====================================");
+    //res.send(bodyValues);
+    let resobj = {
+               success: true,
+               status: true,
+               result: bodyValues
+             };
+             result(null, resobj);
+});
+
+ };
 
 module.exports = Order;

@@ -919,3 +919,11 @@ exports.xfactororders_report= function(req, res) {
     res.json(result);
   });
 };
+
+/////dunzo order create
+exports.dunzo_order_create= function(req, res) {
+  Order.dunzo_task_create(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
