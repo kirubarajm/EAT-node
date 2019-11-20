@@ -5,7 +5,8 @@ module.exports = function(app) {
     var middleware = require('../model/middleware.js');
 
     app.route("/webhooks/dunzo").post(routesVersioning({"1.0.0": DunzoController.testapi}));
-    app.route("/webhooks/dunzptaskcreate").post(routesVersioning({"1.0.0":DunzoController.dunzo_order_create}));
+    app.route("/webhooks/dunzo/nextstate").post(routesVersioning({"1.0.0": DunzoController.dunzo_nex_state_update}));
+    app.route("/webhooks/dunzptaskcreate").post(routesVersioning({"1.0.0":DunzoController.dunzo_task_create}));
     app.route("/webhooks/dunzptaskcancel").post(routesVersioning({"1.0.0":DunzoController.dunzo_task_cancel}));
 
 

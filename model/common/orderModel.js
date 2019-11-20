@@ -23,6 +23,8 @@ var MoveitFireBase =require("../../push/Moveit_SendNotification");
 var Ordersqueue = require("../../model/common/ordersqueueModel");
 var MoveitUser = require("../../model/moveit/moveitUserModel");
 var OrderStatusHistory = require("../common/orderstatushistoryModel");
+var Dunzo = require("../../model/webhooks/dunzoModel.js");
+
 // var instance = new Razorpay({
 //   key_id: "rzp_test_3cduMl5T89iR9G",
 //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
@@ -2743,6 +2745,15 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
         if (err) {
           result(err, null);
         } else {
+
+          console.log("orderdetails.delivery_vendor"+orderdetails[0].delivery_vendor);
+          if (orderdetails[0].delivery_vendor==1) {
+            console.log("dunzo_task_cancel");
+
+
+            Dunzo.dunzo_task_cancel(orderdetails[0].dunzo_taskid);
+            
+          }
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
                     
           //  console.log(orderitemdetails);
@@ -2859,6 +2870,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
               null
             );
           }
+
           let response = {
             success: true,
             status: true,
@@ -3197,11 +3209,13 @@ Order.insert_order_status = function insert_order_status(req) {
 };
 
 Order.moveit_order_accept = async function moveit_order_accept(req, result) {
+console.log("req" + req);
+ // const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' and moveit_user_id= '" + req.moveituserid + "'");
 
-  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' and moveit_user_id= '" + req.moveituserid + "'");
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' ");
+
   const ordermoveitstatus = await query("select * from Moveit_status where orderid ='" + req.orderid + "' ");
 
-  // d.setHours(d.getHours() + 5);
   if (orderdetails.length !== 0) {
 
     if (orderdetails[0].moveit_status < 1 ) {
@@ -5131,6 +5145,10 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
          if (err) {
            result(err, null);
          } else {
+
+          if (orderdetails[0].delivery_vendor==1) {
+            Dunzo.dunzo_task_cancel(orderdetails[0].dunzo_taskid);            
+          }
             var refundDetail = {
              orderid: req.orderid,
              original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
@@ -5243,6 +5261,11 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
          if (err) {
            result(err, null);
          } else {
+
+          if (orderdetails[0].delivery_vendor==1) {
+            Dunzo.dunzo_task_cancel(orderdetails[0].dunzo_taskid);            
+          }
+          
             var refundDetail = {
              orderid: req.orderid,
              original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
