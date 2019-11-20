@@ -5,7 +5,7 @@ var request = require('request');
 const https = require('https');
 const util = require('util');
 const query = util.promisify(sql.query).bind(sql);
-var Order = require("../../model/common/orderModel.js");
+var Order = require("../../model/common/orderModel");
 var Dunzoresponce = require("../../model/common/dunzoresponceModel");
 
 
@@ -58,10 +58,8 @@ Dunzo.testingapi = function testingapi(req, result) {
 
 //controller for create_Dunzoresponce
 Dunzo.create_Dunzoresponce = function create_Dunzoresponce(dunzo_responce) {
-  // var new_Dunzoresponce = new Dunzoresponce(dunzo_responce);
-  var new_Dunzoresponce = {};
-  new_Dunzoresponce.dunzo_responce=[];
-   new_Dunzoresponce.dunzo_responce = dunzo_responce;
+
+   var new_Dunzoresponce = new Dunzoresponce(dunzo_responce);
    console.log(new_Dunzoresponce);
   // new_Dunzoresponce.task_id= dunzo_responce[0];
   Dunzoresponce.create_Dunzoresponce(new_Dunzoresponce, function(err, res) {
@@ -70,16 +68,26 @@ Dunzo.create_Dunzoresponce = function create_Dunzoresponce(dunzo_responce) {
   });
 };
 
+
+Dunzo.moveit_order_accept_taskid = function moveit_order_accept_taskid(order_data) {
+ console.log(order_data);
+ Order.moveit_order_accept(order_data, function(err, res) {
+   if (err) return err;
+   else return res;
+ });
+};
+
 //Dunzo next state update
 Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by_taskid(req, result) {
 
-  var dunzo_responce = [];
+  var dunzo_data = {};
   //dunzo_responce.task_id = req.task_id;
-  dunzo_responce.push(req);
-  dunzo_responce[0].task_id = req.task_id;
-  //console.log("dunzo_responce"+dunzo_responce[0]);
+ // dunzo_responce.push(req);
+ dunzo_data.task_id = req.task_id;
+ dunzo_data.dunzo_responce = JSON.stringify(req);
 
- // Dunzo.create_Dunzoresponce(dunzo_responce[0]);
+ Dunzo.create_Dunzoresponce(dunzo_data);
+
   switch(req.state){
       case dunzoconst.created:
           console.log("created");
@@ -96,8 +104,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           order_data.delivery_vendor=orderdetails[0].delivery_vendor;
           order_data.moveit_user_id=orderdetails[0].moveit_user_id;
 
-          Order.moveit_order_accept(order_data);
-        
+          Dunzo.moveit_order_accept_taskid(order_data);
 
           break;
       case dunzoconst.runner_cancelled:
@@ -105,18 +112,64 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           break;
       case dunzoconst.reached_for_pickup:
           console.log("reached_for_pickup");
+
+          const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
+          order_data = {};
+          order_data.orderid=orderdetails[0].orderid;
+          order_data.dunzo_taskid=orderdetails[0].dunzo_taskid;
+          order_data.delivery_vendor=orderdetails[0].delivery_vendor;
+          order_data.moveit_user_id=orderdetails[0].moveit_user_id;
+
+          Dunzo.moveit_order_accept_taskid(order_data);
+
           break; 
       case dunzoconst.pickup_complete:
           console.log("pickup_complete");
+
+          const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
+          order_data = {};
+          order_data.orderid=orderdetails[0].orderid;
+          order_data.dunzo_taskid=orderdetails[0].dunzo_taskid;
+          order_data.delivery_vendor=orderdetails[0].delivery_vendor;
+          order_data.moveit_user_id=orderdetails[0].moveit_user_id;
+
+          Dunzo.moveit_order_accept_taskid(order_data);
           break;
       case dunzoconst.started_for_delivery:
           console.log("started_for_delivery");
+
+          const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
+          order_data = {};
+          order_data.orderid=orderdetails[0].orderid;
+          order_data.dunzo_taskid=orderdetails[0].dunzo_taskid;
+          order_data.delivery_vendor=orderdetails[0].delivery_vendor;
+          order_data.moveit_user_id=orderdetails[0].moveit_user_id;
+
+          Dunzo.moveit_order_accept_taskid(order_data);
           break;
       case dunzoconst.reached_for_delivery:
           console.log("reached_for_delivery");
+
+          const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
+          order_data = {};
+          order_data.orderid=orderdetails[0].orderid;
+          order_data.dunzo_taskid=orderdetails[0].dunzo_taskid;
+          order_data.delivery_vendor=orderdetails[0].delivery_vendor;
+          order_data.moveit_user_id=orderdetails[0].moveit_user_id;
+
+          Dunzo.moveit_order_accept_taskid(order_data);
           break;
       case dunzoconst.delivered:
           console.log("delivered");
+
+          const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
+          order_data = {};
+          order_data.orderid=orderdetails[0].orderid;
+          order_data.dunzo_taskid=orderdetails[0].dunzo_taskid;
+          order_data.delivery_vendor=orderdetails[0].delivery_vendor;
+          order_data.moveit_user_id=orderdetails[0].moveit_user_id;
+
+          Dunzo.moveit_order_accept_taskid(order_data);
           break;
       case dunzoconst.cancelled:
           console.log("cancelled");
