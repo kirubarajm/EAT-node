@@ -75,8 +75,8 @@ const calculate = {
     //Hub circle radius 3 km.
     hub_radius:3,
 
+    //Zone Controles
+    zone_control:true,
 }
-
-
 
 module.exports = calculate;
