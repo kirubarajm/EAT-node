@@ -142,16 +142,23 @@ exports.get_eat_makeit_product_list_v_2 = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide vegtype" });
   } else {
-  Eatuser.get_eat_makeit_product_list_v_2(req.body, function(err, user) {
-    console.log("controller");
-    if (err) res.send(err);
-    console.log("res", user);
-    res.send(user);
-  });
-}
+    if(constant.zone_control == true){
+      Eatuser.get_eat_makeit_product_list_v_2_zone(req.body, function(err, user) {
+        console.log("controller");
+        if (err) res.send(err);
+        console.log("res", user);
+        res.send(user);
+      });
+    }else{
+      Eatuser.get_eat_makeit_product_list_v_2(req.body, function(err, user) {
+        console.log("controller");
+        if (err) res.send(err);
+        console.log("res", user);
+        res.send(user);
+      });
+    }
+  }
 };
-
-
 
 ///version 2.1
 exports.get_eat_makeit_product_list_v_2_1 = function(req, res) {
@@ -172,14 +179,24 @@ exports.get_eat_makeit_product_list_v_2_1 = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide vegtype" });
   } else {
-  Eatuser.get_eat_makeit_product_list_v_2_1(req.body, function(err, user) {
-    console.log("controller");
-    if (err) res.send(err);
-    console.log("res", user);
-    res.send(user);
-  });
-}
+    if(constant.zone_control == true){
+      Eatuser.get_eat_makeit_product_list_v_2_1_zone(req.body, function(err, user) {
+        console.log("Zone controller");
+        if (err) res.send(err);
+        console.log("res", user);
+        res.send(user);
+      });
+    }else{
+      Eatuser.get_eat_makeit_product_list_v_2_1(req.body, function(err, user) {
+        console.log("controller");
+        if (err) res.send(err);
+        console.log("res", user);
+        res.send(user);
+      });
+    }
+  }
 };
+
 exports.eat_dish_sort_filter = function(req, res) {
   if (!req.body.lat) {
     res
@@ -578,12 +595,21 @@ exports.eat_region_kitchen_showmore_v2 = function(req, res) {
       .send({ error: true, status: false, message: "Please provide eatuserid" });
   }
    else {
-    Eatuser.get_eat_region_kitchen_list_show_more_v2(req.body, function(err, region) {
-      console.log("controller");
-      if (err) res.send(err);
-      console.log("res", region);
-      res.send(region);
-    });
+    if(constant.zone_control == true){
+      Eatuser.get_eat_region_kitchen_list_show_more_v2_zone(req.body, function(err, region) {
+        console.log("controller 2.0.0");
+        if (err) res.send(err);
+        console.log("res", region);
+        res.send(region);
+      });
+    }else{
+      Eatuser.get_eat_region_kitchen_list_show_more_v2(req.body, function(err, region) {
+        console.log("controller 2.0.0");
+        if (err) res.send(err);
+        console.log("res", region);
+        res.send(region);
+      });
+    }
   }
 };
 

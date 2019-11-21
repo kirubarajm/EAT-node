@@ -960,7 +960,13 @@ Makeituser.update_makeit_followup_status = function(
 
 //cart details for ear user
 Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid(req,orderitems,isMobile,result) {
-
+  if(constant.zone_control){
+    var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+    var userzoneid = getzone.zone_id;
+    var zoneName=getzone.zone_name;
+    var distance=0;
+  }
+  //console.log("122",userzoneid+","+zoneName);
   var tempmessage = "";
   var makeit_error_message = "";
   var coupon__error_message = "";
@@ -991,10 +997,6 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
   var day = moment().format("YYYY-MM-DD HH:mm:ss");;
   var currenthour  = moment(day).format("HH");
-  var productquery = "";
-
-
-
   var productquery="breakfast";
   //  if (currenthour <= 12) {
   //    productquery = " breakfast";
@@ -1073,7 +1075,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
  // console.log(productdetails);
   // This query is to get the makeit details and cuisine details
   var query1 =
-    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.unservicable,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
+    "Select mk.userid as makeituserid,mk.zone as makeitzone,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.unservicable,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
     req.userid +
     " left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +
     req.makeit_user_id;
@@ -1111,18 +1113,18 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         //  makeitavailability[0].distance = makeitavailability[0].distance * constant.onemile;
           //makeitavailability[0].distance = makeitavailability[0].distance.toFixed(2) ;
           console.log(makeitavailability[0].distance);
-            
+         distance=makeitavailability[0].distance;   
         var eta = constant.foodpreparationtime + (constant.onekm * makeitavailability[0].distance);
         
         if (makeitavailability[0].unservicable == 1) {
           isAvaliablekitchen = false;
         }else{
-          if (makeitavailability[0].distance > constant.radiuslimit) {
-          
+          if(userzoneid && res2[0].makeitzone && res2[0].makeitzone == userzoneid){
+            isAvaliablekitchen = true;
+          }else if (makeitavailability[0].distance > constant.radiuslimit) {
             isAvaliablekitchen = false;
             makeit_error_message = makeitavailability[0].brandname;
-            
-        }
+          }
         }
         
           //15min Food Preparation time , 3min 1 km
@@ -1323,7 +1325,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
         let resobj = {
           success: true,
-          status: isAvaliableItem
+          status: isAvaliableItem,
+          zoneId:userzoneid,
+          zoneName:zoneName,
+          distance:distance,
         };
 
   
@@ -1574,7 +1579,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     };
     result(null, resobj);
 
-  }
+  } 
 };
 
 Makeituser.admin_check_cartdetails = async function admin_check_cartdetails(req,orderitems,result) {
