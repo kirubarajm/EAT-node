@@ -295,7 +295,7 @@ async function get_moveit_distance(move_it_id,geoLocation) {
   return move_it_id;
 }
 
-exports.getInsideZoneMoveitList = async function getInsideZoneMoveitList(geoLocation,make_it_list,result){
+exports.getInsideZoneMoveitList = async function getInsideZoneMoveitList(makeitLocation,make_it_list,result){
   initializeAppName();
    var make_it_id=[];
    await Promise.all(make_it_list.map(async function(item){
@@ -306,8 +306,9 @@ exports.getInsideZoneMoveitList = async function getInsideZoneMoveitList(geoLoca
         item.distance=0;
       }else{
         var isZone =zone.pointInPolygon(item.boundaries, { lat: location[0], lng: location[1] })
+        console.log("moveit--inside-->",isZone);
         if(isZone){
-          var dist = geodist(geoLocation, location,{exact: true, unit: 'km'});
+          var dist = geodist(makeitLocation, location,{exact: true, unit: 'km'});
           item.distance= dist.toFixed(2);
           item.location= location;
           item.islocation=true;
