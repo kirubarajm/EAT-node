@@ -64,8 +64,9 @@ Zone.updateZone = function createZone(req, result) {
   if (req.isDelete) {
     boundaries = null;
   } else {
-    if (req.boundaries) boundaries = JSON.stringify(req.boundaries);
-    else {
+    if (req.boundaries) {
+      boundaries = JSON.stringify(req.boundaries);
+    } else {
       let resobj = {
         success: true,
         status: false,
@@ -81,9 +82,9 @@ Zone.updateZone = function createZone(req, result) {
     [boundaries, req.id],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(err, null);
       } else {
+        Zone.updateMakeitZoneId(req.id);
         let resobj = {
           success: true,
           status: true,
@@ -210,6 +211,36 @@ Zone.check_boundaries = async function check_boundaries(req) {
     return resobj;
   }
 
+};
+
+Zone.updateMakeitZoneId = function updateMakeitZoneId(zoneid) {
+  console.log("zoneid =========>", zoneid);
+  sql.query("Select * from Zone where id=" + zoneid, async function(err, res) {
+    if (err) {
+      console.log("err =========>", err);
+    } else {
+      console.log("boundaries =========>", res[0].boundaries);
+      if (res[0].boundaries) {
+        var makeit_list = await query("select * from MakeitUser");
+        var makeit_ids='';
+        console.log("makeit_list length =========>",makeit_list.length);
+        if (makeit_list.length > 0) {
+          for (var i = 0; i < makeit_list.length; i++) {
+            var polygon = JSON.parse(res[0].boundaries);
+            var makeit = makeit_list[i];
+            if (Zone.pointInPolygon(polygon, { lat: makeit.lat, lng: makeit.lon })) {
+              makeit_ids=makeit_ids+','+makeit.userid;
+              await query("update MakeitUser set zone = "+zoneid+" where userid="+makeit.userid);
+            }
+            
+          }
+        }
+        console.log("zone changed makeit id=========>", makeit_ids);
+      }else{
+        await query("update MakeitUser set zone = 0 where zone ="+zoneid);
+      }
+    }
+  });
 };
 
 module.exports = Zone;
