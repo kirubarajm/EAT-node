@@ -5,8 +5,10 @@ var request = require('request');
 const https = require('https');
 const util = require('util');
 const query = util.promisify(sql.query).bind(sql);
-var Order = require("../../model/common/orderModel");
 var Dunzoresponce = require("../../model/common/dunzoresponceModel");
+var Dunzomoveitdetails = require("../../model/common/dunzomoveitdetailsModel");
+var moment = require("moment");
+
 
 
 
@@ -58,9 +60,7 @@ Dunzo.testingapi = function testingapi(req, result) {
 
 //controller for create_Dunzoresponce
 Dunzo.create_Dunzoresponce = function create_Dunzoresponce(dunzo_responce) {
-
    var new_Dunzoresponce = new Dunzoresponce(dunzo_responce);
-   console.log(new_Dunzoresponce);
   // new_Dunzoresponce.task_id= dunzo_responce[0];
   Dunzoresponce.create_Dunzoresponce(new_Dunzoresponce, function(err, res) {
     if (err) return err;
@@ -69,9 +69,13 @@ Dunzo.create_Dunzoresponce = function create_Dunzoresponce(dunzo_responce) {
 };
 
 
-Dunzo.moveit_order_accept_taskid = function moveit_order_accept_taskid(order_data) {
- console.log(order_data);
- Order.moveit_order_accept(order_data, function(err, res) {
+
+
+// controller for moveit details
+Dunzo.create_Dunzomoveitdetails = function create_Dunzomoveitdetails(Dunzomoveitdetails_data) {
+  var new_Dunzomoveitdetails = new Dunzomoveitdetails(Dunzomoveitdetails_data);
+ // new_Dunzoresponce.task_id= dunzo_responce[0];
+ Dunzomoveitdetails.create_Dunzomoveitdetails(new_Dunzomoveitdetails, function(err, res) {
    if (err) return err;
    else return res;
  });
@@ -85,8 +89,9 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
  // dunzo_responce.push(req);
  dunzo_data.task_id = req.task_id;
  dunzo_data.dunzo_responce = JSON.stringify(req);
-
+//store dunzo all request
  Dunzo.create_Dunzoresponce(dunzo_data);
+ const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
 
   switch(req.state){
       case dunzoconst.created:
@@ -97,15 +102,61 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           break;
       case dunzoconst.runner_accepted:
           console.log("runner_accepted");
-          const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
-          order_data = {};
-          order_data.orderid=orderdetails[0].orderid;
-          order_data.dunzo_taskid=orderdetails[0].dunzo_taskid;
-          order_data.delivery_vendor=orderdetails[0].delivery_vendor;
-          order_data.moveit_user_id=orderdetails[0].moveit_user_id;
+          //store dunzo moveit details
+          var Dunzomoveitdetails_data =  {};
+          Dunzomoveitdetails_data.task_id = req.task_id;
+          Dunzomoveitdetails_data.runner_state = req.state;
+          Dunzomoveitdetails_data.runner_name = req.runner.name;
+          Dunzomoveitdetails_data.runner_phone_number = req.runner.phone_number;
+          Dunzomoveitdetails_data.runner_lat = req.runner.location.lat;
+          Dunzomoveitdetails_data.runner_lng = req.runner.location.lat;
+          Dunzomoveitdetails_data.runner_eta_pickup_min = req.eta.pickup;
+          Dunzomoveitdetails_data.runner_eta_dropoff_min = req.eta.dropoff;
 
-          Dunzo.moveit_order_accept_taskid(order_data);
+          Dunzo.create_Dunzomoveitdetails(Dunzomoveitdetails_data);
 
+              if (orderdetails.length !== 0) {
+            
+                if (orderdetails[0].moveit_status < 1 ) {
+                
+                  var orderaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
+               
+                  updatequery ="UPDATE Orders SET moveit_status = 1 ,moveit_accept_time= '" + orderaccepttime +"' WHERE orderid ='" +orderdetails[0].orderid +"'";
+                  const updatestatus = await query(updatequery);
+                  console.log(orderdetails[0].orderid);
+
+                  let response = {
+                    success: true,
+                    status: true,
+                    message: "Order accepted successfully."
+                  };
+                 
+                  result(null, response);
+               
+                } else if (orderdetails[0].moveit_status == 1) {
+                  let response = {
+                    success: true,
+                    status: false,
+                    message: "Sorry your order already accepted"
+                  };
+                  result(null, response);
+                } else {
+                  let response = {
+                    success: true,
+                    status: false,
+                    message: "Following order is not assigned to you!"
+                  };
+                  result(null, response);
+                }
+              } else {
+                let response = {
+                  success: true,
+                  status: false,
+                  message: "Order is not available!"
+                };
+                result(null, response);
+              }
+          //  };
           break;
       case dunzoconst.runner_cancelled:
           console.log("runner_cancelled");
@@ -113,71 +164,162 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
       case dunzoconst.reached_for_pickup:
           console.log("reached_for_pickup");
 
-          const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
-          order_data = {};
-          order_data.orderid=orderdetails[0].orderid;
-          order_data.dunzo_taskid=orderdetails[0].dunzo_taskid;
-          order_data.delivery_vendor=orderdetails[0].delivery_vendor;
-          order_data.moveit_user_id=orderdetails[0].moveit_user_id;
-
-          Dunzo.moveit_order_accept_taskid(order_data);
+         // Order.moveit_kitchen_reached_status = function(req, result) {
+            var kitchenreachtime = moment().format("YYYY-MM-DD HH:mm:ss");
+            updatequery ="UPDATE Orders  SET moveit_reached_time = '" +kitchenreachtime +"'  WHERE orderid ='" +orderdetails[0].orderid +"'";
+            const updatekitchenreachtime = await query(updatequery);
+                  let resobj = {
+                    success: true,
+                    status:true,
+                    message: "kitchen reached successfully"
+                  };
+                 
+             result(null, resobj);
 
           break; 
       case dunzoconst.pickup_complete:
           console.log("pickup_complete");
+          
+         // Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveituser( req,kitchenqualitylist,result) {
+            var order_pickup_time = moment().format("YYYY-MM-DD HH:mm:ss");
+            var twentyMinutesLater = moment().add(0, "seconds").add(req.eta.dropoff, "minutes").format("YYYY-MM-DD HH:mm:ss");
+          
+            if (orderdetails.length !==0) {     
+              if (orderdetails[0].orderstatus == 7) {
+                let resobj = {
+                  success: true,
+                  status:false,
+                  message: "Sorry! This order already canceled."
+                };
+                result(null, resobj);
+               // return;
+              }else if (orderdetails[0].orderstatus < 3 ) {
+                let resobj = {
+                  success: true,
+                  status:false,
+                  message: "Please wait food not yet prepared"
+                };
+                result(null, resobj);
+              //  return;
+              }else{
+           
+                updatequery ="UPDATE Orders  SET orderstatus = 5 ,moveit_pickup_time = '" +order_pickup_time+"',moveit_expected_delivered_time = '" +twentyMinutesLater +"'  WHERE orderid ='" +orderdetails[0].orderid +"'";
+                const updatestatuspickup = await query(updatequery);
+                      let resobj = {
+                        success: true,
+                        status: true,
+                        message: "Order Pickedup successfully"
+                      };
+                     
+                 result(null, resobj);
+        
+              }
+            }else{
+              let response = {
+                success: true,
+                status: false,
+                message: "Order not found.",
+             
+              };
+              result(null, response);
+            }
+         // };
 
-          const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
-          order_data = {};
-          order_data.orderid=orderdetails[0].orderid;
-          order_data.dunzo_taskid=orderdetails[0].dunzo_taskid;
-          order_data.delivery_vendor=orderdetails[0].delivery_vendor;
-          order_data.moveit_user_id=orderdetails[0].moveit_user_id;
-
-          Dunzo.moveit_order_accept_taskid(order_data);
+        
           break;
       case dunzoconst.started_for_delivery:
           console.log("started_for_delivery");
 
-          const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
-          order_data = {};
-          order_data.orderid=orderdetails[0].orderid;
-          order_data.dunzo_taskid=orderdetails[0].dunzo_taskid;
-          order_data.delivery_vendor=orderdetails[0].delivery_vendor;
-          order_data.moveit_user_id=orderdetails[0].moveit_user_id;
-
-          Dunzo.moveit_order_accept_taskid(order_data);
+         
           break;
       case dunzoconst.reached_for_delivery:
           console.log("reached_for_delivery");
 
-          const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
-          order_data = {};
-          order_data.orderid=orderdetails[0].orderid;
-          order_data.dunzo_taskid=orderdetails[0].dunzo_taskid;
-          order_data.delivery_vendor=orderdetails[0].delivery_vendor;
-          order_data.moveit_user_id=orderdetails[0].moveit_user_id;
+          var customerlocationreachtime = moment().format("YYYY-MM-DD HH:mm:ss");
+          
+          updatequery ="UPDATE Orders SET moveit_customerlocation_reached_time  = '" +customerlocationreachtime +"'  WHERE orderid ='" +orderdetails[0].orderid +"'";
+          const updatecustomerlocationreachtime = await query(updatequery);
+                let data = {
+                  success: true,
+                  status: true,
+                  message: "Customer location reached successfully"
+                };
+               
+           result(null, data);
 
-          Dunzo.moveit_order_accept_taskid(order_data);
+          
           break;
       case dunzoconst.delivered:
           console.log("delivered");
 
-          const orderdetails = await query("select * from Orders where dunzo_taskid ='" +req.task_id+ "'");
-          order_data = {};
-          order_data.orderid=orderdetails[0].orderid;
-          order_data.dunzo_taskid=orderdetails[0].dunzo_taskid;
-          order_data.delivery_vendor=orderdetails[0].delivery_vendor;
-          order_data.moveit_user_id=orderdetails[0].moveit_user_id;
+       //   Order.order_delivery_status_by_moveituser = async function(req, result) {
+            var order_delivery_time = moment().format("YYYY-MM-DD HH:mm:ss");
+            if (orderdetails.length !== 0) {
+          
+              if (orderdetails[0].orderstatus == 6) {
+                let resobj = {
+                  success: true,
+                  message: "Sorry!  order was already deliverd.",
+                  status:false
+                };
+                result(null, resobj);
+              }else if (orderdetails[0].orderstatus == 7) {
+                let resobj = {
+                  success: true,
+                  message: "Sorry!  order already canceled.",
+                  status:false
+                };
+                result(null, resobj);
+              }else{
+    
+              if (orderdetails[0].payment_status == 1) {
+                updatequery ="UPDATE Orders SET orderstatus = 6,moveit_actual_delivered_time = '" +order_delivery_time+"' WHERE orderid ='" +orderdetails[0].orderid +"'";
+                const updatestatusdeliverd = await query(updatequery);
+                      let deliverd = {
+                        success: true,
+                        status: true,
+                        message: "Order Pickedup successfully",
+                        orderdeliverystatus: true
 
-          Dunzo.moveit_order_accept_taskid(order_data);
+                      };
+                     
+                 result(null, deliverd);
+
+              } else {
+                let resobj = {
+                  success: true,
+                  status:false,
+                  message: "Payment not yet paid!",
+                  orderdeliverystatus: false
+                };
+                result(null, resobj);
+              }
+            }
+            } else {
+              let resobj = {
+                success: true,
+                message: "Orders not found!.",
+                status:false
+              };
+              result(null, resobj);
+            }
+         // };
+        
           break;
       case dunzoconst.cancelled:
           console.log("cancelled");
+          var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderdetails[0].orderid+"");
+          let orderqueue = {
+            success: true,
+            message: "Order again pushed into queue.",
+            status:true
+          };
+          result(null, orderqueue);
           break;         
       default:
           console.log("No State");
   }
-  result(null, req);
+  //result(null, req);
 };
 
 
