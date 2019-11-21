@@ -85,6 +85,7 @@ var Order = function(order) {
   this.app_type = order.app_type || 3;
   this.cancel_status = order.cancel_status ||0;
   this.delivery_vendor=order.delivery_vendor ||0;
+  this.cus_pincode=order.cus_pincode;
 };
 
 
@@ -107,6 +108,8 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
             req.locality = address_data[0].locality;
             req.cus_lat = address_data[0].lat;
             req.cus_lon = address_data[0].lon;
+            req.cus_pincode = address_data[0].pincode;
+
 
             // req.gst = amountdata.gstcharge;
             // req.price = amountdata.grandtotal;
@@ -235,6 +238,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                     req.locality_name = address_data[0].locality;
                     req.flatno = address_data[0].flatno;
                     req.landmark = address_data[0].landmark;
+                    req.cus_pincode = address_data[0].pincode;
                     req.coupon = req.cid
                       if (req.payment_type == 0 || req.payment_type == 3) {
                         Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){

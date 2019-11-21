@@ -329,7 +329,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
 
    // var orderquery =  "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  where ors.orderid ="+orderid +" ";
    // order_details = await query(orderquery);
-   var order_details = await query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1,'landmark',ms.landmark,'flatno',ms.flatno,'pincode',ms.pincode) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  where ors.orderid ="+orderid +" ");
+   var order_details = await query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1,'landmark',ms.landmark,'flatno',ms.flatno,'pincode',ms.pincode,'locality',ms.locality) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  where ors.orderid ="+orderid +" ");
 
    if (order_details[0].userdetail) {
     order_details[0].userdetail = JSON.parse(order_details[0].userdetail);
@@ -357,11 +357,11 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
         address: {
           apartment_address : order_details[0].makeitdetail.flatno,
           street_address_1: order_details[0].makeitdetail.address,
-          street_address_2: "Suncity Apartments",
+          street_address_2: order_details[0].makeitdetail.address,
           landmark: order_details[0].makeitdetail.landmark,
-          city: "chennai",
+          city: order_details[0].makeitdetail.locality,
           state: "tamilnadu",
-          pincode: "600010",
+          pincode: order_details[0].makeitdetail.pincode,
           country: "India"
         }
       },
@@ -371,11 +371,11 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
         address: {
           apartment_address : order_details[0].flatno,
           street_address_1: order_details[0].cus_address,
-          street_address_2: "Suncity Apartments",
+          street_address_2: order_details[0].cus_address,
           landmark: order_details[0].landmark,
-          city: "chennai",
+          city: order_details[0].locality,
           state: "tamilnadu",
-          pincode: "600010",
+          pincode: order_details[0].cus_pincode,
           country: "India"
         }
       },
@@ -413,7 +413,13 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
       var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderid+"");
     }else if (body.code="duplicate_request") {
       //var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
-    } 
+    }else if (body.code="different_city_error") {
+      var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
+    }else if (body.code="rain_error") {
+      var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
+    }else if (body.code="service_unavailable") {
+      var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
+    }     
     
 
       let resobj = {
