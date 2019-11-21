@@ -24,6 +24,8 @@ var Ordersqueue = require("../../model/common/ordersqueueModel");
 var MoveitUser = require("../../model/moveit/moveitUserModel");
 var OrderStatusHistory = require("../common/orderstatushistoryModel");
 var Dunzo = require("../../model/webhooks/dunzoModel.js");
+var requestpromise = require('request-promise');
+
 
 // var instance = new Razorpay({
 //   key_id: "rzp_test_3cduMl5T89iR9G",
@@ -82,6 +84,7 @@ var Order = function(order) {
   this.flatno = order.flatno;
   this.app_type = order.app_type || 3;
   this.cancel_status = order.cancel_status ||0;
+  this.delivery_vendor=order.delivery_vendor ||0;
 };
 
 
@@ -1032,7 +1035,7 @@ Order.getOrderById = function getOrderById(orderid, result) {
 
 Order.updateOrderStatus = async function updateOrderStatus(req, result) {
   var orderdetails = await query(
-    "select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" +
+    "select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon,mk.makeithub_id from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" +
       req.orderid +
       "'"
   );
@@ -1083,6 +1086,8 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
         req.orglon = orderdetails[0].makeit_lon;
         req.deslat = orderdetails[0].cus_lat;
         req.deslon = orderdetails[0].cus_lon;
+        req.hubid  = orderdetails[0].makeithub_id;
+
 
         Order.eat_order_distance_calculation(req, async function(err, res3) {
           if (err) {
@@ -1689,7 +1694,7 @@ Order.getUnassignorders =async function getUnassignorders(req,result) {
 //req.id == 3 delivery orders
   if (req.id == 1 ) {
     
-    var res = await query("Select mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0");
+    var res = await query("Select mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_status = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0");
     if (res.err) {
       result(err, null);
     } 
@@ -2205,7 +2210,7 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
 
 Order.orderviewbyadmin = function(req, result) {
   sql.query(
-    "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'virtualkey',ms.virtualkey) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" +
+    "SELECT dm.*,ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'virtualkey',ms.virtualkey) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid left join Dunzo_moveit_details dm on dm.task_id=ors.dunzo_taskid where ors.orderid ='" +
       req.id +
       "'",
     function(err, res) {
@@ -2244,7 +2249,7 @@ Order.orderviewbyeatuser = function(req, result) {
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
   var radiuslimit=constant.radiuslimit;
-  var orderquery =  "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  where ors.orderid =" +
+  var orderquery =  "SELECT dm.*,ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid left join Dunzo_moveit_details dm on dm.task_id=ors.dunzo_taskid where ors.orderid =" +
   req.orderid +
   " "
   sql.query(orderquery,async function(err, res1) {
@@ -2300,8 +2305,6 @@ Order.orderviewbyeatuser = function(req, result) {
 
           }
 
-
-           
                 res1[0].servicecharge = constant.servicecharge;
                 res1[0].cancellationmessage = constant.cancellationmessage;;
               
@@ -2327,6 +2330,12 @@ Order.orderviewbyeatuser = function(req, result) {
                   res1[0].items = items.item;
                 }
 
+                // if (res1[0].delivery_vendor==1) {
+                  
+                //   res1[0].moveitdetail.name=res1[0].runner_name;
+                //   res1[0].moveitdetail.phoneno=res1[0].runner_phone_number;
+
+                // }
                   var itemlist = res1[0].items
                   var productprice = 0;
                 for (let i = 0; i < itemlist.length; i++) {
@@ -2334,10 +2343,6 @@ Order.orderviewbyeatuser = function(req, result) {
                   productprice = productprice + ( itemlist[i].quantity * itemlist[i].price);
                  
                 }
-
-                
-              
-              
 
                 res1[0].trackingstatus = Order.orderTrackingDetail(
                   res1[0].orderstatus,
@@ -2571,20 +2576,29 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
           result(null, resobj);
         } else {
 
-          
-          if (res[0].payment_type === "0" || res[0].payment_type === 0) liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,ors.payment_type,ors.payment_status,ors.moveit_user_id,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
-          else if (res[0].payment_type === "1" || res[0].payment_status === 1) liveorderquery ="Select ors.orderid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,ors.payment_type,ors.payment_status,ors.moveit_user_id,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
-          else {
-            let resobj = {
-              success: true,
-              status: false,
-              message: "Active order not found!",
-              orderdetails: orderdetails
-            };
-            result(null, resobj);
-            return;
-          }
+          if (res[0].delivery_vendor ==0) {
+            
+            if (res[0].payment_type === "0" || res[0].payment_type === 0) liveorderquery ="Select distinct ors.orderid,ors.delivery_vendor,ors.dunzo_taskid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,ors.payment_type,ors.payment_status,ors.moveit_user_id,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
+            else if (res[0].payment_type === "1" || res[0].payment_status === 1) liveorderquery ="Select ors.orderid,ors.delivery_vendor,ors.dunzo_taskid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,ors.payment_type,ors.payment_status,ors.moveit_user_id,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
+            else {
+              let resobj = {
+                success: true,
+                status: false,
+                message: "Active order not found!",
+                orderdetails: orderdetails
+              };
+              result(null, resobj);
+              return;
+            }
 
+          }else{
+            
+            liveorderquery ="Select dm.*,ors.delivery_vendor,ors.dunzo_taskid,ors.orderid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,ors.payment_type,ors.payment_status,ors.moveit_user_id,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid join Dunzo_moveit_details as dm on dm.task_id=ors.dunzo_taskid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
+
+          }
+          
+        
+          console.log(liveorderquery);
           sql.query(liveorderquery,async function(err, res1) {
             if (err) {
               result(err, null);
@@ -2592,28 +2606,44 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
 
             
               if ( res1[0].orderstatus < 6 ) {
-            
-                if ( res1[0].orderstatus < 5 ){
-                   req.orderid  =res1[0].orderid;
-                   await Order.eat_get_delivery_time(req);
-                }
+                //check our delivery or dunzo delivery
+                if (res1[0].deliver_vendor==0) {
+                  //store order delivery time
+                  if ( res1[0].orderstatus < 5 ){
+                    req.orderid  =res1[0].orderid;
+                    await Order.eat_get_delivery_time(req);
+                  }
+                 
+                //get delivery time
+                 var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+res1[0].orderid +" order by od_id desc limit 1");
+                 
+                 if (orderdeliverytime.length !== 0) {
+                   res1[0].deliverytime = orderdeliverytime[0].deliverytime;
+                   res1[0].eta = foodpreparationtime + orderdeliverytime[0].duration;
+                 }else{
+     
+                   // we need to remove once delivery time stable
+                   eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
+                   //15min Food Preparation time , 3min 1 km
                 
-    
-                var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+res1[0].orderid +" order by od_id desc limit 1");
-                
-                
-                if (orderdeliverytime.length !== 0) {
-                  res1[0].deliverytime = orderdeliverytime[0].deliverytime;
-                  res1[0].eta = foodpreparationtime + orderdeliverytime[0].duration;
+                   res1[0].eta = Math.round(eta) + " mins";
+                 }
+
+
                 }else{
-    
-                  // we need to remove once delivery time stable
-                  eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
-                  //15min Food Preparation time , 3min 1 km
-               
-                  res1[0].eta = Math.round(eta) + " mins";
+
+                 
+                  // await Order.dunzo_task_status(res1[0].dunzo_taskid, function(error, response, data){
+                  //   console.log(response);
+
+                  //   console.log(data);
+
+                  // });
+                  console.log(res1[0].runner_eta_pickup_min);
+                  res1[0].eta = parseInt(res1[0].runner_eta_pickup_min) + parseInt(res1[0].runner_eta_dropoff_min);
+
                 }
-    
+                
                 // we need to remove once delivery time stable
                 if (!res1[0].deliverytime) {
                   if (res1[0].orderstatus > 3) {
@@ -2630,49 +2660,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
     
               }
             
-            //   if (res1[0].orderstatus > 3) {
-            //     // +20 min add with moveit order picked up time
-            //    res1[0].deliverytime = res1[0].moveit_actual_delivered_time;
-            //  }else{
-            //    // +20 min add with moveit order posted time
-            //    var deliverytime = moment(res[0].ordertime)
-            //    .add(0, "seconds")
-            //    .add(20, "minutes")
-            //    .format("YYYY-MM-DD HH:mm:ss");
-            //    res1[0].deliverytime = deliverytime;
-            //  }
-
-
-            // var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+res1[0].orderid +" order by od_id desc limit 1");
            
-            // if (orderdeliverytime.length !== 0) {
-            //   console.log("res1"+orderdeliverytime.length);
-            //   res1[0].deliverytime = orderdeliverytime[0].deliverytime;
-            //   res1[0].eta = orderdeliverytime[0].duration;
-            // }else{
-
-            //   // we need to remove once delivery time stable
-            //   eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
-            //   //15min Food Preparation time , 3min 1 km
-           
-            //   res1[0].eta = Math.round(eta) + " mins";
-            // }
-            
-
-            //  // we need to remove once delivery time stable
-            //   if (!res1[0].deliverytime) {
-            //     if (res1[0].orderstatus > 3) {
-            //       // +20 min add with moveit order assign time
-            //      res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
-            //    }else{
-            //      var deliverytime = moment(res1[0].ordertime)
-            //      .add(0, "seconds")
-            //      .add(20, "minutes")
-            //      .format("YYYY-MM-DD HH:mm:ss");
-            //      res1[0].deliverytime = deliverytime;
-            //    }
-            //   }
-
               
 
               for (let i = 0; i < res1.length; i++) {
@@ -2689,8 +2677,9 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
               }else{
                 res1[0].onlinepaymentstatus = true;
               }
+          
+              console.log("test");
 
-              
               let resobj = {
                 success: true,
                 status: true,
@@ -2702,7 +2691,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
           });
         }
       }
-    }
+  }
   );
 };
 //online refund coupon
@@ -2745,11 +2734,11 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
         if (err) {
           result(err, null);
         } else {
+          var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
           console.log("orderdetails.delivery_vendor"+orderdetails[0].delivery_vendor);
           if (orderdetails[0].delivery_vendor==1) {
             console.log("dunzo_task_cancel");
-
 
             Dunzo.dunzo_task_cancel(orderdetails[0].dunzo_taskid);
             
@@ -6123,7 +6112,43 @@ Order.addorderhistory = async function addorderhistory(req,result){
  
 // };
 
+Order.dunzo_task_status= async function dunzo_task_status(dunzo_taskid,result){
+   var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+dunzo_taskid+'/status?test=true'
+  var headers = {
+    'Content-Type': 'application/json',
+    'client-id': constant.dunzo_client_id,
+    'Authorization' : constant.Authorization,
+    'Accept-Language':'en_US'}
+//  await request({headers: headers,url: url,method: 'GET'},async function(error,data) {
+//     if (error) {
+//     console.log("error: ", error);
+//     result(null, error);  
+//     } else {
+     
+//     var formData = JSON.parse(data.body);
 
+//     return  formData;
+//     }
+// });
+var options = {
+  uri:url,
+  headers:headers,
+  method: 'GET' // Automatically parses the JSON string in the response
+};
+
+requestpromise(options)
+  .then(function (repos) {
+      console.log('User has %d repos', repos.length);
+      return repos;
+
+  })
+  .catch(function (err) {
+      // API call failed...
+      console.log(' API call failed');
+
+  });
+
+}
 
 Order.dunzo_task_create = async function dunzo_task_create(req,result) {
   //var url ='https://apis-staging.dunzo.in/api/v1/tasks?test=true';

@@ -278,7 +278,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                       let deliverd = {
                         success: true,
                         status: true,
-                        message: "Order Pickedup successfully",
+                        message: "Order delivered successfully",
                         orderdeliverystatus: true
 
                       };

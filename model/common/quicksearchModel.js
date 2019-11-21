@@ -534,10 +534,11 @@ QuickSearch.order_assign=async function order_assign(res,i){
     var diffDays = Math.floor(diffMs / 86400000);
     var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
     var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
+    console.log("diffMins"+makeit_accept_time);
+
     console.log("diffMins"+diffMins);
  
-      if (constant.order_assign_dunzo==true && res[i].payment_type==1 && diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 0) {
-        
+     if (constant.order_assign_dunzo==true && res[i].payment_type==1 && diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 0) {  
        // Dunzo.dunzo_task_create
        await QuickSearch.dunzo_task_create(res[i].orderid);
 
@@ -688,5 +689,5 @@ QuickSearch.order_assign=async function order_assign(res,i){
 }
 
 };
-//order_auto_assign_Change.start();
+order_auto_assign_Change.start();
 module.exports = QuickSearch;
