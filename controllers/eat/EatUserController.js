@@ -260,7 +260,6 @@ exports.eat_kitchen_sort_filter_v2 = function(req, res) {
 //   });
 // };
 exports.eat_kitchen_sort_filter_v_2_1 = function(req, res) {
-  console.log(req.headers);
   if (!req.body.lat) {
     res
       .status(400)
@@ -274,7 +273,7 @@ exports.eat_kitchen_sort_filter_v_2_1 = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide eatuserid" });
   } else {
-    Eatuser.get_eat_kitchen_list_sort_filter_v_2_1(req.body,req.headers, function(err, user) {
+    Eatuser.get_eat_kitchen_list_sort_filter_v_2_1(req.body, function(err, user) {
       console.log("controller");
       if (err) res.send(err);
       console.log("res", user);

@@ -1886,7 +1886,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
   });
 };
 
-Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req,headers, result) {
+Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
  
   //console.log(res3.result[0].amountdetails);
   //var userdetails = await query("");
@@ -1897,7 +1897,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req,headers, re
   var tunnelkitchenliststatus = true;
   const userdetails = await query("select * from User where userid = "+req.eatuserid+" ");
  // const userdetails = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
-if ( headers.apptype ==1) {
+//if ( headers.apptype ==1) {
   
   if (userdetails[0].first_tunnel == 1 ) {
     
@@ -1933,10 +1933,10 @@ if ( headers.apptype ==1) {
       }
 
   }
-}else{
-  const usertunnelupdate = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
+// }else{
+//   const usertunnelupdate = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
 
-}
+// }
   
 
   var cuisinequery = "";
