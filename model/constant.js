@@ -70,7 +70,7 @@ const calculate = {
     //Miles to km
     onemile : 1.6,
 
-    order_assign_status:false,
+    order_assign_status:true,
 
     //Hub circle radius 3 km.
     hub_radius:3,

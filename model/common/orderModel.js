@@ -6026,50 +6026,58 @@ Order.addorderhistory = async function addorderhistory(req,result){
 }
 
 ////////Zone Based Moveit Auto Order Assign
-Order.zone_moveit_order_auto_assign =async function zone_moveit_order_auto_assign(req, result) {
+Order.zone_moveit_order_auto_assign = async function zone_moveit_order_auto_assign(req, result) {
   var order_queue_query = await query("select * from Orders_queue where status = 0 and orderid =" +req.orderid+"");
   if (order_queue_query.length ==0) {
     var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
-  //  var geoLocation = [];
-  //  geoLocation.push(req.orglat);
-  //  geoLocation.push(req.orglon);
-  //  MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,constant.nearby_moveit_radius,async function(err, move_it_id_list) {
+    var makeitLocation = [];
+    makeitLocation.push(req.orglat);
+    makeitLocation.push(req.orglon);
+    
+    var moveitlistzonequery="select mv.userid from Orders ord left join MakeitUser as mu on mu.userid = ord.makeit_user_id left join MoveitUser as mv on mv.zone = mu.zone where ord.orderid="+req.orderid+" and mv.online_status = 1 group by mv.userid";
 
-    var query="select mv.userid as moveitid from Orders ord left join MakeitUser as mu on mu.userid = ord.makeit_user_id left join MoveitUser as mv on mv.zone = mu.zone left join Zone as zo on zo.id = mu.zone where ord.orderid="+req.orderid+" group by mv.userid";
-    sql.query(query,async function(err, move_it_id_list) { 
-      if (err) {
-        let error = {
-          success: true,
-          status: false,
-          message:"No Move-it found,please after some time"
-        };
-        result(error, null);
-      }else{
-        move_it_id_list = move_it_id_list.join();
-        var moveitlist = move_it_id_list.moveitid;
-        if (moveitlist.length > 0) {
-          var moveitlistquery = ("select zo.boundaries,mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Zone as zo on zo.id = mu.zone left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount");
-          var nearbymoveit = await query(moveitlistquery);
-          if (nearbymoveit.length !==0) {
-              ////// Start: GeoFire ///
-
-              ///// End : GeoFire /////
-
-
-            sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, req.orderid],async function(err, res2) {
-              if (err) {
-                result(err, null);
-              } else {
-                var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
-                await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
-                let resobj = {
-                  success: true,
-                  status:true,
-                  message: "Order Assign Successfully",
-                };
-                result(null, resobj);
-              }
+    var moveitlistquery ="select zo.boundaries,mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Zone as zo on zo.id = mu.zone left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+moveitlistzonequery+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount";
+          var zonemoveitlist = await query(moveitlistquery);
+          console.log("moveitlistquery-->",JSON.stringify(zonemoveitlist));
+          if (zonemoveitlist.length !==0) {
+            MoveitFireBase.getInsideZoneMoveitList(makeitLocation,zonemoveitlist,async function(err, zoneInsideMoveitlist) {
+              console.log("zoneInsideMoveitlist-->",JSON.stringify(zoneInsideMoveitlist));
+              if(zoneInsideMoveitlist.length>0){
+              sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[zoneInsideMoveitlist[0].userid, assign_time, req.orderid],async function(err, res2) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+                  await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
+                  let resobj = {
+                    success: true,
+                    status:true,
+                    message: "Order Assign Successfully",
+                  };
+                  result(null, resobj);
+                }
+              });
+            }else{
+              console.log("new_Ordersqueue-->");
+              var new_Ordersqueue = new Ordersqueue(req);
+              new_Ordersqueue.status = 0;
+              Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+                if (err) { 
+                  console.log("err  new_Ordersqueue-->");
+                  result(err, null);
+                }else{
+                  console.log("success  new_Ordersqueue-->");
+                  let resobj = {
+                    success: true,
+                    status: true,
+                    message: "Order moved to Queue"
+                  };
+                  result(null, resobj);
+                }
+              });
+            }
             });
+            
           }else{
             var new_Ordersqueue = new Ordersqueue(req);
             new_Ordersqueue.status = 0;
@@ -6086,24 +6094,6 @@ Order.zone_moveit_order_auto_assign =async function zone_moveit_order_auto_assig
               }
             });
           }
-        }else{
-          var new_Ordersqueue = new Ordersqueue(req);
-          new_Ordersqueue.status = 0;
-          Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
-            if (err) { 
-              result(err, null);
-            }else{
-              let resobj = {
-                success: true,
-                status: true,
-                message: "Order moved to Queue"
-              };
-            result(null, resobj);
-            }
-          });
-        }
-      }
-    });
   }else{
     let resobj = {
       success: true,

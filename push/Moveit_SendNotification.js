@@ -2,6 +2,7 @@ const firebase = require("firebase-admin");
 var geoFires = require('geofire');
 var geodist = require('geodist')
 var moment = require("moment");
+var zone =require("../model/common/zoneModel")
 
 var MoveitserverKey = require("../moveit-a9128-firebase-adminsdk-3h0b8-6315acfc79");
 var Move_it = null;
@@ -227,27 +228,8 @@ exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomo
   });
  
  await delay(2000);
- // console.log(move_data[112]);
- // move_it_id = move_it_id.toString()
  move_data.moveitid=move_it_id.toString();
  result(null,move_data)
-
-    
-       
-  // moveit_it_id=await get_moveit_list(geoLocation,radius);
-  
-  // return(null,moveit_it_id)
-
- // const timeoutObj =async setTimeout(() async=> {
-    
-  // make_it_id=await get_moveit_list(geoLocation,radius);
-  //  result(null,make_it_id)
-
-  //}, 3000);
-//   console.log("test2"+move_it_id);
-//  // return(move_it_id);
-//  result(null,move_it_id)
-  
 }
 
 async function get_moveit_list(geoLocation,radius) {
@@ -311,4 +293,32 @@ async function get_moveit_distance(move_it_id,geoLocation) {
     }))
     console.log("make-it--->",move_it_id);
   return move_it_id;
+}
+
+exports.getInsideZoneMoveitList = async function getInsideZoneMoveitList(makeitLocation,make_it_list,result){
+  initializeAppName();
+   var make_it_id=[];
+   await Promise.all(make_it_list.map(async function(item){
+    await geoFire.get(""+item.userid).then(function(location) {
+      if (location === null) {
+        console.log("Provided key is not in GeoFire");
+        item.islocation=false;
+        item.distance=0;
+      }else{
+        var isZone =zone.pointInPolygon(item.boundaries, { lat: location[0], lng: location[1] })
+        console.log("moveit--inside-->",isZone);
+        if(isZone){
+          var dist = geodist(makeitLocation, location,{exact: true, unit: 'km'});
+          item.distance= dist.toFixed(2);
+          item.location= location;
+          item.islocation=true;
+          make_it_id.push(item);
+        }
+      }
+    }, function(error) {
+      item.islocation=false;
+      item.distance=0;
+    });
+  }))
+  result(null,make_it_id)
 }
