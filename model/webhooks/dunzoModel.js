@@ -8,6 +8,10 @@ const query = util.promisify(sql.query).bind(sql);
 var Dunzoresponce = require("../../model/common/dunzoresponceModel");
 var Dunzomoveitdetails = require("../../model/common/dunzomoveitdetailsModel");
 var moment = require("moment");
+var Notification = require("../../model/common/notificationModel.js");
+var PushConstant = require("../../push/PushConstant.js");
+
+
 
 
 
@@ -116,14 +120,14 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           Dunzo.create_Dunzomoveitdetails(Dunzomoveitdetails_data);
 
               if (orderdetails.length !== 0) {
-            
-                if (orderdetails[0].moveit_status < 1 ) {
+                console.log(orderdetails[0].orderid);
+
+           //     if (orderdetails[0].moveit_status < 1 ) {
                 
                   var orderaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
                
                   updatequery ="UPDATE Orders SET moveit_status = 1 ,moveit_accept_time= '" + orderaccepttime +"' WHERE orderid ='" +orderdetails[0].orderid +"'";
                   const updatestatus = await query(updatequery);
-                  console.log(orderdetails[0].orderid);
 
                   let response = {
                     success: true,
@@ -133,21 +137,21 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                  
                   result(null, response);
                
-                } else if (orderdetails[0].moveit_status == 1) {
-                  let response = {
-                    success: true,
-                    status: false,
-                    message: "Sorry your order already accepted"
-                  };
-                  result(null, response);
-                } else {
-                  let response = {
-                    success: true,
-                    status: false,
-                    message: "Following order is not assigned to you!"
-                  };
-                  result(null, response);
-                }
+               // } else if (orderdetails[0].moveit_status == 1) {
+                  // let response = {
+                  //   success: true,
+                  //   status: false,
+                  //   message: "Sorry your order already accepted"
+                  // };
+                  // result(null, response);
+                // } else {
+                //   let response = {
+                //     success: true,
+                //     status: false,
+                //     message: "Following order is not assigned to you!"
+                //   };
+                //   result(null, response);
+                // }
               } else {
                 let response = {
                   success: true,
@@ -174,6 +178,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                     message: "kitchen reached successfully"
                   };
                  
+
              result(null, resobj);
 
           break; 
@@ -191,6 +196,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                   status:false,
                   message: "Sorry! This order already canceled."
                 };
+                
                 result(null, resobj);
                // return;
               }else if (orderdetails[0].orderstatus < 3 ) {
@@ -210,7 +216,9 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                         status: true,
                         message: "Order Pickedup successfully"
                       };
-                     
+                      PushConstant.Pageid_eat_order_pickedup = 5;
+                      await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
+       
                  result(null, resobj);
         
               }
@@ -244,7 +252,8 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                   status: true,
                   message: "Customer location reached successfully"
                 };
-               
+                PushConstant.Pageid_eat_order_pickedup = 6;
+                await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
            result(null, data);
 
           
@@ -280,8 +289,11 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                         status: true,
                         message: "Order delivered successfully",
                         orderdeliverystatus: true
-
                       };
+
+                      PushConstant.Pageid_eat_order_pickedup = 7;
+                      await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
+          
                      
                  result(null, deliverd);
 
@@ -309,6 +321,8 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
       case dunzoconst.cancelled:
           console.log("cancelled");
           var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderdetails[0].orderid+"");
+          updatequery =await query("UPDATE Orders SET moveit_status = 0  WHERE orderid ='" +orderdetails[0].orderid +"'");
+
           let orderqueue = {
             success: true,
             message: "Order again pushed into queue.",
@@ -402,24 +416,42 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
       'Accept-Language':'en_US'
     };
   
+    console.log(order_details[0].makeitdetail.pincode);
     //set request parameter
-    request.post({headers: headers, url: 'https://apis-staging.dunzo.in/api/v1/tasks?test=true', json: form, method: 'POST'},async function (e, r, body) {
-      console.log(body.state);
+    request.post({headers: headers, url: dunzoconst.dunzo_create_url, json: form, method: 'POST'},async function (e, r, body) {
+      console.log(body);
     if (body.state=="created") {
+      console.log("created");
+
       var order_queue_update = await query("update Orders_queue set status = 1 where orderid =" +orderid+"");
-      var order_update = await query("update Orders set dunzo_taskid ='"+body.task_id+"',delivery_vendor=1  where orderid =" +orderid+"");
+      var order_update = await query("update Orders set moveit_status=1,dunzo_taskid ='"+body.task_id+"',delivery_vendor=1  where orderid =" +orderid+"");
 
     } else if (body.code="unserviceable_location_error") {
+      console.log("unserviceable_location_error");
+
       var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderid+"");
     }else if (body.code="duplicate_request") {
+      console.log("duplicate_request");
+
       //var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
     }else if (body.code="different_city_error") {
+      console.log("different_city_error");
+
       var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
     }else if (body.code="rain_error") {
+      console.log("rain_error");
+
       var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
     }else if (body.code="service_unavailable") {
+      console.log("service_unavailable");
+
       var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
-    }     
+    }else if(body.code="validation_failed") {
+      console.log("validation_failed");
+
+      var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
+
+    }    
     
 
       let resobj = {
@@ -436,10 +468,9 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
 Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(dunzo_taskid,result) {
   var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+dunzo_taskid+'/_cancel?test=true'
   
-  console.log("url"+url);
   //set form data
   var form = {
-    cancellation_reason: "Changed my mind"
+    cancellation_reason: "runner is not available"
   }
   //console.log(form);
   //console.log("parse-------",JSON.parse(form));
@@ -455,12 +486,7 @@ Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(dunzo_taskid,result) 
   request.post({headers: headers, url: url, json: form, method: 'POST'},async function (e, r, body) {
   
 
-    // let resobj = {
-    //   success: true,
-    //   status: true,
-    //   result: body
-    // };
-    // result(null, resobj);
+
   });
 };
 

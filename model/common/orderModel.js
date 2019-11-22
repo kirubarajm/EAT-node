@@ -25,6 +25,8 @@ var MoveitUser = require("../../model/moveit/moveitUserModel");
 var OrderStatusHistory = require("../common/orderstatushistoryModel");
 var Dunzo = require("../../model/webhooks/dunzoModel.js");
 var requestpromise = require('request-promise');
+var dunzoconst = require('../../model/dunzo_constant');
+
 
 
 // var instance = new Razorpay({
@@ -1846,10 +1848,7 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
             if (err) {
               result(err, null);
             } else {
-              await Notification.orderEatPushNotification(
-                req.orderid,
-                null,
-                PushConstant.Pageid_eat_order_pickedup
+              await Notification.orderEatPushNotification(req.orderid,null,PushConstant.Pageid_eat_order_pickedup
               );
 
               req.orglat = res1[0].makeit_lat;
@@ -2343,12 +2342,17 @@ Order.orderviewbyeatuser = function(req, result) {
                   res1[0].items = items.item;
                 }
 
-                // if (res1[0].delivery_vendor==1) {
+                ////dunzo code
+                if (res1[0].delivery_vendor==1) {
                   
-                //   res1[0].moveitdetail.name=res1[0].runner_name;
-                //   res1[0].moveitdetail.phoneno=res1[0].runner_phone_number;
+                  res1[0].moveitdetail.name=res1[0].runner_name;
+                  res1[0].moveitdetail.phoneno=res1[0].runner_phone_number;
 
-                // }
+                }
+                res1[0].dunzo_client_id= dunzoconst.dunzo_client_id;
+                res1[0].Authorization= dunzoconst.Authorization;
+
+
                   var itemlist = res1[0].items
                   var productprice = 0;
                 for (let i = 0; i < itemlist.length; i++) {
@@ -4122,7 +4126,7 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
             req.orderid,
             req.moveit_user_id
           ],
-          function(err, res) {
+         async function(err, res) {
             if (err) {
               result(err, null);
             } else {
@@ -4131,6 +4135,8 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
                 status:true,
                 message: "Customer location reached successfully"
               };
+              PushConstant.Pageid_eat_order_pickedup = 6;
+              await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
               result(null, resobj); 
             }
           }
