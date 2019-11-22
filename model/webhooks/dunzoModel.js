@@ -418,7 +418,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
   
     console.log(order_details[0].makeitdetail.pincode);
     //set request parameter
-    request.post({headers: headers, url: 'https://apis-staging.dunzo.in/api/v1/tasks?test=true', json: form, method: 'POST'},async function (e, r, body) {
+    request.post({headers: headers, url: dunzoconst.dunzo_create_url, json: form, method: 'POST'},async function (e, r, body) {
       console.log(body);
     if (body.state=="created") {
       console.log("created");
@@ -468,10 +468,9 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
 Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(dunzo_taskid,result) {
   var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+dunzo_taskid+'/_cancel?test=true'
   
-  console.log("url"+url);
   //set form data
   var form = {
-    cancellation_reason: "Changed my mind"
+    cancellation_reason: "runner is not available"
   }
   //console.log(form);
   //console.log("parse-------",JSON.parse(form));
@@ -487,12 +486,7 @@ Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(dunzo_taskid,result) 
   request.post({headers: headers, url: url, json: form, method: 'POST'},async function (e, r, body) {
   
 
-    // let resobj = {
-    //   success: true,
-    //   status: true,
-    //   result: body
-    // };
-    // result(null, resobj);
+
   });
 };
 
