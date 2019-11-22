@@ -304,11 +304,19 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
     result(null, resobj);
     }
   }else{
+    if(constant.zone_control){
+      var get_hub_id_from_orders= await query("Select zone from MakeitUser where userid="+req.makeit_user_id);
+      var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and zone="+get_hub_id_from_orders[0].zone);
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and  status=0") ;
+      var get_hub_id_from_makeithub= await query("Select xfactor from Zone where id="+get_hub_id_from_orders[0].zone);
+    }else{
+      var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
+      var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
+      var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
+    }
 
-    var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
-    var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
-    var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
-    var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
+    
   
     var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
     console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
@@ -1093,7 +1101,6 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
         req.deslat = orderdetails[0].cus_lat;
         req.deslon = orderdetails[0].cus_lon;
         req.hubid  = orderdetails[0].makeithub_id;
-
 
         Order.eat_order_distance_calculation(req, async function(err, res3) {
           if (err) {
@@ -3033,11 +3040,19 @@ Order.insert_delivery_time = function insert_delivery_time(req) {
 };
 
 Order.auto_order_assign_byadmin_makeit = function auto_order_assign_byadmin_makeit(req) {
- 
-  Order.auto_order_assign(req, function(err, res) {
-   if (err) return err;
-   else return res;
- });
+  ////Start: Zone Based Auto Assign///////
+  if(constant.zone_control){
+    Order.zone_moveit_order_auto_assign(req, function(err, res) {
+      if (err) return err;
+      else return res;
+    });
+  }else{
+      Order.auto_order_assign(req, function(err, res) {
+        if (err) return err;
+        else return res;
+      });
+  }
+  ////End: Zone Based Auto Assign///////
 };
 
 Order.makeit_order_accept = async function makeit_order_accept(req, result) {
@@ -5560,14 +5575,20 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
     
    result(null, resobj);
   }else{
-
+    if(constant.zone_control){
+      var get_hub_id_from_orders= await query("Select zone from MakeitUser where userid="+req.makeit_user_id);
+      var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and zone="+get_hub_id_from_orders[0].zone);
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and  status=0") ;
+      var get_hub_id_from_makeithub= await query("Select xfactor from Zone where id="+get_hub_id_from_orders[0].zone);
+    }else{
   var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
   var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
   var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
   var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
+    }
 
   var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
-  console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
+  console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].zone);
   console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
   console.log("xfactorValue-->",Math.round(xfactorValue));
   var fValue= Math.round(xfactorValue);
@@ -5803,11 +5824,6 @@ if (order_queue_query.length ==0) {
   };
   result(null, resobj);
 }
-  
-
-
-  
-  
 };
 
 //////////////Orders move to queue/////////////////
@@ -6024,208 +6040,162 @@ Order.addorderhistory = async function addorderhistory(req,result){
   var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
 }
 
-
-//// dunzo_task_create////
-
-// Order.dunzo_task_create = async function dunzo_task_create(req,result) {
-
-//  //https://maps.googleapis.com/maps/api/directions/json?origin=12.9801,80.2184&destination=13.0072,80.2064&key=AIzaSyDsjqcaz5Ugj7xoBn9dhOedDWE1uyW82Nc
-//    var url ="https://apis-staging.dunzo.in/api/v1/tasks/9f62d62a-3a25-4b5e-8977-d695202a6002/status?test=true";
+////////Zone Based Moveit Auto Order Assign
+Order.zone_moveit_order_auto_assign = async function zone_moveit_order_auto_assign(req, result) {
+  var order_queue_query = await query("select * from Orders_queue where status = 0 and orderid =" +req.orderid+"");
+  if (order_queue_query.length ==0) {
+    var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+    var makeitLocation = [];
+    makeitLocation.push(req.orglat);
+    makeitLocation.push(req.orglon);
     
-//   //  request({
-//   //      method: "post",
-//   //      url: url,
-//   //      body: {
-//   //       "request_id": "650",
-//   //       "pickup_details": {
-//   //         "lat": 13.041794,
-//   //         "lng": 80.229038,
-//   //         "address": {
-//   //           "apartment_address" : "200 Block 4",
-//   //           "street_address_1": "Suncity Apartments",
-//   //           "street_address_2": "Bellandur",
-//   //           "landmark": "Iblur lake",
-//   //           "city": "chennai",
-//   //           "state": "tamilnadu",
-//   //           "pincode": "600010",
-//   //           "country": "India"
-//   //         }
-//   //       },
-//   //       "drop_details": {
-//   //         "lat": 13.047553,
-//   //         "lng": 80.237139,
-//   //         "address": {
-//   //           "apartment_address" : "204 Block 4",
-//   //           "street_address_1": "Suncity Apartments",
-//   //           "street_address _2": "Bellandur",
-//   //           "landmark": "Iblur lake",
-//   //           "city": "chennai",
-//   //           "state": "tamilnadu",
-//   //           "pincode": "600010",
-//   //           "country": "India"
-//   //         }
-//   //       },
-//   //       "sender_details": {
-//   //         "name": "Puneet",
-//   //         "phone_number": "9999999999"
-//   //       },
-//   //       "receiver_details": {
-//   //         "name": "Vijendra",
-//   //         "phone_number": "9999999998"
-//   //       },
-//   //       "package_content": ["Documents | Books", "Clothes | Accessories", "Electronic Items"],
-//   //       "package_approx_value": 250,
-//   //       "special_instructions": "Fragile items. Handle with great care!!"
-//   //     },
-//   //      headers: {
-//   //       'Content-Type': 'application/json',
-//   //       'client-id': constant.dunzo_client_id,
-//   //       'Authorization' : constant.Authorization,
-//   //       'Accept-Language':'en_US'
-//   //     }
-//   //    },
-//   // var formData = querystring.stringify(form);
-//   // var contentLength = formData.length;
-  
-//   request({
-//            headers: {
-//         'Content-Type': 'application/json',
-//         'client-id': constant.dunzo_client_id,
-//         'Authorization' : constant.Authorization,
-//         'Accept-Language':'en_US'
-//       },
-//       url: 'https://apis-staging.dunzo.in/api/v1/tasks/9f62d62a-3a25-4b5e-8977-d695202a6002/status?test=true',
-//       //body: formData,
-//       method: 'GET'
-//     }, 
-//      function(error,data) {
-//        if (error) {
-//          console.log("error: ", error);
-//          result(null, error);  
-//        } else {
-       
-//         var formData = JSON.parse(data.body);
-//         let resobj = {
-//           success: true,
-//           status: true,
-//           result: formData
-//         };
-//         result(null, resobj);
+    var moveitlistzonequery="select mv.userid from Orders ord left join MakeitUser as mu on mu.userid = ord.makeit_user_id left join MoveitUser as mv on mv.zone = mu.zone where ord.orderid="+req.orderid+" and mv.online_status = 1 group by mv.userid";
+
+    var moveitlistquery ="select zo.boundaries,mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Zone as zo on zo.id = mu.zone left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+moveitlistzonequery+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount";
+          var zonemoveitlist = await query(moveitlistquery);
+          console.log("moveitlistquery-->",JSON.stringify(zonemoveitlist));
+          if (zonemoveitlist.length !==0) {
+            MoveitFireBase.getInsideZoneMoveitList(makeitLocation,zonemoveitlist,async function(err, zoneInsideMoveitlist) {
+              console.log("zoneInsideMoveitlist-->",JSON.stringify(zoneInsideMoveitlist));
+              if(zoneInsideMoveitlist.length>0){
+              sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[zoneInsideMoveitlist[0].userid, assign_time, req.orderid],async function(err, res2) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+                  await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
+                  let resobj = {
+                    success: true,
+                    status:true,
+                    message: "Order Assign Successfully",
+                  };
+                  result(null, resobj);
+                }
+              });
+            }else{
+              console.log("new_Ordersqueue-->");
+              var new_Ordersqueue = new Ordersqueue(req);
+              new_Ordersqueue.status = 0;
+              Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+                if (err) { 
+                  console.log("err  new_Ordersqueue-->");
+                  result(err, null);
+                }else{
+                  console.log("success  new_Ordersqueue-->");
+                  let resobj = {
+                    success: true,
+                    status: true,
+                    message: "Order moved to Queue"
+                  };
+                  result(null, resobj);
+                }
+              });
+            }
+            });
             
-//        }
-//      }
-//    );
- 
-// };
-
-Order.dunzo_task_status= async function dunzo_task_status(dunzo_taskid,result){
-   var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+dunzo_taskid+'/status?test=true'
-  var headers = {
-    'Content-Type': 'application/json',
-    'client-id': constant.dunzo_client_id,
-    'Authorization' : constant.Authorization,
-    'Accept-Language':'en_US'}
-//  await request({headers: headers,url: url,method: 'GET'},async function(error,data) {
-//     if (error) {
-//     console.log("error: ", error);
-//     result(null, error);  
-//     } else {
-     
-//     var formData = JSON.parse(data.body);
-
-//     return  formData;
-//     }
-// });
-var options = {
-  uri:url,
-  headers:headers,
-  method: 'GET' // Automatically parses the JSON string in the response
-};
-
-requestpromise(options)
-  .then(function (repos) {
-      console.log('User has %d repos', repos.length);
-      return repos;
-
-  })
-  .catch(function (err) {
-      // API call failed...
-      console.log(' API call failed');
-
-  });
-
-}
-
-Order.dunzo_task_create = async function dunzo_task_create(req,result) {
-  //var url ='https://apis-staging.dunzo.in/api/v1/tasks?test=true';
-  //set form data
-  var form = {
-    request_id: "10080",
-    pickup_details: {
-      lat: 13.041794,
-      lng: 80.229038,
-      address: {
-        apartment_address : "200 Block 4",
-        street_address_1: "Suncity Apartments",
-        street_address_2: "Bellandur",
-        landmark: "Iblur lake",
-        city: "chennai",
-        state: "tamilnadu",
-        pincode: "600010",
-        country: "India"
-      }
-    },
-    drop_details: {
-      lat: 13.047553,
-      lng: 80.237139,
-      address: {
-        apartment_address : "204 Block 4",
-        street_address_1: "Suncity Apartments",
-        street_address_2: "Bellandur",
-        landmark: "Iblur lake",
-        city: "chennai",
-        state: "tamilnadu",
-        pincode: "600010",
-        country: "India"
-      }
-    },
-    sender_details: {
-      name: "Puneet",
-      phone_number: "9999999999"
-    },
-    receiver_details: {
-      name: "Vijendra",
-      phone_number: "9999999998"
-    },
-    package_content: ["Documents | Books", "Clothes | Accessories", "Electronic Items"],
-    package_approx_value: 250,
-    special_instructions: "Fragile items. Handle with great care!!"
-  }
-  //console.log(form);
-  //console.log("parse-------",JSON.parse(form));
-  //console.log("Str----",JSON.stringify(form));
-  var headers= {
-    'Content-Type': 'application/json',
-    'client-id': constant.dunzo_client_id,
-    'Authorization' : constant.Authorization,
-    'Accept-Language':'en_US'
-  };
-
-  //set request parameter
-  request.post({headers: headers, url: 'https://apis-staging.dunzo.in/api/v1/tasks?test=true', json: form, method: 'POST'}, function (e, r, body) {
-    var bodyValues = JSON.stringify(body);
-    console.log('error:', e); // Print the error if one occurred
-    console.log('statusCode:', r && r.statusCode); // Print the response status code if a response was received
-    console.log('body:', body); // Print the HTML for the Google homepage.
-    console.log("====================================");
-    //res.send(bodyValues);
+          }else{
+            var new_Ordersqueue = new Ordersqueue(req);
+            new_Ordersqueue.status = 0;
+            Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+              if (err) { 
+                result(err, null);
+              }else{
+                let resobj = {
+                  success: true,
+                  status: true,
+                  message: "Order moved to Queue"
+                };
+                result(null, resobj);
+              }
+            });
+          }
+  }else{
     let resobj = {
       success: true,
-      status: true,
-      result: JSON.parse(bodyValues)
+      status:true,
+      message: "already exist",
     };
     result(null, resobj);
-  });
+  }
+};
+
+////////Zone Based Moveit Auto Order Assign
+Order.zone_moveit_order_auto_assign = async function zone_moveit_order_auto_assign(req, result) {
+  var order_queue_query = await query("select * from Orders_queue where status = 0 and orderid =" +req.orderid+"");
+  if (order_queue_query.length ==0) {
+    var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+    var makeitLocation = [];
+    makeitLocation.push(req.orglat);
+    makeitLocation.push(req.orglon);
+    
+    var moveitlistzonequery="select mv.userid from Orders ord left join MakeitUser as mu on mu.userid = ord.makeit_user_id left join MoveitUser as mv on mv.zone = mu.zone where ord.orderid="+req.orderid+" and mv.online_status = 1 group by mv.userid";
+
+    var moveitlistquery ="select zo.boundaries,mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Zone as zo on zo.id = mu.zone left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+moveitlistzonequery+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount";
+          var zonemoveitlist = await query(moveitlistquery);
+          console.log("moveitlistquery-->",JSON.stringify(zonemoveitlist));
+          if (zonemoveitlist.length !==0) {
+            MoveitFireBase.getInsideZoneMoveitList(makeitLocation,zonemoveitlist,async function(err, zoneInsideMoveitlist) {
+              console.log("zoneInsideMoveitlist-->",JSON.stringify(zoneInsideMoveitlist));
+              if(zoneInsideMoveitlist.length>0){
+              sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[zoneInsideMoveitlist[0].userid, assign_time, req.orderid],async function(err, res2) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+                  await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
+                  let resobj = {
+                    success: true,
+                    status:true,
+                    message: "Order Assign Successfully",
+                  };
+                  result(null, resobj);
+                }
+              });
+            }else{
+              console.log("new_Ordersqueue-->");
+              var new_Ordersqueue = new Ordersqueue(req);
+              new_Ordersqueue.status = 0;
+              Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+                if (err) { 
+                  console.log("err  new_Ordersqueue-->");
+                  result(err, null);
+                }else{
+                  console.log("success  new_Ordersqueue-->");
+                  let resobj = {
+                    success: true,
+                    status: true,
+                    message: "Order moved to Queue"
+                  };
+                  result(null, resobj);
+                }
+              });
+            }
+            });
+            
+          }else{
+            var new_Ordersqueue = new Ordersqueue(req);
+            new_Ordersqueue.status = 0;
+            Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+              if (err) { 
+                result(err, null);
+              }else{
+                let resobj = {
+                  success: true,
+                  status: true,
+                  message: "Order moved to Queue"
+                };
+                result(null, resobj);
+              }
+            });
+          }
+  }else{
+    let resobj = {
+      success: true,
+      status:true,
+      message: "already exist",
+    };
+    result(null, resobj);
+  }
 };
 
 module.exports = Order;

@@ -177,7 +177,7 @@ const job = new CronJob("0 */1 * * * *", async function(search, result) {
     }
   });
 });
-//job.start();
+job.start();
 
 //incomplete online and release product quantity and order release by user.
 const job1 = new CronJob("*/3 * * * *", async function() {
@@ -222,7 +222,7 @@ const job1 = new CronJob("*/3 * * * *", async function() {
     }
   }
 });
-//job1.start();
+job1.start();
 
 QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(
   req,
@@ -336,7 +336,7 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
     }
   }
 });
-//liveproducthistory.start();
+liveproducthistory.start();
 
 //cron run by moveit user offline every night 2 AM.
 const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
@@ -364,7 +364,7 @@ const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
     }
   }
 });
-//job1moveitlogout.start();
+job1moveitlogout.start();
 
 // const order_auto_assign = new CronJob("1 7-23 * * * ", async function() {
 //   console.log("order_auto_assign");
@@ -511,9 +511,14 @@ const order_auto_assign_Change = new CronJob("* */1 7-23 * * * ", async function
   
   console.log('isCronRun-->',isCronRun);
   if (res.length !== 0&&!isCronRun) {
-    console.log("order_auto_assign_Change---->"+moment().format("YYYY-MM-DD HH:mm:ss"));
-    QuickSearch.order_assign(res,i);
-}
+    ////Start: Zone Based Order Assign //////////////
+    if(constant.zone_control){
+      QuickSearch.Zone_order_assign(res,i);
+    }else{
+      QuickSearch.order_assign(res,i);
+    }
+    ////End: Zone Based Order Assign ////////////// 
+  }
   }
 });
 
@@ -690,4 +695,76 @@ QuickSearch.order_assign=async function order_assign(res,i){
 
 };
 order_auto_assign_Change.start();
+
+////Zone Based Moveit 
+QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
+  try{
+    isCronRun=true;
+    console.log('i zone-->',i)
+    var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+    if (i<res.length) {
+      console.log('i res.length-->',res.length)
+      //dunzo code
+    var today = moment();
+    var makeit_accept_time = moment(res[i].makeit_accept_time);
+    var diffMs = today - makeit_accept_time;
+    var diffDays = Math.floor(diffMs / 86400000);
+    var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
+    var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
+    console.log("diffMins"+makeit_accept_time);
+
+    console.log("diffMins"+diffMins);
+ 
+     if (constant.order_assign_dunzo==true && res[i].payment_type==1 && diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 0) {  
+       // Dunzo.dunzo_task_create
+       await QuickSearch.dunzo_task_create(res[i].orderid);
+
+      }else{
+      var makeitLocation = [];
+      makeitLocation.push(res[i].lat);
+      makeitLocation.push(res[i].lon);
+      var moveitlistzonequery="select mv.userid from Orders ord left join MakeitUser as mu on mu.userid = ord.makeit_user_id left join MoveitUser as mv on mv.zone = mu.zone where ord.orderid="+res[i].orderid+" and mv.online_status = 1 group by mv.userid";
+     
+      var moveitlistquery ="select zo.boundaries,mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Zone as zo on zo.id = mu.zone left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+moveitlistzonequery+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount";
+      var zonemoveitlist = await query(moveitlistquery);
+      //console.log("moveitlistquery-->",JSON.stringify(zonemoveitlist));
+      if (zonemoveitlist.length !==0) {
+            MoveitFireBase.getInsideZoneMoveitList(makeitLocation,zonemoveitlist,async function(err, zoneInsideMoveitlist) {
+              if (err){
+                i++;
+                Zone_order_assign(res,i);
+              }
+              else{ 
+                console.log("zoneInsideMoveitlist-->",JSON.stringify(zoneInsideMoveitlist));
+                if(zoneInsideMoveitlist.length>0){
+                    sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[zoneInsideMoveitlist[0].userid, assign_time, req.orderid],async function(err, res2) {
+                      if (err) {
+                        i++;
+                        Zone_order_assign(res,i);
+                      } else {
+                        await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+                        await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
+                        i++;
+                        Zone_order_assign(res,i);
+                      }
+                    });
+                }else{
+                  i++;
+                  Zone_order_assign(res,i);
+                }
+              }
+            });
+      }else{
+        i++;
+        Zone_order_assign(res,i);
+      }
+    }
+    }else{
+      isCronRun=false;
+    }
+  }catch(e){
+    isCronRun=false;
+  }
+};
+
 module.exports = QuickSearch;

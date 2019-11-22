@@ -173,5 +173,4 @@ app.route("/eat/getotp/:phone_number").get(middleware.checkToken,routesVersionin
 //app.route("/eat/dunzptaskcreate").post(routesVersioning({"1.0.0":orders.dunzo_order_create}));
 
 
-
 }

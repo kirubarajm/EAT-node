@@ -546,3 +546,11 @@ exports.makeit_get_firstorder = function(req, res) {
     res.json(user);
   });
 };
+
+////Zone id update/////////////
+exports.makeit_zoneid_update = function(req, res) {
+  Makeituser.makeit_zoneid_update(req.params, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

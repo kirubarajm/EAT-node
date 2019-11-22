@@ -13,6 +13,7 @@ var MakeitImages = require("../../model/makeit/makeitImagesModel");
 var MakeitBadges = require("../../model/makeit/makeitbadgesmappingModel");
 var PushConstant = require("../../push/PushConstant.js");
 var Notification = require("../../model/common/notificationModel.js");
+var ZoneModel    = require("../../model/common/zoneModel.js");
 
 //Task object constructor
 var Makeituser = function(makeituser) {
@@ -50,6 +51,7 @@ var Makeituser = function(makeituser) {
   this.virutal_rating_count = makeituser.virutal_rating_count;
   this.ka_status = makeituser.ka_status || 0;
   this.unservicable = makeituser.unservicable || 0;
+  this.zone =makeituser.zone || 0;
 };
 
 Makeituser.createUser = function createUser(newUser, result) {
@@ -59,66 +61,78 @@ Makeituser.createUser = function createUser(newUser, result) {
       "' OR email= '" +
       newUser.email +
       "' ",
-    function(err, res2) {
+    async function(err, res2) {
       if (err) {
         result(err, null);
       } else {
         if (res2.length == 0) {
+          ZoneModel.check_map_boundaries(newUser,async function(err,res){
+            if(err||res.status===false) {
+              let resobj = {
+                success: true,
+                status: false,
+                error:err,
+                message:"Sorry this makeit loaction not in the inside of the zone location.",
+              };
 
-          sql.query("INSERT INTO MakeitUser set ?", newUser, function(
-            err,
-            res3
-          ) {
-            if (err) {
-              console.log("error: ", err);
-              result(err, null);
-            } else {
-              var referalcode = "MAKEITWELL" + res3.insertId;
-
-              sql.query(
-                "Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ",
-                res3.insertId,
-                function(err, res4) {
+              result(null, resobj);
+            }else{
+              if(res.status){
+                newUser.zone= res.zone_id;
+                sql.query("INSERT INTO MakeitUser set ?", newUser, function(
+                  err,
+                  res3
+                ) {
                   if (err) {
                     console.log("error: ", err);
                     result(err, null);
                   } else {
+                    var referalcode = "MAKEITWELL" + res3.insertId;
+      
                     sql.query(
-                      "Update MakeitUser set referalcode = '" +
-                        referalcode +
-                        "' where userid = ? ",
+                      "Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ",
                       res3.insertId,
-                      function(err, res5) {
+                      function(err, res4) {
                         if (err) {
                           console.log("error: ", err);
                           result(err, null);
                         } else {
-
-                          let token = jwt.sign({username: newUser.phoneno},
-                            config.secret
-                            // ,
-                            // { //expiresIn: '24h' // expires in 24 hours
-                            // }
-                           );
-
-                       
-                          let resobj = {
-                            success: true,
-                            status: true,
-                            token : token,
-                            message: "Registration Successfully",
-                            result: res4
-                          };
-
-                          result(null, resobj);
+                          sql.query(
+                            "Update MakeitUser set referalcode = '" +
+                              referalcode +
+                              "' where userid = ? ",
+                            res3.insertId,
+                            function(err, res5) {
+                              if (err) {
+                                console.log("error: ", err);
+                                result(err, null);
+                              } else {
+      
+                                let token = jwt.sign({username: newUser.phoneno},
+                                  config.secret
+                                 );
+                             
+                                let resobj = {
+                                  success: true,
+                                  status: true,
+                                  token : token,
+                                  message: "Registration Successfully",
+                                  result: res4
+                                };
+      
+                                result(null, resobj);
+                              }
+                            }
+                          );
                         }
                       }
                     );
                   }
-                }
-              );
+                });
+              }
             }
-          });
+          })
+          
         } else {
           let sucobj = true;
           let message =
@@ -946,7 +960,13 @@ Makeituser.update_makeit_followup_status = function(
 
 //cart details for ear user
 Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makeitid(req,orderitems,isMobile,result) {
-
+  if(constant.zone_control){
+    var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+    var userzoneid = getzone.zone_id;
+    var zoneName=getzone.zone_name;
+    var distance=0;
+  }
+  //console.log("122",userzoneid+","+zoneName);
   var tempmessage = "";
   var makeit_error_message = "";
   var coupon__error_message = "";
@@ -977,10 +997,6 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
   var day = moment().format("YYYY-MM-DD HH:mm:ss");;
   var currenthour  = moment(day).format("HH");
-  var productquery = "";
-
-
-
   var productquery="breakfast";
   //  if (currenthour <= 12) {
   //    productquery = " breakfast";
@@ -1059,7 +1075,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
  // console.log(productdetails);
   // This query is to get the makeit details and cuisine details
   var query1 =
-    "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.unservicable,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
+    "Select mk.userid as makeituserid,mk.zone as makeitzone,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.unservicable,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
     req.userid +
     " left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +
     req.makeit_user_id;
@@ -1097,18 +1113,18 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         //  makeitavailability[0].distance = makeitavailability[0].distance * constant.onemile;
           //makeitavailability[0].distance = makeitavailability[0].distance.toFixed(2) ;
           console.log(makeitavailability[0].distance);
-            
+         distance=makeitavailability[0].distance;   
         var eta = constant.foodpreparationtime + (constant.onekm * makeitavailability[0].distance);
         
         if (makeitavailability[0].unservicable == 1) {
           isAvaliablekitchen = false;
         }else{
-          if (makeitavailability[0].distance > constant.radiuslimit) {
-          
+          if(userzoneid && res2[0].makeitzone && res2[0].makeitzone == userzoneid){
+            isAvaliablekitchen = true;
+          }else if (makeitavailability[0].distance > constant.radiuslimit) {
             isAvaliablekitchen = false;
             makeit_error_message = makeitavailability[0].brandname;
-            
-        }
+          }
         }
         
           //15min Food Preparation time , 3min 1 km
@@ -1309,7 +1325,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
         let resobj = {
           success: true,
-          status: isAvaliableItem
+          status: isAvaliableItem,
+          zoneId:userzoneid,
+          zoneName:zoneName,
+          distance:distance,
         };
 
   
@@ -1560,7 +1579,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
     };
     result(null, resobj);
 
-  }
+  } 
 };
 
 Makeituser.admin_check_cartdetails = async function admin_check_cartdetails(req,orderitems,result) {
@@ -1678,221 +1697,235 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
       };
       result(null, resobj);
     } else {
-      staticquery = "UPDATE MakeitUser SET ";
-      for (const [key, value] of Object.entries(req)) {
-        if (
-          key !== "userid" &&
-          key !== "cuisines" &&
-          key !== "region" &&
-          key !== "rating" &&
-          key !== "removecuisines" &&
-          key !== "kitcheninfoimage" &&
-          key !== "kitchenmenuimage" &&
-          key !== "Specialitiesfood" &&
-          key !== "Signature" &&
-          key !== "removeimages" &&
-          key !== "badges" &&
-          key !== "removebadges"
-        ) {
-          column = column + key + "='" + value + "',";
-        } else if (key === "rating") {
-          column = column + key + "= " + value + ",";
-        }
-      }
-
-      editquery =
-        staticquery + column.slice(0, -1) + " where userid = " + req.userid;
-
-      console.log("query: ", editquery);
-
-      sql.query(editquery, function(err, res) {
-        if (err) {
-          console.log("error: ", err);
-          result(err, null);
-        } else {
-          if (cuisines !== undefined) {
-            if (cuisines.length !== 0) {
-              cuisinesstatus = true;
-              cuisines_temp = 0;
-              for (let i = 0; i < cuisines.length; i++) {
-                var new_cuisine = new Cusinemakeit(cuisines[i]);
-                new_cuisine.makeit_userid = req.userid;
-                Cusinemakeit.createCusinemakeit(new_cuisine, function(
-                  err,
-                  res2
-                ) {
-                  if (err) {
-                    console.log("error: ", err);
-                    result(err, null);
-                  } else {
-                    cuisines_temp++;
-                  }
-                });
-              }
-            }
-          }
-
-          if (removecuisines.length !== 0) {
-            removecuisinesstatus = true;
-
-            for (let i = 0; i < removecuisines.length; i++) {
-              var new_cid = removecuisines[i].cid;
-
-              Cusinemakeit.remove(new_cid, function(err, res3) {
-                if (err) {
-                  console.log("error: ", err);
-                  result(err, null);
-                } else {
-                  // remove_temp++;
-                }
-              });
-            }
-          }
-
-          if (removeimages.length !== 0) {
-            removeimagesstatus = true;
-
-            MakeitImages.remove(removeimages, function(err, res3) {
-              if (err) {
-                console.log("error: ", err);
-                result(err, null);
-              } else {
-                // remove_temp++;
-              }
-            });
-          }
-
-          if (removebadges.length !== 0) {
-            removebadgesstatus = true;
-
-            MakeitBadges.remove(removebadges, function(err, res3) {
-              if (err) {
-                console.log("error: ", err);
-                result(err, null);
-              } else {
-                // remove_temp++;
-              }
-            });
-          }
-
-          if (kitcheninfoimage.length !== 0) {
-            kitcheninfoimagestatus = true;
-
-            console.log("kitchenmenuimage:2 ");
-            for (let i = 0; i < kitcheninfoimage.length; i++) {
-              var new_kitcheninfoimage = new MakeitImages(kitcheninfoimage[i]);
-              new_kitcheninfoimage.makeitid = req.userid;
-              MakeitImages.createMakeitImages(new_kitcheninfoimage, function(
-                err,
-                createMakeitImages
-              ) {
-                if (err) {
-                  console.log("error: ", err);
-                  result(err, null);
-                } else {
-                  //cuisines_temp++;
-                }
-              });
-            }
-          }
-
-          if (kitchenmenuimage.length !== 0) {
-            kitchenmenuimagestatus = true;
-
-            console.log("kitchenmenuimage:4 ");
-
-            for (let i = 0; i < kitchenmenuimage.length; i++) {
-              console.log("kitchenmenuimage: ", kitchenmenuimage[i]);
-              var new_kitchenmenuimage = new MakeitImages(kitchenmenuimage[i]);
-              new_kitchenmenuimage.makeitid = req.userid;
-              MakeitImages.createMakeitImages(new_kitchenmenuimage, function(
-                err,
-                createMakeitImages
-              ) {
-                if (err) {
-                  console.log("error: ", err);
-                  result(err, null);
-                } else {
-                  //cuisines_temp++;
-                }
-              });
-            }
-          }
-
-          if (Specialitiesfood.length !== 0) {
-            Specialitiesfoodstatus = true;
-
-            console.log("kitchenmenuimage:3 ");
-            for (let i = 0; i < Specialitiesfood.length; i++) {
-              var new_Specialitiesfood = new MakeitImages(Specialitiesfood[i]);
-              new_Specialitiesfood.makeitid = req.userid;
-              MakeitImages.createMakeitImages(new_Specialitiesfood, function(
-                err,
-                createMakeitImages
-              ) {
-                if (err) {
-                  console.log("error: ", err);
-                  result(err, null);
-                } else {
-                  //cuisines_temp++;
-                }
-              });
-            }
-          }
-
-          if (Signature.length !== 0) {
-            Signaturestatus = true;
-
-            console.log("kitchenmenuimage:1 ");
-            for (let i = 0; i < Signature.length; i++) {
-              var new_Signature = new MakeitImages(Signature[i]);
-              new_Signature.makeitid = req.userid;
-              MakeitImages.createMakeitImages(new_Signature, function(
-                err,
-                createMakeitImages
-              ) {
-                if (err) {
-                  console.log("error: ", err);
-                  result(err, null);
-                } else {
-                  //cuisines_temp++;
-                }
-              });
-            }
-          }
-
-          if (badges.length !== 0) {
-            badgesstatus = true;
-
-            for (let i = 0; i < badges.length; i++) {
-              var new_badges = new MakeitBadges(badges[i]);
-              new_badges.makeit_id = req.userid;
-              MakeitBadges.createMakeitBadges(new_badges, function(
-                err,
-                createMakeitImages
-              ) {
-                if (err) {
-                  console.log("error: ", err);
-                  result(err, null);
-                } else {
-                  //cuisines_temp++;
-                }
-              });
-            }
-          }
-
-          let message = "Updated successfully";
-
+      ZoneModel.check_map_boundaries({lat:req.lat,lon:req.lon},async function(err,zoneres){
+        if(err||zoneres.status===false) {
           let resobj = {
             success: true,
-            status: true,
-            message: message
+            status: false,
+            error:err,
+            message:"Sorry this makeit loaction not in the inside of the zone location.",
           };
 
           result(null, resobj);
-        }
-      });
-    }
+        }else{
+          if(zoneres.status){
+            req.zone=zoneres.zone_id;
+            staticquery = "UPDATE MakeitUser SET ";
+            for (const [key, value] of Object.entries(req)) {
+              if (
+                key !== "userid" &&
+                key !== "cuisines" &&
+                key !== "region" &&
+                key !== "rating" &&
+                key !== "removecuisines" &&
+                key !== "kitcheninfoimage" &&
+                key !== "kitchenmenuimage" &&
+                key !== "Specialitiesfood" &&
+                key !== "Signature" &&
+                key !== "removeimages" &&
+                key !== "badges" &&
+                key !== "removebadges"
+              ) {
+                column = column + key + "='" + value + "',";
+              } else if (key === "rating") {
+                column = column + key + "= " + value + ",";
+              }
+            }
+
+            editquery =
+              staticquery + column.slice(0, -1) + " where userid = " + req.userid;
+
+            console.log("query: ", editquery);
+
+            sql.query(editquery, function(err, res) {
+              if (err) {
+                console.log("error: ", err);
+                result(err, null);
+              } else {
+                if (cuisines !== undefined) {
+                  if (cuisines.length !== 0) {
+                    cuisinesstatus = true;
+                    cuisines_temp = 0;
+                    for (let i = 0; i < cuisines.length; i++) {
+                      var new_cuisine = new Cusinemakeit(cuisines[i]);
+                      new_cuisine.makeit_userid = req.userid;
+                      Cusinemakeit.createCusinemakeit(new_cuisine, function(
+                        err,
+                        res2
+                      ) {
+                        if (err) {
+                          console.log("error: ", err);
+                          result(err, null);
+                        } else {
+                          cuisines_temp++;
+                        }
+                      });
+                    }
+                  }
+                }
+
+                if (removecuisines.length !== 0) {
+                  removecuisinesstatus = true;
+
+                  for (let i = 0; i < removecuisines.length; i++) {
+                    var new_cid = removecuisines[i].cid;
+
+                    Cusinemakeit.remove(new_cid, function(err, res3) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        // remove_temp++;
+                      }
+                    });
+                  }
+                }
+
+                if (removeimages.length !== 0) {
+                  removeimagesstatus = true;
+
+                  MakeitImages.remove(removeimages, function(err, res3) {
+                    if (err) {
+                      console.log("error: ", err);
+                      result(err, null);
+                    } else {
+                      // remove_temp++;
+                    }
+                  });
+                }
+
+                if (removebadges.length !== 0) {
+                  removebadgesstatus = true;
+
+                  MakeitBadges.remove(removebadges, function(err, res3) {
+                    if (err) {
+                      console.log("error: ", err);
+                      result(err, null);
+                    } else {
+                      // remove_temp++;
+                    }
+                  });
+                }
+
+                if (kitcheninfoimage.length !== 0) {
+                  kitcheninfoimagestatus = true;
+
+                  console.log("kitchenmenuimage:2 ");
+                  for (let i = 0; i < kitcheninfoimage.length; i++) {
+                    var new_kitcheninfoimage = new MakeitImages(kitcheninfoimage[i]);
+                    new_kitcheninfoimage.makeitid = req.userid;
+                    MakeitImages.createMakeitImages(new_kitcheninfoimage, function(
+                      err,
+                      createMakeitImages
+                    ) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        //cuisines_temp++;
+                      }
+                    });
+                  }
+                }
+
+                if (kitchenmenuimage.length !== 0) {
+                  kitchenmenuimagestatus = true;
+
+                  console.log("kitchenmenuimage:4 ");
+
+                  for (let i = 0; i < kitchenmenuimage.length; i++) {
+                    console.log("kitchenmenuimage: ", kitchenmenuimage[i]);
+                    var new_kitchenmenuimage = new MakeitImages(kitchenmenuimage[i]);
+                    new_kitchenmenuimage.makeitid = req.userid;
+                    MakeitImages.createMakeitImages(new_kitchenmenuimage, function(
+                      err,
+                      createMakeitImages
+                    ) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        //cuisines_temp++;
+                      }
+                    });
+                  }
+                }
+
+                if (Specialitiesfood.length !== 0) {
+                  Specialitiesfoodstatus = true;
+
+                  console.log("kitchenmenuimage:3 ");
+                  for (let i = 0; i < Specialitiesfood.length; i++) {
+                    var new_Specialitiesfood = new MakeitImages(Specialitiesfood[i]);
+                    new_Specialitiesfood.makeitid = req.userid;
+                    MakeitImages.createMakeitImages(new_Specialitiesfood, function(
+                      err,
+                      createMakeitImages
+                    ) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        //cuisines_temp++;
+                      }
+                    });
+                  }
+                }
+
+                if (Signature.length !== 0) {
+                  Signaturestatus = true;
+
+                  console.log("kitchenmenuimage:1 ");
+                  for (let i = 0; i < Signature.length; i++) {
+                    var new_Signature = new MakeitImages(Signature[i]);
+                    new_Signature.makeitid = req.userid;
+                    MakeitImages.createMakeitImages(new_Signature, function(
+                      err,
+                      createMakeitImages
+                    ) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        //cuisines_temp++;
+                      }
+                    });
+                  }
+                }
+
+                if (badges.length !== 0) {
+                  badgesstatus = true;
+
+                  for (let i = 0; i < badges.length; i++) {
+                    var new_badges = new MakeitBadges(badges[i]);
+                    new_badges.makeit_id = req.userid;
+                    MakeitBadges.createMakeitBadges(new_badges, function(
+                      err,
+                      createMakeitImages
+                    ) {
+                      if (err) {
+                        console.log("error: ", err);
+                        result(err, null);
+                      } else {
+                        //cuisines_temp++;
+                      }
+                    });
+                  }
+                }
+
+                let message = "Updated successfully";
+
+                let resobj = {
+                  success: true,
+                  status: true,
+                  message: message
+                };
+
+                result(null, resobj);
+              }
+            });
+          }
+    } });}
   } catch (error) {
     var errorCode = 402;
     let sucobj = true;
@@ -3112,5 +3145,44 @@ Makeituser.makeit_get_firstorder= async function makeit_get_firstorder(req,resul
       result(null, resobj);
     }
 };
+
+////make-it assign zone id/////////////
+Makeituser.makeit_zoneid_update= async function makeit_zoneid_update(req,result) {
+    var makeit_latlng = await query("select * from MakeitUser where userid ="+req.userid);
+    if(makeit_latlng.length>0){
+      var latlng={lat:makeit_latlng[0].lat,lon:makeit_latlng[0].lon}
+      ZoneModel.check_map_boundaries(latlng,async function(err,res){
+        if(err||res.status===false) {
+          let resobj = {
+            success: true,
+            status : false,
+            message: "Zone update not successfully",
+          };
+          result(null, resobj);
+        }else{
+          if(res.status){
+            var Updatedetails = await query("Update MakeitUser set zone= '"+res.zone_id+"' where userid ="+req.userid);
+            let resobj = {
+              success: true,
+              status : true,
+              message: "Zone update successfully",
+            };
+            result(null, resobj);
+          }
+          
+        }
+      })
+      
+    }else{
+      let resobj = {
+        success: true,
+        message: "Zone update not successfully",
+        status : false
+      };
+      result(null, resobj);
+    }
+};
+
+
 
 module.exports = Makeituser;
