@@ -4853,7 +4853,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid_zone = async function get_eat_re
                                   
                     }
                   ////////Filter for unservisiable kitchen list
-                  const unservicablearray = res2.kitchenlist.filter(kitchenarray => kitchenarray.serviceablestatus==true);
+                  var unservicablearray = temparray.filter(kitchenarray => kitchenarray.serviceablestatus==true);
                   ////////////////////////////////////////////////
                   if(unservicablearray.length >0 ){
                       let resobj = {
