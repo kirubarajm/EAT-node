@@ -80,6 +80,7 @@ var Order = function(order) {
   this.flatno = order.flatno;
   this.app_type = order.app_type || 3;
   this.cancel_status = order.cancel_status ||0;
+  this.cus_pincode = order.cus_pincode ||0;
 };
 
 
@@ -102,7 +103,7 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
             req.locality = address_data[0].locality;
             req.cus_lat = address_data[0].lat;
             req.cus_lon = address_data[0].lon;
-
+            req.cus_pincode = address_data[0].pincode;
             // req.gst = amountdata.gstcharge;
             // req.price = amountdata.grandtotal;
             // req.makeit_earnings = amountdata.makeit_earnings;
