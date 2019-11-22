@@ -2333,12 +2333,12 @@ Order.orderviewbyeatuser = function(req, result) {
                   res1[0].items = items.item;
                 }
 
-                // if (res1[0].delivery_vendor==1) {
+                if (res1[0].delivery_vendor==1) {
                   
-                //   res1[0].moveitdetail.name=res1[0].runner_name;
-                //   res1[0].moveitdetail.phoneno=res1[0].runner_phone_number;
+                  res1[0].moveitdetail.name=res1[0].runner_name;
+                  res1[0].moveitdetail.phoneno=res1[0].runner_phone_number;
 
-                // }
+                }
                   var itemlist = res1[0].items
                   var productprice = 0;
                 for (let i = 0; i < itemlist.length; i++) {

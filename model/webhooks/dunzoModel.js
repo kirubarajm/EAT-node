@@ -120,14 +120,14 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           Dunzo.create_Dunzomoveitdetails(Dunzomoveitdetails_data);
 
               if (orderdetails.length !== 0) {
-            
-                if (orderdetails[0].moveit_status < 1 ) {
+                console.log(orderdetails[0].orderid);
+
+           //     if (orderdetails[0].moveit_status < 1 ) {
                 
                   var orderaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
                
                   updatequery ="UPDATE Orders SET moveit_status = 1 ,moveit_accept_time= '" + orderaccepttime +"' WHERE orderid ='" +orderdetails[0].orderid +"'";
                   const updatestatus = await query(updatequery);
-                  console.log(orderdetails[0].orderid);
 
                   let response = {
                     success: true,
@@ -137,21 +137,21 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                  
                   result(null, response);
                
-                } else if (orderdetails[0].moveit_status == 1) {
-                  let response = {
-                    success: true,
-                    status: false,
-                    message: "Sorry your order already accepted"
-                  };
-                  result(null, response);
-                } else {
-                  let response = {
-                    success: true,
-                    status: false,
-                    message: "Following order is not assigned to you!"
-                  };
-                  result(null, response);
-                }
+               // } else if (orderdetails[0].moveit_status == 1) {
+                  // let response = {
+                  //   success: true,
+                  //   status: false,
+                  //   message: "Sorry your order already accepted"
+                  // };
+                  // result(null, response);
+                // } else {
+                //   let response = {
+                //     success: true,
+                //     status: false,
+                //     message: "Following order is not assigned to you!"
+                //   };
+                //   result(null, response);
+                // }
               } else {
                 let response = {
                   success: true,
@@ -321,6 +321,8 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
       case dunzoconst.cancelled:
           console.log("cancelled");
           var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderdetails[0].orderid+"");
+          updatequery =await query("UPDATE Orders SET moveit_status = 0  WHERE orderid ='" +orderdetails[0].orderid +"'");
+
           let orderqueue = {
             success: true,
             message: "Order again pushed into queue.",
