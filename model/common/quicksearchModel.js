@@ -505,7 +505,7 @@ const order_auto_assign_Change = new CronJob("* */1 7-23 * * * ", async function
   if (constant.order_assign_status==true) {
   var i = 0;
   var res = await query(
-    "select oq.*,mk.makeithub_id,mk.userid,mk.lat,mk.lon,ors.makeit_accept_time,ors.payment_type from Orders_queue as oq join Orders as ors on ors.orderid=oq.orderid join MakeitUser as mk on mk.userid = ors.makeit_user_id where status = 0 or status = 2 order by ors.ordertime ASC"
+    "select oq.*,mk.makeithub_id,mk.userid,mk.lat,mk.pincode,mk.lon,ors.makeit_accept_time,ors.payment_type from Orders_queue as oq join Orders as ors on ors.orderid=oq.orderid join MakeitUser as mk on mk.userid = ors.makeit_user_id where status = 0 or status = 2 order by ors.ordertime ASC"
   ); //and created_at > (NOW() - INTERVAL 10 MINUTE
   console.log('res length-->',res.length);
   
@@ -715,8 +715,9 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
 
     console.log("diffMins"+diffMins);
  
-     if (constant.order_assign_dunzo==true && res[i].payment_type==1 && diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 0) {  
+     if (constant.order_assign_dunzo==true && res[i].payment_type==1 &&res[i].pincode&& diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 2) {  
        // Dunzo.dunzo_task_create
+       console.log("Dunzo Order assign =>>>>>>>>>>>>>>>>>>>>>>>");
        await QuickSearch.dunzo_task_create(res[i].orderid);
 
       }else{
@@ -727,7 +728,7 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
      
       var moveitlistquery ="select zo.boundaries,mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Zone as zo on zo.id = mu.zone left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+moveitlistzonequery+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount";
       var zonemoveitlist = await query(moveitlistquery);
-      //console.log("moveitlistquery-->",JSON.stringify(zonemoveitlist));
+      console.log("moveitlistquery-->",JSON.stringify(zonemoveitlist));
       if (zonemoveitlist.length !==0) {
             MoveitFireBase.getInsideZoneMoveitList(makeitLocation,zonemoveitlist,async function(err, zoneInsideMoveitlist) {
               if (err){
@@ -737,13 +738,13 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
               else{ 
                 console.log("zoneInsideMoveitlist-->",JSON.stringify(zoneInsideMoveitlist));
                 if(zoneInsideMoveitlist.length>0){
-                    sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[zoneInsideMoveitlist[0].userid, assign_time, req.orderid],async function(err, res2) {
+                    sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[zoneInsideMoveitlist[0].userid, assign_time, res[i].orderid],async function(err, res2) {
                       if (err) {
                         i++;
                         Zone_order_assign(res,i);
                       } else {
-                        await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
-                        await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
+                        await query("update Orders_queue set status = 1 where orderid =" +res[i].orderid+"");
+                        await Notification.orderMoveItPushNotification(res[i].orderid,PushConstant.pageidMoveit_Order_Assigned);
                         i++;
                         Zone_order_assign(res,i);
                       }
@@ -763,6 +764,7 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
       isCronRun=false;
     }
   }catch(e){
+    console.log("e--->",e);
     isCronRun=false;
   }
 };

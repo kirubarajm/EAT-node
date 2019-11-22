@@ -305,7 +305,10 @@ exports.getInsideZoneMoveitList = async function getInsideZoneMoveitList(makeitL
         item.islocation=false;
         item.distance=0;
       }else{
-        var isZone =zone.pointInPolygon(item.boundaries, { lat: location[0], lng: location[1] })
+        var isZone =zone.pointInPolygon(JSON.parse(item.boundaries), { lat: ""+location[0], lng: ""+location[1] })
+        console.log("lat-->",location[0]);
+        console.log("lon-->",location[1]);
+        console.log(item.boundaries);
         console.log("moveit--inside-->",isZone);
         if(isZone){
           var dist = geodist(makeitLocation, location,{exact: true, unit: 'km'});

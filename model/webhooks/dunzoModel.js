@@ -361,7 +361,6 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
     order_details[0].items = items.item;
   }
 
-
     //set form data
     var form = {
       request_id: order_details[0].orderid.toString(),
@@ -406,7 +405,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
       package_approx_value: order_details[0].price,
       special_instructions: "Fragile items. Handle with great care!!"
     }
-    //console.log(form);
+    console.log(form);
     //console.log("parse-------",JSON.parse(form));
     //console.log("Str----",JSON.stringify(form));
     var headers= {
