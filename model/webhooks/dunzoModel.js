@@ -414,24 +414,42 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
       'Accept-Language':'en_US'
     };
   
+    console.log(order_details[0].makeitdetail.pincode);
     //set request parameter
     request.post({headers: headers, url: 'https://apis-staging.dunzo.in/api/v1/tasks?test=true', json: form, method: 'POST'},async function (e, r, body) {
-      console.log(body.state);
+      console.log(body);
     if (body.state=="created") {
+      console.log("created");
+
       var order_queue_update = await query("update Orders_queue set status = 1 where orderid =" +orderid+"");
-      var order_update = await query("update Orders set dunzo_taskid ='"+body.task_id+"',delivery_vendor=1  where orderid =" +orderid+"");
+      var order_update = await query("update Orders set moveit_status=1,dunzo_taskid ='"+body.task_id+"',delivery_vendor=1  where orderid =" +orderid+"");
 
     } else if (body.code="unserviceable_location_error") {
+      console.log("unserviceable_location_error");
+
       var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderid+"");
     }else if (body.code="duplicate_request") {
+      console.log("duplicate_request");
+
       //var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
     }else if (body.code="different_city_error") {
+      console.log("different_city_error");
+
       var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
     }else if (body.code="rain_error") {
+      console.log("rain_error");
+
       var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
     }else if (body.code="service_unavailable") {
+      console.log("service_unavailable");
+
       var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
-    }     
+    }else if(body.code="validation_failed") {
+      console.log("validation_failed");
+
+      var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
+
+    }    
     
 
       let resobj = {

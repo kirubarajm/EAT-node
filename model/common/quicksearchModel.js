@@ -534,9 +534,9 @@ QuickSearch.order_assign=async function order_assign(res,i){
     var diffDays = Math.floor(diffMs / 86400000);
     var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
     var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
-    console.log("diffMins"+makeit_accept_time);
-
     console.log("diffMins"+diffMins);
+    console.log("res[i].payment_type"+res[i].payment_type);
+         console.log("res[i].status"+res[i].status);
  
      if (constant.order_assign_dunzo==true && res[i].payment_type==1 && diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 0) {  
        // Dunzo.dunzo_task_create
