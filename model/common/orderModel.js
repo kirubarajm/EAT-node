@@ -25,6 +25,8 @@ var MoveitUser = require("../../model/moveit/moveitUserModel");
 var OrderStatusHistory = require("../common/orderstatushistoryModel");
 var Dunzo = require("../../model/webhooks/dunzoModel.js");
 var requestpromise = require('request-promise');
+var dunzoconst = require('../../model/dunzo_constant');
+
 
 
 // var instance = new Razorpay({
@@ -2333,12 +2335,17 @@ Order.orderviewbyeatuser = function(req, result) {
                   res1[0].items = items.item;
                 }
 
+                ////dunzo code
                 if (res1[0].delivery_vendor==1) {
                   
                   res1[0].moveitdetail.name=res1[0].runner_name;
                   res1[0].moveitdetail.phoneno=res1[0].runner_phone_number;
 
                 }
+                res1[0].dunzo_client_id= dunzoconst.dunzo_client_id;
+                res1[0].Authorization= dunzoconst.Authorization;
+
+
                   var itemlist = res1[0].items
                   var productprice = 0;
                 for (let i = 0; i < itemlist.length; i++) {
