@@ -8,6 +8,10 @@ const query = util.promisify(sql.query).bind(sql);
 var Dunzoresponce = require("../../model/common/dunzoresponceModel");
 var Dunzomoveitdetails = require("../../model/common/dunzomoveitdetailsModel");
 var moment = require("moment");
+var Notification = require("../../model/common/notificationModel.js");
+var PushConstant = require("../../push/PushConstant.js");
+
+
 
 
 
@@ -174,6 +178,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                     message: "kitchen reached successfully"
                   };
                  
+
              result(null, resobj);
 
           break; 
@@ -191,6 +196,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                   status:false,
                   message: "Sorry! This order already canceled."
                 };
+                
                 result(null, resobj);
                // return;
               }else if (orderdetails[0].orderstatus < 3 ) {
@@ -210,7 +216,9 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                         status: true,
                         message: "Order Pickedup successfully"
                       };
-                     
+                      PushConstant.Pageid_eat_order_pickedup = 5;
+                      await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
+       
                  result(null, resobj);
         
               }
@@ -244,7 +252,8 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                   status: true,
                   message: "Customer location reached successfully"
                 };
-               
+                PushConstant.Pageid_eat_order_pickedup = 6;
+                await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
            result(null, data);
 
           
@@ -280,8 +289,11 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                         status: true,
                         message: "Order delivered successfully",
                         orderdeliverystatus: true
-
                       };
+
+                      PushConstant.Pageid_eat_order_pickedup = 7;
+                      await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
+          
                      
                  result(null, deliverd);
 

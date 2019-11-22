@@ -1839,10 +1839,7 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
             if (err) {
               result(err, null);
             } else {
-              await Notification.orderEatPushNotification(
-                req.orderid,
-                null,
-                PushConstant.Pageid_eat_order_pickedup
+              await Notification.orderEatPushNotification(req.orderid,null,PushConstant.Pageid_eat_order_pickedup
               );
 
               req.orglat = res1[0].makeit_lat;
@@ -4107,7 +4104,7 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
             req.orderid,
             req.moveit_user_id
           ],
-          function(err, res) {
+         async function(err, res) {
             if (err) {
               result(err, null);
             } else {
@@ -4116,6 +4113,8 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
                 status:true,
                 message: "Customer location reached successfully"
               };
+              PushConstant.Pageid_eat_order_pickedup = 6;
+              await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
               result(null, resobj); 
             }
           }
