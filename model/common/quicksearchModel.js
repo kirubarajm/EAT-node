@@ -541,7 +541,8 @@ QuickSearch.order_assign=async function order_assign(res,i){
      if (constant.order_assign_dunzo==true && res[i].payment_type==1 && diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 0) {  
        // Dunzo.dunzo_task_create
        await QuickSearch.dunzo_task_create(res[i].orderid);
-
+       i++;
+       order_assign(res,i);
       }else{
 
         var geoLocation = [];

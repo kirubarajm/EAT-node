@@ -2951,12 +2951,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
           var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
           for (let i = 0; i < orderitemdetails.length; i++) {
-            var productquantityadd =
-              "update Product set quantity = quantity+" +
-              orderitemdetails[i].quantity +
-              " where productid =" +
-              orderitemdetails[i].productid +
-              "";
+            var productquantityadd ="update Product set quantity = quantity+" +orderitemdetails[i].quantity +" where productid =" +orderitemdetails[i].productid +"";
             sql.query(productquantityadd, function(err, res2) {
               if (err) {
                 result(err, null);
