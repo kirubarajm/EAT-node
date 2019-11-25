@@ -1096,7 +1096,6 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           );
         //  makeitavailability[0].distance = makeitavailability[0].distance * constant.onemile;
           //makeitavailability[0].distance = makeitavailability[0].distance.toFixed(2) ;
-          console.log(makeitavailability[0].distance);
             
         var eta = constant.foodpreparationtime + (constant.onekm * makeitavailability[0].distance);
         

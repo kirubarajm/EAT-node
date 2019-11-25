@@ -242,7 +242,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                     req.landmark = address_data[0].landmark;
                     req.cus_pincode = address_data[0].pincode;
                     req.coupon = req.cid
-                    console.log(req.cus_pincode);
+               
                       if (req.payment_type == 0 || req.payment_type == 3) {
                         Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                           if (err) {

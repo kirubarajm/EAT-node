@@ -689,5 +689,5 @@ QuickSearch.order_assign=async function order_assign(res,i){
 }
 
 };
-order_auto_assign_Change.start();
+//order_auto_assign_Change.start();
 module.exports = QuickSearch;
