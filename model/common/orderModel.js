@@ -5595,7 +5595,7 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
     }
 
-  var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
+  var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * (get_moveit_list_based_on_hub[0].no_of_move_it_count || 0)
   console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].zone);
   console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
   console.log("xfactorValue-->",Math.round(xfactorValue));
