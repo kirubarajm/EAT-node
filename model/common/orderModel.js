@@ -2964,7 +2964,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             });
           }
 
-          if (orderdetails.ordertype==0) {
+          if (orderdetails[0].ordertype==0) {
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
             if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
@@ -3418,13 +3418,14 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
               }
             });
           }
+          console.log("orderdetails[0].ordertype"+orderdetails[0].ordertype);
 
-          if (orderdetails.ordertype==0) {
-            
-        
+          if (orderdetails[0].ordertype==0) {
+            console.log("orderdetails[0].payment_type"+orderdetails[0].payment_type);
+
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
-            if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
+            if (orderdetails[0].payment_type == "1" || orderdetails[0].payment_status == 1){
               
               await Order.create_refund(refundDetail);
               if (orderdetails[0].refund_amount !== 0) {
@@ -3453,7 +3454,7 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
             // await query(deletequery);
             await Order.remove_used_coupon(removecoupon);
           }
-        }
+          }
 
           await Notification.orderEatPushNotification(
             req.orderid,
@@ -5172,7 +5173,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              });
            }
  
-           if (orderdetails.ordertype==0) {
+           if (orderdetails[0].ordertype==0) {
            if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
  
              if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
@@ -5289,7 +5290,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              });
            }
  
-           if (orderdetails.ordertype==0) {
+           if (orderdetails[0].ordertype==0) {
            if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
  
              if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){

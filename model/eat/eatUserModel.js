@@ -4187,4 +4187,8 @@ Eatuser.user_history = async function user_history(req, result) {
   }
 };
 
+//eat suggeation list
+Eatuser.eat_suggestions_list_by_eatuserid = async function eat_suggestions_list_by_eatuserid(req, result) {
+ 
+};
 module.exports = Eatuser;

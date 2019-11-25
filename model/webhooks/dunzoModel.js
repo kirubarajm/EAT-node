@@ -376,7 +376,6 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
     pickup.lng = order_details[0].makeithubdetail.lon;
     pickup.phoneno = order_details[0].makeithubdetail.phone_number;
     pickup.pincode = order_details[0].makeithubdetail.pincode;
-
   }
 
     //set form data

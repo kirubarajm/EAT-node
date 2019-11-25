@@ -170,6 +170,8 @@ app.route("/eat/tunnelorder").post(middleware.checkToken,routesVersioning({"1.0.
 app.route("/eat/getXfactors").post(middleware.checkToken,routesVersioning({"1.0.0":orders.getXfactors_by_userid}));
 app.route("/eat/updatetunneluser").put(middleware.checkToken,routesVersioning({"1.0.0":eatuser.update_tunnel_byid}));
 app.route("/eat/getotp/:phone_number").get(middleware.checkToken,routesVersioning({"1.0.0":eatuser.get_otp_phone_number}));
+app.route("/eat/suggestions").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_region_list_sort_filter}));
+
 //app.route("/eat/dunzptaskcreate").post(routesVersioning({"1.0.0":orders.dunzo_order_create}));
 
 
