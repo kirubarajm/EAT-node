@@ -87,7 +87,7 @@ var Order = function(order) {
   this.app_type = order.app_type || 3;
   this.cancel_status = order.cancel_status ||0;
   this.delivery_vendor=order.delivery_vendor ||0;
-  this.cus_pincode=order.cus_pincode;
+  this.cus_pincode = order.cus_pincode ||0;
 };
 
 
@@ -1749,7 +1749,7 @@ Order.getUnassignorders =async function getUnassignorders(req,result) {
       result(err, null);
     } 
   }else{
-    var res = await query("Select mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0");
+    var res = await query("Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status!=1 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0");
   }
  
   let resobj = {

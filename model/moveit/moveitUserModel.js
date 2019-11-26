@@ -295,11 +295,24 @@ Moveituser.create_createMoveitTimelog = function create_createMoveitTimelog(req)
 Moveituser.update_online_status =async function (req, result) {
 
 var userdetails = await query("select * from MoveitUser where userid = "+req.userid+"");
-
+var zone_id=0;
+var zone_name="";
+var boundaries="";
+var iszone=false;
   if (userdetails.length !==0) {
     
   if (userdetails[0].login_status == 1) {
-        
+       
+    if(constant.zone_control){
+      var zoneDetail = await query("select * from Zone where id = "+userdetails[0].zone+"");
+      if(zoneDetail&&zoneDetail.length>0&&zoneDetail[0].boundaries){
+        zone_id=zoneDetail[0].id;
+        zone_name=zoneDetail[0].Zonename;
+        boundaries=JSON.parse(zoneDetail[0].boundaries);
+        iszone=true;
+      }
+    }
+       
     var orderdetails = await query("select * from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE() and moveit_user_id = "+req.userid+"");
 
     if (orderdetails.length == 0) {
@@ -330,6 +343,10 @@ var userdetails = await query("select * from MoveitUser where userid = "+req.use
                 status:true,
                 message: key,
                 onlinestatus: key1,
+                zone_id:zone_id,
+                zone_name:zone_name,
+                boundaries:boundaries,
+                iszone:iszone,
                 forcelogout : 1
             };
 
