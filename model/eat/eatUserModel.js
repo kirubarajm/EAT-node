@@ -3868,7 +3868,7 @@ Eatuser.eat_explore_kitchen_dish_v2 =async function eat_explore_kitchen_dish_v2(
       
 
           var query =
-          "Select pt.makeit_userid  as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,mk.unservicable,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+          "Select mk.zone,pt.makeit_userid  as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,mk.unservicable,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
           req.lat +
           "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
           req.lon +
@@ -3882,8 +3882,8 @@ Eatuser.eat_explore_kitchen_dish_v2 =async function eat_explore_kitchen_dish_v2(
           req.search +
           "%' and pt.active_status = 1 and mk.ka_status = 2 and pt.approved_status=2 and pt.quantity != 0 and pt.delete_status != 1  group by pt.makeit_userid";
 
-      console.log(query);
-      sql.query(query, function(err, res) {
+      //console.log(query);
+      sql.query(query,async function(err, res) {
         if (err) {
          // console.log("error: ", err);
           
@@ -3915,12 +3915,22 @@ Eatuser.eat_explore_kitchen_dish_v2 =async function eat_explore_kitchen_dish_v2(
             }
             
             if (res[i].serviceablestatus !== false) {
-              
-              if (res[i].distance <= radiuslimit) {
-                res[i].serviceablestatus = true;
+              ////Add Zone Controle Condition//////
+              if(constant.zone_control){
+                var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+                if(getzone.zone_id && res[i].zone==getzone.zone_id){
+                  res[i].serviceablestatus = true;
+                }else{
+                  res[i].serviceablestatus = false;
+                } 
               }else{
-                res[0].serviceablestatus = false;
+                if (res[i].distance <= radiuslimit) {
+                  res[i].serviceablestatus = true;
+                }else{
+                  res[0].serviceablestatus = false;
+                }
               }
+              ////////////////////////////////////// 
             }
               res[i].eta = Math.round(eta) + " mins";
             
@@ -3964,7 +3974,7 @@ Eatuser.eat_explore_kitchen_dish =async function eat_explore_kitchen_dish(req,re
     // } else {
         
           var query =
-            "Select pt.makeit_userid  as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,mk.unservicable,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+            "Select mk.zone,pt.makeit_userid  as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,mk.unservicable,ly.localityname ,re.regionname,mk.costfortwo,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
             req.lat +
             "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
             req.lon +
@@ -3981,7 +3991,7 @@ Eatuser.eat_explore_kitchen_dish =async function eat_explore_kitchen_dish(req,re
           //var query ="Select distinct pt.productid,pt.active_status,mu.userid as makeit_userid,mu.name as makeit_username,mu.brandname,mu.img1 as makeit_image,mu.regionid as makeit_region,re.regionname, pt.product_name,pt.vegtype,pt.image,pt.price,pt.vegtype as producttype,pt.quantity,fa.favid,IF(fa.favid,'1','0') as isfav,cu.cuisinename,cu.cuisineid,ly.localityname, ( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( mu.lat ) )  * cos( radians( mu.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(mu.lat)) ) ) AS distance from MakeitUser mu join Product pt on mu.userid = pt.makeit_userid join Cuisine cu on cu.cuisineid=pt.cuisine left join Locality ly on mu.localityid=ly.localityid join Region re on re.regionid = mu.regionid left join Fav fa on fa.productid = pt.productid and fa.eatuserid = '"+req.eatuserid+"'  where mu.appointment_status = 3 and mu.verified_status = 1 and pt.active_status =1 and pt.quantity != 0  and pt.delete_status !=1 and pt.product_name like '%"+req.search+"%'  HAVING distance <="+radiuslimit+" ORDER BY pt.product_name ASC";
       
 
-      sql.query(query, function(err, res) {
+      sql.query(query,async function(err, res) {
         if (err) {
          // console.log("error: ", err);
           
@@ -4014,12 +4024,22 @@ Eatuser.eat_explore_kitchen_dish =async function eat_explore_kitchen_dish(req,re
               }
               
               if (res[i].serviceablestatus !== false) {
-                
-                if (res[i].distance <= radiuslimit) {
-                  res[i].serviceablestatus = true;
+                ////Add Zone Controle Condition//////
+                if(constant.zone_control){
+                  var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+                  if(getzone.zone_id && res1[i].zone==getzone.zone_id){
+                    res[i].serviceablestatus = true;
+                  }else{
+                    res[i].serviceablestatus = false;
+                  } 
                 }else{
-                  res[i].serviceablestatus = false;
+                  if (res[i].distance <= radiuslimit) {
+                    res[i].serviceablestatus = true;
+                  }else{
+                    res[0].serviceablestatus = false;
+                  }
                 }
+                //////////////////////////////////////
               }
               res[i].eta = Math.round(eta) + " mins";
             

@@ -416,8 +416,10 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
                   if(constant.zone_control){
                     var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
                     if(getzone.zone_id && res1[i].zone==getzone.zone_id){
+                      res1[i].status = 0;
                       res1[i].serviceablestatus = true;
                     }else{
+                      res1[i].status = 1;
                       res1[i].serviceablestatus = false;
                     } 
                   }else{
@@ -574,8 +576,10 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
                     if(constant.zone_control){
                       var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
                       if(getzone.zone_id && res1[i].zone==getzone.zone_id){
+                        res1[i].status = 0;
                         res1[i].serviceablestatus = true;
                       }else{
+                        res1[i].status = 1;
                         res1[i].serviceablestatus = false;
                       } 
                     }else{
