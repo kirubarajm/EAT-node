@@ -70,9 +70,6 @@ Collection.list_all_active_collection = function list_all_active_collection(req,
       result(err, null);
     } else {
 
-
-  
-
       var kitchens =   await Collection.getcollectionlist(res,req)
 
       console.log("first collection");
@@ -217,6 +214,7 @@ Collection.getcollectionlist = async function(res,req){
   var userdetails = await query("Select * From User where userid = '" +req.eatuserid +"'");
   for (let i = 0; i < res.length; i++) {
     req.cid = res[i].cid;
+    console.log("res[i].query"+res[i].query);
     req.query = res[i].query;
     await Collection.get_all_collection_by_cid_getkichens(req, async function(err,res3) {
       if (err) {
@@ -345,7 +343,7 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
         var  productquery = '';
         var  groupbyquery = " GROUP BY pt.makeit_userid";
       //  var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
-      var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,mk.unservicable = 0 desc";
+        var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,mk.unservicable = 0 desc";
       
       
         var breatfastcycle = constant.breatfastcycle;
@@ -373,28 +371,39 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
       
 
       //based on logic this conditions will change
-        if (req.cid === 1 || req.cid === 2) {
+      ///product
+        if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
           var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
-        }else if(req.cid === 3 ) {
+        }else if(req.cid == 3 ) {    ///kitchen
           var productlist = res[0].query + productquery  + orderbyquery;
+        }else if(req.cid= 5){
+          var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
         }
           
-          console.log( productlist);
-
+        console.log(productlist);
           
          await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
             if (err) {
               result(err, null);
             } else {
 
-              console.log(res1);
 
               for (let i = 0; i < res1.length; i++) {
 
-                if (req.cid === 1 || req.cid === 2) {
-                  res1[i].productlist =JSON.parse(res1[i].productlist)
+                if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
+                  res1[i].productlist =JSON.parse(res1[i].productlist);
+                  //remove duplicate values
+                  var arr = res1[i].productlist;
+               
+                  function getUniqueListBy(arr, key) {
+                    return [...new Map(arr.map(item => [item[key], item])).values()]
+                 }
+                   res1[i].productlist = getUniqueListBy(arr, 'productid')
                 }
                 
+               
+              
+
                 res1[i].distance = res1[i].distance.toFixed(2);
                 //15min Food Preparation time , 3min 1 km
               //  eta = 15 + 3 * res[i].distance;
@@ -437,7 +446,7 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
                 
               }
 
-              if (req.cid == 1) {
+              if (req.cid == 1||req.cid == 4 ||req.cid == 2 || req.cid == 6|| req.cid == 7) {
                 res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
               }
 
@@ -523,14 +532,16 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
         
   
         //based on logic this conditions will change
-          if (req.cid === 1 || req.cid === 2) {
-            var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
-          }else if(req.cid === 3 ) {
-            var productlist = res[0].query + productquery  + orderbyquery;
-          }
+           if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
+          var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
+        }else if(req.cid == 3 ) {    ///kitchen
+          var productlist = res[0].query + productquery  + orderbyquery;
+        }else if(req.cid= 5){
+          var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
+        }
             
   
-            
+            console.log(productlist);
            await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], function(err, res1) {
               if (err) {
                 result(err, null);
@@ -538,8 +549,14 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
   
                 for (let i = 0; i < res1.length; i++) {
   
-                  if (req.cid === 1 || req.cid === 2) {
+                  if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
                     res1[i].productlist =JSON.parse(res1[i].productlist)
+                    var arr = res1[i].productlist;
+               
+                    function getUniqueListBy(arr, key) {
+                      return [...new Map(arr.map(item => [item[key], item])).values()]
+                   }
+                     res1[i].productlist = getUniqueListBy(arr, 'productid')
                   }
                   
                   res1[i].distance = res1[i].distance.toFixed(2);
@@ -587,7 +604,7 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
                   
                 }
   
-                if (req.cid == 1) {
+                if (req.cid == 1||req.cid == 4 ||req.cid == 2 || req.cid == 6  || req.cid == 7) {
                   res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
                 }
   
@@ -1102,10 +1119,12 @@ Collection.get_all_collection_by_cid_getkichens = async function get_all_collect
 
 
 //based on logic this conditions will change
-  if (req.cid === 1 || req.cid === 2) {
+  if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
     var productlist = req.query + productquery  + groupbyquery;
-  }else if(req.cid === 3 ) {
+  }else if(req.cid == 3 ) {
     var productlist = req.query + productquery  + orderbyquery;
+  }else if(req.cid= 5){
+    var productlist = req.query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
   }
  
 //  console.log(productlist);
@@ -1113,7 +1132,7 @@ Collection.get_all_collection_by_cid_getkichens = async function get_all_collect
 
         for (let i = 0; i < res1.length; i++) {
 
-          if (req.cid === 1 || req.cid === 2) {
+          if (req.cid === 1 || req.cid === 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
             res1[i].productlist =JSON.parse(res1[i].productlist)
           }
           
