@@ -546,7 +546,8 @@ QuickSearch.order_assign=async function order_assign(res,i){
      if (constant.order_assign_dunzo==true && res[i].payment_type==1 && diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 0) {  
        // Dunzo.dunzo_task_create
        await QuickSearch.dunzo_task_create(res[i].orderid);
-
+       i++;
+       order_assign(res,i);
       }else{
 
         var geoLocation = [];
@@ -715,11 +716,12 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
 
     console.log("diffMins"+diffMins);
  
-     if (constant.order_assign_dunzo==true && res[i].payment_type==1 &&res[i].pincode&& diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 2) {  
+     if (constant.order_assign_dunzo==true && res[i].payment_type==1 &&res[i].pincode&& diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 0) {  
        // Dunzo.dunzo_task_create
        console.log("Dunzo Order assign =>>>>>>>>>>>>>>>>>>>>>>>");
        await QuickSearch.dunzo_task_create(res[i].orderid);
-
+         i++;
+       order_assign(res,i);
       }else{
       var makeitLocation = [];
       makeitLocation.push(res[i].lat);
