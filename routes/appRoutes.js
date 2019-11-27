@@ -22,6 +22,7 @@ module.exports = function(app) {
   app.route("/masters/regionlist").get(routesVersioning({"1.0.0":region.list_all_region}));
   app.route("/masters/region").post(routesVersioning({"1.0.0":region.create_a_Region}));
   app.route("/masters/radiuslimit").post(routesVersioning({"1.0.0":region.create_a_radius_limit}));
+  app.route("/masters/region/search").post(routesVersioning({"1.0.0":region.search_a_search_region}));
   
 
 
@@ -50,6 +51,7 @@ module.exports = function(app) {
   app.route("/repliesread").put(routesVersioning({"1.0.0":queryanswer.update_read_answer}));
   app.route("/masters").get(routesVersioning({"1.0.0":master.read_a_masters}));
   app.route("/masters/eat").get(routesVersioning({"1.0.0":master.read_eat_masters}));
+  
 
  // Others
   app.route("/faqs/:id").get(routesVersioning({"1.0.0":faq.list_all_faqbytype}));
