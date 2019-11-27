@@ -120,7 +120,7 @@ Moveituser.getUserById = function getUserById(userId, result) {
 
 
 Moveituser.admin_getUserById = function getUserById(userId, result) {
-    sql.query("Select mu.*,mh.area_name From MoveitUser mu left join Moveit_hubs mh  on mu.moveit_hub = mh.moveithub_id where mu.userid = ? ", userId, function (err, res) {
+    sql.query("Select mu.*,mh.address as hubaddress,zo.Zonename,zo.boundaries From MoveitUser mu left join Makeit_hubs mh on mu.moveit_hub = mh.makeithub_id left join Zone zo on zo.id = mu.zone where mu.userid = ? ", userId, function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -247,24 +247,24 @@ Moveituser.checkLogin = function checkLogin(req, result) {
 };
 
 Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req, result) {
-    var query = "Select * from MoveitUser as mov";
+    var query = "Select *,zo.xfactor as zonexfactor,mh.xfactor as hubxfactor,mh.address as hubaddress from MoveitUser left join Zone zo on zo.id=zone left join Makeit_hubs mh on mh.makeithub_id=moveit_hub ";
     if(req.online_status===0){
-      query = query + " where mov.online_status=" +req.online_status
+      query = query + " where online_status=" +req.online_status
       if (req.search) {
-        query = query + " and mov.name LIKE  '%" + req.search + "%'";
+        query = query + " and name LIKE  '%" + req.search + "%'";
       }
     }else if(req.online_status===1){
-      query= "select * from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
+      query= "select *,zo.xfactor as zonexfactor,mh.xfactor as hubxfactor,mh.address as hubaddress from MoveitUser left join Zone zo on zo.id=zone left join Makeit_hubs mh on mh.makeithub_id=moveit_hub where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
       if (req.search) {
         query = query + " and name LIKE  '%" + req.search + "%'";
       }
     }else if(req.online_status===-2){
-      query= "select * from MoveitUser where userid IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
+      query= "select *,zo.xfactor as zonexfactor,mh.xfactor as hubxfactor,mh.address as hubaddress from MoveitUser left join Zone zo on zo.id=zone left join Makeit_hubs mh on mh.makeithub_id=moveit_hub where userid IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
       if (req.search) {
         query = query + " and name LIKE  '%" + req.search + "%'";
       }
     }else if (req.search) {
-      query = query + " where mov.name LIKE  '%" + req.search + "%'";
+      query = query + " where name LIKE  '%" + req.search + "%'";
     } 
     sql.query(query, function (err, res) {
         if (err) {
@@ -305,6 +305,7 @@ var iszone=false;
        
     if(constant.zone_control){
       var zoneDetail = await query("select * from Zone where id = "+userdetails[0].zone+"");
+      //console.log("zoneDetail-->",zoneDetail);
       if(zoneDetail&&zoneDetail.length>0&&zoneDetail[0].boundaries){
         zone_id=zoneDetail[0].id;
         zone_name=zoneDetail[0].Zonename;
@@ -459,7 +460,13 @@ Moveituser.get_a_nearby_moveit = async function get_a_location_user(req, result)
 };
 
 Moveituser.get_a_nearby_moveit_V2 = async function get_a_location_user(req, result) {
-  var query= "select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
+  if(constant.zone_control&&req.zone){
+  //getInsideZoneMoveitList
+  var query= "select zo.boundaries,zo.Zonename,zone,moveit_hub,name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser left join Zone as zo on zo.id = zone where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1 and zone = "+req.zone;
+  }else{
+    var query= "select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
+  }
+  
   if (req.search) {
     query = query + " and name LIKE  '%" + req.search + "%'";
   }
@@ -480,26 +487,47 @@ Moveituser.get_a_nearby_moveit_V2 = async function get_a_location_user(req, resu
         };
         result(null, resobj);
       }else{
-        
-        MoveitFireBase.geoFireGetKeyByGeoMakeit(req.geoLocation,res,function(err, make_it_id) {
-          if (err) {
-            let error = {
-              success: true,
-              status:false,
-              message:"No Move-it found,please after some time"
-            };
-            result(error, null);
-          }else{
+        if(constant.zone_control&&req.zone){
+          MoveitFireBase.getInsideZoneMoveitList(req.geoLocation,res,function(err, make_it_id) {
+            if (err) {
+              let error = {
+                success: true,
+                status:false,
+                message:"No Move-it found,please after some time"
+              };
+              result(error, null);
+            }else{
 
-      
-            let resobj = {
-              success: true,
-              status: true,
-              result: make_it_id
-            };
-          result(null, resobj);
-          }
-        });
+        
+              let resobj = {
+                success: true,
+                status: true,
+                result: make_it_id
+              };
+            result(null, resobj);
+            }
+          });
+        }else{
+          MoveitFireBase.geoFireGetKeyByGeoMakeit(req.geoLocation,res,function(err, make_it_id) {
+            if (err) {
+              let error = {
+                success: true,
+                status:false,
+                message:"No Move-it found,please after some time"
+              };
+              result(error, null);
+            }else{
+
+        
+              let resobj = {
+                success: true,
+                status: true,
+                result: make_it_id
+              };
+            result(null, resobj);
+            }
+          });
+        }
      }
         
     }

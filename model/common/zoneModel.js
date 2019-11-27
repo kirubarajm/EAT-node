@@ -231,7 +231,7 @@ Zone.updateMakeitZoneId = function updateMakeitZoneId(zoneid) {
             if (Zone.pointInPolygon(polygon, { lat: makeit.lat, lng: makeit.lon })) {
               makeit_ids=makeit_ids+','+makeit.userid;
               await query("update MakeitUser set zone = "+zoneid+" where userid="+makeit.userid);
-            }else{
+            }else if(zoneid===makeit.zone){
               await query("update MakeitUser set zone = 0 where userid="+makeit.userid);
             }
             
