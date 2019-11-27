@@ -13,7 +13,6 @@ var MakeitImages = require("../../model/makeit/makeitImagesModel");
 var MakeitBadges = require("../../model/makeit/makeitbadgesmappingModel");
 var PushConstant = require("../../push/PushConstant.js");
 var Notification = require("../../model/common/notificationModel.js");
-var Order        = require("../common/orderModel");
 
 //Task object constructor
 var Makeituser = function(makeituser) {

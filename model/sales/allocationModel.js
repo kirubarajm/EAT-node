@@ -24,9 +24,7 @@ Allocation.createAllocation = function createAllocation(req, result) {
       console.log(res.insertId);
 
       sql.query(
-        "UPDATE MakeitUser SET appointment_status = 1 WHERE userid = ?",
-        req.makeit_userid,
-        function(err, res) {
+        "UPDATE MakeitUser SET appointment_status = 1 WHERE userid = ?",req.makeit_userid,function(err, res) {
           if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -34,11 +32,10 @@ Allocation.createAllocation = function createAllocation(req, result) {
         }
       );
 
-      let sucobj = true;
-      let message = "Booking time updated successfully";
       let resobj = {
-        success: sucobj,
-        message: message,
+        success: true,
+        message:  "Booking time updated successfully",
+        status:true,
         result: res.insertId
       };
       result(null, resobj);
