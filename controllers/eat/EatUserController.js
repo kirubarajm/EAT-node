@@ -497,7 +497,6 @@ exports.eat_region_list_sort_filter = function(req, res) {
 
 
 exports.eat_region_list = function(req, res) {
-
   if (!req.body.lat) {
     res
       .status(400)
@@ -510,8 +509,7 @@ exports.eat_region_list = function(req, res) {
     res
       .status(400)
       .send({ error: true, status: false, message: "Please provide eatuserid" });
-  }
-   else {
+  }else {
     Eatuser.get_eat_region_makeit_list_by_eatuserid(req.body, function(err, region) {
       console.log("controller");
       if (err) res.send(err);
@@ -522,7 +520,6 @@ exports.eat_region_list = function(req, res) {
 };
 
 exports.eat_region_list2 = function(req, res) {
-  console.log("eat_region_list2");
   if (!req.body.lat) {
     res
       .status(400)
@@ -535,9 +532,9 @@ exports.eat_region_list2 = function(req, res) {
     res
       .status(400)
       .send({ error: true, status: false, message: "Please provide eatuserid" });
-  }
-   else {
+  } else {
     if(constant.zone_control == true){
+      console.log("Zone Controler========> true");
       Eatuser.get_eat_region_makeit_list_by_eatuserid_zone(req.body, function(err, region) {
         console.log("controller");
         if (err) res.send(err);
@@ -545,6 +542,7 @@ exports.eat_region_list2 = function(req, res) {
         res.send(region);
       });
     }else{
+      console.log("Zone Controler========> false");
       Eatuser.get_eat_region_makeit_list_by_eatuserid(req.body, function(err, region) {
         console.log("controller");
         if (err) res.send(err);

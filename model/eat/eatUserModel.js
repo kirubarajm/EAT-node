@@ -4934,7 +4934,9 @@ Eatuser.get_eat_makeit_product_list_v_2_1_zone= function(req, result) {
     if(err){
       console.log(err);
       }else{
-        userzoneid = getzone.zone_id;
+        userzoneid =
+        console.log("Zone Based API");
+        getzone.zone_id;
         zoneName=getzone.zone_name;
         if(getzone){
         var foodpreparationtime = constant.foodpreparationtime;
@@ -5013,6 +5015,10 @@ Eatuser.get_eat_makeit_product_list_v_2_1_zone= function(req, result) {
               console.log("error: ", err);
               result(err, null);
             } else {
+              //////Zone and radius limit Condotion
+              var zonemakeitsrrsy =0;
+              zonemakeitsrrsy = res.filter(kitchenarray => (kitchenarray.zone==userzoneid && kitchenarray.unservicable==0));
+              /////////////////////////////////////
               if (res[0].makeituserid !== null) {
               //  for (let i = 0; i < res.length; i++) {
                 if (res[0].member_type === 1) {
@@ -5026,18 +5032,32 @@ Eatuser.get_eat_makeit_product_list_v_2_1_zone= function(req, result) {
                   res[0].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
                 }
                 res[0].serviceablestatus = false;
-                ///console.log(res[0].unservicable);
+                console.log("Console ---------------------------->",res[0].unservicable);
                 if (res[0].unservicable == 0) {
                   res[0].serviceablestatus = true;
                    
                 }
               
+
+              //////Zone and radius limit Condotion
+              if (res[0].unservicable !== false) {
+                if(zonemakeitsrrsy.length !=0 && res[0].zone==userzoneid){
+                  res[0].unservicable = 1;
+                }else if (zonemakeitsrrsy.length ==0 && res[0].distance <= radiuslimit){
+                  res[0].unservicable = true;
+                }else{
+                  res[0].unservicable = 0;
+                }
+              } 
+              ////////////////////////////////////
+
+
                 //////kitchen serviceable based on zoneid or distance
-                if (res[0].serviceablestatus &&(userzoneid===res[0].zone || res[0].distance <= radiuslimit)) {
+                /*if (res[0].serviceablestatus &&(userzoneid===res[0].zone || res[0].distance <= radiuslimit)) {
                     res[0].serviceablestatus = true;
                 }else{
                     res[0].serviceablestatus = false;
-                }
+                } */
                 
                 if ( tunnelkitchenliststatus == false) {
                   res[0].serviceablestatus = true;
