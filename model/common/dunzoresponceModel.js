@@ -4,7 +4,8 @@ const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 
 var Dunzoresponce = function(dunzoresponce) {
-  this.task_id = dunzoresponce.task_id;
+  this.task_id = dunzoresponce.task_id || 0;
+  this.orderid=dunzoresponce.orderid || 0;
   this.dunzo_responce = dunzoresponce.dunzo_responce;
 };
 
