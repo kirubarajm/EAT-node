@@ -485,12 +485,15 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
 };
 
 ////task cancel
-Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(dunzo_taskid,result) {
-  var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+dunzo_taskid+'/_cancel?test=true'
+Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
+  //var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+dunzo_taskid+'/_cancel?test=true'
+
+  var url ='https://api.dunzo.in/api/v1/tasks/'+req.dunzo_taskid+'/_cancel'
+
   
   //set form data
   var form = {
-    cancellation_reason: "runner is not available"
+    cancellation_reason: req.cancellation_reason
   }
   //console.log(form);
   //console.log("parse-------",JSON.parse(form));

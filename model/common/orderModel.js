@@ -319,7 +319,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
     }
 
     
-  
+  console.log(get_hub_id_from_makeithub[0].xfactor);
     var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
     console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
     console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
@@ -2758,8 +2758,8 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           console.log("orderdetails.delivery_vendor"+orderdetails[0].delivery_vendor);
           if (orderdetails[0].delivery_vendor==1) {
             console.log("dunzo_task_cancel");
-
-            Dunzo.dunzo_task_cancel(orderdetails[0].dunzo_taskid);
+            orderdetails[0].cancellation_reason= req.cancel_reason ;
+            Dunzo.dunzo_task_cancel(orderdetails[0]);
             
           }
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
@@ -2975,7 +2975,7 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
             });
           }
 
-          if (orderdetails.ordertype==0) {
+          if (orderdetails[0].ordertype==0) {
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
 
             if (orderdetails[0].payment_type === "1" && orderdetails[0].payment_status === 1){
@@ -3392,7 +3392,7 @@ Order.order_missing_by_makeit = async function order_missing_by_makeit(req, resu
 Order.admin_order_cancel = async function admin_order_cancel(req, result) {
 
  var cancel_reason=req.cancel_reason||""
-  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
+const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
   if (orderdetails[0].orderstatus === 7 ) {
     let response = {
@@ -3421,6 +3421,15 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
             userid: orderdetails[0].userid,
             payment_id: orderdetails[0].transactionid
           };
+
+
+          if (orderdetails[0].delivery_vendor==1) {
+            console.log("dunzo_task_cancel");
+            orderdetails[0].cancellation_reason= cancel_reason ;
+            Dunzo.dunzo_task_cancel(orderdetails[0]);
+            
+          }
+
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
           var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
@@ -3438,7 +3447,7 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
             });
           }
 
-          if (orderdetails.ordertype==0) {
+          if (orderdetails[0].ordertype==0) {
             
         
           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
@@ -5165,7 +5174,10 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
          } else {
 
           if (orderdetails[0].delivery_vendor==1) {
-            Dunzo.dunzo_task_cancel(orderdetails[0].dunzo_taskid);            
+            console.log("dunzo_task_cancel");
+            orderdetails[0].cancellation_reason= cancel_reason ;
+            Dunzo.dunzo_task_cancel(orderdetails[0]);
+            
           }
             var refundDetail = {
              orderid: req.orderid,
@@ -5191,7 +5203,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              });
            }
  
-           if (orderdetails.ordertype==0) {
+           if (orderdetails[0].ordertype==0) {
            if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
  
              if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
@@ -5281,7 +5293,10 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
          } else {
 
           if (orderdetails[0].delivery_vendor==1) {
-            Dunzo.dunzo_task_cancel(orderdetails[0].dunzo_taskid);            
+            console.log("dunzo_task_cancel");
+            orderdetails[0].cancellation_reason= cancel_reason ;
+            Dunzo.dunzo_task_cancel(orderdetails[0]);
+            
           }
           
             var refundDetail = {
@@ -5308,7 +5323,7 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
              });
            }
  
-           if (orderdetails.ordertype==0) {
+           if (orderdetails[0].ordertype==0) {
            if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
  
              if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){

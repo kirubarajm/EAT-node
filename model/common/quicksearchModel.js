@@ -13,6 +13,8 @@ var isCronRun=false;
 var Order = require("../../model/common/orderModel.js");
 var OrderStatusHistory = require("../common/orderstatushistoryModel");
 var Dunzo = require("../../model/webhooks/dunzoModel.js");
+var dunzoconst = require('../../model/dunzo_constant');
+
 
 
 const query = util.promisify(sql.query).bind(sql);
@@ -543,7 +545,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
     console.log("res[i].payment_type"+res[i].payment_type);
          console.log("res[i].status"+res[i].status);
  
-     if (constant.order_assign_dunzo==true && res[i].payment_type==1 && diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 0) {  
+     if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 && diffMins > dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0) {  
        // Dunzo.dunzo_task_create
        await QuickSearch.dunzo_task_create(res[i].orderid);
        i++;
@@ -716,7 +718,7 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
 
     console.log("diffMins"+diffMins);
  
-     if (constant.order_assign_dunzo==true && res[i].payment_type==1 &&res[i].pincode&& diffMins > constant.order_assign_dunzo_waiting_min && res[i].status == 0) {  
+     if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 &&res[i].pincode&& diffMins > dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0) {  
        // Dunzo.dunzo_task_create
        console.log("Dunzo Order assign =>>>>>>>>>>>>>>>>>>>>>>>");
        await QuickSearch.dunzo_task_create(res[i].orderid);
