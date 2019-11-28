@@ -325,318 +325,268 @@ Collection.getAllCollection_by_user =async function getAllCollection_by_user(req
 
 
 Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(req,result) {
-  
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
   var radiuslimit = constant.radiuslimit;
 
-   await sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", async function(err, res) {
-      if (err) {
-        result(err, null);
-      } else {
-
+  await sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", async function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
       if (res.length !== 0) {
-        
-        
-        var  productquery = '';
-        var  groupbyquery = " GROUP BY pt.makeit_userid";
-      //  var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
-      var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,mk.unservicable = 0 desc";
-      
-      
+        var productquery = '';
+        var groupbyquery = " GROUP BY pt.makeit_userid";
+        //  var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
+        var orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,mk.unservicable = 0 desc";      
         var breatfastcycle = constant.breatfastcycle;
         var dinnercycle = constant.dinnercycle;
         var lunchcycle = constant.lunchcycle;
-
         var day = moment().format("YYYY-MM-DD HH:mm:ss");;
         var currenthour  = moment(day).format("HH");
         var productquery = "";
-       // console.log(currenthour);
+        // console.log(currenthour);
 
         if (currenthour < lunchcycle) {
-
           productquery = productquery + " and pt.breakfast = 1";
-        //  console.log("breakfast");
         }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
-
           productquery = productquery + " and pt.lunch = 1";
-        //  console.log("lunch");
-        }else if( currenthour >= dinnercycle){
-          
+        }else if( currenthour >= dinnercycle){          
           productquery = productquery + " and pt.dinner = 1";
-        //  console.log("dinner");
         }
       
-
-      //based on logic this conditions will change
+        //based on logic this conditions will change
         if (req.cid === 1 || req.cid === 2) {
           var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
         }else if(req.cid === 3 ) {
           var productlist = res[0].query + productquery  + orderbyquery;
         }
-          
-          console.log( productlist);
-
-          
-         await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], async function(err, res1) {
-            if (err) {
-              result(err, null);
-            } else {
-
-              console.log(res1);
-
-              for (let i = 0; i < res1.length; i++) {
-
-                if (req.cid === 1 || req.cid === 2) {
-                  res1[i].productlist =JSON.parse(res1[i].productlist)
-                }
-                
-                res1[i].distance = res1[i].distance.toFixed(2);
-                //15min Food Preparation time , 3min 1 km
-              //  eta = 15 + 3 * res[i].distance;
-                var eta = foodpreparationtime + onekm * res1[i].distance;
-                
-                // res1[i].serviceablestatus = false;
-    
-                
-                // if (res1[i].distance <= radiuslimit) {
-                //   res1[i].serviceablestatus = true;
-                // } 
-
-                res1[i].serviceablestatus = false;
-                res1[i].status = 1;
-  
-                if (res1[i].unservicable == 0) {
-                  res1[i].serviceablestatus = true;
-                  res1[i].status = 0;
-                }
-                
-                if (res1[i].serviceablestatus !== false) {
-                  ////Add Zone Controle Condition//////
-                  if(constant.zone_control){
-                    var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-                    if(getzone.zone_id && res1[i].zone==getzone.zone_id){
-                      res1[i].status = 0;
-                      res1[i].serviceablestatus = true;
-                    }else{
-                      res1[i].status = 1;
-                      res1[i].serviceablestatus = false;
-                    } 
-                  }else{
-                    if (res1[i].distance <= radiuslimit) {
-                      res1[i].status = 0;
-                      res1[i].serviceablestatus = true;
-                    }else{
-                      res1[i].serviceablestatus = false;
-                      res1[i].status = 1;
-                    }
-                  }
-                 ////////////////////////////////////// 
-                 
-                }
-
-              
-               
-                res1[i].eta = Math.round(eta) + " mins";
-                    if (res1[i].cuisines) {
-                      res1[i].cuisines = JSON.parse(res1[i].cuisines);
-                    }
-
-                 
-                
-              }
-
-              if (req.cid == 1) {
-                res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
-              }
-
+        
+        await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], async function(err, res1) {
+          if (err) {
+            result(err, null);
+          } else {
+            // Add Zone Controle Condition////// 
+            if(constant.zone_control){
+              var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+              var userzoneid = getzone.zone_id;
+              var zonename = getzone.zone_name;
+            }
             
+            for (let i = 0; i < res1.length; i++) {
+              if (req.cid === 1 || req.cid === 2) {
+                res1[i].productlist =JSON.parse(res1[i].productlist)
+              }
+                
+              res1[i].distance = res1[i].distance.toFixed(2);
+              // 15min Food Preparation time , 3min 1 km
+              // eta = 15 + 3 * res[i].distance;
+              var eta = foodpreparationtime + onekm * res1[i].distance;                
+              // res1[i].serviceablestatus = false;   
+              // if (res1[i].distance <= radiuslimit) {
+              //   res1[i].serviceablestatus = true;
+              // } 
 
-              let resobj = {
-                success: true,
-                status: true,
-                result: res1
-              };
-              result(null, resobj);
+              res1[i].serviceablestatus = false;
+              res1[i].status = 1;
+  
+              if (res1[i].unservicable == 0) {
+                res1[i].serviceablestatus = true;
+                res1[i].status = 0;
+              }
+                
+              if (res1[i].serviceablestatus !== false) {
+                // Add Zone Controle Condition//////
+                if(constant.zone_control){
+                  if(getzone.zone_id && getzone.zone_id!=0 && res1[i].zone==getzone.zone_id){
+                    res1[i].status = 0;
+                    res1[i].serviceablestatus = true;
+                  }else{
+                    res1[i].status = 1;
+                    res1[i].serviceablestatus = false;
+                  } 
+                }else{
+                  if (res1[i].distance <= radiuslimit) {
+                    res1[i].status = 0;
+                    res1[i].serviceablestatus = true;
+                  }else{
+                    res1[i].serviceablestatus = false;
+                    res1[i].status = 1;
+                  }
+                }
+                ////////////////////////////////////// 
+              }
 
+              res1[i].eta = Math.round(eta) + " mins";
+              if (res1[i].cuisines) {
+                res1[i].cuisines = JSON.parse(res1[i].cuisines);
+              }
             }
 
-          });
-        }else{
+            if (req.cid == 1) {
+              res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
+            }
 
-          let resobj = {
-            success: true,
-            status: false,
-            result: res
-          };
-          result(null, resobj);
-
-
-        }
+            let resobj = {
+              success: true,
+              status: true,
+              userzoneid:userzoneid,
+              zonename:zonename,
+              result: res1
+            };
+            result(null, resobj);
+          }
+        });
+      }else{
+        let resobj = {
+          success: true,
+          status: false,
+          userzoneid:userzoneid,
+          zonename:zonename,
+          result: res
+        };
+        result(null, resobj);
       }
-    });
+    }
+  });
 };
 
 Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_cid_v2(req,result) {
-  
   //Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(req,result) {
+  var foodpreparationtime = constant.foodpreparationtime;
+  var onekm = constant.onekm;
+  var radiuslimit = constant.radiuslimit;
+  var tunnelkitchenliststatus = true;
+  const userdetails = await query("select * from User where userid = "+req.eatuserid+" ");
   
-    var foodpreparationtime = constant.foodpreparationtime;
-    var onekm = constant.onekm;
-    var radiuslimit = constant.radiuslimit;
-    var tunnelkitchenliststatus = true;
-    const userdetails = await query("select * from User where userid = "+req.eatuserid+" ");
+  if (userdetails[0].first_tunnel == 1 ) {      
+    tunnelkitchenliststatus = false;  
+  }
   
-    if (userdetails[0].first_tunnel == 1 ) {
-      
-      tunnelkitchenliststatus = false;
-  
-    }
-  
-     await sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", async function(err, res) {
-        if (err) {
-          result(err, null);
-        } else {
-  
-        if (res.length !== 0) {
-          
-          
-          var  productquery = '';
-          var  groupbyquery = " GROUP BY pt.makeit_userid";
+  await sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", async function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {  
+      if (res.length !== 0) {          
+        var  productquery = '';
+        var  groupbyquery = " GROUP BY pt.makeit_userid";
         //  var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
-        var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,mk.unservicable = 0 desc";
+        var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,mk.unservicable = 0 desc";        
+        var breatfastcycle = constant.breatfastcycle;
+        var dinnercycle = constant.dinnercycle;
+        var lunchcycle = constant.lunchcycle;
+  
+        var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+        var currenthour  = moment(day).format("HH");
+        var productquery = "";
+        // console.log(currenthour);  
         
-        
-          var breatfastcycle = constant.breatfastcycle;
-          var dinnercycle = constant.dinnercycle;
-          var lunchcycle = constant.lunchcycle;
-  
-          var day = moment().format("YYYY-MM-DD HH:mm:ss");;
-          var currenthour  = moment(day).format("HH");
-          var productquery = "";
-         // console.log(currenthour);
-  
-          if (currenthour < lunchcycle) {
-  
-            productquery = productquery + " and pt.breakfast = 1";
-          //  console.log("breakfast");
-          }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
-  
-            productquery = productquery + " and pt.lunch = 1";
-          //  console.log("lunch");
-          }else if( currenthour >= dinnercycle){
-            
-            productquery = productquery + " and pt.dinner = 1";
-          //  console.log("dinner");
-          }
-        
+        if (currenthour < lunchcycle) {  
+          productquery = productquery + " and pt.breakfast = 1";
+        }else if(currenthour >= lunchcycle && currenthour < dinnercycle){  
+          productquery = productquery + " and pt.lunch = 1";
+        }else if( currenthour >= dinnercycle){            
+          productquery = productquery + " and pt.dinner = 1";
+        }        
   
         //based on logic this conditions will change
-          if (req.cid === 1 || req.cid === 2) {
-            var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
-          }else if(req.cid === 3 ) {
-            var productlist = res[0].query + productquery  + orderbyquery;
-          }
+        if (req.cid === 1 || req.cid === 2) {
+          var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
+        }else if(req.cid === 3 ) {
+          var productlist = res[0].query + productquery  + orderbyquery;
+        }
             
-          //console.log(productlist);
-            
-           await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid],async function(err, res1) {
-              if (err) {
-                result(err, null);
-              } else {
-  
-                for (let i = 0; i < res1.length; i++) {
-  
-                  if (req.cid === 1 || req.cid === 2) {
-                    res1[i].productlist =JSON.parse(res1[i].productlist)
-                  }
+        //console.log(productlist);            
+        await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid],async function(err, res1) {
+          if (err) {
+            result(err, null);
+          } else { 
+            // Add Zone Controle Condition////// 
+            if(constant.zone_control){
+              var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+              var userzoneid = getzone.zone_id;
+              var zonename = getzone.zone_name;
+            }
+
+            for (let i = 0; i < res1.length; i++) {  
+              if (req.cid === 1 || req.cid === 2) {
+                res1[i].productlist =JSON.parse(res1[i].productlist)
+              }
                   
-                  res1[i].distance = res1[i].distance.toFixed(2);
-                  //15min Food Preparation time , 3min 1 km
-                //  eta = 15 + 3 * res[i].distance;
-                  var eta = foodpreparationtime + onekm * res1[i].distance;
-                  
-                  // res1[i].serviceablestatus = false;
-      
-                  
-                  // if (res1[i].distance <= radiuslimit) {
-                  //   res1[i].serviceablestatus = true;
-                  // } 
-  
-                  res1[i].serviceablestatus = false;
-                  res1[i].status = 1;
+              res1[i].distance = res1[i].distance.toFixed(2);
+              // 15min Food Preparation time , 3min 1 km
+              // eta = 15 + 3 * res[i].distance;
+              var eta = foodpreparationtime + onekm * res1[i].distance;                  
+              // res1[i].serviceablestatus = false;                  
+              // if (res1[i].distance <= radiuslimit) {
+              //   res1[i].serviceablestatus = true;
+              // } 
+              res1[i].serviceablestatus = false;
+              res1[i].status = 1;
     
-                  if (res1[i].unservicable == 0) {
-                    res1[i].serviceablestatus = true;
+              if (res1[i].unservicable == 0) {
+                res1[i].serviceablestatus = true;
+                res1[i].status = 0;
+              }
+                  
+              if (res1[i].serviceablestatus !== false) {
+                // Add Zone Controle Condition//////
+                if(constant.zone_control){
+                  if(getzone.zone_id && getzone.zone_id!=0 && res1[i].zone==getzone.zone_id){
                     res1[i].status = 0;
+                    res1[i].serviceablestatus = true;
+                  }else{
+                    res1[i].status = 1;
+                    res1[i].serviceablestatus = false;
+                  } 
+                }else{
+                  if (res1[i].distance <= radiuslimit) {
+                    res1[i].status = 0;
+                    res1[i].serviceablestatus = true;
+                  }else{
+                    res1[i].serviceablestatus = false;
+                    res1[i].status = 1;
                   }
-                  
-                  if (res1[i].serviceablestatus !== false) {
-                    ////Add Zone Controle Condition//////
-                    if(constant.zone_control){
-                      var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-                      if(getzone.zone_id && res1[i].zone==getzone.zone_id){
-                        res1[i].status = 0;
-                        res1[i].serviceablestatus = true;
-                      }else{
-                        res1[i].status = 1;
-                        res1[i].serviceablestatus = false;
-                      } 
-                    }else{
-                      if (res1[i].distance <= radiuslimit) {
-                        res1[i].status = 0;
-                        res1[i].serviceablestatus = true;
-                      }else{
-                        res1[i].serviceablestatus = false;
-                        res1[i].status = 1;
-                      }
-                    }
-                   ////////////////////////////////////// 
-                  }
-  
-                if (tunnelkitchenliststatus == false) {
-                  res1[i].status = 0;
-                  res1[i].serviceablestatus = true;
                 }
-                 
-                  res1[i].eta = Math.round(eta) + " mins";
-                      if (res1[i].cuisines) {
-                        res1[i].cuisines = JSON.parse(res1[i].cuisines);
-                      }
-  
-                   
-                  
-                }
-  
-                if (req.cid == 1) {
-                  res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
-                }
-  
-              
-  
-                let resobj = {
-                  success: true,
-                  status: true,
-                  result: res1
-                };
-                result(null, resobj);
-  
+                ////////////////////////////////////// 
               }
   
-            });
-          }else{
+              if (tunnelkitchenliststatus == false) {
+                res1[i].status = 0;
+                res1[i].serviceablestatus = true;
+              }
+                 
+              res1[i].eta = Math.round(eta) + " mins";
+              if (res1[i].cuisines) {
+                res1[i].cuisines = JSON.parse(res1[i].cuisines);
+              }
   
+            }
+  
+            if (req.cid == 1) {
+              res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
+            }           
             let resobj = {
               success: true,
-              status: false,
-              result: res
+              status: true,
+              userzoneid:userzoneid,
+              zonename:zonename,
+              result: res1
             };
             result(null, resobj);
-  
-  
           }
-        }
-      });
+        });
+      }else{
+        let resobj = {
+          success: true,
+          status: false,
+          userzoneid:userzoneid,
+          zonename:zonename,
+          result: res
+        };
+        result(null, resobj);
+      }
+    }
+  });
   //};
 };
 

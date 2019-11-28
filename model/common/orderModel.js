@@ -184,126 +184,116 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
     
   };*/
 Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
-//makeit_user_id
+  //makeit_user_id
   var day = moment().format("YYYY-MM-DD HH:mm:ss");;
   var currenthour  = moment(day).format("HH");
- // var currenthour = 23
+  // var currenthour = 23
   var breatfastcycle = constant.breatfastcycle;
   var dinnercycle = constant.dinnercycle;
   var lunchcycle = constant.lunchcycle;
   var dinnerend = constant.dinnerend;
-
-  const delivery_charge = constant.deliverycharge;
-  
+  const delivery_charge = constant.deliverycharge;  
   if (constant.order_assign_status==false) {
-
     if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
       const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
       if (res.length === 0 ) {
-      //get address 
+        //get address 
         const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
-      //console.log("address_data-->",address_data);
-      if(address_data.length === 0) {
-        let resobj = {
-                  success: true,
-                  status: false,
-                  message: "Sorry your selected address wrong.Please select correct address."
-                };
-                result(null, resobj);
+        //console.log("address_data-->",address_data);
+        if(address_data.length === 0) {
+          let resobj = {
+            success: true,
+            status: false,
+            message: "Sorry your selected address wrong.Please select correct address."
+          };
+          result(null, resobj);
         }else{
-              req.lat = address_data[0].lat;
-              req.lon = address_data[0].lon;
-              Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
-                if (err) {
-                  result(err, null);
-                } else {
-                  if (res3.status != true) {
-                    result(null, res3);
+          req.lat = address_data[0].lat;
+          req.lon = address_data[0].lon;
+          Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
+          if (err) {
+            result(err, null);
+          } else {
+            if (res3.status != true) {
+              result(null, res3);
+            } else {
+              var amountdata = res3.result[0].amountdetails;
+              req.original_price = amountdata.original_price;
+              req.refund_balance = amountdata.refund_balance;
+              req.refund_amount = amountdata.refundamount;
+              req.discount_amount = amountdata.coupon_discount_amount;
+              req.after_discount_cost = amountdata.grandtotal;
+              req.order_cost   = amountdata.original_price;
+              req.gst = amountdata.gstcharge;
+              req.price = amountdata.grandtotal;
+              req.makeit_earnings = amountdata.makeit_earnings;                 
+              req.cus_address = address_data[0].address;
+              req.locality = address_data[0].locality;
+              req.cus_lat = address_data[0].lat;
+              req.cus_lon = address_data[0].lon;
+              req.address_title = address_data[0].address_title;
+              req.locality_name = address_data[0].locality;
+              req.flatno = address_data[0].flatno;
+              req.landmark = address_data[0].landmark;
+              req.cus_pincode = address_data[0].pincode;
+              req.coupon = req.cid
+              console.log(req.cus_pincode);
+              if (req.payment_type == 0 || req.payment_type == 3) {
+                Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
+                  if (err) {
+                    result(err, null);
                   } else {
-                    var amountdata = res3.result[0].amountdetails;
-                   
-                    req.original_price = amountdata.original_price;
-                    req.refund_balance = amountdata.refund_balance;
-                    req.refund_amount = amountdata.refundamount;
-                    req.discount_amount = amountdata.coupon_discount_amount;
-                    req.after_discount_cost = amountdata.grandtotal;
-                    req.order_cost   = amountdata.original_price;
-                    req.gst = amountdata.gstcharge;
-                    req.price = amountdata.grandtotal;
-                    req.makeit_earnings = amountdata.makeit_earnings;
-                 
-                    req.cus_address = address_data[0].address;
-                    req.locality = address_data[0].locality;
-                    req.cus_lat = address_data[0].lat;
-                    req.cus_lon = address_data[0].lon;
-                    req.address_title = address_data[0].address_title;
-                    req.locality_name = address_data[0].locality;
-                    req.flatno = address_data[0].flatno;
-                    req.landmark = address_data[0].landmark;
-                    req.cus_pincode = address_data[0].pincode;
-                    req.coupon = req.cid
-                    console.log(req.cus_pincode);
-                      if (req.payment_type == 0 || req.payment_type == 3) {
-                        Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
-                          if (err) {
-                            result(err, null);
-                          } else {
-                            if (req.payment_type == 0) {
-                              await Notification.orderMakeItPushNotification(
-                                res.orderid,
-                                req.makeit_user_id,
-                                PushConstant.pageidMakeit_Order_Post
-                              );
-                            }
-                          ////Insert Order History////
-                          
-                          ////////////////////////////
-                            result(null, res);
-                          }
-                        });
-                        //ordercreatecashondelivery(req, res3.result[0].item);
-                      } else if (req.payment_type == 1) {
-                        Order.OrderOnline(req, res3.result[0].item,function(err,res){
-                          if (err) {
-                            result(err, null);
-                          } else {
-                              result(null, res);
-                          }
-                        });
-                        //ordercreateonline(req, res3.result[0].item);
-                      }
+                    if (req.payment_type == 0) {
+                      await Notification.orderMakeItPushNotification(
+                        res.orderid,
+                        req.makeit_user_id,
+                        PushConstant.pageidMakeit_Order_Post
+                      );
+                    }
+                    ////Insert Order History////
+                            
+                    ////////////////////////////
+                    result(null, res);
                   }
-                }
-              });
-        }
-     }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
-    let resobj = {
-      success: true,
-      status: false,
-      message: "Please complete your payment for yor order",
-      result : res
-    };
-    result(null, resobj);
-  }else {
-     
+                });
+                //ordercreatecashondelivery(req, res3.result[0].item);
+              } else if (req.payment_type == 1) {
+                Order.OrderOnline(req, res3.result[0].item,function(err,res){
+                  if (err) {
+                    result(err, null);
+                  } else {
+                    result(null, res);
+                  }
+                });
+                //ordercreateonline(req, res3.result[0].item);
+              }
+            }
+          }
+        });
+      }
+    }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
       let resobj = {
         success: true,
         status: false,
-        message: "Already you have one order, So please try once delivered exiting order"
-        
-      
+        message: "Please complete your payment for yor order",
+        result : res
+      };
+      result(null, resobj);
+    }else {     
+      let resobj = {
+        success: true,
+        status: false,
+        message: "Already you have one order, So please try once delivered exiting order"      
       };
       result(null, resobj);
     }
-    }else{
-  
-    
-    let resobj = {
-      success: true,
-      status: false,
-      message: "Sorry Currently we are not receiving orders!"
-    };
-    result(null, resobj);
+    }else{  
+      let resobj = {
+        success: true,
+        status: false,
+        message: "Sorry Currently we are not receiving orders!"
+      };
+      result(null, resobj);
     }
   }else{
     if(constant.zone_control){
@@ -316,135 +306,119 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
       var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
       var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
       var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
-    }
-
-    
+    }   
   
     var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
     console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
     console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
     console.log("xfactorValue-->",Math.round(xfactorValue));
     var fValue= Math.round(xfactorValue);
-    if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
-      
+    if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){      
       if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
         const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
         if (res.length === 0 ) {
-        //get address 
+          //get address 
           const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
-        //console.log("address_data-->",address_data);
-        if(address_data.length === 0) {
-          let resobj = {
-                    success: true,
-                    status: false,
-                    message: "Sorry your selected address wrong.Please select correct address."
-                  };
-                  result(null, resobj);
+          //console.log("address_data-->",address_data);
+          if(address_data.length === 0) {
+            let resobj = {
+              success: true,
+              status: false,
+              message: "Sorry your selected address wrong.Please select correct address."
+            };
+            result(null, resobj);
           }else{
-                req.lat = address_data[0].lat;
-                req.lon = address_data[0].lon;
-                Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
-                  if (err) {
-                    result(err, null);
-                  } else {
-                    if (res3.status != true) {
-                      result(null, res3);
-                    } else {
-                      var amountdata = res3.result[0].amountdetails;
-                     
-                      req.original_price = amountdata.original_price;
-                      req.refund_balance = amountdata.refund_balance;
-                      req.refund_amount = amountdata.refundamount;
-                      req.discount_amount = amountdata.coupon_discount_amount;
-                      req.after_discount_cost = amountdata.grandtotal;
-                      req.order_cost   = amountdata.original_price;
-                      req.gst = amountdata.gstcharge;
-                      req.price = amountdata.grandtotal;
-                      req.makeit_earnings = amountdata.makeit_earnings;
-                   
-                      req.cus_address = address_data[0].address;
-                      req.locality = address_data[0].locality;
-                      req.cus_lat = address_data[0].lat;
-                      req.cus_lon = address_data[0].lon;
-                      req.address_title = address_data[0].address_title;
-                      req.locality_name = address_data[0].locality;
-                      req.flatno = address_data[0].flatno;
-                      req.landmark = address_data[0].landmark;
-                      req.cus_pincode = address_data[0].pincode;
-                      req.coupon = req.cid
-                        if (req.payment_type == 0 || req.payment_type == 3) {
-                          Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
-                            if (err) {
-                              result(err, null);
-                            } else {
-                              if (req.payment_type == 0) {
-                                await Notification.orderMakeItPushNotification(
-                                  res.orderid,
-                                  req.makeit_user_id,
-                                  PushConstant.pageidMakeit_Order_Post
-                                );
-                              }
-                             
-                              result(null, res);
-                            }
-                          });
-                          //ordercreatecashondelivery(req, res3.result[0].item);
-                        } else if (req.payment_type == 1) {
-                          Order.OrderOnline(req, res3.result[0].item,function(err,res){
-                            if (err) {
-                              result(err, null);
-                            } else {
-                                result(null, res);
-                            }
-                          });
-                          //ordercreateonline(req, res3.result[0].item);
+            req.lat = address_data[0].lat;
+            req.lon = address_data[0].lon;
+            Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
+              if (err) {
+                result(err, null);
+              } else {
+                if (res3.status != true) {
+                  result(null, res3);
+                } else {
+                  var amountdata = res3.result[0].amountdetails;                     
+                  req.original_price = amountdata.original_price;
+                  req.refund_balance = amountdata.refund_balance;
+                  req.refund_amount = amountdata.refundamount;
+                  req.discount_amount = amountdata.coupon_discount_amount;
+                  req.after_discount_cost = amountdata.grandtotal;
+                  req.order_cost   = amountdata.original_price;
+                  req.gst = amountdata.gstcharge;
+                  req.price = amountdata.grandtotal;
+                  req.makeit_earnings = amountdata.makeit_earnings;                   
+                  req.cus_address = address_data[0].address;
+                  req.locality = address_data[0].locality;
+                  req.cus_lat = address_data[0].lat;
+                  req.cus_lon = address_data[0].lon;
+                  req.address_title = address_data[0].address_title;
+                  req.locality_name = address_data[0].locality;
+                  req.flatno = address_data[0].flatno;
+                  req.landmark = address_data[0].landmark;
+                  req.cus_pincode = address_data[0].pincode;
+                  req.coupon = req.cid
+                  if (req.payment_type == 0 || req.payment_type == 3) {
+                      Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
+                        if (err) {
+                          result(err, null);
+                        } else {
+                          if (req.payment_type == 0) {
+                            await Notification.orderMakeItPushNotification(
+                              res.orderid,
+                              req.makeit_user_id,
+                              PushConstant.pageidMakeit_Order_Post
+                            );
+                          }                             
+                          result(null, res);
                         }
-                    }
+                      });
+                      //ordercreatecashondelivery(req, res3.result[0].item);
+                  } else if (req.payment_type == 1) {
+                      Order.OrderOnline(req, res3.result[0].item,function(err,res){
+                        if (err) {
+                          result(err, null);
+                        } else {
+                          result(null, res);
+                        }
+                      });
+                      //ordercreateonline(req, res3.result[0].item);
                   }
-                });
+                }
+              }
+            });
           }
-       }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
-      let resobj = {
-        success: true,
-        status: false,
-        message: "Please complete your payment for yor order",
-        result : res
-      };
-      result(null, resobj);
-    }else {
-       
+        }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
+          let resobj = {
+            success: true,
+            status: false,
+            message: "Please complete your payment for yor order",
+            result : res
+          };
+          result(null, resobj);
+        }else {       
+          let resobj = {
+            success: true,
+            status: false,
+            message: "Already you have one order, So please try once delivered exiting order"        
+          };
+          result(null, resobj);
+        }
+      }else{     
         let resobj = {
           success: true,
           status: false,
-          message: "Already you have one order, So please try once delivered exiting order"
-          
-        
+          message: "Sorry Currently we are not receiving orders!"
         };
         result(null, resobj);
-      }
-      }else{
-    
-      
-      let resobj = {
-        success: true,
-        status: false,
-        message: "Sorry Currently we are not receiving orders!"
-      };
-      result(null, resobj);
-      }
-  
-  
-    }else{
-  
+      }  
+    }else{  
       req.payment_type=3;
       req.payment_status=3;
-      req.orderstatus = 11;
-  
+      req.orderstatus = 11;  
       Order.read_a_proceed_to_pay_xfactore(req, orderitems,async function(err,res){
         if (err) {
           result(err, null);
-        } else {
-         
+        } else {         
           let resobj = {
             success: true,
             status:false,
@@ -452,16 +426,11 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
             title:"IN HIGH DEMAND",
             message:'We are facing high demand. We will let you know when we are back to our best!'
           };
-          result(null, resobj)
-        
+          result(null, resobj);        
         }
       });
-  
-    ;
     }
   }
- 
-
 };
 
 Order.read_a_proceed_to_pay_xfactore = async function read_a_proceed_to_pay_xfactore(req,orderitems,result) {
@@ -5570,18 +5539,15 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   //X factor Algorithm
   //(Total no of orders in Queue) = (X-1) * (No of Drivers in hub)
   //Note X value in hub based.
-
-  if (constant.order_assign_status==false) {
-   
+  if (constant.order_assign_status==false) {   
     let resobj = {
       success: true,
       status:true,
       order_queue:0,
       title:"Available",
       message:'Delivery boys are available!'
-    };
-    
-   result(null, resobj);
+    };    
+    result(null, resobj);
   }else{
     if(constant.zone_control){
       var get_hub_id_from_orders= await query("Select zone from MakeitUser where userid="+req.makeit_user_id);
@@ -5589,56 +5555,47 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
       var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and  status=0") ;
       var get_hub_id_from_makeithub= await query("Select xfactor from Zone where id="+get_hub_id_from_orders[0].zone);
     }else{
-  var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
-  var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
-  var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
-  var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
+      var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
+      var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
+      var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
     }
 
-  var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * (get_moveit_list_based_on_hub[0].no_of_move_it_count || 0)
-  console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].zone);
-  console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
-  console.log("xfactorValue-->",Math.round(xfactorValue));
-  var fValue= Math.round(xfactorValue);
-  if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
-    let resobj = {
-      success: true,
-      status:true,
-      order_queue:0,
-      title:"Available",
-      message:'Delivery boys are available!'
-    };
-    
-   result(null, resobj);
-  }else{
-
-    req.payment_type=3;
-    req.payment_status=3;
-    req.orderstatus = 11;
-
-    Order.read_a_proceed_to_pay_xfactore(req, orderitems,async function(err,res){
-      if (err) {
-        result(err, null);
-      } else {
-       
-        console.log(res);
-        let resobj = {
-          success: true,
-          status:false,
-          order_queue:1,
-          title:"IN HIGH DEMAND",
-          message:'We are facing high demand. We will let you know when we are back to our best!'
-        };
-        result(null, resobj)
-      
-      }
-    });
-
-  ;
+    var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * (get_moveit_list_based_on_hub[0].no_of_move_it_count || 0)
+    console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].zone);
+    console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
+    console.log("xfactorValue-->",Math.round(xfactorValue));
+    var fValue= Math.round(xfactorValue);
+    if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
+      let resobj = {
+        success: true,
+        status:true,
+        order_queue:0,
+        title:"Available",
+        message:'Delivery boys are available!'
+      };      
+      result(null, resobj);
+    }else{
+      req.payment_type=3;
+      req.payment_status=3;
+      req.orderstatus = 11;
+      Order.read_a_proceed_to_pay_xfactore(req, orderitems,async function(err,res){
+        if (err) {
+          result(err, null);
+        } else {       
+          console.log(res);
+          let resobj = {
+            success: true,
+            status:false,
+            order_queue:1,
+            title:"IN HIGH DEMAND",
+            message:'We are facing high demand. We will let you know when we are back to our best!'
+          };
+          result(null, resobj);      
+        }
+      });
+    }
   }
-
-  }
-  
   // var query="Select count(*) ordercount from Orders as ors where ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( "+req.lat+" ) )  * cos( radians( "+req.lon+" ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians("+req.lat+")) ) )<2 and (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2))";
   //   sql.query(query,async function(err, res) {
   //     if (err) {
@@ -5663,6 +5620,7 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   //   }
   // );
 }
+
 Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
   var query="Select count(*) ordercount from Orders as ors where ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( "+req.lat+" ) )  * cos( radians( "+req.lon+" ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians("+req.lat+")) ) )<2 and (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2))";
     sql.query(query,async function(err, res) {

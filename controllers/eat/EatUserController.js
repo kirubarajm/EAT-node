@@ -114,13 +114,13 @@ exports.eat_makeit_product_list = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide vegtype" });
   } else {
-  Eatuser.get_eat_makeit_product_list(req.body, function(err, user) {
-    console.log("controller");
-    if (err) res.send(err);
-    console.log("res", user);
-    res.send(user);
-  });
-}
+    Eatuser.get_eat_makeit_product_list(req.body, function(err, user) {
+      console.log("controller");
+      if (err) res.send(err);
+      console.log("res", user);
+      res.send(user);
+    });
+  }
 };
 
 ///version 2
@@ -142,21 +142,12 @@ exports.get_eat_makeit_product_list_v_2 = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide vegtype" });
   } else {
-    if(constant.zone_control == true){
-      Eatuser.get_eat_makeit_product_list_v_2_zone(req.body, function(err, user) {
-        console.log("controller");
-        if (err) res.send(err);
-        console.log("res", user);
-        res.send(user);
-      });
-    }else{
-      Eatuser.get_eat_makeit_product_list_v_2(req.body, function(err, user) {
-        console.log("controller");
-        if (err) res.send(err);
-        console.log("res", user);
-        res.send(user);
-      });
-    }
+    Eatuser.get_eat_makeit_product_list_v_2(req.body, function(err, user) {
+      console.log("controller makeit product list v_2");
+      if (err) res.send(err);
+      console.log("res", user);
+      res.send(user);
+    });
   }
 };
 
@@ -179,21 +170,12 @@ exports.get_eat_makeit_product_list_v_2_1 = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide vegtype" });
   } else {
-    if(constant.zone_control == true){
-      Eatuser.get_eat_makeit_product_list_v_2_1_zone(req.body, function(err, user) {
-        console.log("Zone controller");
-        if (err) res.send(err);
-        console.log("res", user);
-        res.send(user);
-      });
-    }else{
-      Eatuser.get_eat_makeit_product_list_v_2_1(req.body, function(err, user) {
-        console.log("controller");
-        if (err) res.send(err);
-        console.log("res", user);
-        res.send(user);
-      });
-    }
+    Eatuser.get_eat_makeit_product_list_v_2_1(req.body, function(err, user) {
+      console.log("Zone controller");
+      if (err) res.send(err);
+      console.log("res", user);
+      res.send(user);
+    });
   }
 };
 
@@ -221,7 +203,6 @@ exports.eat_dish_sort_filter = function(req, res) {
 };
 
 exports.eat_kitchen_sort_filter = function(req, res) {
-
   if (!req.body.lat) {
     res
       .status(400)
@@ -235,21 +216,12 @@ exports.eat_kitchen_sort_filter = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide eatuserid" });
   } else {
-    if(constant.zone_control == true){
-      Eatuser.get_eat_kitchen_list_sort_filter_zone(req.body, function(err, user) {
-        console.log("controller");
-        if (err) res.send(err);
-        console.log("res", user);
-        res.send(user);
-      });
-    }else{
-      Eatuser.get_eat_kitchen_list_sort_filter(req.body, function(err, user) {
-        console.log("controller");
-        if (err) res.send(err);
-        console.log("res", user);
-        res.send(user);
-      });
-    }
+    Eatuser.get_eat_kitchen_list_sort_filter(req.body, function(err, user) {
+      console.log("controller kitchen list sort filter");
+      if (err) res.send(err);
+      console.log("res", user);
+      res.send(user);
+    });
   }
 };
 
@@ -269,19 +241,12 @@ exports.eat_kitchen_sort_filter_v2 = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide eatuserid" });
   } else {
-    if(constant.zone_control == true){
-      Eatuser.get_eat_kitchen_list_sort_filter_v2_zone(req.body, function(err, user) {
-        if (err) res.send(err);
-        console.log("res", user);
-        res.send(user);
-      });
-    }else{
-      Eatuser.get_eat_kitchen_list_sort_filter_v2(req.body, function(err, user) {
-        if (err) res.send(err);
-        console.log("res", user);
-        res.send(user);
-      });
-    }
+    Eatuser.get_eat_kitchen_list_sort_filter_v2(req.body, function(err, user) {
+      console.log("Controler kitchen list sort filter v2");
+      if (err) res.send(err);
+      console.log("res", user);
+      res.send(user);
+    });
   } 
 };
 // exports.eat_user_referral = function(req, res) {
@@ -307,21 +272,12 @@ exports.eat_kitchen_sort_filter_v_2_1 = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide eatuserid" });
   } else {
-    if(constant.zone_control == true){
-      Eatuser.get_eat_kitchen_list_sort_filter_v_2_1_zone(req.body, function(err, user) {
-        console.log("controller");
-        if (err) res.send(err);
-        console.log("res", user);
-        res.send(user);
-      });
-    }else{
-      Eatuser.get_eat_kitchen_list_sort_filter_v_2_1(req.body, function(err, user) {
-        console.log("controller");
-        if (err) res.send(err);
-        console.log("res", user);
-        res.send(user);
-      });
-    }
+    Eatuser.get_eat_kitchen_list_sort_filter_v_2_1(req.body, function(err, user) {
+      console.log("Kitchen List Sort Filter v_2_1 controller");
+      if (err) res.send(err);
+      console.log("res", user);
+      res.send(user);
+    });
   }
 };
 
@@ -533,24 +489,13 @@ exports.eat_region_list2 = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide eatuserid" });
   } else {
-    if(constant.zone_control == true){
-      console.log("Zone Controler========> true");
-      Eatuser.get_eat_region_makeit_list_by_eatuserid_zone(req.body, function(err, region) {
-        console.log("controller");
-        if (err) res.send(err);
-        console.log("res", region);
-        res.send(region);
-      });
-    }else{
-      console.log("Zone Controler========> false");
-      Eatuser.get_eat_region_makeit_list_by_eatuserid(req.body, function(err, region) {
-        console.log("controller");
-        if (err) res.send(err);
-        console.log("res", region);
-        res.send(region);
-      });
-    }
-  }
+    Eatuser.get_eat_region_makeit_list_by_eatuserid(req.body, function(err, region) {
+      console.log("controller");
+      if (err) res.send(err);
+      console.log("res", region);
+      res.send(region);
+    });
+  }  
 };
 
 exports.eat_region_kitchen_showmore = function(req, res) {
@@ -590,23 +535,13 @@ exports.eat_region_kitchen_showmore_v2 = function(req, res) {
     res
       .status(400)
       .send({ error: true, status: false, message: "Please provide eatuserid" });
-  }
-   else {
-    if(constant.zone_control == true){
-      Eatuser.get_eat_region_kitchen_list_show_more_v2_zone(req.body, function(err, region) {
-        console.log("controller 2.0.0");
-        if (err) res.send(err);
-        console.log("res", region);
-        res.send(region);
-      });
-    }else{
-      Eatuser.get_eat_region_kitchen_list_show_more_v2(req.body, function(err, region) {
-        console.log("controller 2.0.0");
-        if (err) res.send(err);
-        console.log("res", region);
-        res.send(region);
-      });
-    }
+  }else {
+    Eatuser.get_eat_region_kitchen_list_show_more_v2(req.body, function(err, region) {
+      console.log("controller 2.0.0");
+      if (err) res.send(err);
+      console.log("res", region);
+      res.send(region);
+    });
   }
 };
 
