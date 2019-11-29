@@ -308,8 +308,19 @@ Salesuser.getAllsalesSearch = function getAllsalesSearch(req, result) {
   var query =
     "Select se.id,se.name,se.address,se.email,se.password,se.phoneno,COUNT(al.sales_emp_id) totalassigned from Sales_QA_employees se left join Allocation al on se.id = al.sales_emp_id and DATE(al.assign_date) = CURDATE()";
   if (req.search && req.search !== "") {
-    query = query + "where se.name LIKE  '%" + req.search + "%'";
+    query = query + "where se.phoneno LIKE  '%" + req.search + "%' or se.email LIKE  '%" +req.search +"%' or se.name LIKE  '%" +req.search+ "%'  or se.id LIKE  '%" + req.search +"%'";
   }
+  
+//   var searchquery =
+//     "us.phoneno LIKE  '%" +
+//     req.search +
+//     "%' OR us.email LIKE  '%" +
+//     req.search +
+//     "%' or us.name LIKE  '%" +
+//     req.search +
+//     "%'  or od.orderid LIKE  '%" +
+//     req.search +
+//     "%'";
 
   query = query + " group by se.id";
   //DATE(al.assign_date) = CURDATE()

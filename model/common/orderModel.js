@@ -1336,11 +1336,11 @@ Order.get_all_orders = function get_all_orders(req, result) {
  // var query =
     //"Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status>0) )and orderstatus < 9";
   var searchquery =
-    "us.phoneno LIKE  '%" +
+    "mu.phoneno LIKE  '%" +
     req.search +
-    "%' OR us.email LIKE  '%" +
+    "%' OR mu.email LIKE  '%" +
     req.search +
-    "%' or us.name LIKE  '%" +
+    "%' or mu.name LIKE  '%" +
     req.search +
     "%'  or od.orderid LIKE  '%" +
     req.search +
@@ -1474,13 +1474,7 @@ Order.get_today_vorders = function get_today_vorders(req, result) {
     " where DATE(od.ordertime) = CURDATE() and mk.virtualkey = 1 and (od.payment_type=0 or (od.payment_type=1 and od.payment_status=1)) and od.orderstatus = "+orderstatus;
     
   var searchquery =
-    "us.phoneno LIKE  '%" +
-    req.search +
-    "%' OR us.email LIKE  '%" +
-    req.search +
-    "%' or us.name LIKE  '%" +
-    req.search +
-    "%'  or od.orderid LIKE  '%" +
+    "od.orderid LIKE  '%" +
     req.search +
     "%'";
 
@@ -1534,6 +1528,7 @@ Order.get_today_vorders = function get_today_vorders(req, result) {
 
   sql.query(limitquery, function(err, res1) {
     if (err) {
+      console.log("err-->",err);
       result(err, null);
     } else {
       var totalcount = 0;

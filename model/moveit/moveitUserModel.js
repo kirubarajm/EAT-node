@@ -251,21 +251,22 @@ Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req, result) {
     if(req.online_status===0){
       query = query + " where online_status=" +req.online_status
       if (req.search) {
-        query = query + " and name LIKE  '%" + req.search + "%'";
+        query = query + " and name LIKE  '%" + req.search + "%'  or userid LIKE  '%" + req.search +"%'";
       }
     }else if(req.online_status===1){
       query= "select *,zo.xfactor as zonexfactor,mh.xfactor as hubxfactor,mh.address as hubaddress from MoveitUser left join Zone zo on zo.id=zone left join Makeit_hubs mh on mh.makeithub_id=moveit_hub where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
       if (req.search) {
-        query = query + " and name LIKE  '%" + req.search + "%'";
+        query = query + " and name LIKE  '%" + req.search  + "%'  or userid LIKE  '%" + req.search +"%'";
       }
     }else if(req.online_status===-2){
       query= "select *,zo.xfactor as zonexfactor,mh.xfactor as hubxfactor,mh.address as hubaddress from MoveitUser left join Zone zo on zo.id=zone left join Makeit_hubs mh on mh.makeithub_id=moveit_hub where userid IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
       if (req.search) {
-        query = query + " and name LIKE  '%" + req.search + "%'";
+        query = query + " and name LIKE  '%" + req.search  + "%'  or userid LIKE  '%" + req.search +"%'";
       }
     }else if (req.search) {
-      query = query + " where name LIKE  '%" + req.search + "%'";
-    } 
+      query = query + "where name LIKE  '%" + req.search  + "%'  or userid LIKE  '%" + req.search +"%'";
+    }
+
     sql.query(query, function (err, res) {
         if (err) {
             result(err, null);
