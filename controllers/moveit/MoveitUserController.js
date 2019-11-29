@@ -309,3 +309,27 @@ exports.daywise_moveit_records = function(req, res) {
     res.json(user);
   });
 };
+
+////////////First Mile User Wise Moveit Report
+exports.firstmile_userwise_moveitreport = function(req, res) {
+  Moveituser.firstmile_userwise_moveitreport(req.body,function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////////////First Mile Orders Wise Moveit Report
+exports.firstmile_orderwise_moveitreport = function(req, res) {
+  Moveituser.firstmile_orderwise_moveitreport(req.body,function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////////////Orders Wise Moveit Report
+exports.orderwise_moveitreport = function(req, res) {
+  Moveituser.orderwise_moveitreport(req.body,function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
