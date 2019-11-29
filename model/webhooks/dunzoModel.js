@@ -182,6 +182,16 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           break;
       case dunzoconst.runner_cancelled:
           console.log("runner_cancelled");
+
+          let runner_cancelled = {
+            success: true,
+            status:true,
+            status_code : 200,
+            message: "runner_cancelled successfully"
+          };
+         
+
+     result(null, runner_cancelled);
           break;
       case dunzoconst.reached_for_pickup:
           console.log("reached_for_pickup");
@@ -260,7 +270,15 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           break;
       case dunzoconst.started_for_delivery:
           console.log("started_for_delivery");
+          let started_for_delivery = {
+            success: true,
+            status:true,
+            status_code : 200,
+            message: "started_for_delivery successfully"
+          };
+         
 
+     result(null, runner_cancelled);
          
           break;
       case dunzoconst.reached_for_delivery:
