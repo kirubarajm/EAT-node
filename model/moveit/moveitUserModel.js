@@ -1212,4 +1212,113 @@ Moveituser.getworking_dates = async function getworking_dates(req, result) {
 
     return inside;
 }
+
+////////////User Wise Moveit Report
+Moveituser.firstmile_userwise_moveitreport = async function firstmile_userwise_moveitreport(req, result) {
+ if(req.fromdate && req.todate){
+    var DayWiseQuery ="Select date(ord.ordertime) as date,ord.moveit_user_id,mu.name,count(date(ord.created_at)) from Orders as ord left join MoveitUser as mu on mu.userid = ord.moveit_user_id where ord.moveit_accept_time IS NOT NULL and ord.order_assigned_time IS NOT NULL and ord.moveit_actual_delivered_time IS NOT NULL and ord.moveit_pickup_time IS NOT NULL and ord.orderid NOT IN (select orderid from Force_delivery_logs) and  ord.orderstatus=6 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by mu.userid,date(ord.created_at) order by ord.moveit_user_id asc";
+
+    var MovieitWiseQuery = "Select ord.moveit_user_id,mu.name,count(ord.orderid)as order_count, SEC_TO_TIME(AVG(TIME_TO_SEC(ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time),TimeDiff(moveit_actual_delivered_time,moveit_pickup_time))))) as Avg_time from Orders as ord left join MoveitUser as mu on mu.userid = ord.moveit_user_id where ord.moveit_accept_time IS NOT NULL and ord.order_assigned_time IS NOT NULL and ord.moveit_actual_delivered_time IS NOT NULL and ord.moveit_pickup_time IS NOT NULL   and ord.orderid NOT IN (select orderid from Force_delivery_logs) and ord.orderstatus=6 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by mu.userid";
+
+    var DayWise = await query(DayWiseQuery);
+    var MovieitWise = await query(MovieitWiseQuery);
+
+    if(MovieitWise.length>0){
+      for(var i=0; i<MovieitWise.length; i++){
+        var daycount = 0;
+        for(var j=0; j<DayWise.length; j++){      
+          if(MovieitWise[i].moveit_user_id == DayWise[j].moveit_user_id){
+            daycount = daycount + 1; 
+          }
+        }
+        MovieitWise[i].daycount = daycount;    
+        MovieitWise[i].OrdersDayAvg = (MovieitWise[i].order_count/daycount).toFixed(2);
+      }
+      let resobj = {
+        success: true,
+        status : true,
+        result : MovieitWise
+      };
+      result(null, resobj);
+      
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };    
+      result(null, resobj);
+    }    
+  }else{
+    let resobj = {
+      success: true,
+      message: "please Check the Request",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+
+////////////Orders Wise Moveit Report
+Moveituser.firstmile_orderwise_moveitreport = async function firstmile_orderwise_moveitreport(req, result) {
+  if(req.fromdate && req.todate){
+     var OrderMoveitReportQuery ="Select ord.orderid,ord.ordertime,time(ord.order_assigned_time) as Assigned_time,time(ord.moveit_accept_time) as Accept_time,time(ord.moveit_pickup_time) as Pickup_time,time(ord.moveit_actual_delivered_time) as Delivery_time, ord.moveit_user_id,mu.name,TIMEDIFF(moveit_accept_time,order_assigned_time) as Moveit_Accept_time,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time, ADDTIME(TIMEDIFF(moveit_accept_time,order_assigned_time),TimeDiff(moveit_actual_delivered_time,moveit_pickup_time)) as Totaltime from Orders as ord left join MoveitUser as mu on mu.userid = ord.moveit_user_id where ord.moveit_accept_time IS NOT NULL and ord.order_assigned_time IS NOT NULL and ord.moveit_actual_delivered_time IS NOT NULL and ord.moveit_pickup_time IS NOT NULL and ord.orderid NOT IN (select orderid from Force_delivery_logs) and ord.orderstatus=6 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' order by ord.orderid desc";
+ 
+    var OrderMoveitReport = await query(OrderMoveitReportQuery);
+    if(OrderMoveitReport.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        result : OrderMoveitReport
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }          
+  }else{
+     let resobj = {
+       success: true,
+       message: "please Check the Request",
+       status : false
+     };
+     result(null, resobj);
+  }
+};
+
+////////////Orders Wise Moveit Report
+Moveituser.orderwise_moveitreport = async function orderwise_moveitreport(req, result) {
+  if(req.fromdate && req.todate){
+    var OrderMoveitReportQuery ="select mu.userid,mu.name,ord.orderid,ord.ordertime,time(ord.order_assigned_time) as order_assigned_time,time(ord.moveit_notification_time) as moveit_notification_time,time(ord.moveit_accept_time) as moveit_accept_time, time(ord.moveit_reached_time) as moveit_reached_time,time(ord.moveit_pickup_time) as moveit_pickup_time,time(ord.moveit_expected_delivered_time) as moveit_expected_delivered_time, time(ord.moveit_customerlocation_reached_time) as moveit_customerlocation_reached_time,time(ord.moveit_actual_delivered_time) as moveit_actual_delivered_time,ord.moveit_status,  CASE WHEN ord.orderstatus=0 then 'Order put' WHEN ord.orderstatus=1 then 'Order Accept' WHEN ord.orderstatus=2 then 'Order Preparing' WHEN ord.orderstatus=3 then 'Order Prepared' WHEN ord.orderstatus=4 then 'Kitchen reached' WHEN ord.orderstatus=5 then 'Order Pickedup' WHEN ord.orderstatus=6 then 'Order Delivered' WHEN ord.orderstatus=7 then 'Order Cancel' WHEN ord.orderstatus=8 then 'Order missed by kitchen' WHEN ord.orderstatus=9 then 'Incomplete online order reject' END as status,ord.orderstatus,TIMEDIFF(time(ord.moveit_accept_time), time(ord.order_assigned_time)) as accept_time,TIMEDIFF(time(ord.moveit_actual_delivered_time),time(ord.moveit_pickup_time)) as delivery_time,TIMEDIFF(time(ord.moveit_reached_time),      time(ord.moveit_accept_time)) as kitchen_reach_time,TIMEDIFF(time(IFNULL(ord.moveit_actual_delivered_time,0)),time(IFNULL(ord.created_at,0))) as order_time,ord.cus_lat,ord.cus_lon,mau.lat,mau.lon from MoveitUser as mu left join Orders as ord on ord.moveit_user_id=mu.userid left join MakeitUser as mau on mau.userid=ord.makeit_user_id where ord.ordertime IS NOT NULL and ord.moveit_actual_delivered_time IS NOT NULL and ord.orderid NOT IN (select orderid from Force_delivery_logs) and date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' order by ord.orderid desc";
+  
+    var OrderMoveitReport = await query(OrderMoveitReportQuery);
+    if(OrderMoveitReport.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        result : OrderMoveitReport
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }          
+  }else{
+    let resobj = {
+      success: true,
+      message: "please Check the Request",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+
 module.exports = Moveituser;
