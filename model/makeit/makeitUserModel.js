@@ -769,7 +769,7 @@ Makeituser.get_admin_list_all_makeitusers = function(req, result) {
 
   //  var query = "select mk.userid, mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey, mk.img, mk.region, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating,JSON_OBJECT('cuisines', JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename))) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid";
   var query = "select mk.* from MakeitUser mk";
-  var searchquery = "mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE  '%" + req.search + "%'";
+  var searchquery = "(mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE  '%" + req.search + "%')";
 
   if(req.active_status){
     query = query + " LEFT JOIN Product p on p.makeit_userid=mk.userid where p.active_status=1" ;
@@ -870,11 +870,11 @@ Makeituser.get_admin_list_all_makeitusers = function(req, result) {
 Makeituser.admin_get_unapproved_makeitlist = function(req, result) {
   var query = "select * from MakeitUser where ka_status=1";
   var searchquery =
-    " and name LIKE  '%" +
+    " and (name LIKE  '%" +
     req.search +
     "%' OR us.brandname LIKE '%" +
     req.search +
-    "%'";
+    "%')";
   if (req.search) {
     query = query + searchquery;
   }
@@ -2768,7 +2768,7 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
   req.virtualkey = req.virtualkey;
 
   var query = "select mk.* from MakeitUser mk";
-  var searchquery = "mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE  '%" + req.search + "%' or mk.userid LIKE  '%" + req.search + "%'";
+  var searchquery = "(mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE  '%" + req.search + "%' or mk.userid LIKE  '%" + req.search + "%')";
 
   if(req.active_status){
     query = query + " LEFT JOIN Product p on p.makeit_userid=mk.userid where p.active_status=1" ;

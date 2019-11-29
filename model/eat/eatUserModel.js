@@ -174,19 +174,27 @@ Eatuser.getAllVirtualUser = function getAllVirtualUser(req, result) {
       req.search +
       "%' OR email LIKE  '%" +
       req.search +
+      "%' OR phoneno LIKE  '%" +
+      req.search +
+      "%' OR userid LIKE  '%" +
+      req.search +
       "%' or name LIKE  '%" +
       req.search +
       "% ') ";
   } else if (req.search) {
     query =
       query +
-      " where phoneno LIKE  '%" +
+      " where (phoneno LIKE  '%" +
       req.search +
       "%' OR email LIKE  '%" +
       req.search +
+      "%' OR phoneno LIKE  '%" +
+      req.search +
+      "%' OR userid LIKE  '%" +
+      req.search +
       "%' or name LIKE  '%" +
       req.search +
-      "% ' ";
+      "% ' )";
   }
 
   var limitquery =
