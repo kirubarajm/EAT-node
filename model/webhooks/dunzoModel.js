@@ -100,9 +100,25 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
   switch(req.state){
       case dunzoconst.created:
           console.log("created");
+          let created_response = {
+            success: true,
+            status: true,
+            status_code : 200,
+            message: "task created successfully."
+          };
+          result(null, created_response);
+
           break;
       case dunzoconst.queued:
           console.log("queued");
+          let queued_response = {
+            success: true,
+            status: true,
+            status_code : 200,
+            message: "queued_response successfully."
+          };
+          result(null, queued_response);
+
           break;
       case dunzoconst.runner_accepted:
           console.log("runner_accepted");
@@ -132,6 +148,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                   let response = {
                     success: true,
                     status: true,
+                    status_code : 200,
                     message: "Order accepted successfully."
                   };
                  
@@ -156,6 +173,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                 let response = {
                   success: true,
                   status: false,
+                  status_code : 400,
                   message: "Order is not available!"
                 };
                 result(null, response);
@@ -175,6 +193,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                   let resobj = {
                     success: true,
                     status:true,
+                    status_code : 200,
                     message: "kitchen reached successfully"
                   };
                  
@@ -194,6 +213,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                 let resobj = {
                   success: true,
                   status:false,
+                  status_code : 400,
                   message: "Sorry! This order already canceled."
                 };
                 
@@ -203,6 +223,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                 let resobj = {
                   success: true,
                   status:false,
+                  status_code : 400,
                   message: "Please wait food not yet prepared"
                 };
                 result(null, resobj);
@@ -214,6 +235,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                       let resobj = {
                         success: true,
                         status: true,
+                        status_code : 200,
                         message: "Order Pickedup successfully"
                       };
                       PushConstant.Pageid_eat_order_pickedup = 5;
@@ -226,6 +248,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
               let response = {
                 success: true,
                 status: false,
+                status_code : 400,
                 message: "Order not found.",
              
               };
@@ -250,6 +273,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                 let data = {
                   success: true,
                   status: true,
+                  status_code : 200,
                   message: "Customer location reached successfully"
                 };
                 PushConstant.Pageid_eat_order_pickedup = 6;
@@ -269,6 +293,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                 let resobj = {
                   success: true,
                   message: "Sorry!  order was already deliverd.",
+                  status_code : 400,
                   status:false
                 };
                 result(null, resobj);
@@ -276,6 +301,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                 let resobj = {
                   success: true,
                   message: "Sorry!  order already canceled.",
+                  status_code : 400,
                   status:false
                 };
                 result(null, resobj);
@@ -287,6 +313,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                       let deliverd = {
                         success: true,
                         status: true,
+                        status_code : 200,
                         message: "Order delivered successfully",
                         orderdeliverystatus: true
                       };
@@ -301,6 +328,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                 let resobj = {
                   success: true,
                   status:false,
+                  status_code : 400,
                   message: "Payment not yet paid!",
                   orderdeliverystatus: false
                 };
@@ -311,6 +339,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
               let resobj = {
                 success: true,
                 message: "Orders not found!.",
+                status_code : 400,
                 status:false
               };
               result(null, resobj);
@@ -326,12 +355,20 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           let orderqueue = {
             success: true,
             message: "Order again pushed into queue.",
+            status_code : 400,
             status:true
           };
           result(null, orderqueue);
           break;         
       default:
           console.log("No State");
+          let no_state = {
+            success: true,
+            message: "No State.",
+            status_code : 400,
+            status:false
+          };
+          result(null, no_state);
   }
   //result(null, req);
 };
