@@ -580,10 +580,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
                   //   (a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout)
                   // );
                   console.log('nearbymoveit id-->',nearbymoveit[0].userid);
-                  sql.query(
-                    "UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",
-                    [nearbymoveit[0].userid, assign_time, res[i].orderid],
-                    async function(err, res2) {
+                  sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, res[i].orderid],async function(err, res2) {
                       if (err) {
                          console.log('Order Update error->',err);
                         i++;
