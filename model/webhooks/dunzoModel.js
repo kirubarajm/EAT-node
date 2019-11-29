@@ -278,7 +278,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           };
          
 
-     result(null, runner_cancelled);
+     result(null, started_for_delivery);
          
           break;
       case dunzoconst.reached_for_delivery:
