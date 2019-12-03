@@ -132,6 +132,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           Dunzomoveitdetails_data.runner_lng = req.runner.location.lat;
           Dunzomoveitdetails_data.runner_eta_pickup_min = req.eta.pickup;
           Dunzomoveitdetails_data.runner_eta_dropoff_min = req.eta.dropoff;
+          Dunzomoveitdetails_data.active_status = 1
 
           Dunzo.create_Dunzomoveitdetails(Dunzomoveitdetails_data);
 
@@ -182,6 +183,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           break;
       case dunzoconst.runner_cancelled:
           console.log("runner_cancelled");
+          var order_queue_update = await query("update Dunzo_moveit_details set active_status = 0 where task_id =" +req.task_id+"");
 
           let runner_cancelled = {
             success: true,
@@ -368,12 +370,12 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
       case dunzoconst.cancelled:
           console.log("cancelled");
           var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderdetails[0].orderid+"");
-          updatequery =await query("UPDATE Orders SET moveit_status = 0  WHERE orderid ='" +orderdetails[0].orderid +"'");
+          updatequery = await query("UPDATE Orders SET moveit_status = 0,delivery_vendor=0,dunzo_taskid=''  WHERE orderid ='" +orderdetails[0].orderid +"'");
 
           let orderqueue = {
             success: true,
             message: "Order again pushed into queue.",
-            status_code : 400,
+            status_code : 200,
             status:true
           };
           result(null, orderqueue);

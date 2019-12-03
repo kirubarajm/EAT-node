@@ -11,6 +11,8 @@ const Razorpay = require("razorpay");
 var masters = require('../master');
 var Locationtracking = require("../../model/common/usersfirstlocationtrackingModel");
 var zoneModel = require("../../model/common/zoneModel.js");
+var Collection = require("../../model/common/collectionModel");
+
 // var instance = new Razorpay({
 //     key_id: 'rzp_test_3cduMl5T89iR9G',
 //     key_secret: 'BSdpKV1M07sH9cucL5uzVnol'
@@ -2131,6 +2133,19 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
   });
 };
 
+
+Eatuser.list_all_active_collection_cid = function list_all_active_collection_cid(req,res) {
+
+  Collection.list_all_active_collection(req, function(err, collection) {
+    if (err) res.send(err);
+    console.log("collectionlist--------------",collection);
+    //res.send(collection);
+   // res(null, collection);
+    return collection;
+
+
+  });
+};
 //kitchen list infinity
 Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
   var foodpreparationtime = constant.foodpreparationtime;
@@ -2367,14 +2382,43 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
         }
       }
 
-      
+
+
+      ///infinity screen
+      var collectionlist = [];
+   await  Collection.list_all_active_collection(req,async function(err,res3) {
+        if (err) {
+          result(err, null);
+        } else {
+          if (res3.status != true) {
+            result(null, res3);
+          } else {
+                   console.log("collectionlist--------------",res3);
+                   collectionlist.push(res3)
+            // let resobj = {
+            //   success: true,
+            //   status:true,
+            //   zoneId:userzoneid,
+            //   zoneName:zonename,
+            //   result: kitchenlist,
+            //   collectionlist:res3
+            // };
+            // result(null, resobj);
+
+          }
+        }
+      });
+      //  var collectionlist =   await Eatuser.list_all_active_collection_cid(req);
+          //,async function(err,res3){})
+       console.log("collectionlist--------------",collectionlist);
 
       let resobj = {
         success: true,
         status:true,
         zoneId:userzoneid,
         zoneName:zonename,
-        result: kitchenlist
+        result: kitchenlist,
+        collectionlist:collectionlist
       };
       result(null, resobj);
     }

@@ -1333,10 +1333,10 @@ Moveituser.moveit_zone_data =async function moveit_zone_data(req, result) {
   var boundaries="";
   var iszone=false;
     if (userdetails.length !==0) {
-         
       if(constant.zone_control){
+  
         var zoneDetail = await query("select * from Zone where id = "+userdetails[0].zone+"");
-        //console.log("zoneDetail-->",zoneDetail);
+        console.log(zoneDetail);
         if(zoneDetail&&zoneDetail.length>0&&zoneDetail[0].boundaries){
           zone_id=zoneDetail[0].id;
           zone_name=zoneDetail[0].Zonename;
