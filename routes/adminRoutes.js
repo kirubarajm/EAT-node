@@ -208,7 +208,7 @@ app.route("/admin/zone/checkmapboundaries").post(routesVersioning({"1.0.0":zoneC
 app.route("/admin/makeit/zoneupdate/:userid").get(routesVersioning({"1.0.0":makeituser.makeit_zoneid_update}));
 
 ////////Movit Report
-app.route("/admin/moveit/milebasedmoveitaveragedeliveryreport").post(routesVersioning({"1.0.0":moveituser.firstmile_userwise_moveitreport}));
-app.route("/admin/moveit/milebasedmoveitordersdeliveryreport").post(routesVersioning({"1.0.0":moveituser.firstmile_orderwise_moveitreport}));
-app.route("/admin/moveit/moveitordersdeliveryreport").post(routesVersioning({"1.0.0":moveituser.orderwise_moveitreport}));
+app.route("/admin/reports/milebasedmoveitaveragedeliveryreport").post(routesVersioning({"1.0.0":moveituser.firstmile_userwise_moveitreport}));
+app.route("/admin/reports/milebasedmoveitordersdeliveryreport").post(routesVersioning({"1.0.0":moveituser.firstmile_orderwise_moveitreport}));
+app.route("/admin/reports/moveitordersdeliveryreport").post(routesVersioning({"1.0.0":moveituser.orderwise_moveitreport}));
 }
