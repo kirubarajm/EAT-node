@@ -251,17 +251,17 @@ Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req, result) {
     if(req.online_status===0){
       query = query + " where online_status=" +req.online_status
       if (req.search) {
-        query = query + " and name LIKE  '%" + req.search + "%'  or userid LIKE  '%" + req.search +"%'";
+        query = query + " and (name LIKE  '%" + req.search + "%'  or userid LIKE  '%" + req.search +"%')";
       }
     }else if(req.online_status===1){
       query= "select *,zo.xfactor as zonexfactor,mh.xfactor as hubxfactor,mh.address as hubaddress from MoveitUser left join Zone zo on zo.id=zone left join Makeit_hubs mh on mh.makeithub_id=moveit_hub where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
       if (req.search) {
-        query = query + " and name LIKE  '%" + req.search  + "%'  or userid LIKE  '%" + req.search +"%'";
+        query = query + " and (name LIKE  '%" + req.search  + "%'  or userid LIKE  '%" + req.search +"%')";
       }
     }else if(req.online_status===-2){
       query= "select *,zo.xfactor as zonexfactor,mh.xfactor as hubxfactor,mh.address as hubaddress from MoveitUser left join Zone zo on zo.id=zone left join Makeit_hubs mh on mh.makeithub_id=moveit_hub where userid IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
       if (req.search) {
-        query = query + " and name LIKE  '%" + req.search  + "%'  or userid LIKE  '%" + req.search +"%'";
+        query = query + " and (name LIKE  '%" + req.search  + "%'  or userid LIKE  '%" + req.search +"%')";
       }
     }else if (req.search) {
       query = query + "where name LIKE  '%" + req.search  + "%'  or userid LIKE  '%" + req.search +"%'";
@@ -1321,5 +1321,51 @@ Moveituser.orderwise_moveitreport = async function orderwise_moveitreport(req, r
     result(null, resobj);
   }
 };
+
+
+//Moveit zone data
+
+Moveituser.moveit_zone_data =async function moveit_zone_data(req, result) {
+
+  var userdetails = await query("select * from MoveitUser where userid = "+req.userid+"");
+  var zone_id=0;
+  var zone_name="";
+  var boundaries="";
+  var iszone=false;
+    if (userdetails.length !==0) {
+         
+      if(constant.zone_control){
+        var zoneDetail = await query("select * from Zone where id = "+userdetails[0].zone+"");
+        //console.log("zoneDetail-->",zoneDetail);
+        if(zoneDetail&&zoneDetail.length>0&&zoneDetail[0].boundaries){
+          zone_id=zoneDetail[0].id;
+          zone_name=zoneDetail[0].Zonename;
+          boundaries=JSON.parse(zoneDetail[0].boundaries);
+          iszone=true;
+        }
+      }
+              
+        let resobj = {
+          success: true,
+          status:iszone,
+          zone_id:zone_id,
+          zone_name:zone_name,
+          boundaries:boundaries,
+          iszone:iszone
+      };
+
+      result(null, resobj);
+      
+    }else{
+      
+      let resobj = {
+          success: true,
+          status: false,
+          message: "User not found!"
+      };
+  
+      result(null, resobj);
+    }
+  };
 
 module.exports = Moveituser;

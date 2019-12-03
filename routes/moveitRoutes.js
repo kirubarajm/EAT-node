@@ -44,4 +44,6 @@ app.route("/moveit/loginstatus").post(middleware.checkToken,routesVersioning({"1
 app.route("/moveit/unacceptorders").post(middleware.checkToken,routesVersioning({"1.0.0":orders.moveit_unaccept_orders}));
 
 app.route("/moveit/customersupport").post(routesVersioning({"1.0.0": moveituser.moveit_customer_support}));
+app.route("/moveit/zone").post(routesVersioning({"1.0.0": moveituser.moveit_zone_data}));
+
 }

@@ -281,6 +281,30 @@ exports.eat_kitchen_sort_filter_v_2_1 = function(req, res) {
   }
 };
 
+
+exports.eat_kitchen_sort_filter_v_2_2 = function(req, res) {
+  if (!req.body.lat) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lat" });
+  } else if (!req.body.lon) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide lan" });
+  }else if (!req.body.eatuserid) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide eatuserid" });
+  } else {
+    Eatuser.get_eat_kitchen_list_sort_filter_v_2_2(req.body, function(err, user) {
+      console.log("Kitchen List Sort Filter v_2_1 controller");
+      if (err) res.send(err);
+      console.log("res", user);
+      res.send(user);
+    });
+  }
+};
+
 exports.eatuser_login = function(req, res) {
   var new_user = new Eatuser(req.body);
   //handles null error
