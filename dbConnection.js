@@ -4,7 +4,7 @@
 
 authentication = {
 //  host: "35.154.249.232",
-  host: "35.154.249.232",
+  host: "eatinstance.crelormihi5z.ap-south-1.rds.amazonaws.com",
   user: "eattovo",
   password: "eattv2020",
   database: "eatdev",
