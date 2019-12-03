@@ -333,3 +333,16 @@ exports.orderwise_moveitreport = function(req, res) {
     res.json(user);
   });
 };
+
+//moveit zone details
+
+exports.moveit_zone_data = function(req, res) {
+  if (!req.body.userid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide userid" });
+  } else {
+  Moveituser.moveit_zone_data(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+  }
+};
