@@ -8,6 +8,8 @@ module.exports = function(app) {
     app.route("/webhooks/dunzo/nextstate").post(routesVersioning({"1.0.0": DunzoController.dunzo_nex_state_update}));
     app.route("/webhooks/dunzptaskcreate").post(routesVersioning({"1.0.0":DunzoController.dunzo_task_create}));
     app.route("/webhooks/dunzptaskcancel").post(routesVersioning({"1.0.0":DunzoController.dunzo_task_cancel}));
+    app.route("/webhooks/dunzptaskstatus").post(routesVersioning({"1.0.0":DunzoController.dunzo_track_status}));
+
 
 
 }

@@ -572,5 +572,45 @@ Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
 };
 
 
+////task status
+Dunzo.dunzo_track_status = async function dunzo_track_status(req) {
+
+  var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+req.dunzo_taskid+'/status?test=true'
+
+  var headers= {
+    'Content-Type': 'application/json',
+    'client-id': dunzoconst.dunzo_client_id,
+    'Authorization' : dunzoconst.Authorization,
+    'Accept-Language':'en_US'
+  };
+
+  const options = {
+    url: url,
+    method: 'GET',
+    headers: headers
+};
+
+request(options, function(err, res, body) {
+    let json = JSON.parse(body);
+  //  console.log(json);
+  console.log("json------------------->",json);
+
+  return json;
+    // let resobj = {
+    //   success: true,
+    //   status: true,
+    //   message : json.message,
+    //   result: json
+    // };
+    // result(null, resobj);
+});
+
+   
+   //return body;
+
+  
+};
+
+
 
 module.exports= Dunzo;

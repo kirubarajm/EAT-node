@@ -2244,45 +2244,11 @@ Order.orderviewbyeatuser = function(req, result) {
           result(null, resobj);
         } else {
 
-
-          if ( res1[0].orderstatus < 6 ) {
-            
-            if ( res1[0].orderstatus < 5 ){
-              await Order.eat_get_delivery_time(req);
-            }
-            
-
-            var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+req.orderid +" order by od_id desc limit 1");
-            
-            
-            if (orderdeliverytime.length !== 0) {
-              res1[0].deliverytime = orderdeliverytime[0].deliverytime;
-              res1[0].eta = orderdeliverytime[0].duration;
-            }else{
-
-              // we need to remove once delivery time stable
-              eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
-              //15min Food Preparation time , 3min 1 km
-           
-              res1[0].eta = Math.round(eta) + " mins";
-            }
-
-            // we need to remove once delivery time stable
-            if (!res1[0].deliverytime) {
-              if (res1[0].orderstatus > 3) {
-                // +20 min add with moveit order assign time
-               res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
-             }else{
-               var deliverytime = moment(res1[0].ordertime)
-               .add(0, "seconds")
-               .add(20, "minutes")
-               .format("YYYY-MM-DD HH:mm:ss");
-               res1[0].deliverytime = deliverytime;
-             }
-            }
-
-          }
-
+                if (res1[0].runner_name== null) {
+                  res1[0].runner_name='';
+                  res1[0].runner_phone_number='';
+                }
+              
                 res1[0].servicecharge = constant.servicecharge;
                 res1[0].cancellationmessage = constant.cancellationmessage;;
               
@@ -2377,29 +2343,107 @@ Order.orderviewbyeatuser = function(req, result) {
                     cartdetails.push(refundinfo);
                   }
 
-                  
-                  // totalamountinfo.title = "Total Amount";
-                  // totalamountinfo.charges = res1[0].price;
-                  // totalamountinfo.status = true;
-                  // cartdetails.push(totalamountinfo);
-        
-
                   res1[0].cartdetails = cartdetails;
-                let resobj = {
-                  success: true,
-                  status: true,
-                  result: res1
-                };
 
-                result(null, resobj);
-              //}
-          //   }
-          // );
+
+                  if ( res1[0].orderstatus < 6 ) {
+
+                    await Order.eat_get_delivery_time(req);
+                   
+                    var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+req.orderid +" order by od_id desc limit 1");
+                    
+  
+                    if (res1[0].delivery_vendor==1) {
+                      
+                  
+                    var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+res1[0].dunzo_taskid+'/status?test=true'
+
+                    var headers= {
+                      'Content-Type': 'application/json',
+                      'client-id': dunzoconst.dunzo_client_id,
+                      'Authorization' : dunzoconst.Authorization,
+                      'Accept-Language':'en_US'
+                    };
+                  
+                    const options = {
+                      url: url,
+                      method: 'GET',
+                      headers: headers
+                  };
+                  
+                  request(options, function(err, res, body) {
+                      let dunzo_status = JSON.parse(body);
+                    //  console.log(json);
+                    console.log("dunzo_status------------------->",dunzo_status);
+                    var pickup=dunzo_status.eta.pickup || 0;
+                    var dropoff= dunzo_status.eta.dropoff || 0;
+
+                    var eta = Math.round(pickup + dropoff);
+                    res1[0].deliverytime = moment().add(0, "seconds").add(eta, "minutes").format("YYYY-MM-DD HH:mm:ss");
+                    res1[0].eta = eta;
+                   
+                    let resobj = {
+                      success: true,
+                      status: true,
+                      result: res1
+                    };
+    
+                    result(null, resobj);  
+                  });
+
+                    } else {
+
+                      if (orderdeliverytime.length !== 0) {
+                        res1[0].deliverytime = orderdeliverytime[0].deliverytime;
+                        res1[0].eta = orderdeliverytime[0].duration;
+
+                        let resobj = {
+                          success: true,
+                          status: true,
+                          result: res1
+                        };
+        
+                        result(null, resobj);  
+                      }else{
+    
+                        // we need to remove once delivery time stable
+                        eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
+                        //15min Food Preparation time , 3min 1 km
+                    
+                        res1[0].eta = Math.round(eta) + " mins";
+
+                        let resobj = {
+                          success: true,
+                          status: true,
+                          result: res1
+                        };
+        
+                        result(null, resobj);  
+                      }
+  
+                    }
+                    
+                  }else{
+
+                    let resobj = {
+                      success: true,
+                      status: true,
+                      result: res1
+                    };
+    
+                    result(null, resobj);  
+
+                  }
+  
+                  
         }
       }
     }
   );
 };
+
+
+
 
 Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
   var trackingDetail = {};
@@ -2581,73 +2625,13 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
           }
           
         
-          console.log(liveorderquery);
           sql.query(liveorderquery,async function(err, res1) {
             if (err) {
               result(err, null);
             } else {
-console.log("111111111111",res1.length);
-            if(res1.length>0){
-              if ( res1[0].orderstatus < 6 ) {
-                //check our delivery or dunzo delivery
-                if (res1[0].deliver_vendor==0) {
-                  //store order delivery time
-                  if ( res1[0].orderstatus < 5 ){
-                    req.orderid  =res1[0].orderid;
-                    await Order.eat_get_delivery_time(req);
-                  }
-                 
-                //get delivery time
-                 var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+res1[0].orderid +" order by od_id desc limit 1");
-                 
-                 if (orderdeliverytime.length !== 0) {
-                   res1[0].deliverytime = orderdeliverytime[0].deliverytime;
-                   res1[0].eta = foodpreparationtime + orderdeliverytime[0].duration;
-                 }else{
-     
-                   // we need to remove once delivery time stable
-                   eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
-                   //15min Food Preparation time , 3min 1 km
-                
-                   res1[0].eta = Math.round(eta) + " mins";
-                 }
-
-
-                }else{
-
-                 
-                  // await Order.dunzo_task_status(res1[0].dunzo_taskid, function(error, response, data){
-                  //   console.log(response);
-
-                  //   console.log(data);
-
-                  // });
-                  console.log(res1[0].runner_eta_pickup_min);
-                  res1[0].eta = parseInt(res1[0].runner_eta_pickup_min) + parseInt(res1[0].runner_eta_dropoff_min);
-
-                }
-                
-                // we need to remove once delivery time stable
-                if (!res1[0].deliverytime) {
-                  if (res1[0].orderstatus > 3) {
-                    // +20 min add with moveit order assign time
-                   res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
-                 }else{
-                   var deliverytime = moment(res1[0].ordertime)
-                   .add(0, "seconds")
-                   .add(20, "minutes")
-                   .format("YYYY-MM-DD HH:mm:ss");
-                   res1[0].deliverytime = deliverytime;
-                 }
-                }
-    
-              }
-            }
-              
-            
            
-              
-
+            
+  
               for (let i = 0; i < res1.length; i++) {
            
                 if (res1[i].items) {
@@ -2663,15 +2647,169 @@ console.log("111111111111",res1.length);
                 res1[0].onlinepaymentstatus = true;
               }
           
-              console.log("test");
+              
+                // if ( res1[0].orderstatus < 6 ) {
+                //   //check our delivery or dunzo delivery
+                //   if (res1[0].deliver_vendor==0) {
+                //     //store order delivery time
+                //     if ( res1[0].orderstatus < 5 ){
+                //       req.orderid  =res1[0].orderid;
+                //       await Order.eat_get_delivery_time(req);
+                //     }
+                   
+                //   //get delivery time
+                //    var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+res1[0].orderid +" order by od_id desc limit 1");
+                   
+                //    if (orderdeliverytime.length !== 0) {
+                //      res1[0].deliverytime = orderdeliverytime[0].deliverytime;
+                //      res1[0].eta = foodpreparationtime + orderdeliverytime[0].duration;
+                //    }else{
+       
+                //      // we need to remove once delivery time stable
+                //      eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
+                //      //15min Food Preparation time , 3min 1 km
+                  
+                //      res1[0].eta = Math.round(eta) + " mins";
+                //    }
+  
+  
+                //   }else{
+  
+                   
+                //     // await Order.dunzo_task_status(res1[0].dunzo_taskid, function(error, response, data){
+                //     //   console.log(response);
+  
+                //     //   console.log(data);
+  
+                //     // });
+                //     console.log(res1[0].runner_eta_pickup_min);
+                //     res1[0].eta = parseInt(res1[0].runner_eta_pickup_min) + parseInt(res1[0].runner_eta_dropoff_min);
+  
+                //   }
+                  
+                //   // we need to remove once delivery time stable
+                //   if (!res1[0].deliverytime) {
+                //     if (res1[0].orderstatus > 3) {
+                //       // +20 min add with moveit order assign time
+                //      res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
+                //    }else{
+                //      var deliverytime = moment(res1[0].ordertime)
+                //      .add(0, "seconds")
+                //      .add(20, "minutes")
+                //      .format("YYYY-MM-DD HH:mm:ss");
+                //      res1[0].deliverytime = deliverytime;
+                //    }
+                //   }
+      
+                // }
+           
+                
+                if ( res1[0].orderstatus < 6 ) {
+                  req.orderid  =res1[0].orderid;
+                  await Order.eat_get_delivery_time(req);
+                 
+                  var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+req.orderid +" order by od_id desc limit 1");
+                  
 
-              let resobj = {
-                success: true,
-                status: true,
-                orderdetails: orderdetails,
-                result: res1
-              };
-              result(null, resobj);
+                  if (res1[0].delivery_vendor==1) {
+                    
+                    console.log("res1[0].delivery_vendor----------------->",res1[0].delivery_vendor);
+                  var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+res1[0].dunzo_taskid+'/status?test=true'
+
+                  var headers= {
+                    'Content-Type': 'application/json',
+                    'client-id': dunzoconst.dunzo_client_id,
+                    'Authorization' : dunzoconst.Authorization,
+                    'Accept-Language':'en_US'
+                  };
+                
+                  const options = {
+                    url: url,
+                    method: 'GET',
+                    headers: headers
+                };
+                
+                request(options, function(err, res, body) {
+                    let dunzo_status = JSON.parse(body);
+                  //  console.log(json);
+                  console.log("dunzo_status------------------->",dunzo_status);
+                  var pickup=dunzo_status.eta.pickup || 0;
+                  var dropoff= dunzo_status.eta.dropoff || 0;
+
+                  var eta = Math.round(pickup + dropoff);
+                  res1[0].deliverytime = moment().add(0, "seconds").add(eta, "minutes").format("YYYY-MM-DD HH:mm:ss");
+                  res1[0].eta = eta;
+                 
+                  let resobj = {
+                    success: true,
+                    status: true,
+                    orderdetails: orderdetails,
+                    result: res1
+                  };
+  
+                  result(null, resobj);  
+                });
+
+                  } else {
+
+                    if (orderdeliverytime.length !== 0) {
+                      res1[0].deliverytime = orderdeliverytime[0].deliverytime;
+                      res1[0].eta = orderdeliverytime[0].duration;
+
+                      let resobj = {
+                        success: true,
+                        status: true,
+                        orderdetails: orderdetails,
+                        result: res1
+                      };
+      
+                      result(null, resobj);  
+                    }else{
+  
+                      // we need to remove once delivery time stable
+                      eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
+                      //15min Food Preparation time , 3min 1 km
+                  
+                      res1[0].eta = Math.round(eta) + " mins";
+
+                      let resobj = {
+                        success: true,
+                        status: true,
+                        orderdetails: orderdetails,
+                        result: res1
+                      };
+      
+                      result(null, resobj);  
+                    }
+
+                  }
+                  
+                }else{
+
+                  let resobj = {
+                    success: true,
+                    status: true,
+                    orderdetails: orderdetails,
+                    result: res1
+                  };
+  
+                  result(null, resobj);  
+
+                }
+
+
+
+
+
+
+
+              // let resobj = {
+              //   success: true,
+              //   status: true,
+              //   orderdetails: orderdetails,
+              //   result: res1
+              // };
+              // result(null, resobj);
             }
           });
         }
@@ -4083,7 +4221,6 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
 
 Order.moveit_customer_location_reached_by_userid = function(req, result) {
   var customerlocationreachtime = moment().format("YYYY-MM-DD HH:mm:ss");
-  console.log(customerlocationreachtime);
 
   sql.query("Select * from Orders where orderid = ?", [req.orderid],async function(err,res1) {
     if (err) {
@@ -4113,7 +4250,7 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
                 message: "Customer location reached successfully"
               };
               PushConstant.Pageid_eat_order_pickedup = 6;
-              await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
+              await Notification.orderEatPushNotification(req.orderid,null,PushConstant.Pageid_eat_order_pickedup);
               result(null, resobj); 
             }
           }
