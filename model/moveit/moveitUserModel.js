@@ -347,7 +347,7 @@ var iszone=false;
                 onlinestatus: key1,
                 zone_id:zone_id,
                 zone_name:zone_name,
-                boundaries:boundaries,
+                boundaries:boundaries || null,
                 iszone:iszone,
                 forcelogout : 1
             };
@@ -1350,7 +1350,7 @@ Moveituser.moveit_zone_data =async function moveit_zone_data(req, result) {
           status:iszone,
           zone_id:zone_id,
           zone_name:zone_name,
-          boundaries:boundaries,
+          boundaries:boundaries ||null,
           iszone:iszone
       };
 

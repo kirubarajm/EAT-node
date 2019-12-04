@@ -34,3 +34,11 @@ exports.dunzo_task_cancel= function(req, res) {
     res.json(result);
   });
 };
+
+/////dunzo task cancel
+exports.dunzo_track_status= function(req, res) {
+  Dunzo.dunzo_track_status(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
