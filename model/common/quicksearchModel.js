@@ -720,7 +720,7 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
        console.log("Dunzo Order assign =>>>>>>>>>>>>>>>>>>>>>>>");
        await QuickSearch.dunzo_task_create(res[i].orderid);
          i++;
-       order_assign(res,i);
+         Zone_order_assign(res,i);
       }else{
       var makeitLocation = [];
       makeitLocation.push(res[i].lat);
