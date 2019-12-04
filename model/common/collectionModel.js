@@ -355,10 +355,12 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
         }
       
         //based on logic this conditions will change
-        if (req.cid === 1 || req.cid === 2) {
+        if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
           var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
-        }else if(req.cid === 3 ) {
+        }else if(req.cid == 3 ) {    ///kitchen
           var productlist = res[0].query + productquery  + orderbyquery;
+        }else if(req.cid= 5){
+          var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
         }
         
         await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], async function(err, res1) {
@@ -372,10 +374,18 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
               var zonename = getzone.zone_name;
             }
             
-            for (let i = 0; i < res1.length; i++) {
-              if (req.cid === 1 || req.cid === 2) {
-                res1[i].productlist =JSON.parse(res1[i].productlist)
-              }
+              for (let i = 0; i < res1.length; i++) {
+
+                if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
+                  res1[i].productlist =JSON.parse(res1[i].productlist);
+                  //remove duplicate values
+                  var arr = res1[i].productlist;
+               
+                  function getUniqueListBy(arr, key) {
+                    return [...new Map(arr.map(item => [item[key], item])).values()]
+                 }
+                   res1[i].productlist = getUniqueListBy(arr, 'productid')
+                }
                 
               res1[i].distance = res1[i].distance.toFixed(2);
               // 15min Food Preparation time , 3min 1 km
@@ -422,9 +432,9 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
               }
             }
 
-            if (req.cid == 1) {
-              res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
-            }
+              if (req.cid == 1||req.cid == 4 ||req.cid == 2 || req.cid == 6|| req.cid == 7) {
+                res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
+              }
 
             let resobj = {
               success: true,
@@ -489,10 +499,12 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
         }        
   
         //based on logic this conditions will change
-        if (req.cid === 1 || req.cid === 2) {
+           if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
           var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
-        }else if(req.cid === 3 ) {
+        }else if(req.cid == 3 ) {    ///kitchen
           var productlist = res[0].query + productquery  + orderbyquery;
+        }else if(req.cid= 5){
+          var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
         }
             
         //console.log(productlist);            
@@ -508,9 +520,14 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
             }
 
             for (let i = 0; i < res1.length; i++) {  
-              if (req.cid === 1 || req.cid === 2) {
+                  if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
                 res1[i].productlist =JSON.parse(res1[i].productlist)
-              }
+                    var arr = res1[i].productlist;
+                    function getUniqueListBy(arr, key) {
+                      return [...new Map(arr.map(item => [item[key], item])).values()]
+                   }
+                     res1[i].productlist = getUniqueListBy(arr, 'productid')
+                  }
                   
               res1[i].distance = res1[i].distance.toFixed(2);
               // 15min Food Preparation time , 3min 1 km
@@ -562,31 +579,35 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
   
             }
   
-            if (req.cid == 1) {
-              res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
-            }           
+                if (req.cid == 1||req.cid == 4 ||req.cid == 2 || req.cid == 6  || req.cid == 7) {
+                  res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
+                }
+  
+              
+  
+                let resobj = {
+                  success: true,
+                  status: true,
+                  result: res1
+                };
+                result(null, resobj);
+  
+              }
+  
+            });
+          }else{
+  
             let resobj = {
               success: true,
-              status: true,
-              userzoneid:userzoneid,
-              zonename:zonename,
-              result: res1
+              status: false,
+              result: res
             };
             result(null, resobj);
+  
+  
           }
-        });
-      }else{
-        let resobj = {
-          success: true,
-          status: false,
-          userzoneid:userzoneid,
-          zonename:zonename,
-          result: res
-        };
-        result(null, resobj);
-      }
-    }
-  });
+        }
+      });
   //};
 };
 
@@ -1073,10 +1094,12 @@ Collection.get_all_collection_by_cid_getkichens = async function get_all_collect
 
 
 //based on logic this conditions will change
-  if (req.cid === 1 || req.cid === 2) {
+  if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
     var productlist = req.query + productquery  + groupbyquery;
-  }else if(req.cid === 3 ) {
+  }else if(req.cid == 3 ) {
     var productlist = req.query + productquery  + orderbyquery;
+  }else if(req.cid= 5){
+    var productlist = req.query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
   }
  
   //console.log(productlist);
@@ -1084,7 +1107,7 @@ Collection.get_all_collection_by_cid_getkichens = async function get_all_collect
 
         for (let i = 0; i < res1.length; i++) {
 
-          if (req.cid === 1 || req.cid === 2) {
+          if (req.cid === 1 || req.cid === 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
             res1[i].productlist =JSON.parse(res1[i].productlist)
           }
           
