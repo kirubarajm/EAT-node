@@ -2570,7 +2570,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
  
   if (orderdetails.length !== 0) {
 
-    orderdetails[0].rating = false;
+    orderdetails[0].rating = true;
     orderdetails[0].showrating = false;
     
   if (orderdetails[0].rating_skip < constant.max_order_rating_skip) {

@@ -12,7 +12,7 @@ const dunzoconst = {
     delivered:"delivered",
     cancelled:"cancelled",
     
-    order_assign_dunzo:true,
+    order_assign_dunzo:false,
     order_assign_dunzo_waiting_min:4,
 
     //////////////// ========> Demo <========= /////////////////
