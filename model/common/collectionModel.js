@@ -71,14 +71,31 @@ Collection.list_all_active_collection = function list_all_active_collection(req,
       result(err, null);
     } else {
       var kitchens =   await Collection.getcollectionlist(res,req)
-      console.log("first collection");
+    
        if (res.length !== 0 ) {
+      console.log(req.app);
+
+        if (req.app==1) {
+          console.log("first collection");
+
         let resobj = {
           success: true,
           status:true,
           collection: res
         };
         result(null, resobj);
+        }else{
+          console.log("2 collection");
+
+          let resobj = {
+            success: true,
+            status: true,
+            collection: res
+          };
+          return resobj;
+
+        }
+
        } else {
         let resobj = {
           success: true,

@@ -77,7 +77,7 @@ const calculate = {
 
     
     ///Dunzo Authorization
-    order_assign_dunzo:false,
+    order_assign_dunzo:true,
 
     order_assign_dunzo_waiting_min:4,
     dunzo_client_id : "c6c3acd5-e254-4404-ad06-c0c1d2aafd1e",
@@ -86,8 +86,6 @@ const calculate = {
     //Zone Controles
     zone_control:false,
 
-    //kitchen pagenation 
-     kitchen_pagenation_limit :5
     
     
 }
