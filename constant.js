@@ -86,8 +86,6 @@ const calculate = {
     //Zone Controles
     zone_control:false,
 
-    //kitchen pagenation 
-     kitchen_pagenation_limit :5
     
     
 }

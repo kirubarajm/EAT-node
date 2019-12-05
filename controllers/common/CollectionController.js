@@ -3,6 +3,7 @@
 var Collection = require("../../model/common/collectionModel");
 
 exports.list_all_collection = function(req, res) {
+    req.body.app = 1;
     Collection.list_all_active_collection(req.body,function(err, result) {
     console.log("controller");
     if (err) res.send(err);
