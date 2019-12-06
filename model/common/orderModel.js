@@ -23,6 +23,12 @@ var MoveitFireBase =require("../../push/Moveit_SendNotification");
 var Ordersqueue = require("../../model/common/ordersqueueModel");
 var MoveitUser = require("../../model/moveit/moveitUserModel");
 var OrderStatusHistory = require("../common/orderstatushistoryModel");
+var Dunzo = require("../../model/webhooks/dunzoModel.js");
+var requestpromise = require('request-promise');
+var dunzoconst = require('../../model/dunzo_constant');
+
+
+
 // var instance = new Razorpay({
 //   key_id: "rzp_test_3cduMl5T89iR9G",
 //   key_secret: "BSdpKV1M07sH9cucL5uzVnol"
@@ -80,6 +86,8 @@ var Order = function(order) {
   this.flatno = order.flatno;
   this.app_type = order.app_type || 3;
   this.cancel_status = order.cancel_status ||0;
+  this.delivery_vendor=order.delivery_vendor ||0;
+  this.cus_pincode = order.cus_pincode ||0;
 };
 
 
@@ -102,6 +110,8 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
             req.locality = address_data[0].locality;
             req.cus_lat = address_data[0].lat;
             req.cus_lon = address_data[0].lon;
+            req.cus_pincode = address_data[0].pincode;
+
 
             // req.gst = amountdata.gstcharge;
             // req.price = amountdata.grandtotal;
@@ -174,215 +184,94 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
     
   };*/
 Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitems,result) {
-//makeit_user_id
+  //makeit_user_id
   var day = moment().format("YYYY-MM-DD HH:mm:ss");;
   var currenthour  = moment(day).format("HH");
- // var currenthour = 23
+  // var currenthour = 23
   var breatfastcycle = constant.breatfastcycle;
   var dinnercycle = constant.dinnercycle;
   var lunchcycle = constant.lunchcycle;
   var dinnerend = constant.dinnerend;
-
-  const delivery_charge = constant.deliverycharge;
-  
+  const delivery_charge = constant.deliverycharge;  
   if (constant.order_assign_status==false) {
-
     if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
       const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
       if (res.length === 0 ) {
-      //get address 
-        const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
-      //console.log("address_data-->",address_data);
-      if(address_data.length === 0) {
-        let resobj = {
-                  success: true,
-                  status: false,
-                  message: "Sorry your selected address wrong.Please select correct address."
-                };
-                result(null, resobj);
-        }else{
-              req.lat = address_data[0].lat;
-              req.lon = address_data[0].lon;
-              Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
-                if (err) {
-                  result(err, null);
-                } else {
-                  if (res3.status != true) {
-                    result(null, res3);
-                  } else {
-                    var amountdata = res3.result[0].amountdetails;
-                   
-                    req.original_price = amountdata.original_price;
-                    req.refund_balance = amountdata.refund_balance;
-                    req.refund_amount = amountdata.refundamount;
-                    req.discount_amount = amountdata.coupon_discount_amount;
-                    req.after_discount_cost = amountdata.grandtotal;
-                    req.order_cost   = amountdata.original_price;
-                    req.gst = amountdata.gstcharge;
-                    req.price = amountdata.grandtotal;
-                    req.makeit_earnings = amountdata.makeit_earnings;
-                 
-                    req.cus_address = address_data[0].address;
-                    req.locality = address_data[0].locality;
-                    req.cus_lat = address_data[0].lat;
-                    req.cus_lon = address_data[0].lon;
-                    req.address_title = address_data[0].address_title;
-                    req.locality_name = address_data[0].locality;
-                    req.flatno = address_data[0].flatno;
-                    req.landmark = address_data[0].landmark;
-                    req.coupon = req.cid
-                      if (req.payment_type == 0 || req.payment_type == 3) {
-                        Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
-                          if (err) {
-                            result(err, null);
-                          } else {
-                            if (req.payment_type == 0) {
-                              await Notification.orderMakeItPushNotification(
-                                res.orderid,
-                                req.makeit_user_id,
-                                PushConstant.pageidMakeit_Order_Post
-                              );
-                            }
-                          ////Insert Order History////
-                          
-                          ////////////////////////////
-                            result(null, res);
-                          }
-                        });
-                        //ordercreatecashondelivery(req, res3.result[0].item);
-                      } else if (req.payment_type == 1) {
-                        Order.OrderOnline(req, res3.result[0].item,function(err,res){
-                          if (err) {
-                            result(err, null);
-                          } else {
-                              result(null, res);
-                          }
-                        });
-                        //ordercreateonline(req, res3.result[0].item);
-                      }
-                  }
-                }
-              });
-        }
-     }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
-    let resobj = {
-      success: true,
-      status: false,
-      message: "Please complete your payment for yor order",
-      result : res
-    };
-    result(null, resobj);
-  }else {
-     
-      let resobj = {
-        success: true,
-        status: false,
-        message: "Already you have one order, So please try once delivered exiting order"
-        
-      
-      };
-      result(null, resobj);
-    }
-    }else{
-  
-    
-    let resobj = {
-      success: true,
-      status: false,
-      message: "Sorry Currently we are not receiving orders!"
-    };
-    result(null, resobj);
-    }
-  }else{
-
-    var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
-    var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
-    var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
-    var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
-  
-    var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
-    console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
-    console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
-    console.log("xfactorValue-->",Math.round(xfactorValue));
-    var fValue= Math.round(xfactorValue);
-    if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
-      
-      if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
-        const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
-        if (res.length === 0 ) {
         //get address 
-          const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
+        const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
         //console.log("address_data-->",address_data);
         if(address_data.length === 0) {
           let resobj = {
-                    success: true,
-                    status: false,
-                    message: "Sorry your selected address wrong.Please select correct address."
-                  };
-                  result(null, resobj);
-          }else{
-                req.lat = address_data[0].lat;
-                req.lon = address_data[0].lon;
-                Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
+            success: true,
+            status: false,
+            message: "Sorry your selected address wrong.Please select correct address."
+          };
+          result(null, resobj);
+        }else{
+          req.lat = address_data[0].lat;
+          req.lon = address_data[0].lon;
+          Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
+          if (err) {
+            result(err, null);
+          } else {
+            if (res3.status != true) {
+              result(null, res3);
+            } else {
+              var amountdata = res3.result[0].amountdetails;
+              req.original_price = amountdata.original_price;
+              req.refund_balance = amountdata.refund_balance;
+              req.refund_amount = amountdata.refundamount;
+              req.discount_amount = amountdata.coupon_discount_amount;
+              req.after_discount_cost = amountdata.grandtotal;
+              req.order_cost   = amountdata.original_price;
+              req.gst = amountdata.gstcharge;
+              req.price = amountdata.grandtotal;
+              req.makeit_earnings = amountdata.makeit_earnings;                 
+              req.cus_address = address_data[0].address;
+              req.locality = address_data[0].locality;
+              req.cus_lat = address_data[0].lat;
+              req.cus_lon = address_data[0].lon;
+              req.address_title = address_data[0].address_title;
+              req.locality_name = address_data[0].locality;
+              req.flatno = address_data[0].flatno;
+              req.landmark = address_data[0].landmark;
+              req.cus_pincode = address_data[0].pincode;
+              req.coupon = req.cid
+              console.log(req.cus_pincode);
+              if (req.payment_type == 0 || req.payment_type == 3) {
+                Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                   if (err) {
                     result(err, null);
                   } else {
-                    if (res3.status != true) {
-                      result(null, res3);
-                    } else {
-                      var amountdata = res3.result[0].amountdetails;
-                     
-                      req.original_price = amountdata.original_price;
-                      req.refund_balance = amountdata.refund_balance;
-                      req.refund_amount = amountdata.refundamount;
-                      req.discount_amount = amountdata.coupon_discount_amount;
-                      req.after_discount_cost = amountdata.grandtotal;
-                      req.order_cost   = amountdata.original_price;
-                      req.gst = amountdata.gstcharge;
-                      req.price = amountdata.grandtotal;
-                      req.makeit_earnings = amountdata.makeit_earnings;
-                   
-                      req.cus_address = address_data[0].address;
-                      req.locality = address_data[0].locality;
-                      req.cus_lat = address_data[0].lat;
-                      req.cus_lon = address_data[0].lon;
-                      req.address_title = address_data[0].address_title;
-                      req.locality_name = address_data[0].locality;
-                      req.flatno = address_data[0].flatno;
-                      req.landmark = address_data[0].landmark;
-                      req.coupon = req.cid
-                        if (req.payment_type == 0 || req.payment_type == 3) {
-                          Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
-                            if (err) {
-                              result(err, null);
-                            } else {
-                              if (req.payment_type == 0) {
-                                await Notification.orderMakeItPushNotification(
-                                  res.orderid,
-                                  req.makeit_user_id,
-                                  PushConstant.pageidMakeit_Order_Post
-                                );
-                              }
-                             
-                              result(null, res);
-                            }
-                          });
-                          //ordercreatecashondelivery(req, res3.result[0].item);
-                        } else if (req.payment_type == 1) {
-                          Order.OrderOnline(req, res3.result[0].item,function(err,res){
-                            if (err) {
-                              result(err, null);
-                            } else {
-                                result(null, res);
-                            }
-                          });
-                          //ordercreateonline(req, res3.result[0].item);
-                        }
+                    if (req.payment_type == 0) {
+                      await Notification.orderMakeItPushNotification(
+                        res.orderid,
+                        req.makeit_user_id,
+                        PushConstant.pageidMakeit_Order_Post
+                      );
                     }
+                    ////Insert Order History////
+                            
+                    ////////////////////////////
+                    result(null, res);
                   }
                 });
+                //ordercreatecashondelivery(req, res3.result[0].item);
+              } else if (req.payment_type == 1) {
+                Order.OrderOnline(req, res3.result[0].item,function(err,res){
+                  if (err) {
+                    result(err, null);
+                  } else {
+                    result(null, res);
+                  }
+                });
+                //ordercreateonline(req, res3.result[0].item);
+              }
+            }
           }
-       }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
+        });
+      }
+    }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
       let resobj = {
         success: true,
         status: false,
@@ -390,31 +279,142 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
         result : res
       };
       result(null, resobj);
-    }else {
-       
-        let resobj = {
-          success: true,
-          status: false,
-          message: "Already you have one order, So please try once delivered exiting order"
-          
-        
-        };
-        result(null, resobj);
-      }
-      }else{
-    
-      
+    }else {     
+      let resobj = {
+        success: true,
+        status: false,
+        message: "Already you have one order, So please try once delivered exiting order"      
+      };
+      result(null, resobj);
+    }
+    }else{  
       let resobj = {
         success: true,
         status: false,
         message: "Sorry Currently we are not receiving orders!"
       };
       result(null, resobj);
-      }
-  
-  
+    }
+  }else{
+    if(constant.zone_control){
+      var get_hub_id_from_orders= await query("Select zone from MakeitUser where userid="+req.makeit_user_id);
+      var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and zone="+get_hub_id_from_orders[0].zone);
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and  status=0") ;
+      var get_hub_id_from_makeithub= await query("Select xfactor from Zone where id="+get_hub_id_from_orders[0].zone);
     }else{
+      var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
+      var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
+      var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
+    }   
   
+    console.log(get_hub_id_from_makeithub[0].xfactor);
+    console.log(get_moveit_list_based_on_hub[0].no_of_move_it_count);
+
+    var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
+    console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
+    console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
+    console.log("xfactorValue-->",Math.round(xfactorValue));
+    var fValue= Math.round(xfactorValue);
+    if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){      
+      if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
+        const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
+        if (res.length === 0 ) {
+          //get address 
+          const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
+          //console.log("address_data-->",address_data);
+          if(address_data.length === 0) {
+            let resobj = {
+              success: true,
+              status: false,
+              message: "Sorry your selected address wrong.Please select correct address."
+            };
+            result(null, resobj);
+          }else{
+            req.lat = address_data[0].lat;
+            req.lon = address_data[0].lon;
+            Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
+              if (err) {
+                result(err, null);
+              } else {
+                if (res3.status != true) {
+                  result(null, res3);
+                } else {
+                  var amountdata = res3.result[0].amountdetails;                     
+                  req.original_price = amountdata.original_price;
+                  req.refund_balance = amountdata.refund_balance;
+                  req.refund_amount = amountdata.refundamount;
+                  req.discount_amount = amountdata.coupon_discount_amount;
+                  req.after_discount_cost = amountdata.grandtotal;
+                  req.order_cost   = amountdata.original_price;
+                  req.gst = amountdata.gstcharge;
+                  req.price = amountdata.grandtotal;
+                  req.makeit_earnings = amountdata.makeit_earnings;                   
+                  req.cus_address = address_data[0].address;
+                  req.locality = address_data[0].locality;
+                  req.cus_lat = address_data[0].lat;
+                  req.cus_lon = address_data[0].lon;
+                  req.address_title = address_data[0].address_title;
+                  req.locality_name = address_data[0].locality;
+                  req.flatno = address_data[0].flatno;
+                  req.landmark = address_data[0].landmark;
+                  req.cus_pincode = address_data[0].pincode;
+                  req.coupon = req.cid
+                  if (req.payment_type == 0 || req.payment_type == 3) {
+                      Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
+                        if (err) {
+                          result(err, null);
+                        } else {
+                          if (req.payment_type == 0) {
+                            await Notification.orderMakeItPushNotification(
+                              res.orderid,
+                              req.makeit_user_id,
+                              PushConstant.pageidMakeit_Order_Post
+                            );
+                          }                             
+                          result(null, res);
+                        }
+                      });
+                      //ordercreatecashondelivery(req, res3.result[0].item);
+                  } else if (req.payment_type == 1) {
+                      Order.OrderOnline(req, res3.result[0].item,function(err,res){
+                        if (err) {
+                          result(err, null);
+                        } else {
+                          result(null, res);
+                        }
+                      });
+                      //ordercreateonline(req, res3.result[0].item);
+                  }
+                }
+              }
+            });
+          }
+        }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
+          let resobj = {
+            success: true,
+            status: false,
+            message: "Please complete your payment for yor order",
+            result : res
+          };
+          result(null, resobj);
+        }else {       
+          let resobj = {
+            success: true,
+            status: false,
+            message: "Already you have one order, So please try once delivered exiting order"        
+          };
+          result(null, resobj);
+        }
+      }else{     
+        let resobj = {
+          success: true,
+          status: false,
+          message: "Sorry Currently we are not receiving orders!"
+        };
+        result(null, resobj);
+      }  
+    }else{  
       req.payment_type=3;
       req.payment_status=3;
       req.orderstatus = 11;
@@ -431,16 +431,11 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
             title:"IN HIGH DEMAND",
             message:'We are facing high demand. We will let you know when we are back to our best!'
           };
-          result(null, resobj)
-        
+          result(null, resobj);        
         }
       });
-  
-    ;
     }
   }
- 
-
 };
 
 Order.read_a_proceed_to_pay_xfactore = async function read_a_proceed_to_pay_xfactore(req,orderitems,result) {
@@ -1346,17 +1341,21 @@ Order.get_all_orders = function get_all_orders(req, result) {
  // var query =
     //"Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status>0) )and orderstatus < 9";
   var searchquery =
-    "us.phoneno LIKE  '%" +
+    "mu.phoneno LIKE  '%" +
     req.search +
-    "%' OR us.email LIKE  '%" +
+    "%' OR mu.email LIKE  '%" +
     req.search +
-    "%' or us.name LIKE  '%" +
+    "%' or mu.name LIKE  '%" +
     req.search +
     "%'  or od.orderid LIKE  '%" +
     req.search +
     "%'";
   if (req.virtualkey !== "all") {
     query = query + " and od.ordertype = '" + req.virtualkey + "'";
+  }
+
+  if (req.delivery_vendor !== "all"){
+    query = query + " and od.delivery_vendor = '" + req.delivery_vendor + "'";
   }
   //var search= req.search
   if (req.virtualkey !== "all" && req.search) {
@@ -1367,7 +1366,9 @@ Order.get_all_orders = function get_all_orders(req, result) {
 
   var limitquery =query +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
 
- 
+ console.log(startlimit);
+ console.log(orderlimit);
+
   sql.query(limitquery, function(err, res1) {
     if (err) {
       result(err, null);
@@ -1480,13 +1481,7 @@ Order.get_today_vorders = function get_today_vorders(req, result) {
     " where DATE(od.ordertime) = CURDATE() and mk.virtualkey = 1 and (od.payment_type=0 or (od.payment_type=1 and od.payment_status=1)) and od.orderstatus = "+orderstatus;
     
   var searchquery =
-    "us.phoneno LIKE  '%" +
-    req.search +
-    "%' OR us.email LIKE  '%" +
-    req.search +
-    "%' or us.name LIKE  '%" +
-    req.search +
-    "%'  or od.orderid LIKE  '%" +
+    "od.orderid LIKE  '%" +
     req.search +
     "%'";
 
@@ -1540,6 +1535,7 @@ Order.get_today_vorders = function get_today_vorders(req, result) {
 
   sql.query(limitquery, function(err, res1) {
     if (err) {
+      console.log("err-->",err);
       result(err, null);
     } else {
       var totalcount = 0;
@@ -1688,7 +1684,7 @@ Order.getUnassignorders =async function getUnassignorders(req,result) {
 //req.id == 3 delivery orders
   if (req.id == 1 ) {
     
-    var res = await query("Select mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0");
+    var res = await query("Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and ors.delivery_vendor = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0");
     if (res.err) {
       result(err, null);
     } 
@@ -1708,27 +1704,27 @@ Order.getUnassignorders =async function getUnassignorders(req,result) {
     //   }
     // );Select * from Orders where DATE(created_at) = CURDATE() and moveit_user_id !=0 and (moveit_status IS NULL OR moveit_status = '') and orderstatus < 6 order by orderid ASC
   }else if(req.id == 2){
-    var res = await query("Select mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and ors.moveit_user_id !=0 and (ors.moveit_status IS NULL OR ors.moveit_status = '') and ors.orderstatus < 5 order by ors.orderid ASC");
+    var res = await query("Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and ors.moveit_user_id !=0 and (ors.moveit_status IS NULL OR ors.moveit_status = '') and ors.orderstatus < 5 order by ors.orderid ASC");
     if (res.err) {
           result(err, null);
         } 
   }else if(req.id == 3){
-    var res = await query("Select mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and ors.moveit_user_id !=0 and ors.moveit_status = 1  and ors.orderstatus < 6 order by ors.orderid ASC");
+    var res = await query("Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and ors.moveit_user_id !=0 and ors.moveit_status = 1  and ors.orderstatus < 6 order by ors.orderid ASC");
   if (res.err) {
     result(err, null);
   } 
   }else if(req.id == 4){
-    var res = await query("Select mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and (ors.created_at+ INTERVAL 45 MINUTE) < now() and ors.payment_status<2 and ors.orderstatus < 6 order by ors.orderid ASC");
+    var res = await query("Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and (ors.created_at+ INTERVAL 45 MINUTE) < now() and ors.payment_status<2 and ors.orderstatus < 6 order by ors.orderid ASC");
     if (res.err) {
       result(err, null);
     } 
   }else if(req.id == 5){
-    var res = await query("Select mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors join Orders_queue oq on oq.orderid=ors.orderid left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and ors.payment_status < 2 and ors.orderstatus < 6 and oq.status !=1 order by ors.ordertime ASC");
+    var res = await query("Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors join Orders_queue oq on oq.orderid=ors.orderid left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and ors.payment_status < 2 and ors.orderstatus < 6 and oq.status!=1 order by ors.ordertime ASC");
     if (res.err) {
       result(err, null);
     } 
   }else{
-    var res = await query("Select mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0");
+    var res = await query("Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and (ors.orderstatus = 1 or ors.orderstatus = 3) and ors.lock_status!=1 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0");
   }
  
   let resobj = {
@@ -1827,10 +1823,7 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
             if (err) {
               result(err, null);
             } else {
-              await Notification.orderEatPushNotification(
-                req.orderid,
-                null,
-                PushConstant.Pageid_eat_order_pickedup
+              await Notification.orderEatPushNotification(req.orderid,null,PushConstant.Pageid_eat_order_pickedup
               );
 
               req.orglat = res1[0].makeit_lat;
@@ -2204,7 +2197,7 @@ Order.orderlistbymoveituserid = async function(moveit_user_id, result) {
 
 Order.orderviewbyadmin = function(req, result) {
   sql.query(
-    "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'virtualkey',ms.virtualkey) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.orderid ='" +
+    "SELECT dm.*,ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'virtualkey',ms.virtualkey) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid left join Dunzo_moveit_details dm on dm.task_id=ors.dunzo_taskid where ors.orderid ='" +
       req.id +
       "'",
     function(err, res) {
@@ -2243,9 +2236,7 @@ Order.orderviewbyeatuser = function(req, result) {
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
   var radiuslimit=constant.radiuslimit;
-  var orderquery =  "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  where ors.orderid =" +
-  req.orderid +
-  " "
+  var orderquery =  "SELECT dm.*,ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid left join Dunzo_moveit_details dm on dm.task_id=ors.dunzo_taskid where ors.orderid ='"+req.orderid +"'  " ;//and dm.active_status=1
   sql.query(orderquery,async function(err, res1) {
       if (err) {
         result(err, null);
@@ -2260,47 +2251,8 @@ Order.orderviewbyeatuser = function(req, result) {
           result(null, resobj);
         } else {
 
-
-          if ( res1[0].orderstatus < 6 ) {
-            
-            if ( res1[0].orderstatus < 5 ){
-              await Order.eat_get_delivery_time(req);
-            }
-            
-
-            var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+req.orderid +" order by od_id desc limit 1");
-            
-            
-            if (orderdeliverytime.length !== 0) {
-              res1[0].deliverytime = orderdeliverytime[0].deliverytime;
-              res1[0].eta = orderdeliverytime[0].duration;
-            }else{
-
-              // we need to remove once delivery time stable
-              eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
-              //15min Food Preparation time , 3min 1 km
-           
-              res1[0].eta = Math.round(eta) + " mins";
-            }
-
-            // we need to remove once delivery time stable
-            if (!res1[0].deliverytime) {
-              if (res1[0].orderstatus > 3) {
-                // +20 min add with moveit order assign time
-               res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
-             }else{
-               var deliverytime = moment(res1[0].ordertime)
-               .add(0, "seconds")
-               .add(20, "minutes")
-               .format("YYYY-MM-DD HH:mm:ss");
-               res1[0].deliverytime = deliverytime;
-             }
-            }
-
-          }
-
-
-           
+               
+              
                 res1[0].servicecharge = constant.servicecharge;
                 res1[0].cancellationmessage = constant.cancellationmessage;;
               
@@ -2325,6 +2277,17 @@ Order.orderviewbyeatuser = function(req, result) {
                   var items = JSON.parse(res1[0].items);
                   res1[0].items = items.item;
                 }
+
+                ////dunzo code
+                if (res1[0].delivery_vendor==1) {
+                  
+                  res1[0].moveitdetail.name=res1[0].runner_name;
+                  res1[0].moveitdetail.phoneno=res1[0].runner_phone_number;
+
+                }
+                res1[0].dunzo_client_id= dunzoconst.dunzo_client_id;
+                res1[0].Authorization= dunzoconst.Authorization;
+
 
                   var itemlist = res1[0].items
                   var productprice = 0;
@@ -2388,24 +2351,121 @@ Order.orderviewbyeatuser = function(req, result) {
                     cartdetails.push(refundinfo);
                   }
 
-                  
-                  // totalamountinfo.title = "Total Amount";
-                  // totalamountinfo.charges = res1[0].price;
-                  // totalamountinfo.status = true;
-                  // cartdetails.push(totalamountinfo);
-        
-
                   res1[0].cartdetails = cartdetails;
-                let resobj = {
-                  success: true,
-                  status: true,
-                  result: res1
-                };
 
-                result(null, resobj);
-              //}
-          //   }
-          // );
+
+                  if ( res1[0].orderstatus < 6 ) {
+
+                    await Order.eat_get_delivery_time(req);
+                   
+                    var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+req.orderid +" order by od_id desc limit 1");
+                    
+  
+                    if (res1[0].delivery_vendor==1) {
+                      
+                  
+                  //   var url =dunzoconst.dunzo_cancel_url+'/'+res1[0].dunzo_taskid+'/status?test=true'
+
+                  //   var headers= {
+                  //     'Content-Type': 'application/json',
+                  //     'client-id': dunzoconst.dunzo_client_id,
+                  //     'Authorization' : dunzoconst.Authorization,
+                  //     'Accept-Language':'en_US'
+                  //   };
+                  
+                  //   const options = {
+                  //     url: url,
+                  //     method: 'GET',
+                  //     headers: headers
+                  // };
+                  
+                  // request(options, function(err, res, body) {
+                  //     let dunzo_status = JSON.parse(body);
+                  //   //  console.log(json);
+                  //   console.log("dunzo_status------------------->",dunzo_status);
+                  //   var pickup=dunzo_status.eta.pickup || 0;
+                  //   var dropoff= dunzo_status.eta.dropoff || 0;
+
+                  //   var eta = Math.round(pickup + dropoff);
+                  //   res1[0].deliverytime = moment().add(0, "seconds").add(eta, "minutes").format("YYYY-MM-DD HH:mm:ss");
+                  //   res1[0].eta = eta;
+                   
+                  //   let resobj = {
+                  //     success: true,
+                  //     status: true,
+                  //     result: res1
+                  //   };
+    
+                  //   result(null, resobj);  
+                  // });
+
+
+                  var pickup=res1[0].runner_eta_pickup_min || 0;
+                  var dropoff= res1[0].runner_eta_dropoff_min || 0;
+
+                  var eta = Math.round(pickup + dropoff);
+                  res1[0].deliverytime = moment().add(0, "seconds").add(eta, "minutes").format("YYYY-MM-DD HH:mm:ss");
+                  res1[0].eta = eta;
+                 
+                  let resobj = {
+                    success: true,
+                    status: true,
+                    result: res1
+                  };
+  
+                  result(null, resobj);  
+
+
+                    } else {
+
+                      if (orderdeliverytime.length !== 0) {
+                        res1[0].deliverytime = orderdeliverytime[0].deliverytime;
+                        res1[0].eta = orderdeliverytime[0].duration;
+
+                        let resobj = {
+                          success: true,
+                          status: true,
+                          result: res1
+                        };
+        
+                        result(null, resobj);  
+                      }else{
+    
+                      
+                        res1[0].distance = Math.ceil(res1[0].distance);
+
+                        console.log( res1[0].distance);
+                        eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
+                        //15min Food Preparation time , 3min 1 km
+                    
+                        res1[0].eta = Math.round(eta) + " mins";
+                        res1[0].deliverytime = moment().add(0, "seconds").add(eta, "minutes").format("YYYY-MM-DD HH:mm:ss");
+
+
+                        let resobj = {
+                          success: true,
+                          status: true,
+                          result: res1
+                        };
+        
+                        result(null, resobj);  
+                      }
+  
+                    }
+                    
+                  }else{
+
+                    let resobj = {
+                      success: true,
+                      status: true,
+                      result: res1
+                    };
+    
+                    result(null, resobj);  
+
+                  }
+  
+                  
         }
       }
     }
@@ -2451,7 +2511,7 @@ Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
 
 Order.orderlistbyeatuser = async function(req,result) {
 
-console.log(req);
+//console.log(req);
   var query = "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where us.userid ='" +
             req.userid +
             "' and (ors.orderstatus = 6 or orderstatus = 7 or orderstatus = 8 ) group by ors.orderid order by ors.orderid desc";
@@ -2537,7 +2597,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
   if (orderdetails.length !== 0) {
 
     orderdetails[0].rating = false;
-    orderdetails[0].showrating = false;
+    orderdetails[0].showrating = true;
     
   if (orderdetails[0].rating_skip < constant.max_order_rating_skip) {
               
@@ -2571,107 +2631,33 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
           result(null, resobj);
         } else {
 
-          
-          if (res[0].payment_type === "0" || res[0].payment_type === 0) liveorderquery ="Select distinct ors.orderid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,ors.payment_type,ors.payment_status,ors.moveit_user_id,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
-          else if (res[0].payment_type === "1" || res[0].payment_status === 1) liveorderquery ="Select ors.orderid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,ors.payment_type,ors.payment_status,ors.moveit_user_id,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
-          else {
-            let resobj = {
-              success: true,
-              status: false,
-              message: "Active order not found!",
-              orderdetails: orderdetails
-            };
-            result(null, resobj);
-            return;
-          }
+          if (res[0].delivery_vendor ==0) {
+            
+            if (res[0].payment_type === "0" || res[0].payment_type === 0) liveorderquery ="Select distinct ors.orderid,ors.delivery_vendor,ors.dunzo_taskid,ors.ordertime,ors.order_assigned_time,ors.orderstatus,ors.price,ors.userid,ors.payment_type,ors.payment_status,ors.moveit_user_id,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid =" +req.userid +" and ors.orderstatus < 6  and payment_status !=2 ";
+            else if (res[0].payment_type === "1" || res[0].payment_status === 1) liveorderquery ="Select ors.orderid,ors.delivery_vendor,ors.dunzo_taskid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,ors.payment_type,ors.payment_status,ors.moveit_user_id,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
+            else {
+              let resobj = {
+                success: true,
+                status: false,
+                message: "Active order not found!",
+                orderdetails: orderdetails
+              };
+              result(null, resobj);
+              return;
+            }
 
+          }else{
+            
+            liveorderquery ="Select dm.*,ors.delivery_vendor,ors.dunzo_taskid,ors.orderid,ors.ordertime,ors.orderstatus,ors.order_assigned_time,ors.price,ors.userid,ors.payment_type,ors.payment_status,ors.moveit_user_id,ors.lock_status,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.img1 as makeitimage,( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( mk.lat ) )  * cos( radians(mk.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(mk.lat)) ) ) AS distance,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'product_name',pt.product_name))) AS items from Orders ors join MakeitUser mk on ors.makeit_user_id = mk.userid left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid left join Dunzo_moveit_details as dm on dm.task_id=ors.dunzo_taskid where ors.userid ='" +req.userid +"' and ors.orderstatus < 6 and payment_status !=2 ";
+
+          }
+          
+        
           sql.query(liveorderquery,async function(err, res1) {
             if (err) {
               result(err, null);
             } else {
-
-            
-              if ( res1[0].orderstatus < 6 ) {
-            
-                if ( res1[0].orderstatus < 5 ){
-                   req.orderid  =res1[0].orderid;
-                   await Order.eat_get_delivery_time(req);
-                }
-                
-    
-                var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+res1[0].orderid +" order by od_id desc limit 1");
-                
-                
-                if (orderdeliverytime.length !== 0) {
-                  res1[0].deliverytime = orderdeliverytime[0].deliverytime;
-                  res1[0].eta = foodpreparationtime + orderdeliverytime[0].duration;
-                }else{
-    
-                  // we need to remove once delivery time stable
-                  eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
-                  //15min Food Preparation time , 3min 1 km
-               
-                  res1[0].eta = Math.round(eta) + " mins";
-                }
-    
-                // we need to remove once delivery time stable
-                if (!res1[0].deliverytime) {
-                  if (res1[0].orderstatus > 3) {
-                    // +20 min add with moveit order assign time
-                   res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
-                 }else{
-                   var deliverytime = moment(res1[0].ordertime)
-                   .add(0, "seconds")
-                   .add(20, "minutes")
-                   .format("YYYY-MM-DD HH:mm:ss");
-                   res1[0].deliverytime = deliverytime;
-                 }
-                }
-    
-              }
-            
-            //   if (res1[0].orderstatus > 3) {
-            //     // +20 min add with moveit order picked up time
-            //    res1[0].deliverytime = res1[0].moveit_actual_delivered_time;
-            //  }else{
-            //    // +20 min add with moveit order posted time
-            //    var deliverytime = moment(res[0].ordertime)
-            //    .add(0, "seconds")
-            //    .add(20, "minutes")
-            //    .format("YYYY-MM-DD HH:mm:ss");
-            //    res1[0].deliverytime = deliverytime;
-            //  }
-
-
-            // var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+res1[0].orderid +" order by od_id desc limit 1");
-           
-            // if (orderdeliverytime.length !== 0) {
-            //   console.log("res1"+orderdeliverytime.length);
-            //   res1[0].deliverytime = orderdeliverytime[0].deliverytime;
-            //   res1[0].eta = orderdeliverytime[0].duration;
-            // }else{
-
-            //   // we need to remove once delivery time stable
-            //   eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
-            //   //15min Food Preparation time , 3min 1 km
-           
-            //   res1[0].eta = Math.round(eta) + " mins";
-            // }
-            
-
-            //  // we need to remove once delivery time stable
-            //   if (!res1[0].deliverytime) {
-            //     if (res1[0].orderstatus > 3) {
-            //       // +20 min add with moveit order assign time
-            //      res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
-            //    }else{
-            //      var deliverytime = moment(res1[0].ordertime)
-            //      .add(0, "seconds")
-            //      .add(20, "minutes")
-            //      .format("YYYY-MM-DD HH:mm:ss");
-            //      res1[0].deliverytime = deliverytime;
-            //    }
-            //   }
+         
 
               
 
@@ -2689,20 +2675,198 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
               }else{
                 res1[0].onlinepaymentstatus = true;
               }
-
+          
               
-              let resobj = {
-                success: true,
-                status: true,
-                orderdetails: orderdetails,
-                result: res1
-              };
-              result(null, resobj);
+                // if ( res1[0].orderstatus < 6 ) {
+                //   //check our delivery or dunzo delivery
+                //   if (res1[0].deliver_vendor==0) {
+                //     //store order delivery time
+                //     if ( res1[0].orderstatus < 5 ){
+                //       req.orderid  =res1[0].orderid;
+                //       await Order.eat_get_delivery_time(req);
+                //     }
+                   
+                //   //get delivery time
+                //    var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+res1[0].orderid +" order by od_id desc limit 1");
+                   
+                //    if (orderdeliverytime.length !== 0) {
+                //      res1[0].deliverytime = orderdeliverytime[0].deliverytime;
+                //      res1[0].eta = foodpreparationtime + orderdeliverytime[0].duration;
+                //    }else{
+       
+                //      // we need to remove once delivery time stable
+                //      eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
+                //      //15min Food Preparation time , 3min 1 km
+                  
+                //      res1[0].eta = Math.round(eta) + " mins";
+                //    }
+  
+  
+                //   }else{
+  
+                   
+                //     // await Order.dunzo_task_status(res1[0].dunzo_taskid, function(error, response, data){
+                //     //   console.log(response);
+  
+                //     //   console.log(data);
+  
+                //     // });
+                //     console.log(res1[0].runner_eta_pickup_min);
+                //     res1[0].eta = parseInt(res1[0].runner_eta_pickup_min) + parseInt(res1[0].runner_eta_dropoff_min);
+  
+                //   }
+                  
+                //   // we need to remove once delivery time stable
+                //   if (!res1[0].deliverytime) {
+                //     if (res1[0].orderstatus > 3) {
+                //       // +20 min add with moveit order assign time
+                //      res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
+                //    }else{
+                //      var deliverytime = moment(res1[0].ordertime)
+                //      .add(0, "seconds")
+                //      .add(20, "minutes")
+                //      .format("YYYY-MM-DD HH:mm:ss");
+                //      res1[0].deliverytime = deliverytime;
+                //    }
+                //   }
+      
+                // }
+           
+                res1[0].distance = Math.ceil(res1[0].distance);
+
+                if ( res1[0].orderstatus < 6 ) {
+                  req.orderid  =res1[0].orderid;
+                  await Order.eat_get_delivery_time(req);
+                 
+                  var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+req.orderid +" order by od_id desc limit 1");
+                  
+
+                  if (res1[0].delivery_vendor==1) {
+                    
+                //   var url = dunzoconst.dunzo_cancel_url+'/'+res1[0].dunzo_taskid+'/status?test=true'
+
+                //   var headers= {
+                //     'Content-Type': 'application/json',
+                //     'client-id': dunzoconst.dunzo_client_id,
+                //     'Authorization' : dunzoconst.Authorization,
+                //     'Accept-Language':'en_US'
+                //   };
+                
+                //   const options = {
+                //     url: url,
+                //     method: 'GET',
+                //     headers: headers
+                // };
+                
+                // request(options, function(err, res, body) {
+                //     let dunzo_status = JSON.parse(body);
+                //   //  console.log(json);
+                //  // console.log("dunzo_status------------------->",dunzo_status);
+                //   var pickup=dunzo_status.eta.pickup || 0;
+                //   var dropoff= dunzo_status.eta.dropoff || 0;
+
+                //   var eta = Math.round(pickup + dropoff);
+                //   res1[0].deliverytime = moment().add(0, "seconds").add(eta, "minutes").format("YYYY-MM-DD HH:mm:ss");
+                //   res1[0].eta = eta;
+                 
+                //   let resobj = {
+                //     success: true,
+                //     status: true,
+                //     orderdetails: orderdetails,
+                //     result: res1
+                //   };
+  
+                //   result(null, resobj);  
+                // });
+
+                var pickup=res1[0].runner_eta_pickup_min || 0;
+                var dropoff= dunzo_status.eta.runner_eta_dropoff_min || 0;
+
+                var eta = Math.round(pickup + dropoff);
+
+                if (eta ==0) {                  
+                  eta = foodpreparationtime + Math.round(onekm * res1[0].distance);            
+               
+                }
+                res1[0].deliverytime = moment().add(0, "seconds").add(eta, "minutes").format("YYYY-MM-DD HH:mm:ss");
+                res1[0].eta = eta;
+               
+                let resobj = {
+                  success: true,
+                  status: true,
+                  result: res1
+                };
+
+                result(null, resobj);  
+
+
+                  } else {
+
+                    if (orderdeliverytime.length !== 0) {
+                      res1[0].deliverytime = orderdeliverytime[0].deliverytime;
+                      res1[0].eta = orderdeliverytime[0].duration;
+
+                      let resobj = {
+                        success: true,
+                        status: true,
+                        orderdetails: orderdetails,
+                        result: res1
+                      };
+      
+                      result(null, resobj);  
+                    }else{
+  
+                      // we need to remove once delivery time stable
+                      eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
+                      //15min Food Preparation time , 3min 1 km
+                  
+                      res1[0].eta = Math.round(eta) + " mins";
+                      res1[0].deliverytime = moment().add(0, "seconds").add(eta, "minutes").format("YYYY-MM-DD HH:mm:ss");
+
+
+                      let resobj = {
+                        success: true,
+                        status: true,
+                        orderdetails: orderdetails,
+                        result: res1
+                      };
+      
+                      result(null, resobj);  
+                    }
+
+                  }
+                  
+                }else{
+
+                  let resobj = {
+                    success: true,
+                    status: true,
+                    orderdetails: orderdetails,
+                    result: res1
+                  };
+  
+                  result(null, resobj);  
+
+                }
+
+
+
+
+
+
+
+              // let resobj = {
+              //   success: true,
+              //   status: true,
+              //   orderdetails: orderdetails,
+              //   result: res1
+              // };
+              // result(null, resobj);
             }
           });
         }
       }
-    }
+  }
   );
 };
 //online refund coupon
@@ -2745,6 +2909,15 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
         if (err) {
           result(err, null);
         } else {
+          var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+
+          console.log("orderdetails.delivery_vendor"+orderdetails[0].delivery_vendor);
+          if (orderdetails[0].delivery_vendor==1) {
+            console.log("dunzo_task_cancel");
+            orderdetails[0].cancellation_reason= req.cancel_reason ;
+            Dunzo.dunzo_task_cancel(orderdetails[0]);
+            
+          }
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
                     
           //  console.log(orderitemdetails);
@@ -2861,6 +3034,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
               null
             );
           }
+
           let response = {
             success: true,
             status: true,
@@ -3028,11 +3202,19 @@ Order.insert_delivery_time = function insert_delivery_time(req) {
 };
 
 Order.auto_order_assign_byadmin_makeit = function auto_order_assign_byadmin_makeit(req) {
- 
-  Order.auto_order_assign(req, function(err, res) {
-   if (err) return err;
-   else return res;
- });
+  ////Start: Zone Based Auto Assign///////
+  if(constant.zone_control){
+    Order.zone_moveit_order_auto_assign(req, function(err, res) {
+      if (err) return err;
+      else return res;
+    });
+  }else{
+      Order.auto_order_assign(req, function(err, res) {
+        if (err) return err;
+        else return res;
+      });
+  }
+  ////End: Zone Based Auto Assign///////
 };
 
 Order.makeit_order_accept = async function makeit_order_accept(req, result) {
@@ -3199,11 +3381,13 @@ Order.insert_order_status = function insert_order_status(req) {
 };
 
 Order.moveit_order_accept = async function moveit_order_accept(req, result) {
+console.log("req" + req);
+ // const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' and moveit_user_id= '" + req.moveituserid + "'");
 
-  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' and moveit_user_id= '" + req.moveituserid + "'");
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' ");
+
   const ordermoveitstatus = await query("select * from Moveit_status where orderid ='" + req.orderid + "' ");
 
-  // d.setHours(d.getHours() + 5);
   if (orderdetails.length !== 0) {
 
     if (orderdetails[0].moveit_status < 1 ) {
@@ -3260,111 +3444,235 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
   }
 };
 
+// Order.order_missing_by_makeit = async function order_missing_by_makeit(req, result) {
+//   const orderdetails = await query(
+//     "select * from Orders where orderid ='" + req.orderid + "'"
+//   );
+
+//   var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
+//   if (orderdetails[0].orderstatus === 8) {
+//     let response = {
+//       success: true,
+//       status: false,
+//       message: "Sorry! order already canceled."
+//     };
+//     result(null, response);
+//   } else {
+//     sql.query("UPDATE Orders SET orderstatus = 8,cancel_by = 2,cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
+//         if (err) {
+//           result(err, null);
+//         } else {
+//           var refundDetail = {
+//             orderid: req.orderid,
+//             original_amt: orderdetails[0].price,
+//             active_status: 1,
+//             userid: orderdetails[0].userid,
+//             payment_id: orderdetails[0].transactionid
+//           };
+//           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+//           for (let i = 0; i < orderitemdetails.length; i++) {
+//             var productquantityadd =
+//               "update Product set quantity = quantity+" +
+//               orderitemdetails[i].quantity +
+//               " where productid =" +
+//               orderitemdetails[i].productid +
+//               "";
+//             sql.query(productquantityadd, function(err, res2) {
+//               if (err) {
+//                 result(err, null);
+//               }
+//             });
+//           }
+
+//           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+
+//             if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
+              
+//               await Order.create_refund(refundDetail);
+//               if (orderdetails[0].refund_amount !== 0) {
+//                 console.log("Online cod refund");
+//                await Order.cod_create_refund_byonline(refundDetail);
+               
+//               }
+
+
+//           }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
+//             var rc = new RefundCoupon(req);
+//             RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+//               if (err) {
+//                 result(err, null);
+//               } 
+//             });
+//           }
+//           }
+
+          
+//           if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
+//             removecoupon = {};
+//             removecoupon.userid = orderdetails[0].userid;
+//             removecoupon.cid = orderdetails[0].coupon;
+//             removecoupon.orderid = req.orderid;
+//             // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
+//             // await query(deletequery);
+//             await Order.remove_used_coupon(removecoupon);
+//           }
+
+//           await Notification.orderEatPushNotification(
+//             req.orderid,
+//             null,
+//             PushConstant.Pageid_eat_order_cancel
+//           );
+          
+//           if(orderdetails[0]&&orderdetails[0].moveit_user_id){
+//             await Notification.orderMoveItPushNotification(
+//               req.orderid,
+//               PushConstant.pageidMoveit_Order_Cancel,
+//               null
+//             );
+//           }
+//           let response = {
+//             success: true,
+//             status: true,
+//             message: "Order canceled successfully."
+//           };
+//           ////Insert Order History////
+          
+//           ////////////////////////////
+//           result(null, response);
+//         }
+//       }
+//     );
+//   }
+// };
+
 Order.order_missing_by_makeit = async function order_missing_by_makeit(req, result) {
-  const orderdetails = await query(
-    "select * from Orders where orderid ='" + req.orderid + "'"
-  );
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
   var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
-  if (orderdetails[0].orderstatus === 8) {
+  if (orderdetails[0].orderstatus == 8) {
     let response = {
       success: true,
       status: false,
       message: "Sorry! order already canceled."
     };
     result(null, response);
+  }else if (orderdetails[0].orderstatus ==1) {
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! order already accepted."
+    };
+    result(null, response);
+  }else if (orderdetails[0].orderstatus ==3) {
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! order already prepared."
+    };
+    result(null, response);
+  }else if (orderdetails[0].orderstatus ==5) {
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! order already prepared."
+    };
+    result(null, response);
   } else {
-    sql.query("UPDATE Orders SET orderstatus = 8,cancel_by = 2,cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
-        if (err) {
-          result(err, null);
-        } else {
-          var refundDetail = {
-            orderid: req.orderid,
-            original_amt: orderdetails[0].price,
-            active_status: 1,
-            userid: orderdetails[0].userid,
-            payment_id: orderdetails[0].transactionid
-          };
-          var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
-          for (let i = 0; i < orderitemdetails.length; i++) {
-            var productquantityadd =
-              "update Product set quantity = quantity+" +
-              orderitemdetails[i].quantity +
-              " where productid =" +
-              orderitemdetails[i].productid +
-              "";
-            sql.query(productquantityadd, function(err, res2) {
-              if (err) {
-                result(err, null);
-              }
-            });
-          }
 
-          if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+    let response = {
+      success: true,
+      status: true,
+      message: "Time has been extented. Please accept the order."
+    };
+    result(null, response);
+    // sql.query("UPDATE Orders SET orderstatus = 8,cancel_by = 2,cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
+    //     if (err) {
+    //       result(err, null);
+    //     } else {
+    //       var refundDetail = {
+    //         orderid: req.orderid,
+    //         original_amt: orderdetails[0].price,
+    //         active_status: 1,
+    //         userid: orderdetails[0].userid,
+    //         payment_id: orderdetails[0].transactionid
+    //       };
+    //       var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+    //       for (let i = 0; i < orderitemdetails.length; i++) {
+    //         var productquantityadd =
+    //           "update Product set quantity = quantity+" +
+    //           orderitemdetails[i].quantity +
+    //           " where productid =" +
+    //           orderitemdetails[i].productid +
+    //           "";
+    //         sql.query(productquantityadd, function(err, res2) {
+    //           if (err) {
+    //             result(err, null);
+    //           }
+    //         });
+    //       }
 
-            if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
+    //       if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+
+    //         if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
               
-              await Order.create_refund(refundDetail);
-              if (orderdetails[0].refund_amount !== 0) {
-                console.log("Online cod refund");
-               await Order.cod_create_refund_byonline(refundDetail);
+    //           await Order.create_refund(refundDetail);
+    //           if (orderdetails[0].refund_amount !== 0) {
+    //             console.log("Online cod refund");
+    //            await Order.cod_create_refund_byonline(refundDetail);
                
-              }
+    //           }
 
 
-          }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
-            var rc = new RefundCoupon(req);
-            RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
-              if (err) {
-                result(err, null);
-              } 
-            });
-          }
-          }
+    //       }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
+    //         var rc = new RefundCoupon(req);
+    //         RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+    //           if (err) {
+    //             result(err, null);
+    //           } 
+    //         });
+    //       }
+    //       }
 
           
-          if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
-            removecoupon = {};
-            removecoupon.userid = orderdetails[0].userid;
-            removecoupon.cid = orderdetails[0].coupon;
-            removecoupon.orderid = req.orderid;
-            // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
-            // await query(deletequery);
-            await Order.remove_used_coupon(removecoupon);
-          }
+    //       if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
+    //         removecoupon = {};
+    //         removecoupon.userid = orderdetails[0].userid;
+    //         removecoupon.cid = orderdetails[0].coupon;
+    //         removecoupon.orderid = req.orderid;
+    //         // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
+    //         // await query(deletequery);
+    //         await Order.remove_used_coupon(removecoupon);
+    //       }
 
-          await Notification.orderEatPushNotification(
-            req.orderid,
-            null,
-            PushConstant.Pageid_eat_order_cancel
-          );
+    //       await Notification.orderEatPushNotification(
+    //         req.orderid,
+    //         null,
+    //         PushConstant.Pageid_eat_order_cancel
+    //       );
           
-          if(orderdetails[0]&&orderdetails[0].moveit_user_id){
-            await Notification.orderMoveItPushNotification(
-              req.orderid,
-              PushConstant.pageidMoveit_Order_Cancel,
-              null
-            );
-          }
-          let response = {
-            success: true,
-            status: true,
-            message: "Order canceled successfully."
-          };
-          ////Insert Order History////
-          
-          ////////////////////////////
-          result(null, response);
-        }
-      }
-    );
+    //       if(orderdetails[0]&&orderdetails[0].moveit_user_id){
+    //         await Notification.orderMoveItPushNotification(
+    //           req.orderid,
+    //           PushConstant.pageidMoveit_Order_Cancel,
+    //           null
+    //         );
+    //       }
+    //       let response = {
+    //         success: true,
+    //         status: true,
+    //         message: "Order canceled successfully."
+    //       };
+    //       result(null, response);
+    //     }
+    //   }
+    // );
   }
 };
 
 Order.admin_order_cancel = async function admin_order_cancel(req, result) {
 
  var cancel_reason=req.cancel_reason||""
-  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
+const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
   if (orderdetails[0].orderstatus === 7 ) {
     let response = {
@@ -3393,6 +3701,15 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
             userid: orderdetails[0].userid,
             payment_id: orderdetails[0].transactionid
           };
+
+
+          if (orderdetails[0].delivery_vendor==1) {
+            console.log("dunzo_task_cancel");
+            orderdetails[0].cancellation_reason= cancel_reason ;
+            Dunzo.dunzo_task_cancel(orderdetails[0]);
+            
+          }
+
           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
           var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
@@ -4080,11 +4397,15 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
 
 Order.moveit_customer_location_reached_by_userid = function(req, result) {
   var customerlocationreachtime = moment().format("YYYY-MM-DD HH:mm:ss");
-  console.log(customerlocationreachtime);
 
   sql.query("Select * from Orders where orderid = ?", [req.orderid],async function(err,res1) {
     if (err) {
-      result(err, null);
+      let resobj = {
+        success: true,
+        status:false,
+        message: err
+      };
+      result(null, resobj);
     } else {
       var getmoveitid = res1[0].moveit_user_id;
       if (getmoveitid == req.moveit_user_id) {
@@ -4100,7 +4421,7 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
             req.orderid,
             req.moveit_user_id
           ],
-          function(err, res) {
+         async function(err, res) {
             if (err) {
               result(err, null);
             } else {
@@ -4109,6 +4430,8 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
                 status:true,
                 message: "Customer location reached successfully"
               };
+              PushConstant.Pageid_eat_order_pickedup = 6;
+              await Notification.orderEatPushNotification(req.orderid,null,PushConstant.Pageid_eat_order_pickedup);
               result(null, resobj); 
             }
           }
@@ -5133,6 +5456,13 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
          if (err) {
            result(err, null);
          } else {
+
+          if (orderdetails[0].delivery_vendor==1) {
+            console.log("dunzo_task_cancel");
+            orderdetails[0].cancellation_reason= cancel_reason ;
+            Dunzo.dunzo_task_cancel(orderdetails[0]);
+            
+          }
             var refundDetail = {
              orderid: req.orderid,
              original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
@@ -5245,6 +5575,14 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
          if (err) {
            result(err, null);
          } else {
+
+          if (orderdetails[0].delivery_vendor==1) {
+            console.log("dunzo_task_cancel");
+            orderdetails[0].cancellation_reason= cancel_reason ;
+            Dunzo.dunzo_task_cancel(orderdetails[0]);
+            
+          }
+          
             var refundDetail = {
              orderid: req.orderid,
              original_amt: orderdetails[0].price + orderdetails[0].refund_amount,
@@ -5531,69 +5869,70 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   //X factor Algorithm
   //(Total no of orders in Queue) = (X-1) * (No of Drivers in hub)
   //Note X value in hub based.
-
-  if (constant.order_assign_status==false) {
-   
+  if (constant.order_assign_status==false) {   
     let resobj = {
       success: true,
       status:true,
       order_queue:0,
       title:"Available",
       message:'Delivery boys are available!'
-    };
-    
-   result(null, resobj);
+    };    
+    result(null, resobj);
   }else{
+    if(constant.zone_control){
+      console.log(constant.zone_control);
 
-  var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
-  var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
-  var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
-  var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
+      var get_hub_id_from_orders= await query("Select zone from MakeitUser where userid="+req.makeit_user_id);
+      var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and zone="+get_hub_id_from_orders[0].zone);
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and  status=0") ;
+      var get_hub_id_from_makeithub= await query("Select xfactor from Zone where id="+get_hub_id_from_orders[0].zone);
+    }else{
+      var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
+      var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
+      var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
+    }
 
-  var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
-  console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
-  console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
-  console.log("xfactorValue-->",Math.round(xfactorValue));
-  var fValue= Math.round(xfactorValue);
-  if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
-    let resobj = {
-      success: true,
-      status:true,
-      order_queue:0,
-      title:"Available",
-      message:'Delivery boys are available!'
-    };
-    
-   result(null, resobj);
-  }else{
+    console.log("get_hub_id_from_makeithub[0].xfactor",get_hub_id_from_makeithub[0].xfactor);
+    console.log("get_moveit_list_based_on_hub[0].no_of_move_it_count",get_moveit_list_based_on_hub[0].no_of_move_it_count);
 
-    req.payment_type=3;
-    req.payment_status=3;
-    req.orderstatus = 11;
+    var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * (get_moveit_list_based_on_hub[0].no_of_move_it_count || 0)
+    console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
+    // console.log("xfactorValue-->",Math.round(xfactorValue));
+    var fValue= Math.round(xfactorValue);
+    console.log("xfactorValue-->",fValue);
 
-    Order.read_a_proceed_to_pay_xfactore(req, orderitems,async function(err,res){
-      if (err) {
-        result(err, null);
-      } else {
-       
-        console.log(res);
-        let resobj = {
-          success: true,
-          status:false,
-          order_queue:1,
-          title:"IN HIGH DEMAND",
-          message:'We are facing high demand. We will let you know when we are back to our best!'
-        };
-        result(null, resobj)
-      
-      }
-    });
-
-  ;
+    console.log("get_orders_queue_based_on_hub[0].no_of_orders_count-->",get_orders_queue_based_on_hub[0].no_of_orders_count);
+    if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
+      let resobj = {
+        success: true,
+        status:true,
+        order_queue:0,
+        title:"Available",
+        message:'Delivery boys are available!'
+      };      
+      result(null, resobj);
+    }else{
+      req.payment_type=3;
+      req.payment_status=3;
+      req.orderstatus = 11;
+      Order.read_a_proceed_to_pay_xfactore(req, orderitems,async function(err,res){
+        if (err) {
+          result(err, null);
+        } else {       
+          console.log(res);
+          let resobj = {
+            success: true,
+            status:false,
+            order_queue:1,
+            title:"IN HIGH DEMAND",
+            message:'We are facing high demand. We will let you know when we are back to our best!'
+          };
+          result(null, resobj);      
+        }
+      });
+    }
   }
-
-  }
-  
   // var query="Select count(*) ordercount from Orders as ors where ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( "+req.lat+" ) )  * cos( radians( "+req.lon+" ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians("+req.lat+")) ) )<2 and (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2))";
   //   sql.query(query,async function(err, res) {
   //     if (err) {
@@ -5618,6 +5957,7 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
   //   }
   // );
 }
+
 Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
   var query="Select count(*) ordercount from Orders as ors where ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( "+req.lat+" ) )  * cos( radians( "+req.lon+" ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians("+req.lat+")) ) )<2 and (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2))";
     sql.query(query,async function(err, res) {
@@ -5787,11 +6127,6 @@ if (order_queue_query.length ==0) {
   };
   result(null, resobj);
 }
-  
-
-
-  
-  
 };
 
 //////////////Orders move to queue/////////////////
@@ -6007,5 +6342,163 @@ Order.addorderhistory = async function addorderhistory(req,result){
   var insertdata={"orderid":GetOrderStatus[0].orderid,"orderstatus":GetOrderStatus[0].orderstatus};
   var inserthistory = await OrderStatusHistory.createorderstatushistory(insertdata);
 }
+
+////////Zone Based Moveit Auto Order Assign
+Order.zone_moveit_order_auto_assign = async function zone_moveit_order_auto_assign(req, result) {
+  var order_queue_query = await query("select * from Orders_queue where status = 0 and orderid =" +req.orderid+"");
+  if (order_queue_query.length ==0) {
+    var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+    var makeitLocation = [];
+    makeitLocation.push(req.orglat);
+    makeitLocation.push(req.orglon);
+    
+    var moveitlistzonequery="select mv.userid from Orders ord left join MakeitUser as mu on mu.userid = ord.makeit_user_id left join MoveitUser as mv on mv.zone = mu.zone where ord.orderid="+req.orderid+" and mv.online_status = 1 group by mv.userid";
+
+    var moveitlistquery ="select zo.boundaries,mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Zone as zo on zo.id = mu.zone left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+moveitlistzonequery+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount";
+          var zonemoveitlist = await query(moveitlistquery);
+          console.log("moveitlistquery-->",JSON.stringify(zonemoveitlist));
+          if (zonemoveitlist.length !==0) {
+            MoveitFireBase.getInsideZoneMoveitList(makeitLocation,zonemoveitlist,async function(err, zoneInsideMoveitlist) {
+              console.log("zoneInsideMoveitlist-->",JSON.stringify(zoneInsideMoveitlist));
+              if(zoneInsideMoveitlist.length>0){
+              sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[zoneInsideMoveitlist[0].userid, assign_time, req.orderid],async function(err, res2) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+                  await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
+                  let resobj = {
+                    success: true,
+                    status:true,
+                    message: "Order Assign Successfully",
+                  };
+                  result(null, resobj);
+                }
+              });
+            }else{
+              console.log("new_Ordersqueue-->");
+              var new_Ordersqueue = new Ordersqueue(req);
+              new_Ordersqueue.status = 0;
+              Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+                if (err) { 
+                  console.log("err  new_Ordersqueue-->");
+                  result(err, null);
+                }else{
+                  console.log("success  new_Ordersqueue-->");
+                  let resobj = {
+                    success: true,
+                    status: true,
+                    message: "Order moved to Queue"
+                  };
+                  result(null, resobj);
+                }
+              });
+            }
+            });
+            
+          }else{
+            var new_Ordersqueue = new Ordersqueue(req);
+            new_Ordersqueue.status = 0;
+            Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+              if (err) { 
+                result(err, null);
+              }else{
+                let resobj = {
+                  success: true,
+                  status: true,
+                  message: "Order moved to Queue"
+                };
+                result(null, resobj);
+              }
+            });
+          }
+  }else{
+    let resobj = {
+      success: true,
+      status:true,
+      message: "already exist",
+    };
+    result(null, resobj);
+  }
+};
+
+////////Zone Based Moveit Auto Order Assign
+Order.zone_moveit_order_auto_assign = async function zone_moveit_order_auto_assign(req, result) {
+  var order_queue_query = await query("select * from Orders_queue where status = 0 and orderid =" +req.orderid+"");
+  if (order_queue_query.length ==0) {
+    var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+    var makeitLocation = [];
+    makeitLocation.push(req.orglat);
+    makeitLocation.push(req.orglon);
+    
+    var moveitlistzonequery="select mv.userid from Orders ord left join MakeitUser as mu on mu.userid = ord.makeit_user_id left join MoveitUser as mv on mv.zone = mu.zone where ord.orderid="+req.orderid+" and mv.online_status = 1 group by mv.userid";
+
+    var moveitlistquery ="select zo.boundaries,mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Zone as zo on zo.id = mu.zone left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+moveitlistzonequery+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount";
+          var zonemoveitlist = await query(moveitlistquery);
+          console.log("moveitlistquery-->",JSON.stringify(zonemoveitlist));
+          if (zonemoveitlist.length !==0) {
+            MoveitFireBase.getInsideZoneMoveitList(makeitLocation,zonemoveitlist,async function(err, zoneInsideMoveitlist) {
+              console.log("zoneInsideMoveitlist-->",JSON.stringify(zoneInsideMoveitlist));
+              if(zoneInsideMoveitlist.length>0){
+              sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[zoneInsideMoveitlist[0].userid, assign_time, req.orderid],async function(err, res2) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+                  await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
+                  let resobj = {
+                    success: true,
+                    status:true,
+                    message: "Order Assign Successfully",
+                  };
+                  result(null, resobj);
+                }
+              });
+            }else{
+              console.log("new_Ordersqueue-->");
+              var new_Ordersqueue = new Ordersqueue(req);
+              new_Ordersqueue.status = 0;
+              Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+                if (err) { 
+                  console.log("err  new_Ordersqueue-->");
+                  result(err, null);
+                }else{
+                  console.log("success  new_Ordersqueue-->");
+                  let resobj = {
+                    success: true,
+                    status: true,
+                    message: "Order moved to Queue"
+                  };
+                  result(null, resobj);
+                }
+              });
+            }
+            });
+            
+          }else{
+            var new_Ordersqueue = new Ordersqueue(req);
+            new_Ordersqueue.status = 0;
+            Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+              if (err) { 
+                result(err, null);
+              }else{
+                let resobj = {
+                  success: true,
+                  status: true,
+                  message: "Order moved to Queue"
+                };
+                result(null, resobj);
+              }
+            });
+          }
+  }else{
+    let resobj = {
+      success: true,
+      status:true,
+      message: "already exist",
+    };
+    result(null, resobj);
+  }
+};
 
 module.exports = Order;

@@ -11,7 +11,6 @@ let config = require('../config.js');
 var constant = require('../constant.js');
 var MoveitTimelog = require("../../model/moveit/moveitTimeModel");
 var moment = require("moment");
-//var OrderModel = require('../../model/common/orderModel.js');
 
 //Task object constructor
 var Moveituser = function (moveituser) {
@@ -121,7 +120,7 @@ Moveituser.getUserById = function getUserById(userId, result) {
 
 
 Moveituser.admin_getUserById = function getUserById(userId, result) {
-    sql.query("Select mu.*,mh.area_name From MoveitUser mu left join Moveit_hubs mh  on mu.moveit_hub = mh.moveithub_id where mu.userid = ? ", userId, function (err, res) {
+    sql.query("Select mu.*,mh.address as hubaddress,zo.Zonename,zo.boundaries From MoveitUser mu left join Makeit_hubs mh on mu.moveit_hub = mh.makeithub_id left join Zone zo on zo.id = mu.zone where mu.userid = ? ", userId, function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -248,25 +247,26 @@ Moveituser.checkLogin = function checkLogin(req, result) {
 };
 
 Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req, result) {
-    var query = "Select * from MoveitUser as mov";
+    var query = "Select *,zo.xfactor as zonexfactor,mh.xfactor as hubxfactor,mh.address as hubaddress from MoveitUser left join Zone zo on zo.id=zone left join Makeit_hubs mh on mh.makeithub_id=moveit_hub ";
     if(req.online_status===0){
-      query = query + " where mov.online_status=" +req.online_status
+      query = query + " where online_status=" +req.online_status
       if (req.search) {
-        query = query + " and mov.name LIKE  '%" + req.search + "%'";
+        query = query + " and (name LIKE  '%" + req.search + "%'  or userid LIKE  '%" + req.search +"%')";
       }
     }else if(req.online_status===1){
-      query= "select * from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
+      query= "select *,zo.xfactor as zonexfactor,mh.xfactor as hubxfactor,mh.address as hubaddress from MoveitUser left join Zone zo on zo.id=zone left join Makeit_hubs mh on mh.makeithub_id=moveit_hub where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
       if (req.search) {
-        query = query + " and name LIKE  '%" + req.search + "%'";
+        query = query + " and (name LIKE  '%" + req.search  + "%'  or userid LIKE  '%" + req.search +"%')";
       }
     }else if(req.online_status===-2){
-      query= "select * from MoveitUser where userid IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
+      query= "select *,zo.xfactor as zonexfactor,mh.xfactor as hubxfactor,mh.address as hubaddress from MoveitUser left join Zone zo on zo.id=zone left join Makeit_hubs mh on mh.makeithub_id=moveit_hub where userid IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
       if (req.search) {
-        query = query + " and name LIKE  '%" + req.search + "%'";
+        query = query + " and (name LIKE  '%" + req.search  + "%'  or userid LIKE  '%" + req.search +"%')";
       }
     }else if (req.search) {
-      query = query + " where mov.name LIKE  '%" + req.search + "%'";
-    } 
+      query = query + "where name LIKE  '%" + req.search  + "%'  or userid LIKE  '%" + req.search +"%'";
+    }
+
     sql.query(query, function (err, res) {
         if (err) {
             result(err, null);
@@ -296,11 +296,25 @@ Moveituser.create_createMoveitTimelog = function create_createMoveitTimelog(req)
 Moveituser.update_online_status =async function (req, result) {
 
 var userdetails = await query("select * from MoveitUser where userid = "+req.userid+"");
-
+var zone_id=0;
+var zone_name="";
+var boundaries="";
+var iszone=false;
   if (userdetails.length !==0) {
     
   if (userdetails[0].login_status == 1) {
-        
+       
+    if(constant.zone_control){
+      var zoneDetail = await query("select * from Zone where id = "+userdetails[0].zone+"");
+      //console.log("zoneDetail-->",zoneDetail);
+      if(zoneDetail&&zoneDetail.length>0&&zoneDetail[0].boundaries){
+        zone_id=zoneDetail[0].id;
+        zone_name=zoneDetail[0].Zonename;
+        boundaries=JSON.parse(zoneDetail[0].boundaries);
+        iszone=true;
+      }
+    }
+       
     var orderdetails = await query("select * from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE() and moveit_user_id = "+req.userid+"");
 
     if (orderdetails.length == 0) {
@@ -331,6 +345,10 @@ var userdetails = await query("select * from MoveitUser where userid = "+req.use
                 status:true,
                 message: key,
                 onlinestatus: key1,
+                zone_id:zone_id,
+                zone_name:zone_name,
+                boundaries:boundaries || null,
+                iszone:iszone,
                 forcelogout : 1
             };
 
@@ -443,7 +461,13 @@ Moveituser.get_a_nearby_moveit = async function get_a_location_user(req, result)
 };
 
 Moveituser.get_a_nearby_moveit_V2 = async function get_a_location_user(req, result) {
-  var query= "select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
+  if(constant.zone_control&&req.zone){
+  //getInsideZoneMoveitList
+  var query= "select zo.boundaries,zo.Zonename,zone,moveit_hub,name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser left join Zone as zo on zo.id = zone where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1 and zone = "+req.zone;
+  }else{
+    var query= "select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1";
+  }
+  
   if (req.search) {
     query = query + " and name LIKE  '%" + req.search + "%'";
   }
@@ -464,26 +488,47 @@ Moveituser.get_a_nearby_moveit_V2 = async function get_a_location_user(req, resu
         };
         result(null, resobj);
       }else{
-        
-        MoveitFireBase.geoFireGetKeyByGeoMakeit(req.geoLocation,res,function(err, make_it_id) {
-          if (err) {
-            let error = {
-              success: true,
-              status:false,
-              message:"No Move-it found,please after some time"
-            };
-            result(error, null);
-          }else{
+        if(constant.zone_control&&req.zone){
+          MoveitFireBase.getInsideZoneMoveitList(req.geoLocation,res,function(err, make_it_id) {
+            if (err) {
+              let error = {
+                success: true,
+                status:false,
+                message:"No Move-it found,please after some time"
+              };
+              result(error, null);
+            }else{
 
-      
-            let resobj = {
-              success: true,
-              status: true,
-              result: make_it_id
-            };
-          result(null, resobj);
-          }
-        });
+        
+              let resobj = {
+                success: true,
+                status: true,
+                result: make_it_id
+              };
+            result(null, resobj);
+            }
+          });
+        }else{
+          MoveitFireBase.geoFireGetKeyByGeoMakeit(req.geoLocation,res,function(err, make_it_id) {
+            if (err) {
+              let error = {
+                success: true,
+                status:false,
+                message:"No Move-it found,please after some time"
+              };
+              result(error, null);
+            }else{
+
+        
+              let resobj = {
+                success: true,
+                status: true,
+                result: make_it_id
+              };
+            result(null, resobj);
+            }
+          });
+        }
      }
         
     }
@@ -491,7 +536,7 @@ Moveituser.get_a_nearby_moveit_V2 = async function get_a_location_user(req, resu
 };
 
 Moveituser.admin_moveit_current_location = async function admin_moveit_current_location(req, result) {
-  var query= "select mou.name,mou.Vehicle_no,mou.address,mou.email,mou.phoneno,mou.userid,mou.online_status,mou.moveit_hub,mkh.color,mkh.address as mkhaddress from MoveitUser mou join Makeit_hubs as mkh on mkh.makeithub_id=mou.moveit_hub where mou.online_status = 1";
+  var query= "select mou.name,mou.zone,mou.Vehicle_no,mou.address,mou.email,mou.phoneno,mou.userid,mou.online_status,mou.moveit_hub,mkh.color,mkh.address as mkhaddress from MoveitUser mou join Makeit_hubs as mkh on mkh.makeithub_id=mou.moveit_hub where mou.online_status = 1";
   sql.query(query, function (err, res) {
     if (err) {
       let error = {
@@ -1168,4 +1213,159 @@ Moveituser.getworking_dates = async function getworking_dates(req, result) {
 
     return inside;
 }
+
+////////////User Wise Moveit Report
+Moveituser.firstmile_userwise_moveitreport = async function firstmile_userwise_moveitreport(req, result) {
+ if(req.fromdate && req.todate){
+    var DayWiseQuery ="Select date(ord.ordertime) as date,ord.moveit_user_id,mu.name,count(date(ord.created_at)) from Orders as ord left join MoveitUser as mu on mu.userid = ord.moveit_user_id where ord.moveit_accept_time IS NOT NULL and ord.moveit_reached_time IS NOT NULL and ord.moveit_actual_delivered_time IS NOT NULL and ord.moveit_pickup_time IS NOT NULL and ord.orderid NOT IN (select orderid from Force_delivery_logs) and  ord.orderstatus=6 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by mu.userid,date(ord.created_at) order by ord.moveit_user_id asc";
+
+    var MovieitWiseQuery = "Select ord.moveit_user_id,mu.name,count(ord.orderid)as order_count, SEC_TO_TIME(AVG(TIME_TO_SEC(ADDTIME(TIMEDIFF(moveit_reached_time,moveit_accept_time),TimeDiff(moveit_actual_delivered_time,moveit_pickup_time))))) as Avg_time from Orders as ord left join MoveitUser as mu on mu.userid = ord.moveit_user_id where ord.moveit_accept_time IS NOT NULL and ord.moveit_reached_time IS NOT NULL and ord.moveit_actual_delivered_time IS NOT NULL and ord.moveit_pickup_time IS NOT NULL   and ord.orderid NOT IN (select orderid from Force_delivery_logs) and ord.orderstatus=6 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by mu.userid";
+
+    var DayWise = await query(DayWiseQuery);
+    var MovieitWise = await query(MovieitWiseQuery);
+
+    if(MovieitWise.length>0){
+      for(var i=0; i<MovieitWise.length; i++){
+        var daycount = 0;
+        for(var j=0; j<DayWise.length; j++){      
+          if(MovieitWise[i].moveit_user_id == DayWise[j].moveit_user_id){
+            daycount = daycount + 1; 
+          }
+        }
+        MovieitWise[i].daycount = daycount;    
+        MovieitWise[i].OrdersDayAvg = (MovieitWise[i].order_count/daycount).toFixed(2);
+      }
+      let resobj = {
+        success: true,
+        status : true,
+        result : MovieitWise
+      };
+      result(null, resobj);
+      
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };    
+      result(null, resobj);
+    }    
+  }else{
+    let resobj = {
+      success: true,
+      message: "please Check the Request",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+
+////////////Orders Wise Moveit Report
+Moveituser.firstmile_orderwise_moveitreport = async function firstmile_orderwise_moveitreport(req, result) {
+  if(req.fromdate && req.todate){
+     var OrderMoveitReportQuery ="Select ord.orderid,ord.ordertime,time(ord.order_assigned_time) as Assigned_time,time(ord.moveit_accept_time) as Accept_time, time(ord.moveit_reached_time) as Moveit_reach_time,time(ord.moveit_pickup_time) as Pickup_time,time(ord.moveit_actual_delivered_time) as Delivery_time, ord.moveit_user_id,mu.name,TIMEDIFF(moveit_reached_time,moveit_accept_time) as Moveit_Accept_time,TimeDiff(moveit_actual_delivered_time,moveit_pickup_time) as Moveit_delivered_time, ADDTIME(TIMEDIFF(moveit_reached_time,moveit_accept_time),TimeDiff(moveit_actual_delivered_time,moveit_pickup_time)) as Totaltime from Orders as ord left join MoveitUser as mu on mu.userid = ord.moveit_user_id where ord.moveit_accept_time IS NOT NULL and ord.order_assigned_time IS NOT NULL and ord.moveit_actual_delivered_time IS NOT NULL and ord.moveit_pickup_time IS NOT NULL and ord.orderid NOT IN (select orderid from Force_delivery_logs) and ord.orderstatus=6 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' order by ord.orderid desc";
+ 
+    var OrderMoveitReport = await query(OrderMoveitReportQuery);
+    if(OrderMoveitReport.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        result : OrderMoveitReport
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }          
+  }else{
+     let resobj = {
+       success: true,
+       message: "please Check the Request",
+       status : false
+     };
+     result(null, resobj);
+  }
+};
+
+////////////Orders Wise Moveit Report
+Moveituser.orderwise_moveitreport = async function orderwise_moveitreport(req, result) {
+  if(req.fromdate && req.todate){
+    var OrderMoveitReportQuery ="select mu.userid,mu.name,ord.orderid,ord.ordertime,time(ord.order_assigned_time) as order_assigned_time,time(ord.moveit_notification_time) as moveit_notification_time,time(ord.moveit_accept_time) as moveit_accept_time, time(ord.moveit_reached_time) as moveit_reached_time,time(ord.moveit_pickup_time) as moveit_pickup_time,time(ord.moveit_expected_delivered_time) as moveit_expected_delivered_time, time(ord.moveit_customerlocation_reached_time) as moveit_customerlocation_reached_time,time(ord.moveit_actual_delivered_time) as moveit_actual_delivered_time,ord.moveit_status,  CASE WHEN ord.orderstatus=0 then 'Order put' WHEN ord.orderstatus=1 then 'Order Accept' WHEN ord.orderstatus=2 then 'Order Preparing' WHEN ord.orderstatus=3 then 'Order Prepared' WHEN ord.orderstatus=4 then 'Kitchen reached' WHEN ord.orderstatus=5 then 'Order Pickedup' WHEN ord.orderstatus=6 then 'Order Delivered' WHEN ord.orderstatus=7 then 'Order Cancel' WHEN ord.orderstatus=8 then 'Order missed by kitchen' WHEN ord.orderstatus=9 then 'Incomplete online order reject' END as status,ord.orderstatus,TIMEDIFF(time(ord.moveit_accept_time), time(ord.order_assigned_time)) as accept_time,TIMEDIFF(time(ord.moveit_actual_delivered_time),time(ord.moveit_pickup_time)) as delivery_time,TIMEDIFF(time(ord.moveit_reached_time),      time(ord.moveit_accept_time)) as kitchen_reach_time,TIMEDIFF(time(IFNULL(ord.moveit_actual_delivered_time,0)),time(IFNULL(ord.created_at,0))) as order_time,ord.cus_lat,ord.cus_lon,mau.lat,mau.lon from MoveitUser as mu left join Orders as ord on ord.moveit_user_id=mu.userid left join MakeitUser as mau on mau.userid=ord.makeit_user_id where ord.ordertime IS NOT NULL and ord.moveit_actual_delivered_time IS NOT NULL and ord.orderid NOT IN (select orderid from Force_delivery_logs) and date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' order by ord.orderid desc";
+  
+    var OrderMoveitReport = await query(OrderMoveitReportQuery);
+    if(OrderMoveitReport.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        result : OrderMoveitReport
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }          
+  }else{
+    let resobj = {
+      success: true,
+      message: "please Check the Request",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+
+
+//Moveit zone data
+
+Moveituser.moveit_zone_data =async function moveit_zone_data(req, result) {
+
+  var userdetails = await query("select * from MoveitUser where userid = "+req.userid+"");
+  var zone_id=0;
+  var zone_name="";
+  var boundaries="";
+  var iszone=false;
+    if (userdetails.length !==0) {
+      if(constant.zone_control){
+  
+        var zoneDetail = await query("select * from Zone where id = "+userdetails[0].zone+"");
+        console.log(zoneDetail);
+        if(zoneDetail&&zoneDetail.length>0&&zoneDetail[0].boundaries){
+          zone_id=zoneDetail[0].id;
+          zone_name=zoneDetail[0].Zonename;
+          boundaries=JSON.parse(zoneDetail[0].boundaries);
+          iszone=true;
+        }
+      }
+              
+        let resobj = {
+          success: true,
+          status:iszone,
+          zone_id:zone_id,
+          zone_name:zone_name,
+          boundaries:boundaries ||null,
+          iszone:iszone
+      };
+
+      result(null, resobj);
+      
+    }else{
+      
+      let resobj = {
+          success: true,
+          status: false,
+          message: "User not found!"
+      };
+  
+      result(null, resobj);
+    }
+  };
+
 module.exports = Moveituser;

@@ -919,3 +919,4 @@ exports.xfactororders_report= function(req, res) {
     res.json(result);
   });
 };
+

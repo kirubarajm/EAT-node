@@ -205,5 +205,10 @@ app.route("/admin/zone/add").post(routesVersioning({"1.0.0":zoneController.creat
 app.route("/admin/zone/getall").post(routesVersioning({"1.0.0":zoneController.list_all_zone}));
 app.route("/admin/zone/update").put(routesVersioning({"1.0.0":zoneController.update_a_Zone}));
 app.route("/admin/zone/checkmapboundaries").post(routesVersioning({"1.0.0":zoneController.check_map_boundaries}));
+app.route("/admin/makeit/zoneupdate/:userid").get(routesVersioning({"1.0.0":makeituser.makeit_zoneid_update}));
 
+////////Movit Report
+app.route("/admin/reports/milebasedmoveitaveragedeliveryreport").post(routesVersioning({"1.0.0":moveituser.firstmile_userwise_moveitreport}));
+app.route("/admin/reports/milebasedmoveitordersdeliveryreport").post(routesVersioning({"1.0.0":moveituser.firstmile_orderwise_moveitreport}));
+app.route("/admin/reports/moveitordersdeliveryreport").post(routesVersioning({"1.0.0":moveituser.orderwise_moveitreport}));
 }

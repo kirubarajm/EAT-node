@@ -309,3 +309,40 @@ exports.daywise_moveit_records = function(req, res) {
     res.json(user);
   });
 };
+
+////////////First Mile User Wise Moveit Report
+exports.firstmile_userwise_moveitreport = function(req, res) {
+  Moveituser.firstmile_userwise_moveitreport(req.body,function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////////////First Mile Orders Wise Moveit Report
+exports.firstmile_orderwise_moveitreport = function(req, res) {
+  Moveituser.firstmile_orderwise_moveitreport(req.body,function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////////////Orders Wise Moveit Report
+exports.orderwise_moveitreport = function(req, res) {
+  Moveituser.orderwise_moveitreport(req.body,function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+//moveit zone details
+
+exports.moveit_zone_data = function(req, res) {
+  if (!req.body.userid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide userid" });
+  } else {
+  Moveituser.moveit_zone_data(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+  }
+};
