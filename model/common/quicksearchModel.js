@@ -338,7 +338,7 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
     }
   }
 });
-//liveproducthistory.start();
+///liveproducthistory.start();
 
 //cron run by moveit user offline every night 2 AM.
 const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
@@ -545,12 +545,12 @@ QuickSearch.order_assign=async function order_assign(res,i){
     console.log("res[i].payment_type"+res[i].payment_type);
          console.log("res[i].status"+res[i].status);
  
-     if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 && diffMins > dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0) {  
+  if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 && diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0) {  
        // Dunzo.dunzo_task_create
        await QuickSearch.dunzo_task_create(res[i].orderid);
        i++;
        order_assign(res,i);
-      }else{
+  }else{
 
         var geoLocation = [];
         geoLocation.push(res[i].lat);
@@ -614,77 +614,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
           }
         );
 
-      }
-    
-
-
-    // var geoLocation = [];
-    // geoLocation.push(res[i].lat);
-    // geoLocation.push(res[i].lon);
-    // MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,constant.nearby_moveit_radius,async function(err, move_it_id_list) {
-    //     if (err) {
-    //       let error = {
-    //         success: true,
-    //         status: false,
-    //         message: "No Move-it found,please after some time"
-    //       };
-    //       console.log('Geo error->',err);
-    //       i++;
-    //       order_assign(res,i);
-    //     } else {
-    //       var moveitlist = move_it_id_list.moveitid;
-    //       console.log('moveitlist.length->',moveitlist.length);
-    //       if (moveitlist.length > 0) {
-    //         var moveitlistquery =
-    //           "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-    //           move_it_id_list.moveitid +
-    //           ") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount";
-    //         var nearbymoveit = await query(moveitlistquery);
-    //          console.log('nearbymoveit.length->',nearbymoveit.length);
-    //         if (nearbymoveit.length !== 0) {
-    //           // nearbymoveit.sort(
-    //           //   (a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout)
-    //           // );
-    //           console.log('nearbymoveit id-->',nearbymoveit[0].userid);
-    //           sql.query(
-    //             "UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",
-    //             [nearbymoveit[0].userid, assign_time, res[i].orderid],
-    //             async function(err, res2) {
-    //               if (err) {
-    //                  console.log('Order Update error->',err);
-    //                 i++;
-    //                 order_assign(res,i);
-    //               } else {
-    //                 var moveit_offline_query = await query(
-    //                   "update Orders_queue set status = 1 where orderid =" +
-    //                     res[i].orderid +
-    //                     ""
-    //                 );
-    //                 await Notification.orderMoveItPushNotification(
-    //                   res[i].orderid,
-    //                   PushConstant.pageidMoveit_Order_Assigned
-    //                 );
-    //                // delay(1000);
-    //                i++;
-    //                order_assign(res,i);
-    //               }
-    //             }
-    //           );
-    //         }else{
-    //           i++;
-    //           order_assign(res,i);
-    //         }
-    //       }else{
-    //         i++;
-    //         order_assign(res,i);
-
-    //       }
-    //     }
-    //   }
-    // );
-
-    
-    //}
+  }
   }else{
     isCronRun=false;
   }
@@ -694,7 +624,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
 }
 
 };
-order_auto_assign_Change.start();
+//order_auto_assign_Change.start();
 
 ////Zone Based Moveit 
 QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
@@ -715,7 +645,7 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
 
     console.log("diffMins"+diffMins);
  
-     if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 &&res[i].pincode&& diffMins > dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0) {  
+     if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 &&res[i].pincode&& diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0) {  
        // Dunzo.dunzo_task_create
        console.log("Dunzo Order assign =>>>>>>>>>>>>>>>>>>>>>>>");
        await QuickSearch.dunzo_task_create(res[i].orderid);

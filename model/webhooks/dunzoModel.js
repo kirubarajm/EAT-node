@@ -183,8 +183,10 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           break;
       case dunzoconst.runner_cancelled:
           console.log("runner_cancelled");
-          var order_queue_update = await query("update Dunzo_moveit_details set active_status = 0 where task_id =" +req.task_id+"");
-
+         // var order_queue_update = await query("");
+          var order_queue_update ="update Dunzo_moveit_details set active_status = 0 where task_id ='" +req.task_id+"'";
+          console.log(order_queue_update);
+          const updatestatus = await query(order_queue_update);
           let runner_cancelled = {
             success: true,
             status:true,
@@ -192,8 +194,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
             message: "runner_cancelled successfully"
           };
          
-
-     result(null, runner_cancelled);
+       result(null, runner_cancelled);
           break;
       case dunzoconst.reached_for_pickup:
           console.log("reached_for_pickup");
@@ -481,8 +482,6 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
       package_approx_value: order_details[0].price,
       special_instructions: "Orderid : " + order_details[0].orderid.toString() + " ,Kitchen name : " +pickup.name+ " ,phone no :" + pickup.phoneno
     }
-   
-
   
     //console.log("parse-------",JSON.parse(form));
     //console.log("Str----",JSON.stringify(form));
@@ -493,7 +492,6 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
       'Accept-Language':'en_US'
     };
   
-    console.log(order_details[0].makeitdetail.pincode);
     //set request parameter
     request.post({headers: headers, url: dunzoconst.dunzo_create_url, json: form, method: 'POST'},async function (e, r, body) {
       console.log(body);
@@ -512,7 +510,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
       console.log("unserviceable_location_error 1");
 
       var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderid+"");
-    }else if (body.code=="duplicate_request 2") {
+    }else if (body.code=="duplicate_request") {
       console.log("duplicate_request");
 
       //var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
@@ -556,12 +554,11 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
 Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
   //var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+dunzo_taskid+'/_cancel?test=true'
 
-  console.log(dunzoconst.dunzo_cancel_url);
-  
-  var url = dunzoconst.dunzo_cancel_url+'/'+ req.dunzo_taskid+'/_cancel?test=true'
 
-  console.log(url);
-  
+  var url = dunzoconst.dunzo_cancel_url+'/'+ req.dunzo_taskid+'/_cancel'
+
+ 
+
   //set form data
   var form = {
     cancellation_reason: req.cancellation_reason
@@ -588,7 +585,7 @@ Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
 ////task status
 Dunzo.dunzo_track_status = async function dunzo_track_status(req) {
 
-  var url =dunzoconst.dunzo_cancel_url+'/'+req.task_id+'/status?test=true'
+  var url =dunzoconst.dunzo_cancel_url+'/'+req.task_id+'/status'
 
 
 
