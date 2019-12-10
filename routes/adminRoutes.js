@@ -24,6 +24,7 @@ module.exports = function(app) {
   var Stories = require("../controllers/common/StoryController");
   var adminController = require("../controllers/admin/adminUserController");
   var zoneController = require("../controllers/common/ZoneController");
+  var packageController = require("../controllers/common/PackagingBoxTrackingController");
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));
@@ -211,4 +212,10 @@ app.route("/admin/makeit/zoneupdate/:userid").get(routesVersioning({"1.0.0":make
 app.route("/admin/reports/milebasedmoveitaveragedeliveryreport").post(routesVersioning({"1.0.0":moveituser.firstmile_userwise_moveitreport}));
 app.route("/admin/reports/milebasedmoveitordersdeliveryreport").post(routesVersioning({"1.0.0":moveituser.firstmile_orderwise_moveitreport}));
 app.route("/admin/reports/moveitordersdeliveryreport").post(routesVersioning({"1.0.0":moveituser.orderwise_moveitreport}));
+
+///PackageBox///
+app.route("/admin/packagingbox/add").post(routesVersioning({"1.0.0":packageController.create_a_packagingbox}));
+app.route("/admin/packagingbox/getlist").get(routesVersioning({"1.0.0":packageController.list_all_packagingbox}));
+app.route("/admin/packagingbox/getlist/:id").get(routesVersioning({"1.0.0":packageController.list_single_packagingbox}));
+app.route("/admin/packagingbox/update").put(routesVersioning({"1.0.0":packageController.updatePackagingBoxType}));
 }

@@ -299,7 +299,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
     if(constant.zone_control){
       var get_hub_id_from_orders= await query("Select zone from MakeitUser where userid="+req.makeit_user_id);
       var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and zone="+get_hub_id_from_orders[0].zone);
-      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and  status=0") ;
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and status=0") ;
       var get_hub_id_from_makeithub= await query("Select xfactor from Zone where id="+get_hub_id_from_orders[0].zone);
     }else{
       var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
