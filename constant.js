@@ -56,13 +56,9 @@ const calculate = {
   //support number
   makeit_customer_support: 7358531315,
 
-  //Live Razorpay Details
-  //razorpay_key_id: "rzp_live_bCMW6sG1GWp36Q",
-  //razorpay_key_secret: "2VAma7EVApDnLuOMerwX3ODu",
-
-  //Test Razorpay Details
-  razorpay_key_id: "rzp_test_3cduMl5T89iR9G",
-  razorpay_key_secret: "BSdpKV1M07sH9cucL5uzVnol",
+  //Razorpay Details
+  razorpay_key_id: "rzp_live_bCMW6sG1GWp36Q",
+  razorpay_key_secret: "2VAma7EVApDnLuOMerwX3ODu",
 
   Xfactor_value:1.9,
   Xfactor_subtraction_value:1,
@@ -81,7 +77,7 @@ const calculate = {
 
     
     ///Dunzo Authorization
-    order_assign_dunzo:false,
+    order_assign_dunzo:true,
 
     order_assign_dunzo_waiting_min:4,
     dunzo_client_id : "c6c3acd5-e254-4404-ad06-c0c1d2aafd1e",
@@ -90,8 +86,6 @@ const calculate = {
     //Zone Controles
     zone_control:false,
 
-    //kitchen pagenation 
-     kitchen_pagenation_limit :5
     
     
 }

@@ -542,8 +542,8 @@ Moveituser.admin_moveit_current_location = async function admin_moveit_current_l
       let error = {
         success: true,
         status:false,
-    };
-        result(error, null);
+      };
+      result(null, error);
     }
     else {
       if(res.length===0){

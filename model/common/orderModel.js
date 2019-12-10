@@ -1346,7 +1346,9 @@ Order.get_all_orders = function get_all_orders(req, result) {
 
   var limitquery =query +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
 
- 
+ console.log(startlimit);
+ console.log(orderlimit);
+
   sql.query(limitquery, function(err, res1) {
     if (err) {
       result(err, null);
@@ -3377,104 +3379,228 @@ console.log("req" + req);
   }
 };
 
+// Order.order_missing_by_makeit = async function order_missing_by_makeit(req, result) {
+//   const orderdetails = await query(
+//     "select * from Orders where orderid ='" + req.orderid + "'"
+//   );
+
+//   var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
+//   if (orderdetails[0].orderstatus === 8) {
+//     let response = {
+//       success: true,
+//       status: false,
+//       message: "Sorry! order already canceled."
+//     };
+//     result(null, response);
+//   } else {
+//     sql.query("UPDATE Orders SET orderstatus = 8,cancel_by = 2,cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
+//         if (err) {
+//           result(err, null);
+//         } else {
+//           var refundDetail = {
+//             orderid: req.orderid,
+//             original_amt: orderdetails[0].price,
+//             active_status: 1,
+//             userid: orderdetails[0].userid,
+//             payment_id: orderdetails[0].transactionid
+//           };
+//           var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+//           for (let i = 0; i < orderitemdetails.length; i++) {
+//             var productquantityadd =
+//               "update Product set quantity = quantity+" +
+//               orderitemdetails[i].quantity +
+//               " where productid =" +
+//               orderitemdetails[i].productid +
+//               "";
+//             sql.query(productquantityadd, function(err, res2) {
+//               if (err) {
+//                 result(err, null);
+//               }
+//             });
+//           }
+
+//           if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+
+//             if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
+              
+//               await Order.create_refund(refundDetail);
+//               if (orderdetails[0].refund_amount !== 0) {
+//                 console.log("Online cod refund");
+//                await Order.cod_create_refund_byonline(refundDetail);
+               
+//               }
+
+
+//           }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
+//             var rc = new RefundCoupon(req);
+//             RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+//               if (err) {
+//                 result(err, null);
+//               } 
+//             });
+//           }
+//           }
+
+          
+//           if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
+//             removecoupon = {};
+//             removecoupon.userid = orderdetails[0].userid;
+//             removecoupon.cid = orderdetails[0].coupon;
+//             removecoupon.orderid = req.orderid;
+//             // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
+//             // await query(deletequery);
+//             await Order.remove_used_coupon(removecoupon);
+//           }
+
+//           await Notification.orderEatPushNotification(
+//             req.orderid,
+//             null,
+//             PushConstant.Pageid_eat_order_cancel
+//           );
+          
+//           if(orderdetails[0]&&orderdetails[0].moveit_user_id){
+//             await Notification.orderMoveItPushNotification(
+//               req.orderid,
+//               PushConstant.pageidMoveit_Order_Cancel,
+//               null
+//             );
+//           }
+//           let response = {
+//             success: true,
+//             status: true,
+//             message: "Order canceled successfully."
+//           };
+//           ////Insert Order History////
+          
+//           ////////////////////////////
+//           result(null, response);
+//         }
+//       }
+//     );
+//   }
+// };
+
 Order.order_missing_by_makeit = async function order_missing_by_makeit(req, result) {
-  const orderdetails = await query(
-    "select * from Orders where orderid ='" + req.orderid + "'"
-  );
+  const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "'");
 
   var ordercanceltime = moment().format("YYYY-MM-DD HH:mm:ss");
-  if (orderdetails[0].orderstatus === 8) {
+  if (orderdetails[0].orderstatus == 8) {
     let response = {
       success: true,
       status: false,
       message: "Sorry! order already canceled."
     };
     result(null, response);
+  }else if (orderdetails[0].orderstatus ==1) {
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! order already accepted."
+    };
+    result(null, response);
+  }else if (orderdetails[0].orderstatus ==3) {
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! order already prepared."
+    };
+    result(null, response);
+  }else if (orderdetails[0].orderstatus ==5) {
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! order already prepared."
+    };
+    result(null, response);
   } else {
-    sql.query("UPDATE Orders SET orderstatus = 8,cancel_by = 2,cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
-        if (err) {
-          result(err, null);
-        } else {
-          var refundDetail = {
-            orderid: req.orderid,
-            original_amt: orderdetails[0].price,
-            active_status: 1,
-            userid: orderdetails[0].userid,
-            payment_id: orderdetails[0].transactionid
-          };
-          var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
-          for (let i = 0; i < orderitemdetails.length; i++) {
-            var productquantityadd =
-              "update Product set quantity = quantity+" +
-              orderitemdetails[i].quantity +
-              " where productid =" +
-              orderitemdetails[i].productid +
-              "";
-            sql.query(productquantityadd, function(err, res2) {
-              if (err) {
-                result(err, null);
-              }
-            });
-          }
 
-          if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+    let response = {
+      success: true,
+      status: true,
+      message: "Time has been extented. Please accept the order."
+    };
+    result(null, response);
+    // sql.query("UPDATE Orders SET orderstatus = 8,cancel_by = 2,cancel_time = '" +ordercanceltime+"' WHERE orderid ='" +req.orderid +"'",async function(err, res) {
+    //     if (err) {
+    //       result(err, null);
+    //     } else {
+    //       var refundDetail = {
+    //         orderid: req.orderid,
+    //         original_amt: orderdetails[0].price,
+    //         active_status: 1,
+    //         userid: orderdetails[0].userid,
+    //         payment_id: orderdetails[0].transactionid
+    //       };
+    //       var orderitemdetails = await query("select * from OrderItem where orderid ='" + req.orderid + "'");
+    //       for (let i = 0; i < orderitemdetails.length; i++) {
+    //         var productquantityadd =
+    //           "update Product set quantity = quantity+" +
+    //           orderitemdetails[i].quantity +
+    //           " where productid =" +
+    //           orderitemdetails[i].productid +
+    //           "";
+    //         sql.query(productquantityadd, function(err, res2) {
+    //           if (err) {
+    //             result(err, null);
+    //           }
+    //         });
+    //       }
 
-            if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
+    //       if (orderdetails[0].refund_amount !== 0 || orderdetails[0].payment_status == 1) {
+
+    //         if (orderdetails[0].payment_type === "1" || orderdetails[0].payment_status === 1){
               
-              await Order.create_refund(refundDetail);
-              if (orderdetails[0].refund_amount !== 0) {
-                console.log("Online cod refund");
-               await Order.cod_create_refund_byonline(refundDetail);
+    //           await Order.create_refund(refundDetail);
+    //           if (orderdetails[0].refund_amount !== 0) {
+    //             console.log("Online cod refund");
+    //            await Order.cod_create_refund_byonline(refundDetail);
                
-              }
+    //           }
 
 
-          }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
-            var rc = new RefundCoupon(req);
-            RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
-              if (err) {
-                result(err, null);
-              } 
-            });
-          }
-          }
+    //       }else if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_status === 0) {
+    //         var rc = new RefundCoupon(req);
+    //         RefundCoupon.createRefundCoupon(rc, async function(err, res2) {
+    //           if (err) {
+    //             result(err, null);
+    //           } 
+    //         });
+    //       }
+    //       }
 
           
-          if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
-            removecoupon = {};
-            removecoupon.userid = orderdetails[0].userid;
-            removecoupon.cid = orderdetails[0].coupon;
-            removecoupon.orderid = req.orderid;
-            // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
-            // await query(deletequery);
-            await Order.remove_used_coupon(removecoupon);
-          }
+    //       if ( orderdetails[0].discount_amount !==0 || orderdetails[0].coupon) {
+    //         removecoupon = {};
+    //         removecoupon.userid = orderdetails[0].userid;
+    //         removecoupon.cid = orderdetails[0].coupon;
+    //         removecoupon.orderid = req.orderid;
+    //         // var deletequery = "delete from CouponsUsed where cid = '"+removecoupon.cid+"' and userid = "+removecoupon.userid+" and orderid ="+removecoupon.orderid+"  order by cuid desc limit 1";
+    //         // await query(deletequery);
+    //         await Order.remove_used_coupon(removecoupon);
+    //       }
 
-          await Notification.orderEatPushNotification(
-            req.orderid,
-            null,
-            PushConstant.Pageid_eat_order_cancel
-          );
+    //       await Notification.orderEatPushNotification(
+    //         req.orderid,
+    //         null,
+    //         PushConstant.Pageid_eat_order_cancel
+    //       );
           
-          if(orderdetails[0]&&orderdetails[0].moveit_user_id){
-            await Notification.orderMoveItPushNotification(
-              req.orderid,
-              PushConstant.pageidMoveit_Order_Cancel,
-              null
-            );
-          }
-          let response = {
-            success: true,
-            status: true,
-            message: "Order canceled successfully."
-          };
-          ////Insert Order History////
-          
-          ////////////////////////////
-          result(null, response);
-        }
-      }
-    );
+    //       if(orderdetails[0]&&orderdetails[0].moveit_user_id){
+    //         await Notification.orderMoveItPushNotification(
+    //           req.orderid,
+    //           PushConstant.pageidMoveit_Order_Cancel,
+    //           null
+    //         );
+    //       }
+    //       let response = {
+    //         success: true,
+    //         status: true,
+    //         message: "Order canceled successfully."
+    //       };
+    //       result(null, response);
+    //     }
+    //   }
+    // );
   }
 };
 
@@ -4209,7 +4335,12 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
 
   sql.query("Select * from Orders where orderid = ?", [req.orderid],async function(err,res1) {
     if (err) {
-      result(err, null);
+      let resobj = {
+        success: true,
+        status:false,
+        message: err
+      };
+      result(null, resobj);
     } else {
       var getmoveitid = res1[0].moveit_user_id;
       if (getmoveitid == req.moveit_user_id) {
@@ -5684,6 +5815,8 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
     result(null, resobj);
   }else{
     if(constant.zone_control){
+      console.log(constant.zone_control);
+
       var get_hub_id_from_orders= await query("Select zone from MakeitUser where userid="+req.makeit_user_id);
       var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and zone="+get_hub_id_from_orders[0].zone);
       var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and  status=0") ;
@@ -5695,12 +5828,17 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
       var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
     }
 
+    console.log("get_hub_id_from_makeithub[0].xfactor",get_hub_id_from_makeithub[0].xfactor);
+    console.log("get_moveit_list_based_on_hub[0].no_of_move_it_count",get_moveit_list_based_on_hub[0].no_of_move_it_count);
+
     var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * (get_moveit_list_based_on_hub[0].no_of_move_it_count || 0)
-    console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].zone);
     console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
-    console.log("xfactorValue-->",Math.round(xfactorValue));
+    // console.log("xfactorValue-->",Math.round(xfactorValue));
     var fValue= Math.round(xfactorValue);
-    if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
+    console.log("xfactorValue-->",fValue);
+
+    console.log("get_orders_queue_based_on_hub[0].no_of_orders_count-->",get_orders_queue_based_on_hub[0].no_of_orders_count);
+    if(get_orders_queue_based_on_hub[0].no_of_orders_count <= fValue){
       let resobj = {
         success: true,
         status:true,

@@ -2148,6 +2148,7 @@ Eatuser.list_all_active_collection_cid = function list_all_active_collection_cid
 };
 //kitchen list infinity
 Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
+
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm = constant.onekm;
   var radiuslimit = constant.radiuslimit;
@@ -2246,18 +2247,18 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
   // }
 
   if (req.sortid == 1) {
-    kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY distance,mk.unservicable = 0 desc";
+    kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY distance,mk.unservicable = 0 desc ";
   } else if (req.sortid == 2) {
-    kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY mk.rating DESC,mk.unservicable = 0 desc";
+    kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY mk.rating DESC,mk.unservicable = 0 desc ";
   } else if (req.sortid == 3) {
-    kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.costfortwo ASC";
+    kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.costfortwo ASC ";
   } else if (req.sortid == 4) {
-    kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.costfortwo DESC";
+    kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,mk.costfortwo desc ";
   } else {
-    kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc";
+    kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc ";
   }
 
-  //console.log("kitchen query========>",kitchenquery);
+  console.log("kitchen query========>",kitchenquery);
   sql.query(kitchenquery, async function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -2384,41 +2385,55 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
 
 
 
-      ///infinity screen
-      var collectionlist = [];
-   await  Collection.list_all_active_collection(req,async function(err,res3) {
-        if (err) {
-          result(err, null);
-        } else {
-          if (res3.status != true) {
-            result(null, res3);
-          } else {
-                   console.log("collectionlist--------------",res3);
-                   collectionlist.push(res3)
-            // let resobj = {
-            //   success: true,
-            //   status:true,
-            //   zoneId:userzoneid,
-            //   zoneName:zonename,
-            //   result: kitchenlist,
-            //   collectionlist:res3
-            // };
-            // result(null, resobj);
+//       ///infinity screen
+//       var collectionlist = [];
+//    await  Collection.list_all_active_collection(req,async function(err,res3) {
+//         if (err) {
+//           result(err, null);
+//         } else {
+//           if (res3.status != true) {
+//             result(null, res3);
+//           } else {
+//                    console.log("collectionlist--------------",res3);
+//                    collectionlist.push(res3)
+//             // let resobj = {
+//             //   success: true,
+//             //   status:true,
+//             //   zoneId:userzoneid,
+//             //   zoneName:zonename,
+//             //   result: kitchenlist,
+//             //   collectionlist:res3
+//             // };
+//             // result(null, resobj);
 
-          }
-        }
-      });
-      //  var collectionlist =   await Eatuser.list_all_active_collection_cid(req);
-          //,async function(err,res3){})
+//           }
+//         }
+//  });
+       var collectionlist =   await Collection.list_all_active_collection(req)
        console.log("collectionlist--------------",collectionlist);
+       
+if (kitchenlist.length!=0) {
+  var kitchencount = kitchenlist.length;
+var pagecount = Math.ceil(kitchencount / constant.kitchen_pagenation_limit);
+var orderlimit = constant.kitchen_pagenation_limit;
+var page = req.page || 1;
+var startlimit = (page - 1) * orderlimit;
+var endlimit = startlimit + orderlimit;
+
+var kitchenlist = kitchenlist.slice(startlimit, endlimit);
+}
+
+
 
       let resobj = {
         success: true,
         status:true,
         zoneId:userzoneid,
         zoneName:zonename,
-        result: kitchenlist,
-        collectionlist:collectionlist
+        kitchencount :kitchencount ||0,
+        pagecount : pagecount ||0,
+        result: kitchenlist
+       
       };
       result(null, resobj);
     }
