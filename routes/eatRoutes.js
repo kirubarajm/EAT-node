@@ -172,5 +172,6 @@ app.route("/eat/updatetunneluser").put(middleware.checkToken,routesVersioning({"
 app.route("/eat/getotp/:phone_number").get(middleware.checkToken,routesVersioning({"1.0.0":eatuser.get_otp_phone_number}));
 //app.route("/eat/dunzptaskcreate").post(routesVersioning({"1.0.0":orders.dunzo_order_create}));
 
-
+//////////Razorpay////////////////////
+app.route("/eat/payment/retry").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.payment_retry}));
 }

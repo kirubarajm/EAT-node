@@ -694,3 +694,12 @@ exports.user_history = function(req, res) {
     res.json(user);
   });
 };
+
+/////Eat Payment Retry
+exports.payment_retry = function(req, res) {
+  //console.log("controller==========>");
+  Eatuser.payment_retry(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

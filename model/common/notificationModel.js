@@ -139,7 +139,17 @@ Notification.orderEatPushNotification = async function(
         app: "Eat",
         notification_type: "2"
       };
+      break;
 
+      //////////Razorpay Payment Success///////////
+      case PushConstant.pageid_eat_razorpay_payment_success:
+      data = {
+        title: "Payment Success",
+        message: "Hi! your payment successful completed",
+        pageid: "" + pageid,
+        app: "Eat",
+        notification_type: "1"
+      };
       break;
   }
   if (data == null) return;

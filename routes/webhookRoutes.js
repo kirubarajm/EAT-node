@@ -13,6 +13,6 @@ module.exports = function(app) {
 
 
     /////////////Razorpay Webhooks///////////////
-    app.route("/webhooks/razorpay").post(routesVersioning({"1.0.0":RazorpayController.testapi}));
+    app.route("/webhooks/razorpay").post(routesVersioning({"1.0.0":RazorpayController.webhooks}));
 
 }

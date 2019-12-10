@@ -335,7 +335,6 @@ exports.orderwise_moveitreport = function(req, res) {
 };
 
 //moveit zone details
-
 exports.moveit_zone_data = function(req, res) {
   if (!req.body.userid) {
     res.status(400).send({ error: true,status:false, message: "Please provide userid" });

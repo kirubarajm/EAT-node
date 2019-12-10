@@ -4454,5 +4454,35 @@ Eatuser.user_history = async function user_history(req, result) {
   }
 };
 
+/////Eat Payment Retry
+Eatuser.payment_retry = async function payment_retry(req, result) {
+  var getorderquery ="select userid,orderid,orderstatus,payment_type,payment_status,transactionid,transaction_status from Orders where orderid="+req.orderid+" and userid="+req.userid;
+  var getorder = await query(getorderquery);
+  if(getorder){
+    if(getorder[0].orderstatus == 0 && getorder[0].payment_type == '1' && getorder[0].payment_status == 1 && getorder[0].transactionid && getorder[0].transaction_status){
+      let resobj = {
+        success: true,
+        status : true,
+        message : "Your payment already success, order has been placed"
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        status : false,
+        message : "Retry"
+      };
+      result(null, resobj);
+    }
+    result(getorder);
+  }else{
+    let resobj = {
+      success: true,
+      status : true,
+      message : "No records found"
+    };
+    result(null, resobj);
+  }
+};
 
 module.exports = Eatuser;
