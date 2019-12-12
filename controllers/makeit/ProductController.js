@@ -23,6 +23,7 @@ exports.list_all_virtual_product = function(req, res) {
 exports.create_a_product = function(req, res) {
   var new_product = new Product(req.body);
   var itemlist = req.body.items;
+  var packageList=req.body.packageItems || [];
 
   if (!new_product.product_name) {
     res.status(400).send({ error: true,status:false, message: "Please provide name" });
@@ -31,7 +32,7 @@ exports.create_a_product = function(req, res) {
   }else if (!new_product.makeit_userid) {
     res.status(400).send({ error: true,status:false, message: "Please provide makeit_userid" });
   } else {
-    Product.createProduct(new_product, itemlist, function(err, result) {
+    Product.createProduct(new_product, itemlist,packageList, function(err, result) {
       if (err) res.send(err);
       res.json(result);
     });
