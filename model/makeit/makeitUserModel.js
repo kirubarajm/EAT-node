@@ -1880,12 +1880,9 @@ Makeituser.update_makeit_regionid = async function(req, result) {
   // );
 };
 
-Makeituser.makeituser_user_referral_code = function makeituser_user_referral_code(
-  req,
-  result
-) {
-  var applink = constant.applink;
-  console.log(req);
+Makeituser.makeituser_user_referral_code = function makeituser_user_referral_code(req,headers,result) {
+
+ 
   sql.query(
     "select referalcode from MakeitUser where userid = '" + req.userid + "'",
     function(err, res) {
@@ -1899,16 +1896,33 @@ Makeituser.makeituser_user_referral_code = function makeituser_user_referral_cod
           let resobj = {
             success: true,
             status: false,
-            message: message,
-            result: res
+            message: message
           };
 
           result(null, resobj);
         } else {
-          res[0].applink =
-            "https://play.google.com/store/apps/details?id=com.eat.makeit&referrer=utm_source%3Dreferral%26utm_medium%3D" +
-            res[0].referalcode +
-            "%26utm_campaign%3Dreferral";
+
+          // makeit_applink: "http://bit.ly/2ZcGL95",
+          // makeit_iosapplink: "https://apple.co/2lna3n9",
+          // makeit_refferalcontent:"Welcome to EAT. Click the link to download the EAT app from play store"
+
+          if (headers.apptype === '1' || headers.apptype === 1) {
+        
+            res[0].applink = constant.makeit_refferalcontent+" "+constant.makeit_applink +". Use Refferal Code :"+ res[0].referalcode
+           
+              
+            }else if (headers.apptype === '2' || headers.apptype === 2) {
+              res[0].applink = constant.makeit_refferalcontent+" "+constant.makeit_iosapplink +". Use Refferal Code :"+ res[0].referalcode
+      
+            }else{
+              res[0].applink = constant.makeit_refferalcontent+" "+constant.makeit_applink +". Use Refferal Code :"+ res[0].referalcode
+            }
+
+
+          // res[0].applink =
+          //   "https://play.google.com/store/apps/details?id=com.eat.makeit&referrer=utm_source%3Dreferral%26utm_medium%3D" +
+          //   res[0].referalcode +
+          //   "%26utm_campaign%3Dreferral";
 
           // https://play.google.com/store/apps/details?id=com.tovo.eat&referrer=utm_source%3Dreferral%26utm_medium%3Deat001%26utm_campaign%3Dreferral
           // console.log("TEST: ",  referralcode);

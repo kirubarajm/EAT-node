@@ -493,7 +493,7 @@ const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
 // });
 //order_auto_assign.start();
 
-//online refund coupon
+//dunzo_task_create
 QuickSearch.dunzo_task_create = function dunzo_task_create(orderid) {
 
   Dunzo.dunzo_task_create(orderid, function(err, res) {
@@ -502,18 +502,22 @@ QuickSearch.dunzo_task_create = function dunzo_task_create(orderid) {
   });
 };
 
-
 const order_auto_assign_Change = new CronJob("* */1 7-23 * * * ", async function() {
   if (constant.order_assign_status==true) {
   var i = 0;
-  var res = await query(
-    "select oq.*,mk.makeithub_id,mk.userid,mk.lat,mk.pincode,mk.lon,ors.makeit_accept_time,ors.payment_type from Orders_queue as oq join Orders as ors on ors.orderid=oq.orderid join MakeitUser as mk on mk.userid = ors.makeit_user_id where oq.status !=1  and ors.orderstatus < 6  order by ors.ordertime ASC"
-  ); //and created_at > (NOW() - INTERVAL 10 MINUTE
+  // var res = await query(
+  //   "select oq.*,mk.makeithub_id,mk.userid,mk.lat,mk.pincode,mk.lon,ors.makeit_accept_time,ors.payment_type from Orders_queue as oq join Orders as ors on ors.orderid=oq.orderid join MakeitUser as mk on mk.userid = ors.makeit_user_id where oq.status !=1  and ors.orderstatus < 6  order by ors.ordertime ASC"
+  // ); //and created_at > (NOW() - INTERVAL 10 MINUTE
+
+  var res = await query("select oq.*,zo.zone_status,mk.makeithub_id,mk.userid,mk.lat,mk.pincode,mk.lon,ors.makeit_accept_time,ors.payment_type,ors.price from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid left join MakeitUser as mk on mk.userid = ors.makeit_user_id left join Zone as zo on zo.id=mk.zone where oq.status !=1 and ors.orderstatus < 6  order by ors.ordertime  ASC");
   console.log('res length-->',res.length);
-  
   console.log('isCronRun-->',isCronRun);
   if (res.length !== 0&&!isCronRun) {
+    
     ////Start: Zone Based Order Assign //////////////
+    
+      res.sort((a, b) => parseFloat(a.payment_type) - parseFloat(b.payment_type));
+   
     if(constant.zone_control){
       QuickSearch.Zone_order_assign(res,i);
     }else{
@@ -523,6 +527,15 @@ const order_auto_assign_Change = new CronJob("* */1 7-23 * * * ", async function
   }
   }
 });
+
+//cancel orders
+QuickSearch.admin_order_cancel = function admin_order_cancel(order_cancel) {
+  Order.admin_order_cancel(order_cancel, function(err, res) {
+    if (err) return err;
+    else return res;
+  });
+};
+
 
 QuickSearch.order_assign=async function order_assign(res,i){
   try{
@@ -538,18 +551,42 @@ QuickSearch.order_assign=async function order_assign(res,i){
     var today = moment();
     var makeit_accept_time = moment(res[i].makeit_accept_time);
     var diffMs = today - makeit_accept_time;
-    var diffDays = Math.floor(diffMs / 86400000);
-    var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
+    // var diffDays = Math.floor(diffMs / 86400000);
+    // var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
     var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
+
+    var order_queue_update_time = moment(res[i].updated_at);
+    var order_queue_diffMs = today - order_queue_update_time;
+
+    var order_queue_diffMins = Math.round(((order_queue_diffMs % 86400000) % 3600000) / 60000);
+    
+    console.log("order_queue_diffMins"+order_queue_diffMins);
+    console.log("res[i].dunzo_req_count"+res[i].dunzo_req_count);
     console.log("diffMins"+diffMins);
     console.log("res[i].payment_type"+res[i].payment_type);
-         console.log("res[i].status"+res[i].status);
+    console.log("res[i].status"+res[i].status);
  
-  if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 && diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0) {  
+  if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 && diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0 ) {  
        // Dunzo.dunzo_task_create
+       console.log("Dunzo.dunzo_task_create");
        await QuickSearch.dunzo_task_create(res[i].orderid);
        i++;
        order_assign(res,i);
+  }else if(res[i].zone_status == 2 && order_queue_diffMins >1 && res[i].status !=1 && (res[i].payment_type==1 || (res[i].payment_type==0 && res[i].price ))){
+    console.log("Dunzo xone dunzo_task_create");
+      if (res[i].dunzo_req_count >= constant.Dunzo_max_req) {
+        var order_cancel={};
+        order_cancel.orderid = res[i].orderid;
+        order_cancel.cancel_reason ='Dunzo failure to generate task id';
+        await QuickSearch.admin_order_cancel(order_cancel);
+        i++;
+        order_assign(res,i);
+      } else {
+        await QuickSearch.dunzo_task_create(res[i].orderid);
+        i++;
+        order_assign(res,i);
+      }
+      
   }else{
 
         var geoLocation = [];
@@ -641,17 +678,38 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
     var diffDays = Math.floor(diffMs / 86400000);
     var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
     var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
-    console.log("diffMins"+makeit_accept_time);
 
+    var order_queue_update_time = moment(res[i].updated_at);
+    var order_queue_diffMs = today - order_queue_update_time;
+    var order_queue_diffMins = Math.round(((order_queue_diffMs % 86400000) % 3600000) / 60000);
+    
+    console.log("order_queue_diffMins"+order_queue_diffMins);
+    console.log("res[i].dunzo_req_count"+res[i].dunzo_req_count);
+    console.log("diffMins"+makeit_accept_time);
     console.log("diffMins"+diffMins);
  
-     if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 &&res[i].pincode&& diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0) {  
-       // Dunzo.dunzo_task_create
-       console.log("Dunzo Order assign =>>>>>>>>>>>>>>>>>>>>>>>");
+    if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 && diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0) {  
+      // Dunzo.dunzo_task_create
+      console.log("Dunzo.dunzo_task_create");
+      await QuickSearch.dunzo_task_create(res[i].orderid);
+      i++;
+      Zone_order_assign(res,i);
+    }else if(res[i].zone_status == 2 && order_queue_diffMins >=1 && res[i].status !=1 && (res[i].payment_type==1 || (res[i].payment_type==0 && res[i].price==0 ))){
+     console.log("Dunzo xone dunzo_task_create");
+     if (res[i].dunzo_req_count >= constant.Dunzo_max_req) {
+       var order_cancel={};
+       order_cancel.orderid = res[i].orderid;
+       order_cancel.cancel_reason ='Dunzo failure to generate task id';
+       await QuickSearch.admin_order_cancel(order_cancel);
+       i++;
+       Zone_order_assign(res,i);
+     } else {
        await QuickSearch.dunzo_task_create(res[i].orderid);
-         i++;
-         Zone_order_assign(res,i);
-      }else{
+       i++;
+       Zone_order_assign(res,i);
+     }
+     
+    }else{
       var makeitLocation = [];
       makeitLocation.push(res[i].lat);
       makeitLocation.push(res[i].lon);

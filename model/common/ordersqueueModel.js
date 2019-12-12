@@ -7,6 +7,8 @@ const query = util.promisify(sql.query).bind(sql);
     this.orderid = ordersqueue.orderid;
     this.hubid = ordersqueue.hubid;
     this.status = ordersqueue.status;
+    this.zoneid = ordersqueue.zoneid;
+    this.dunzo_req_count=ordersqueue.dunzo_req_count ||0;
   };
 
   Ordersqueue.createOrdersqueue=async function createOrdersqueue(Ordersqueue, result) {
