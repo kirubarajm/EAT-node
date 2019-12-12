@@ -227,7 +227,7 @@ exports.eat_kitchen_sort_filter = function(req, res) {
 
 
 exports.eat_kitchen_sort_filter_v2 = function(req, res) {
-  console.log(req.headers);
+  
   if (!req.body.lat) {
     res
       .status(400)

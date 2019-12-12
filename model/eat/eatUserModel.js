@@ -376,7 +376,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
   var day = moment().format("YYYY-MM-DD HH:mm:ss");;
   var currenthour  = moment(day).format("HH");
 
-  console.log(currenthour);
+
   var breatfastcycle = constant.breatfastcycle;
   var dinnercycle = constant.dinnercycle;
   var lunchcycle = constant.lunchcycle;
@@ -637,7 +637,7 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
       if(constant.zone_control){
         ////Get User Zone////
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-        console.log(getzone);
+       
         if(getzone.zone_id){
           var userzoneid ='';
           var zonename = '';
@@ -877,7 +877,7 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
 
   productquery = productquery + " order by "+ifconditionquery+"";      
   //console.log("Request =====>",req);
-  console.log("Query ====>",productquery);
+  
   sql.query(productquery, async function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -887,7 +887,7 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
       if(constant.zone_control){
         ////Get User Zone////
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-        console.log(getzone);
+
         if(getzone.zone_id){
           var userzoneid ='';
           var zonename = '';
@@ -970,7 +970,7 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
           //  console.log(product_id_list);
           //  res[0].distance = res[0].distance * constant.onemile;
           res[0].distance = res[0].distance.toFixed(2) ;
-          console.log(res[0].distance);
+      
           // 15min Food Preparation time , 3min 1 km
           //  eta = 15 + 3 * res[i].distance;
           var eta = foodpreparationtime + (onekm * res[0].distance);
@@ -1262,7 +1262,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
       " where mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2 and pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1";
   }
 
-  console.log(query);
+
   if (req.vegtype === 0) {
     query =query +" and pt.vegtype=0";
   }
@@ -1279,8 +1279,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     query = query + " HAVING distance <="+radiuslimit+" ORDER BY distance";
   }
 
-  console.log(query);
- 
+
   
   sql.query(query, function(err, res) {
     if (err) {
@@ -2319,7 +2318,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
     kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc ";
   }
 
-  console.log("kitchen query========>",kitchenquery);
+
   sql.query(kitchenquery, async function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -2471,7 +2470,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
 //         }
 //  });
        var collectionlist =   await Collection.list_all_active_collection(req)
-       console.log("collectionlist--------------",collectionlist);
+  
        
 if (kitchenlist.length!=0) {
   var kitchencount = kitchenlist.length;
@@ -2531,7 +2530,7 @@ Eatuser.eat_user_referral_code = function eat_user_referral_code(req,headers,res
         
               
 
-          if (headers.apptype === '1' || headers.apptype === 1) {
+           if (headers.apptype === '1' || headers.apptype === 1) {
         
             res[0].applink = refferalcontent+" "+constant.applink +". Use Refferal Code :"+ res[0].referalcode
            
@@ -3720,7 +3719,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
         if(constant.zone_control){
           ////Get User Zone////
           var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-          console.log("getzone=>>>>>",getzone);
+    
           if(getzone.zone_id){
             var userzoneid ='';
             var zonename = '';

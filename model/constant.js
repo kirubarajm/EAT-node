@@ -8,8 +8,7 @@ const calculate = {
   deliverycharge: 0, // cost
   applink: "http://bit.ly/2ZcGL95",
   iosapplink: "https://apple.co/2lna3n9",
-  refferalcontent:
-    "Welcome to EAT. Click the link to download the EAT app from play store",
+  refferalcontent:"Welcome to EAT. Click the link to download the EAT app from play store",
   radiuslimit: 2.37,
   foodpreparationtime: 15, //min
   onekm: 10,
@@ -70,26 +69,37 @@ const calculate = {
     //Miles to km
     onemile : 1.6,
 
-    order_assign_status:false,
+    order_assign_status:true,
 
     //Hub circle radius 3 km.
     hub_radius:3,
 
     
-    ///Dunzo Authorization
-    order_assign_dunzo:false,
+    // ///Dunzo Authorization
+    // order_assign_dunzo:false,
 
-    order_assign_dunzo_waiting_min:3,
-    dunzo_client_id : "c6c3acd5-e254-4404-ad06-c0c1d2aafd1e",
-    Authorization : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkIjp7InJvbGUiOjEwMCwidWlkIjoiZTRiNDU5ZTktODIxOS00M2Q2LWEyYWQtZDJlODhkOTBlYmI1In0sIm1lcmNoYW50X3R5cGUiOm51bGwsImNsaWVudF9pZCI6ImM2YzNhY2Q1LWUyNTQtNDQwNC1hZDA2LWMwYzFkMmFhZmQxZSIsImF1ZCI6Imh0dHBzOi8vaWRlbnRpdHl0b29sa2l0Lmdvb2dsZWFwaXMuY29tL2dvb2dsZS5pZGVudGl0eS5pZGVudGl0eXRvb2xraXQudjEuSWRlbnRpdHlUb29sa2l0IiwibmFtZSI6IkFQSVVTRVIiLCJ1dWlkIjoiZTRiNDU5ZTktODIxOS00M2Q2LWEyYWQtZDJlODhkOTBlYmI1Iiwicm9sZSI6MTAwLCJkdW56b19rZXkiOiIwNmRkZGU1Yy1jODlkLTRiZjgtYjBhMi0wY2Q3NWE2NTVkYWQiLCJleHAiOjE3Mjk2NjUzNDksInYiOjAsImlhdCI6MTU3NDE0NTM0OSwic2VjcmV0X2tleSI6Ik5vbmUifQ.iOvx9-J_0hpD859q2jGuJUMJ_GLdR3RVkB6tFGgeusw",
+    // order_assign_dunzo_waiting_min:3,
+    // dunzo_client_id : "c6c3acd5-e254-4404-ad06-c0c1d2aafd1e",
+    // Authorization : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkIjp7InJvbGUiOjEwMCwidWlkIjoiZTRiNDU5ZTktODIxOS00M2Q2LWEyYWQtZDJlODhkOTBlYmI1In0sIm1lcmNoYW50X3R5cGUiOm51bGwsImNsaWVudF9pZCI6ImM2YzNhY2Q1LWUyNTQtNDQwNC1hZDA2LWMwYzFkMmFhZmQxZSIsImF1ZCI6Imh0dHBzOi8vaWRlbnRpdHl0b29sa2l0Lmdvb2dsZWFwaXMuY29tL2dvb2dsZS5pZGVudGl0eS5pZGVudGl0eXRvb2xraXQudjEuSWRlbnRpdHlUb29sa2l0IiwibmFtZSI6IkFQSVVTRVIiLCJ1dWlkIjoiZTRiNDU5ZTktODIxOS00M2Q2LWEyYWQtZDJlODhkOTBlYmI1Iiwicm9sZSI6MTAwLCJkdW56b19rZXkiOiIwNmRkZGU1Yy1jODlkLTRiZjgtYjBhMi0wY2Q3NWE2NTVkYWQiLCJleHAiOjE3Mjk2NjUzNDksInYiOjAsImlhdCI6MTU3NDE0NTM0OSwic2VjcmV0X2tleSI6Ik5vbmUifQ.iOvx9-J_0hpD859q2jGuJUMJ_GLdR3RVkB6tFGgeusw",
 
     //Zone Controles
-    zone_control:false,
+    zone_control:true,
 
     //kitchen pagenation 
-     kitchen_pagenation_limit :5
+     kitchen_pagenation_limit :5,
+
+     //dunzo zone order limit 
+     Dunzo_zone_order_limit:10,
+    ///dunzo max req to generate task id
+     Dunzo_max_req:10,
+
+     makeit_applink: "http://bit.ly/2Em3K9T",
+     makeit_iosapplink: "http://bit.ly/2Em3K9T",
+     makeit_refferalcontent:"Welcome to EAT Kitchen. Click the link to download the EAT app from play store"
     
     
+
+
 }
 
 

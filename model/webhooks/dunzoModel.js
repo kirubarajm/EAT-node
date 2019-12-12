@@ -136,10 +136,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
 
           Dunzo.create_Dunzomoveitdetails(Dunzomoveitdetails_data);
 
-              if (orderdetails.length !== 0) {
-                console.log(orderdetails[0].orderid);
-
-           //     if (orderdetails[0].moveit_status < 1 ) {
+           //   if (orderdetails.length !== 0) {
                 
                   var orderaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
                
@@ -155,30 +152,16 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                  
                   result(null, response);
                
-               // } else if (orderdetails[0].moveit_status == 1) {
-                  // let response = {
-                  //   success: true,
-                  //   status: false,
-                  //   message: "Sorry your order already accepted"
-                  // };
-                  // result(null, response);
-                // } else {
-                //   let response = {
-                //     success: true,
-                //     status: false,
-                //     message: "Following order is not assigned to you!"
-                //   };
-                //   result(null, response);
-                // }
-              } else {
-                let response = {
-                  success: true,
-                  status: false,
-                  status_code : 400,
-                  message: "Order is not available!"
-                };
-                result(null, response);
-              }
+           
+              // } else {
+              //   let response = {
+              //     success: true,
+              //     status: false,
+              //     status_code : 400,
+              //     message: "Order is not available!"
+              //   };
+              //   result(null, response);
+              // }
           //  };
           break;
       case dunzoconst.runner_cancelled:
@@ -203,6 +186,8 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
             var kitchenreachtime = moment().format("YYYY-MM-DD HH:mm:ss");
             updatequery ="UPDATE Orders  SET moveit_reached_time = '" +kitchenreachtime +"'  WHERE orderid ='" +orderdetails[0].orderid +"'";
             const updatekitchenreachtime = await query(updatequery);
+
+           
                   let resobj = {
                     success: true,
                     status:true,
@@ -220,31 +205,36 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
          // Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveituser( req,kitchenqualitylist,result) {
             var order_pickup_time = moment().format("YYYY-MM-DD HH:mm:ss");
             var twentyMinutesLater = moment().add(0, "seconds").add(req.eta.dropoff, "minutes").format("YYYY-MM-DD HH:mm:ss");
-          
-            if (orderdetails.length !==0) {     
-              if (orderdetails[0].orderstatus == 7) {
-                let resobj = {
-                  success: true,
-                  status:false,
-                  status_code : 400,
-                  message: "Sorry! This order already canceled."
-                };
+         
+            // if (orderdetails.length !==0) {     
+            //   if (orderdetails[0].orderstatus == 7) {
+            //     let resobj = {
+            //       success: true,
+            //       status:false,
+            //       status_code : 400,
+            //       message: "Sorry! This order already canceled."
+            //     };
                 
-                result(null, resobj);
-               // return;
-              }else if (orderdetails[0].orderstatus < 3 ) {
-                let resobj = {
-                  success: true,
-                  status:false,
-                  status_code : 400,
-                  message: "Please wait food not yet prepared"
-                };
-                result(null, resobj);
-              //  return;
-              }else{
+            //     result(null, resobj);
+            //    // return;
+            //   }else if (orderdetails[0].orderstatus < 3 ) {
+            //     let resobj = {
+            //       success: true,
+            //       status:false,
+            //       status_code : 400,
+            //       message: "Please wait food not yet prepared"
+            //     };
+            //     result(null, resobj);
+            //   //  return;
+            //   }else{
            
                 updatequery ="UPDATE Orders  SET orderstatus = 5 ,moveit_pickup_time = '" +order_pickup_time+"',moveit_expected_delivered_time = '" +twentyMinutesLater +"'  WHERE orderid ='" +orderdetails[0].orderid +"'";
                 const updatestatuspickup = await query(updatequery);
+
+              
+               update_pickup_eta ="UPDATE Dunzo_moveit_details SET runner_eta_pickup_min = '" +  pickup +"' ,runner_eta_dropoff_min= '" + dropoff +"' WHERE task_id ='" +req.task_id+"'";
+               const update_pickup_eta_by_dunzo = await query(update_pickup_eta);
+
                       let resobj = {
                         success: true,
                         status: true,
@@ -256,17 +246,17 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
        
                  result(null, resobj);
         
-              }
-            }else{
-              let response = {
-                success: true,
-                status: false,
-                status_code : 400,
-                message: "Order not found.",
+             // }
+            // }else{
+            //   let response = {
+            //     success: true,
+            //     status: false,
+            //     status_code : 400,
+            //     message: "Order not found.",
              
-              };
-              result(null, response);
-            }
+            //   };
+            //   result(null, response);
+            // }
          // };
 
         
@@ -308,28 +298,28 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
 
        //   Order.order_delivery_status_by_moveituser = async function(req, result) {
             var order_delivery_time = moment().format("YYYY-MM-DD HH:mm:ss");
-            if (orderdetails.length !== 0) {
+            // if (orderdetails.length !== 0) {
           
-              if (orderdetails[0].orderstatus == 6) {
-                let resobj = {
-                  success: true,
-                  message: "Sorry!  order was already deliverd.",
-                  status_code : 400,
-                  status:false
-                };
-                result(null, resobj);
-              }else if (orderdetails[0].orderstatus == 7) {
-                let resobj = {
-                  success: true,
-                  message: "Sorry!  order already canceled.",
-                  status_code : 400,
-                  status:false
-                };
-                result(null, resobj);
-              }else{
+            //   if (orderdetails[0].orderstatus == 6) {
+            //     let resobj = {
+            //       success: true,
+            //       message: "Sorry!  order was already deliverd.",
+            //       status_code : 400,
+            //       status:false
+            //     };
+            //     result(null, resobj);
+            //   }else if (orderdetails[0].orderstatus == 7) {
+            //     let resobj = {
+            //       success: true,
+            //       message: "Sorry!  order already canceled.",
+            //       status_code : 400,
+            //       status:false
+            //     };
+            //     result(null, resobj);
+            //   }else{
     
-              if (orderdetails[0].payment_status == 1) {
-                updatequery ="UPDATE Orders SET orderstatus = 6,moveit_actual_delivered_time = '" +order_delivery_time+"' WHERE orderid ='" +orderdetails[0].orderid +"'";
+            //   if (orderdetails[0].payment_status == 1) {
+                updatequery ="UPDATE Orders SET orderstatus = 6,moveit_actual_delivered_time = '" +order_delivery_time+"',dunzo_price='"+req.price+"' WHERE orderid ='" +orderdetails[0].orderid +"'";
                 const updatestatusdeliverd = await query(updatequery);
                       let deliverd = {
                         success: true,
@@ -345,26 +335,26 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                      
                  result(null, deliverd);
 
-              } else {
-                let resobj = {
-                  success: true,
-                  status:false,
-                  status_code : 400,
-                  message: "Payment not yet paid!",
-                  orderdeliverystatus: false
-                };
-                result(null, resobj);
-              }
-            }
-            } else {
-              let resobj = {
-                success: true,
-                message: "Orders not found!.",
-                status_code : 400,
-                status:false
-              };
-              result(null, resobj);
-            }
+            //   } else {
+            //     let resobj = {
+            //       success: true,
+            //       status:false,
+            //       status_code : 400,
+            //       message: "Payment not yet paid!",
+            //       orderdeliverystatus: false
+            //     };
+            //     result(null, resobj);
+            //   }
+            // }
+            // } else {
+            //   let resobj = {
+            //     success: true,
+            //     message: "Orders not found!.",
+            //     status_code : 400,
+            //     status:false
+            //   };
+            //   result(null, resobj);
+            // }
          // };
         
           break;
@@ -395,6 +385,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
 };
 
 
+
 //task create
 Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
     //var url ='https://apis-staging.dunzo.in/api/v1/tasks?test=true';
@@ -402,6 +393,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
    // order_details = await query(orderquery);
    var order_details = await query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1,'landmark',ms.landmark,'flatno',ms.flatno,'pincode',ms.pincode,'locality',ms.locality,'virtualkey',ms.virtualkey) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('makeithub_name',mh.makeithub_name,'lat',mh.lat,'lon',mh.lon,'address',mh.address,'flat_no',mh.flat_no,'phone_number',mh.phone_number,'pincode',mh.pincode) as makeithubdetail,   JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  left join Makeit_hubs mh on mh.makeithub_id=ms.makeithub_id where ors.orderid ="+orderid +" ");
    var order_assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+   var cuurent_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
    if (order_details[0].userdetail) {
     order_details[0].userdetail = JSON.parse(order_details[0].userdetail);
@@ -438,6 +430,18 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
     pickup.name= order_details[0].makeithubdetail.makeithub_name;
   }
 
+  var items=order_details[0].items;
+  console.log(items.length);
+
+  if (items.length !=0) {
+    
+    for (let i = 0; i < items.length;i++) {
+      var itemlist=[];
+      itemlist.push(items[i].product_name);
+      
+    }
+    var product_name = itemlist.toString();
+  }
     //set form data
     var form = {
       request_id: order_details[0].orderid.toString(),
@@ -480,11 +484,9 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
      package_content: ["Documents | Books", "Clothes | Accessories", "Electronic Items"],
      // package_content: ["Food"],
       package_approx_value: order_details[0].price,
-      special_instructions: "Orderid : " + order_details[0].orderid.toString() + " ,Kitchen name : " +pickup.name+ " ,phone no :" + pickup.phoneno
-    }
+      special_instructions: "Orderid : " + order_details[0].orderid.toString() + " ,Kitchen name : " +pickup.name+ " ,phone no :" + pickup.phoneno+",product name : " +product_name}
   
-    //console.log("parse-------",JSON.parse(form));
-    //console.log("Str----",JSON.stringify(form));
+    console.log("parse-------",form);
     var headers= {
       'Content-Type': 'application/json',
       'client-id': dunzoconst.dunzo_client_id,
@@ -503,40 +505,45 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
     if (body.state=="created") {
       console.log("created");
 
-      var order_queue_update = await query("update Orders_queue set status = 1 where orderid =" +orderid+"");
+      var order_queue_update = await query("update Orders_queue set status = 1,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"'  where orderid =" +orderid+"");
       var order_update = await query("update Orders set moveit_status=1,dunzo_taskid ='"+body.task_id+"',delivery_vendor=1,order_assigned_time='"+order_assign_time+"'  where orderid =" +orderid+"");
 
     } else if (body.code=="unserviceable_location_error") {
       console.log("unserviceable_location_error 1");
 
-      var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderid+"");
+      var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
     }else if (body.code=="duplicate_request") {
       console.log("duplicate_request");
 
-      //var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +req.orderid+"");
+     // var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
     }else if (body.code=="different_city_error") {
       console.log("different_city_error 3");
 
-      var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderid+"");
+      var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
     }else if (body.code=="rain_error") {
       console.log("rain_error 4");
 
-      var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderid+"");
+      var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
     }else if (body.code=="service_unavailable") {
       console.log("service_unavailable 5");
 
-      var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderid+"");
+      var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
     }else if(body.code=="validation_failed") {
       console.log("validation_failed 6");
 
-      var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderid+"");
+      var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
 
     }else if(body.code=="stock_out_error") {
-      console.log("stock_out_error 6");
+      console.log("stock_out_error 7");
 
-      var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderid+"");
+      var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
 
-    }      
+    }else if(body.code=="unauthorized") {
+      console.log("unauthorized 8");
+
+      var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
+
+    }       
     
 
       let resobj = {
@@ -548,6 +555,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
       };
       result(null, resobj);
     });
+ 
 };
 
 ////task cancel
@@ -555,7 +563,7 @@ Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
   //var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+dunzo_taskid+'/_cancel?test=true'
 
 
-  var url = dunzoconst.dunzo_cancel_url+'/'+ req.dunzo_taskid+'/_cancel'
+  var url = dunzoconst.dunzo_cancel_url+'/'+ req.dunzo_taskid+'/_cancel?test=true'
 
  
 
@@ -585,7 +593,7 @@ Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
 ////task status
 Dunzo.dunzo_track_status = async function dunzo_track_status(req) {
 
-  var url =dunzoconst.dunzo_cancel_url+'/'+req.task_id+'/status'
+  var url =dunzoconst.dunzo_cancel_url+'/'+req.task_id+'/status?test=true'
 
 
 
