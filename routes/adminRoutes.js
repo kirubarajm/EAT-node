@@ -211,4 +211,9 @@ app.route("/admin/makeit/zoneupdate/:userid").get(routesVersioning({"1.0.0":make
 app.route("/admin/reports/milebasedmoveitaveragedeliveryreport").post(routesVersioning({"1.0.0":moveituser.firstmile_userwise_moveitreport}));
 app.route("/admin/reports/milebasedmoveitordersdeliveryreport").post(routesVersioning({"1.0.0":moveituser.firstmile_orderwise_moveitreport}));
 app.route("/admin/reports/moveitordersdeliveryreport").post(routesVersioning({"1.0.0":moveituser.orderwise_moveitreport}));
+
+//////Item Missing OR Funnel Refunded coupon list
+app.route("/admin/reports/funnelrefundedcouponreport").post(routesVersioning({"1.0.0":orders.funnelrefunded_couponreport}));
+//////Item Missing OR Online Refunded coupon list
+app.route("/admin/reports/onlinerefundedcouponreport").post(routesVersioning({"1.0.0":orders.onlinerefunded_couponreport}));
 }

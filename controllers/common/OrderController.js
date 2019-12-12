@@ -920,3 +920,18 @@ exports.xfactororders_report= function(req, res) {
   });
 };
 
+//Item Missing OR Funnel Refunded coupon list
+exports.funnelrefunded_couponreport = function(req, res) {
+  Order.funnelrefunded_couponreport(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+//Item Missing OR Online Refunded coupon list
+exports.onlinerefunded_couponreport = function(req, res) {
+  Order.onlinerefunded_couponreport(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
