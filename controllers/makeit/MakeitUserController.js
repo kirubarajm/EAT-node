@@ -271,18 +271,35 @@ exports.admin_check_cartdetails = function(req, res) {
 };
 
 exports.edit_makeit_user_byid = function(req, res) {
+  var isAdmin=false;
   var cuisines = req.body.cuisines;
   if (!req.body.userid) {
     res
       .status(400)
       .send({ error: true, message: "Please provide makeit userid" });
   } else {
-    Makeituser.edit_makeit_users(req.body, cuisines, function(err, user) {
+    Makeituser.edit_makeit_users(req.body, cuisines, isAdmin,function(err, user) {
       if (err) res.send(err);
       res.json(user);
     });
   }
 };
+
+exports.edit_makeit_user_byid_Admin = function(req, res) {
+  var isAdmin=true;
+  var cuisines = req.body.cuisines;
+  if (!req.body.userid) {
+    res
+      .status(400)
+      .send({ error: true, message: "Please provide makeit userid" });
+  } else {
+    Makeituser.edit_makeit_users(req.body, cuisines, isAdmin,function(err, user) {
+      if (err) res.send(err);
+      res.json(user);
+    });
+  }
+};
+
 
 exports.make_user_referral = function(req, res) {
   Makeituser.makeituser_user_referral_code(req.params, function(err, user) {

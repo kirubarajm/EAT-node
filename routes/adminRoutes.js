@@ -62,7 +62,7 @@ app.route("/admin/product/add").post(routesVersioning({"1.0.0":product.create_a_
 app.route("/admin/liveproduct/:makeit_userid").get(routesVersioning({"1.0.0":product.list_all_liveproduct}));
 app.route("/admin/product/view/:productid").get(routesVersioning({"1.0.0":product.productview}));
 app.route("/admin/product/movetolive").post(routesVersioning({"1.0.0":product.add_quantity_productlive}));
-app.route("/admin/makeituser/edit").put(routesVersioning({"1.0.0":makeituser.edit_makeit_user_byid}));
+app.route("/admin/makeituser/edit").put(routesVersioning({"1.0.0":makeituser.edit_makeit_user_byid_Admin}));
 app.route("/admin/moveituser/edit").put(routesVersioning({"1.0.0":moveituser.edit_moveit_user_byid}));
 app.route("/admin/salesuser/edit").put(routesVersioning({"1.0.0":salesuser.edit_a_user}));
 app.route("/admin/menuitems/:makeit_userid").get(routesVersioning({"1.0.0":menuitem.read_a_menuitem_byid}));
