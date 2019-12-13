@@ -54,7 +54,7 @@ var Makeituser = function(makeituser) {
   this.zone =makeituser.zone || 0;
 };
 
-Makeituser.createUser = function createUser(newUser, result) {
+Makeituser.createUser = function createUser(newUser,isAdmin,result) {
   sql.query(
     "Select * from MakeitUser where phoneno = '" +
       newUser.phoneno +
@@ -66,6 +66,8 @@ Makeituser.createUser = function createUser(newUser, result) {
         result(err, null);
       } else {
         if (res2.length == 0) {
+          if(!isAdmin){Makeituser.user_register(newUser,result);}
+          else{
           ZoneModel.check_map_boundaries(newUser,async function(err,res){
             if(err||res.status===false) {
               let resobj = {
@@ -79,60 +81,11 @@ Makeituser.createUser = function createUser(newUser, result) {
             }else{
               if(res.status){
                 newUser.zone= res.zone_id;
-                sql.query("INSERT INTO MakeitUser set ?", newUser, function(
-                  err,
-                  res3
-                ) {
-                  if (err) {
-                    console.log("error: ", err);
-                    result(err, null);
-                  } else {
-                    var referalcode = "MAKEITWELL" + res3.insertId;
-      
-                    sql.query(
-                      "Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ",
-                      res3.insertId,
-                      function(err, res4) {
-                        if (err) {
-                          console.log("error: ", err);
-                          result(err, null);
-                        } else {
-                          sql.query(
-                            "Update MakeitUser set referalcode = '" +
-                              referalcode +
-                              "' where userid = ? ",
-                            res3.insertId,
-                            function(err, res5) {
-                              if (err) {
-                                console.log("error: ", err);
-                                result(err, null);
-                              } else {
-      
-                                let token = jwt.sign({username: newUser.phoneno},
-                                  config.secret
-                                 );
-                             
-                                let resobj = {
-                                  success: true,
-                                  status: true,
-                                  token : token,
-                                  message: "Registration Successfully",
-                                  result: res4
-                                };
-      
-                                result(null, resobj);
-                              }
-                            }
-                          );
-                        }
-                      }
-                    );
-                  }
-                });
+                Makeituser.user_register(newUser,result);
               }
             }
           })
-          
+        }
         } else {
           let sucobj = true;
           let message =
@@ -149,6 +102,59 @@ Makeituser.createUser = function createUser(newUser, result) {
     }
   );
 };
+
+Makeituser.user_register = function user_register(newUser,result){
+  sql.query("INSERT INTO MakeitUser set ?", newUser, function(
+    err,
+    res3
+  ) {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {
+      var referalcode = "MAKEITWELL" + res3.insertId;
+
+      sql.query(
+        "Select userid,name,email,bank_account_no,phoneno,appointment_status from MakeitUser where userid = ? ",
+        res3.insertId,
+        function(err, res4) {
+          if (err) {
+            console.log("error: ", err);
+            result(err, null);
+          } else {
+            sql.query(
+              "Update MakeitUser set referalcode = '" +
+                referalcode +
+                "' where userid = ? ",
+              res3.insertId,
+              function(err, res5) {
+                if (err) {
+                  console.log("error: ", err);
+                  result(err, null);
+                } else {
+
+                  let token = jwt.sign({username: newUser.phoneno},
+                    config.secret
+                   );
+               
+                  let resobj = {
+                    success: true,
+                    status: true,
+                    token : token,
+                    message: "Registration Successfully",
+                    result: res4
+                  };
+
+                  result(null, resobj);
+                }
+              }
+            );
+          }
+        }
+      );
+    }
+  });
+}
 
 Makeituser.getUserById = async function getUserById(userId, result) {
   //var query1 = "select mu.userid,mu.name,mu.email,mu.bank_account_no,mu.phoneno,mu.lat,mu.brandname,mu.lon,mu.localityid,mu.appointment_status,mu.verified_status,mu.referalcode,mu.created_at,mu.bank_name,mu.ifsc,mu.bank_holder_name,mu.address,mu.virtualkey from MakeitUser as mu join Documents_Sales as ds on mu.userid = ds.makeit_userid join Documents as st on ds.docid = st.docid where mu.userid = '"+userId+"'";

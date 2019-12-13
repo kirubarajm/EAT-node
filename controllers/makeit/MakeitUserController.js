@@ -13,6 +13,7 @@ exports.list_all_user = function(req, res) {
 };
 
 exports.createnewUser_Admin = function(req, res) {
+  var isAdmin=true;
   var new_user = new Makeituser(req.body);
   new_user.ka_status =1;
   //handles null error
@@ -23,7 +24,7 @@ exports.createnewUser_Admin = function(req, res) {
   } else if (!new_user.password) {
     res.status(400).send({ error: true, message: "Please provide password" });
   } else {
-    Makeituser.createUser(new_user, function(err, user) {
+    Makeituser.createUser(new_user, isAdmin,function(err, user) {
       if (err) res.send(err);
       res.json(user);
     });
@@ -31,6 +32,7 @@ exports.createnewUser_Admin = function(req, res) {
 }
 
 exports.create_a_user = function(req, res) {
+  var isAdmin=false;
   var new_user = new Makeituser(req.body);
 
   //handles null error
@@ -41,7 +43,7 @@ exports.create_a_user = function(req, res) {
   } else if (!new_user.password) {
     res.status(400).send({ error: true, message: "Please provide password" });
   } else {
-    Makeituser.createUser(new_user, function(err, user) {
+    Makeituser.createUser(new_user,isAdmin, function(err, user) {
       if (err) res.send(err);
       res.json(user);
     });
