@@ -7,6 +7,7 @@ var constant = require('../constant');
 var Notification = require('../common/notificationModel');
 var PushConstant = require("../../push/PushConstant.js");
 var Razorpay = require("razorpay");
+var Onlineautorefund = require('../common/Online_autorefundModel.js');
 //Task object constructor
 var RazorpayWebhook = function(razorpay){
     this.payment_id = razorpay.payment_id || 0;
@@ -72,7 +73,13 @@ RazorpayWebhook.order_success_update = async function order_success_update(New_R
           var amount     = New_Razorpay.amount;
           instance.payments.capture(paymentid, parseInt(amount)).then((data) => {
             console.log("==================================>refund Init");
-            instance.payments.refund(paymentid, {amount: amount, notes: {note1: 'OrderID: orderid'}});
+            instance.payments.refund(paymentid, {amount: amount, notes: {note1: 'OrderID: '+orderid}}).then((data) =>{
+              console.log("====>Refund Date===========>",data);
+              var New_OnlineRefund =  {};
+              New_OnlineRefund.orderid = orderid;
+              New_OnlineRefund.paymentid = data.id;
+              Onlineautorefund.create_Onlineautorefund(New_OnlineRefund);
+            });
           });
         }else{
           let resobj = {

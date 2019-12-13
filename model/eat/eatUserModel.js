@@ -3925,11 +3925,7 @@ Eatuser.get_eat_region_kitchen_list_show_more = async function get_eat_region_ki
             if(getzone.zone_id && getzone.zone_id!=0 && res[i].zone==getzone.zone_id){
               res[i].serviceablestatus = true;
             }else{
-              if (res[i].distance <= radiuslimit) {
-                res[i].serviceablestatus = true;
-              }else{
-                res[i].serviceablestatus = false;
-              }
+              res[i].serviceablestatus = false;
             } 
           }else{                  
             if (res[i].distance <= radiuslimit) {
