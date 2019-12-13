@@ -168,8 +168,8 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           console.log("runner_cancelled");
          // var order_queue_update = await query("");
           var order_queue_update ="update Dunzo_moveit_details set active_status = 0 where task_id ='" +req.task_id+"'";
-          console.log(order_queue_update);
-          const updatestatus = await query(order_queue_update);
+        
+          const runner_cancelled_updatestatus = await query(order_queue_update);
           let runner_cancelled = {
             success: true,
             status:true,
@@ -188,7 +188,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
             const updatekitchenreachtime = await query(updatequery);
 
            
-                  let resobj = {
+                  let resobj1 = {
                     success: true,
                     status:true,
                     status_code : 200,
@@ -196,7 +196,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                   };
                  
 
-             result(null, resobj);
+             result(null, resobj1);
 
           break; 
       case dunzoconst.pickup_complete:
@@ -486,7 +486,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
       package_approx_value: order_details[0].price,
       special_instructions: "Orderid : " + order_details[0].orderid.toString() + " ,Kitchen name : " +pickup.name+ " ,phone no :" + pickup.phoneno+",product name : " +product_name}
   
-    console.log("parse-------",form);
+  
     var headers= {
       'Content-Type': 'application/json',
       'client-id': dunzoconst.dunzo_client_id,
