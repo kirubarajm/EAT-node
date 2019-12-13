@@ -27,6 +27,8 @@ const PushConstant={
     pageidMakeit_Order_Cancel:2,
     pageidMakeit_Replies:4,
 
+    pageid_eat_razorpay_payment_success:11,
+
 };
 
 module.exports = PushConstant;

@@ -55,9 +55,13 @@ const calculate = {
   //support number
   makeit_customer_support: 7358531315,
 
-  //Razorpay Details
+  //Live Razorpay Details
   razorpay_key_id: "rzp_live_bCMW6sG1GWp36Q",
   razorpay_key_secret: "2VAma7EVApDnLuOMerwX3ODu",
+
+  //Test Razorpay Details
+  //razorpay_key_id: "rzp_test_3cduMl5T89iR9G",
+  //razorpay_key_secret: "BSdpKV1M07sH9cucL5uzVnol",
 
   Xfactor_value:1.9,
   Xfactor_subtraction_value:1,

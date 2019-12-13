@@ -1047,7 +1047,7 @@ Order.online_order_place_conformation = async function(order_place, result) {
       let resobj = {
         success: true,
         message: "Sorry Order is already payment paid",
-        status: false,
+        status: true,
         orderid: order_place.orderid
       };
       result(null, resobj);

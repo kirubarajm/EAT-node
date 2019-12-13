@@ -2,10 +2,10 @@
 
 var Razorpay = require("../../model/webhooks/razorpayModel.js");
 
-exports.testapi = function(req, res) {
-  Razorpay.testingapi(req.body, function(err, dunzo) {
+exports.webhooks = function(req, res) {
+  Razorpay.webhooks(req.body, function(err, result) {
         if (err) res.send(err);
-        res.json(dunzo);
+        res.json(result);
       });
     
 };
