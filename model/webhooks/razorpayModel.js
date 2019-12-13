@@ -6,8 +6,9 @@ var razorpayconst = require('../razorpay_constant');
 var constant = require('../constant');
 var Notification = require('../common/notificationModel');
 var PushConstant = require("../../push/PushConstant.js");
+var Razorpay = require("razorpay");
 //Task object constructor
-var Razorpay = function(razorpay){
+var RazorpayWebhook = function(razorpay){
     this.payment_id = razorpay.payment_id || 0;
     this.orderid = razorpay.orderid || 0;
     this.razorpay_response = razorpay.razorpay_response;
@@ -20,7 +21,7 @@ var instance = new Razorpay({
   key_secret: constant.razorpay_key_secret
 })
 
-Razorpay.create_Razorpayresponse = async function create_Razorpayresponse(New_Razorpay) {
+RazorpayWebhook.create_Razorpayresponse = async function create_Razorpayresponse(New_Razorpay) {
   console.log("=============================================> Razorpay Response Insert");
     sql.query("INSERT INTO Razorpay_response  set ?", New_Razorpay, function(err, res) {
         if (err) {
@@ -37,35 +38,27 @@ Razorpay.create_Razorpayresponse = async function create_Razorpayresponse(New_Ra
     });
 };
 
-Razorpay.order_success_update = async function order_success_update(New_Razorpay) {
-  console.log("=============================================> Razorpay Order Success Update");
-  var stringorderid = New_Razorpay.orderid;
-  var orderid     = stringorderid.slice(9);
+RazorpayWebhook.order_success_update = async function order_success_update(New_Razorpay) {
+  var orderid = New_Razorpay.orderid;
   var selectquery = "select * from  Orders where orderid="+orderid;
   sql.query(selectquery,function(err, res){
     if (err) {
       console.log("error: ", err);
       return(err, null);
     } else { 
-      console.log("Order Success Details ===============>",res);
-      if(res.length >1){
+      if(res.length >=1){
         if(res && res[0].orderstatus==0 && res[0].payment_type==1 && res[0].payment_status==0 && res[0].transactionid==null && res[0].transaction_status ==null){
-          ////////start: Payment Auto Captured//////////////////////////
-          //console.log("=============================================> Razorpay Auto Captured");
-          //var paymentid  = New_Razorpay.payment_id;
-          //var amount     = New_Razorpay.amount;
-          //console.log("paymentid=====>",paymentid); console.log("amount=====>",parseInt(amount));
-          //instance.payments.capture(paymentid, parseInt(amount));
-          ////////end: Payment Auto Captured//////////////////////////
-          var updatesuccessquery = "update Orders set captured_status=0,payment_status=1,transactionid='"+New_Razorpay.payment_id+"',transaction_status='success' where orderid="+orderid;
-          
+          console.log("=============================================> Razorpay Captured");
+          var paymentid  = New_Razorpay.payment_id;
+          var amount     = New_Razorpay.amount;
+          instance.payments.capture(paymentid, parseInt(amount));
+          var updatesuccessquery = "update Orders set captured_status=1,payment_status=1,lock_status=0,transactionid='"+New_Razorpay.payment_id+"',transaction_status='success' where orderid="+orderid;
           sql.query(updatesuccessquery,function(err, res1){
             if (err) {
               console.log("error: ", err);
               return(err, null);
             }else{
-               Notification.orderEatPushNotification(orderid,null,PushConstant.pageid_eat_razorpay_payment_success);
-  
+              Notification.orderEatPushNotification(orderid,null,PushConstant.pageid_eat_razorpay_payment_success);
               let resobj = {
                 success: true,
                 status : true,
@@ -73,6 +66,13 @@ Razorpay.order_success_update = async function order_success_update(New_Razorpay
               };    
               return(null, resobj);
             }
+          });
+        }else if((res[0].payment_type ==1 && res[0].payment_status ==1) || (res[0].payment_type ==1 && res[0].payment_status ==2) || res[0].orderstatus==7){
+          var paymentid  = New_Razorpay.payment_id;
+          var amount     = New_Razorpay.amount;
+          instance.payments.capture(paymentid, parseInt(amount)).then((data) => {
+            console.log("==================================>refund Init");
+            instance.payments.refund(paymentid, {amount: amount, notes: {note1: 'OrderID: orderid'}});
           });
         }else{
           let resobj = {
@@ -87,18 +87,16 @@ Razorpay.order_success_update = async function order_success_update(New_Razorpay
   });
 };
 
-Razorpay.order_failed_update = async function order_failed_update(New_Razorpay) {
-  console.log("=============================================> Razorpay Order Failed Update");
-  var stringorderid = New_Razorpay.orderid;
-  var orderid     = stringorderid.slice(9);
+RazorpayWebhook.order_failed_update = async function order_failed_update(New_Razorpay) {
+  var orderid = New_Razorpay.orderid;
   var selectquery = "select * from  Orders where orderid="+orderid;
   sql.query(selectquery,function(err, res){
     if (err) {
       console.log("error: ", err);
       return(err, null);
     } else { 
-      if(res.length>1){
-        if(res && res[0].orderstatus==0 && res[0].payment_status==1 && res[0].transactionid==null && res[0].transaction_status ==null){
+      if(res.length>=1){
+        if(res && res[0].orderstatus==0 && res[0].payment_type==1 && res[0].payment_status==0 && res[0].transactionid==null && res[0].transaction_status ==null){
           var updatefailedquery = "update Orders set payment_status=2,transactionid='Canceled',transaction_status='failed' where orderid="+orderid;
           sql.query(updatefailedquery,function(err, res1){
             if (err) {
@@ -126,33 +124,35 @@ Razorpay.order_failed_update = async function order_failed_update(New_Razorpay) 
   });
 };
 
-Razorpay.webhooks = function webhooks(req, result) {
+RazorpayWebhook.webhooks = function webhooks(req, result) {
   console.log("request ------>",req.payload.payment.entity.status);
     switch(req.payload.payment.entity.status){
       case razorpayconst.payment_authorized:
-        console.log("=============================================> authorized",req);
+        console.log("=============================================> authorized");
         var New_Razorpay =  {};
         New_Razorpay.payment_id = req.payload.payment.entity.id;
-        New_Razorpay.orderid = req.payload.payment.entity.description;
-        New_Razorpay.amount = req.payload.payment.entity.amount;
+        var stringorderid       = req.payload.payment.entity.description;
+        New_Razorpay.orderid    = stringorderid.slice(9);
+        New_Razorpay.amount     = req.payload.payment.entity.amount;
         New_Razorpay.razorpay_response = JSON.stringify(req);
         New_Razorpay.payment_type = 1;
-        Razorpay.create_Razorpayresponse(New_Razorpay);
-        Razorpay.order_success_update(New_Razorpay);
+        RazorpayWebhook.create_Razorpayresponse(New_Razorpay);
+        RazorpayWebhook.order_success_update(New_Razorpay);
         break;
       case razorpayconst.payment_captured:
-        console.log("=============================================> captured",req);
+        console.log("=============================================> captured");
         break;
       case razorpayconst.payment_failed:
-        console.log("=============================================> failed",req);
+        console.log("=============================================> failed");
         var New_Razorpay =  {};
         New_Razorpay.payment_id = req.payload.payment.entity.id;
-        New_Razorpay.orderid = req.payload.payment.entity.description;
+        var stringorderid       = req.payload.payment.entity.description;
+        New_Razorpay.orderid    = stringorderid.slice(9);
         New_Razorpay.amount = req.payload.payment.entity.amount;
         New_Razorpay.payment_type = 2;
         New_Razorpay.razorpay_response = JSON.stringify(req);
-        Razorpay.create_Razorpayresponse(New_Razorpay);
-        Razorpay.order_failed_update(New_Razorpay);
+        RazorpayWebhook.create_Razorpayresponse(New_Razorpay);
+        ////RazorpayWebhook.order_failed_update(New_Razorpay);
         break;
       default:
         console.log("=============================================> No State");
@@ -161,4 +161,4 @@ Razorpay.webhooks = function webhooks(req, result) {
 };
 
 
-module.exports= Razorpay;
+module.exports= RazorpayWebhook;

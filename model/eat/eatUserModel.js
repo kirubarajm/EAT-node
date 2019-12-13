@@ -1248,7 +1248,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
       " where mu.appointment_status = 3 and mu.verified_status = 1 and mu.ka_status = 2 and pt.active_status = 1 and pt.approved_status = 2 and pt.quantity != 0 and pt.delete_status !=1";
   }
 
-  console.log(query);
+  //console.log(query);
   if (req.vegtype === 0) {
     query =query +" and pt.vegtype=0";
   }
@@ -1265,7 +1265,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     query = query + " HAVING distance <="+radiuslimit+" ORDER BY distance";
   }
 
-  console.log(query);
+  //console.log(query);
  
   
   sql.query(query, function(err, res) {
@@ -4471,6 +4471,7 @@ Eatuser.user_history = async function user_history(req, result) {
 
 /////Eat Payment Retry
 Eatuser.payment_retry = async function payment_retry(req, result) {
+  console.log("payment retry");
   var getorderquery ="select userid,orderid,orderstatus,payment_type,payment_status,transactionid,transaction_status from Orders where orderid="+req.orderid+" and userid="+req.userid;
   var getorder = await query(getorderquery);
   if(getorder){
