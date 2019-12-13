@@ -437,8 +437,13 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
                     res1[i].status = 0;
                     res1[i].serviceablestatus = true;
                   }else{
-                    res1[i].status = 1;
-                    res1[i].serviceablestatus = false;
+                    if (res1[i].distance <= radiuslimit) {
+                      res1[i].status = 0;
+                      res1[i].serviceablestatus = true;
+                    }else{
+                      res1[i].serviceablestatus = false;
+                      res1[i].status = 1;
+                    }
                   } 
                 }else{
                   if (res1[i].distance <= radiuslimit) {
@@ -599,8 +604,13 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
                     res1[i].status = 0;
                     res1[i].serviceablestatus = true;
                   }else{
-                    res1[i].status = 1;
-                    res1[i].serviceablestatus = false;
+                    if (res1[i].distance <= radiuslimit) {
+                      res1[i].status = 0;
+                      res1[i].serviceablestatus = true;
+                    }else{
+                      res1[i].serviceablestatus = false;
+                      res1[i].status = 1;
+                    }
                   } 
                 }else{
                   if (res1[i].distance <= radiuslimit) {
