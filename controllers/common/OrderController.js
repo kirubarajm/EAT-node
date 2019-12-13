@@ -935,3 +935,35 @@ exports.onlinerefunded_couponreport = function(req, res) {
     res.json(user);
   });
 };
+
+//order_report
+exports.order_report = function(req, res) {
+  Order.order_report_byadmin(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+//order_report
+exports.Item_wise_report = function(req, res) {
+  Order.Item_wise_report_byadmin(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+//moveit master report
+exports.moveit_master_report = function(req, res) {
+  Order.moveit_master_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+//makeit master report
+exports.makeit_master_report = function(req, res) {
+  Order.makeit_master_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

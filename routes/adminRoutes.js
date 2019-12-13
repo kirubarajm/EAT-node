@@ -60,7 +60,7 @@ app.route("/admin/product/add").post(routesVersioning({"1.0.0":product.create_a_
 app.route("/admin/liveproduct/:makeit_userid").get(routesVersioning({"1.0.0":product.list_all_liveproduct}));
 app.route("/admin/product/view/:productid").get(routesVersioning({"1.0.0":product.productview}));
 app.route("/admin/product/movetolive").post(routesVersioning({"1.0.0":product.add_quantity_productlive}));
-app.route("/admin/makeituser/edit").put(routesVersioning({"1.0.0":makeituser.edit_makeit_user_byid}));
+app.route("/admin/makeituser/edit").put(routesVersioning({"1.0.0":makeituser.edit_makeit_user_byid_Admin}));
 app.route("/admin/moveituser/edit").put(routesVersioning({"1.0.0":moveituser.edit_moveit_user_byid}));
 app.route("/admin/salesuser/edit").put(routesVersioning({"1.0.0":salesuser.edit_a_user}));
 app.route("/admin/menuitems/:makeit_userid").get(routesVersioning({"1.0.0":menuitem.read_a_menuitem_byid}));
@@ -216,4 +216,14 @@ app.route("/admin/reports/moveitordersdeliveryreport").post(routesVersioning({"1
 app.route("/admin/reports/funnelrefundedcouponreport").post(routesVersioning({"1.0.0":orders.funnelrefunded_couponreport}));
 //////Item Missing OR Online Refunded coupon list
 app.route("/admin/reports/onlinerefundedcouponreport").post(routesVersioning({"1.0.0":orders.onlinerefunded_couponreport}));
+
+
+///order report///
+app.route("/admin/reports/orderreport").post(routesVersioning({"1.0.0":orders.order_report}));
+app.route("/admin/reports/Itemwisereport").post(routesVersioning({"1.0.0":orders.Item_wise_report}));
+app.route("/admin/reports/moveit_master_report").post(routesVersioning({"1.0.0":orders.moveit_master_report}));
+app.route("/admin/reports/makeit_master_report").post(routesVersioning({"1.0.0":orders.makeit_master_report}));
+
+
+
 }

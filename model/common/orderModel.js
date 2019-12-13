@@ -4215,7 +4215,7 @@ Order.insert_order_status = function insert_order_status(req) {
 };
 
 Order.moveit_order_accept = async function moveit_order_accept(req, result) {
-console.log("req" + req);
+
  // const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' and moveit_user_id= '" + req.moveituserid + "'");
 
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' ");
@@ -7383,6 +7383,122 @@ Order.funnelrefunded_couponreport= function funnelrefunded_couponreport(req, res
 //////////Item Missing OR Online Refunded coupon list/////////////
 Order.onlinerefunded_couponreport= function onlinerefunded_couponreport(req, result) {
   var query="select userid,orderid,created_at,original_amt as online_paid_amount,payment_id,refund_amt as refunded_amt from Refund_Online where (active_status=0 and  payment_id IS NOT NULL OR payment_id = '')and (DATE(created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')";
+  //console.log("query-->",query);
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//////////order_report_byadmin/////////////
+Order.order_report_byadmin= function order_report_byadmin(req, result) {
+  
+  var query="Select o.created_at as Orderdate ,o.orderid, o.orderstatus,u.name as Customername,u.userid as Eatuserid,o.address_title,o.locality_name,o.delivery_charge,o.price, o.original_price,o.refund_amount,o.gst,o.makeit_earnings as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_accept_time,o.moveit_pickup_time,o.moveit_expected_delivered_time,o.makeit_expected_preparing_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,ma.address as hub_location,CASE WHEN o.ordertype=1 then 'Virtual' WHEN o.ordertype=0 then 'Real' END as order_type,o.moveit_user_id as moveit_id,mu.name from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join User as u on o.userid=u.userid left join MoveitUser as mu on mu.userid = o.moveit_user_id where (o.orderstatus=6 or o.orderstatus=7  or  o.orderstatus=8 or o.orderstatus=9 or o.orderstatus=10 or o.orderstatus=11) and  (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  //console.log("query-->",query);
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//////////order_report_byadmin/////////////
+Order.Item_wise_report_byadmin= function Item_wise_report_byadmin(req, result) {
+  
+  var query="Select o.orderid,ma.brandname,p.productid as product_id,p.product_name as product_name,oi.quantity as product_quantity,oi.price as product_price,(oi.quantity * oi.price) as price,o.created_at from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid where (o.orderstatus=6 or o.orderstatus=7  or  o.orderstatus=8 or o.orderstatus=9 or o.orderstatus=10 or o.orderstatus=11) and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')";
+  //console.log("query-->",query);
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//////////moveit master report/////////////
+Order.moveit_master_report= function moveit_master_report(req, result) {
+  
+  var query="select userid as moveit_id,name,phoneno,date(created_at) as date from MoveitUser order by userid";
+  //console.log("query-->",query);
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res.length !== 0) {
+          let resobj = {
+            success: true,
+            status:true,
+            result:res
+          };
+          result(null, resobj);
+        }else {
+          let resobj = {
+            success: true,
+            message: "Sorry! no data found.",
+            status:false
+          };
+          result(null, resobj);
+        }
+      }
+    }
+  );
+};
+
+//////////makeit_master_report/////////////
+Order.makeit_master_report= function makeit_master_report(req, result) {
+  
+  var query="select userid as makeit_id,brandname as kitchen_name,name,phoneno,address,CASE WHEN virtualkey=1 then 'Virtual' WHEN virtualkey=0 then 'Real' END as kitchen_type,date(created_at) as date from MakeitUser order by userid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {

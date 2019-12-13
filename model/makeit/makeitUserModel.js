@@ -1582,22 +1582,8 @@ Makeituser.admin_check_cartdetails = async function admin_check_cartdetails(req,
   });
 };
 
-Makeituser.edit_makeit_users = async function(req, cuisines, result) {
+Makeituser.edit_makeit_users = async function(req, cuisines, isAdmin,result) {
   try {
-    var removecuisines = req.removecuisines || [];
-    var removeimages = req.removeimages || [];
-    var kitcheninfoimage = req.kitcheninfoimage || [];
-    var kitchenmenuimage = req.kitchenmenuimage || [];
-    var Specialitiesfood = req.Specialitiesfood || [];
-    var Signature = req.Signature || [];
-    var badges = req.badges || [];
-    var removebadges = req.removebadges || [];
-
-    cuisinesstatus = false;
-    removecuisinesstatus = false;
-    var column = "";
-    var editquery = "";
-    console.log(removeimages[0]);
     //get regionid using homedown id
     if (req.hometownid) {
       const hometown = await query(
@@ -1617,6 +1603,7 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
       };
       result(null, resobj);
     } else {
+      if(isAdmin){
       ZoneModel.check_map_boundaries({lat:req.lat,lon:req.lon},async function(err,zoneres){
         if(err||zoneres.status===false) {
           let resobj = {
@@ -1625,12 +1612,46 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
             error:err,
             message:"Sorry this makeit loaction not in the inside of the zone location.",
           };
-
           result(null, resobj);
         }else{
           if(zoneres.status){
             req.zone=zoneres.zone_id;
-            staticquery = "UPDATE MakeitUser SET ";
+            Makeituser.update_makeit_user(req,cuisines,result);
+          }
+        } 
+      });
+    }else {
+      Makeituser.update_makeit_user(req,cuisines,result);
+    }
+  }
+  } catch (error) {
+    var errorCode = 402;
+    let sucobj = true;
+    let status = false;
+    let resobj = {
+      success: sucobj,
+      status: status,
+      errorCode: errorCode
+    };
+    result(null, resobj);
+  }
+};
+
+Makeituser.update_makeit_user = async function update_makeit_user(req ,cuisines, result){
+    var removecuisines = req.removecuisines || [];
+    var removeimages = req.removeimages || [];
+    var kitcheninfoimage = req.kitcheninfoimage || [];
+    var kitchenmenuimage = req.kitchenmenuimage || [];
+    var Specialitiesfood = req.Specialitiesfood || [];
+    var Signature = req.Signature || [];
+    var badges = req.badges || [];
+    var removebadges = req.removebadges || [];
+    var cuisinesstatus = false;
+    var removecuisinesstatus = false;
+    var column = "";
+    var editquery = "";
+
+    var staticquery = "UPDATE MakeitUser SET ";
             for (const [key, value] of Object.entries(req)) {
               if (
                 key !== "userid" &&
@@ -1651,12 +1672,8 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
                 column = column + key + "= " + value + ",";
               }
             }
-
-            editquery =
-              staticquery + column.slice(0, -1) + " where userid = " + req.userid;
-
+            editquery =staticquery + column.slice(0, -1) + " where userid = " + req.userid;
             console.log("query: ", editquery);
-
             sql.query(editquery, function(err, res) {
               if (err) {
                 console.log("error: ", err);
@@ -1844,20 +1861,7 @@ Makeituser.edit_makeit_users = async function(req, cuisines, result) {
                 result(null, resobj);
               }
             });
-          }
-    } });}
-  } catch (error) {
-    var errorCode = 402;
-    let sucobj = true;
-    let status = false;
-    let resobj = {
-      success: sucobj,
-      status: status,
-      errorCode: errorCode
-    };
-    result(null, resobj);
-  }
-};
+}
 
 Makeituser.update_makeit_regionid = async function(req, result) {
   console.log(req);
