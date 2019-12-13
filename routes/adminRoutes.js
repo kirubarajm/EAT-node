@@ -216,4 +216,14 @@ app.route("/admin/reports/moveitordersdeliveryreport").post(routesVersioning({"1
 app.route("/admin/reports/funnelrefundedcouponreport").post(routesVersioning({"1.0.0":orders.funnelrefunded_couponreport}));
 //////Item Missing OR Online Refunded coupon list
 app.route("/admin/reports/onlinerefundedcouponreport").post(routesVersioning({"1.0.0":orders.onlinerefunded_couponreport}));
+
+
+///order report///
+app.route("/admin/reports/orderreport").post(routesVersioning({"1.0.0":orders.order_report}));
+app.route("/admin/reports/Itemwisereport").post(routesVersioning({"1.0.0":orders.Item_wise_report}));
+app.route("/admin/reports/moveit_master_report").post(routesVersioning({"1.0.0":orders.moveit_master_report}));
+app.route("/admin/reports/makeit_master_report").post(routesVersioning({"1.0.0":orders.makeit_master_report}));
+
+
+
 }
