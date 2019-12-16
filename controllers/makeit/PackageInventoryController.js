@@ -9,6 +9,13 @@ exports.getPackageInventoryList = function(req, res) {
   });
 };
 
+exports.getPackageInventoryByid = function(req, res) {
+  PackageInventory.getPackageInventoryByid(req.params, function(err, result) {
+    if (err) res.send(err);
+    res.send(result);
+  });
+};
+
 exports.create_PackageInventory = function(req, res) {
   var package_Inventory = new PackageInventory(req.body);
 
@@ -24,5 +31,19 @@ exports.create_PackageInventory = function(req, res) {
       res.json(result);
     });
   }
+};
+
+exports.getPackageInventoryStockList = function(req, res) {
+  PackageInventory.getPackageInventoryStockList(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.send(result);
+  });
+};
+
+exports.getAllPackageInventoryList = function(req, res) {
+  PackageInventory.getAllPackageInventoryList(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.send(result);
+  });
 };
 

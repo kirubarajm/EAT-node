@@ -87,7 +87,10 @@ const calculate = {
     zone_control:false,
 
     //kitchen pagenation 
-     kitchen_pagenation_limit :5
+     kitchen_pagenation_limit :5,
+
+     //order cover package id 
+     order_cover_package_id :5
     
     
 }

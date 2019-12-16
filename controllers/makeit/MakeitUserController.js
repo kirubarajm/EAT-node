@@ -573,3 +573,11 @@ exports.makeit_zoneid_update = function(req, res) {
     res.json(user);
   });
 };
+
+////Get Package Makeit User/////////////
+exports.get_makeit_package_user = function(req, res) {
+  Makeituser.get_makeit_package_user(req.params, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

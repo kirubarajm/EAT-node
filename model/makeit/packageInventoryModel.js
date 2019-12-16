@@ -135,8 +135,88 @@ PackageInvetory.getPackageInventoryList = function getPackageInventoryList(
 ) {
   var packageQuery =
     "select * from Package_Inventory pi join PackagingBox pb on pb.id =pi.packageid where pi.makeit_id = " +
-    req.makeit_id;
+    req.makeit_id+" order by pi.created_at desc";
   sql.query(packageQuery, function(err, res) {
+    if (err) {
+      result(null, err);
+    } else {
+      let resobj = {
+        success: true,
+        status: true,
+        result: res
+      };
+
+      result(null, resobj);
+    }
+  });
+};
+
+PackageInvetory.getPackageInventoryByid = function getPackageInventoryByid(
+  req,
+  result
+) {
+  var packageQuery =
+    "select * from Package_Inventory pi join PackagingBox pb on pb.id =pi.packageid where pi.id="+req.inventoryid;
+  sql.query(packageQuery, function(err, res) {
+    if (err) {
+      result(null, err);
+    } else {
+      let resobj = {
+        success: true,
+        status: true,
+        result: res
+      };
+
+      result(null, resobj);
+    }
+  });
+};
+
+PackageInvetory.getPackageInventoryStockList = function getPackageInventoryStockList(
+  req,
+  result
+) {
+  // SELECT mk.userid,mk.name,mk.phoneno,mk.brandname,it.packageid,it.remaining_count,pb.name FROM MakeitUser mk right join InventoryTracking it on it.makeit_id=mk.userid left join PackagingBox pb on it.packageid =pb.id where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id=mk.userid GROUP BY packageid) and  it.packageid=1
+  var packageStockQuery ="SELECT mk.userid,mk.phoneno,mk.brandname,it.packageid,it.remaining_count,pb.name FROM MakeitUser mk right join InventoryTracking it on it.makeit_id=mk.userid left join PackagingBox pb on it.packageid =pb.id where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id=mk.userid GROUP BY packageid)"
+
+  if(req.search){
+    packageStockQuery=packageStockQuery+" and (mk.brandname like '%"+req.search+"%' or mk.userid LIKE  '%" + req.search +"%' or pb.name LIKE  '%" + req.search +"%')" 
+  }
+
+  if(req.isAlert){
+    packageStockQuery=packageStockQuery+" and it.remaining_count<=25"
+  }
+
+  
+  sql.query(packageStockQuery, function(err, res) {
+    if (err) {
+      result(null, err);
+    } else {
+      let resobj = {
+        success: true,
+        status: true,
+        result: res
+      };
+
+      result(null, resobj);
+    }
+  });
+};
+
+PackageInvetory.getAllPackageInventoryList = function getAllPackageInventoryList(
+  req,
+  result
+) {
+
+  var packageInventoryQuery ="select pi.id,mk.userid,mk.name,mk.phoneno,mk.brandname,pi.packageid,pi.created_at,pi.count,pb.name as pname from Package_Inventory pi join PackagingBox pb on pb.id =pi.packageid join MakeitUser mk on mk.userid=pi.makeit_id"
+
+  if(req.search){
+    packageInventoryQuery=packageInventoryQuery+" and (mk.brandname like '%"+req.search+"%' or mk.userid LIKE  '%" + req.search +"%' or pb.name LIKE  '%" + req.search +"%')" 
+  }
+
+  packageInventoryQuery =packageInventoryQuery+" order by pi.created_at desc";
+
+  sql.query(packageInventoryQuery, function(err, res) {
     if (err) {
       result(null, err);
     } else {

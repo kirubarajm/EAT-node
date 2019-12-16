@@ -1,7 +1,9 @@
 "user strict";
 var sql = require("../db.js");
 const util = require("util");
+const constant = require("../constant");
 const query = util.promisify(sql.query).bind(sql);
+const OrderPackageInventory= require("../common/orderpackageModel");
 
 //Task object constructor
 var PackageInvetoryTracking = function(packageinvetory) {
@@ -106,7 +108,7 @@ PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTr
   result
 ) {
   var productQuery =
-    "SELECT pp.count,pp.package_id,oi.quantity FROM OrderItem oi left join ProductPackaging pp on (pp.makeit_id =" +
+    "SELECT pp.count,pp.package_id,oi.quantity,pp.makeit_id,pp.product_id FROM OrderItem oi left join ProductPackaging pp on (pp.makeit_id =" +
     makeit_id +
     " and pp.product_id=oi.productid) where orderid=" +
     orderid;
@@ -119,10 +121,11 @@ PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTr
           var productpackingItem = res[i];
           if (productpackingItem.package_id) {
             var productPackageQuery =
-              "SELECT * FROM InventoryTracking where makeit_id = " +makeit_id +" and packageid =" +
-              productpackingItem.package_id +
-              " order by id desc limit 1";
-            const respack = await query(productPackageQuery);
+              "SELECT * FROM InventoryTracking where makeit_id = " +makeit_id +" and packageid =" +productpackingItem.package_id +" order by id desc limit 1";
+              productpackingItem.orderid=orderid;
+              var orderPackageInventory = new OrderPackageInventory(productpackingItem);
+              await OrderPackageInventory.createorderpackage(orderPackageInventory,result);
+              const respack = await query(productPackageQuery);
             if (respack && respack.length > 0) {
               var productPackageCount =
                 productpackingItem.count * productpackingItem.quantity;
@@ -144,6 +147,25 @@ PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTr
             }
           }
         }
+      }
+      var orderPackageQuery = "SELECT * FROM InventoryTracking where makeit_id = " +makeit_id +" and packageid = "+constant.order_cover_package_id+" order by id desc limit 1";
+      const orderpack = await query(orderPackageQuery);
+      if (orderpack && orderpack.length > 0) {
+        var orderPackageInventoryRemainCount = orderpack[0].remaining_count;
+        var UpdateCount = 0;
+        if (orderPackageInventoryRemainCount >= 1)
+          UpdateCount = orderPackageInventoryRemainCount - 1;
+        var orderPackageinvetory = {};
+        orderPackageinvetory.remaining_count = UpdateCount;
+        orderPackageinvetory.makeit_id = makeit_id;
+        orderPackageinvetory.packageid = orderpack[0].packageid;
+        var order_package_inventory_tracking = new PackageInvetoryTracking(
+          orderPackageinvetory
+        );
+        PackageInvetoryTracking.createPackageInventoryTracking(
+          order_package_inventory_tracking,
+          result
+        );
       }
     }
   });

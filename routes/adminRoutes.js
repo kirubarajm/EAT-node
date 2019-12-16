@@ -221,8 +221,10 @@ app.route("/admin/packagingbox/getlist/:id").get(routesVersioning({"1.0.0":packa
 app.route("/admin/packagingbox/update").put(routesVersioning({"1.0.0":packageController.updatePackagingBoxType}));
 
 //Package Inventory//
+app.route("/admin/packageinventory/getallpackagelist").post(routesVersioning({"1.0.0":packageInventoryController.getAllPackageInventoryList}));
 app.route("/admin/packageinventory/getlist/:makeit_id").get(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryList}));
+app.route("/admin/packageinventory/:inventoryid").get(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryByid}));
 app.route("/admin/packageinventory/add").post(routesVersioning({"1.0.0":packageInventoryController.create_PackageInventory}));
-
-
+app.route("/admin/packageinventory/stocklist").post(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryStockList}));
+app.route("/admin/makeit/packagemakeitusers").get(routesVersioning({"1.0.0":makeituser.get_makeit_package_user}));
 }

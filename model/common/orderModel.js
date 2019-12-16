@@ -1071,12 +1071,12 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
             null,
             PushConstant.masteridOrder_Prepared
           );
-          PackageInvetoryTracking.orderbasedpackageTracking(req.orderid,orderdetails[0].makeit_user_id, function(err,res4){
-            if (err) {
-              result(err, null);
-            } else {
-            }
-          });
+          // PackageInvetoryTracking.orderbasedpackageTracking(req.orderid,orderdetails[0].makeit_user_id, function(err,res4){
+          //   if (err) {
+          //     result(err, null);
+          //   } else {
+          //   }
+          // });
         }
 
         req.orglat = orderdetails[0].makeit_lat;
