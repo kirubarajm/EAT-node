@@ -694,7 +694,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
           req.price = Productdetail.price;
           req.original_price = Productdetail.original_price;
           req.vegtype = Productdetail.vegtype;
-          console.log(req);
+          
           var staticquery = "UPDATE Product SET updated_at =?,";
           var column = "";
 
@@ -713,6 +713,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
             var product_item = items[i];
             itemid = itemid + product_item.itemid + ",";
             product_item.productid = req.productid;
+            product_item.delete_status = 0.;
             Productitem.updateProductitems(product_item, function(err, result) {
               if (err) res.send(err);
               // res.json(result);

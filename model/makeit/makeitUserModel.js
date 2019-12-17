@@ -53,6 +53,7 @@ var Makeituser = function(makeituser) {
   this.unservicable = makeituser.unservicable || 0;
   this.zone =makeituser.zone || 0;
   this.referredby=makeituser.referredby;
+  this.pushid_ios=makeituser.pushid_ios;
 };
 
 Makeituser.createUser = function createUser(newUser,isAdmin,result) {
