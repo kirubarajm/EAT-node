@@ -967,3 +967,59 @@ exports.makeit_master_report = function(req, res) {
     res.json(user);
   });
 };
+
+///User Exp report///
+exports.userexperience_report = function(req, res) {
+  Order.userexperience_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Virtual Total completed orders revenu////
+exports.virtualorder_completedrevenu_report = function(req, res) {
+  Order.virtualorder_completedrevenu_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Real Total completed orders revenu////
+exports.realorder_completedrevenu_report = function(req, res) {
+  Order.realorder_completedrevenu_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Virtual Total cancelled orders revenu////
+exports.virtualorder_cancelledrevenu_report = function(req, res) {
+  Order.virtualorder_cancelledrevenu_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Real Total cancelled orders revenu////
+exports.realorder_cancelledrevenu_report = function(req, res) {
+  Order.realorder_cancelledrevenu_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Virtual Abandoned Cart orders revenu////
+exports.virtual_abandonedcartrevenu_report = function(req, res) {
+  Order.virtual_abandonedcartrevenu_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Real Abandoned Cart orders revenu////
+exports.real_abandonedcartrevenu_report = function(req, res) {
+  Order.real_abandonedcartrevenu_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
