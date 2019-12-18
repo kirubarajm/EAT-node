@@ -572,3 +572,19 @@ exports.makeit_zoneid_update = function(req, res) {
     res.json(user);
   });
 };
+
+////Home Successtion rate KPI Dashboard////
+exports.homesuccesstionrate_report = function(req, res) {
+  Makeituser.homesuccesstionrate_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+////Moveit Avg First and Last Miles KPI Dashboard////
+exports.moveitavgfirstandlastmile_report = function(req, res) {
+  Makeituser.moveitavgfirstandlastmile_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
