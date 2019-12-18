@@ -240,5 +240,9 @@ app.route("/admin/reports/realabandonedcartrevenu").post(routesVersioning({"1.0.
 app.route("/admin/reports/homesuccesstionrate").post(routesVersioning({"1.0.0":makeituser.homesuccesstionrate_report}));
 ////KPI Dashboard Reports Moveit Avg First and Last Miles////
 app.route("/admin/reports/moveitavgfirstandlastmile").post(routesVersioning({"1.0.0":makeituser.moveitavgfirstandlastmile_report}));
+///KPI Dashboard Reports Avg Order Value////
+app.route("/admin/reports/averageordervalue").post(routesVersioning({"1.0.0":orders.averageordervalue_report}));
+///KPI Dashboard Reports Live Kitchen count////
+app.route("/admin/reports/livekitchenavgcount").post(routesVersioning({"1.0.0":orders.livekitchenavgcount_report}));
 
 }

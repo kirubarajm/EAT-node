@@ -1023,3 +1023,19 @@ exports.real_abandonedcartrevenu_report = function(req, res) {
     res.json(user);
   });
 };
+
+////Avg Order Value KPI Dashboard////
+exports.averageordervalue_report = function(req, res) {
+  Order.averageordervalue_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+///////KPI Dashboard Reports Live Kitchen count////
+exports.livekitchenavgcount_report = function(req, res) {
+  Order.livekitchenavgcount_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

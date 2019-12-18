@@ -3232,47 +3232,26 @@ Makeituser.homesuccesstionrate_report = async function(req, result) {
         });
       }
       //////////////////////////////////
-      let resobj = {
-        success: true,
-        status:true,
-        result:makeit
-      };
-      result(null, resobj);      
+      result(null, makeit);      
     }else{
-      let resobj = {
-        success: true,
-        message: "Sorry! no data found.",
-        status : false
-      };
-      result(null, resobj);
+      result(null, makeit);
     }
 };
 
+//// Moveit Avg First and Last Miles/////
 Makeituser.moveitavgfirstandlastmile_report= async function moveitavgfirstandlastmile_report(req, result) {  
   var query="Select date(ord.ordertime) as date,ord.moveit_user_id,mu.name,count(ord.orderid)as order_count, SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(moveit_reached_time,moveit_accept_time)))) as first_mile, SEC_TO_TIME(AVG(TIME_TO_SEC(TimeDiff(moveit_actual_delivered_time,moveit_pickup_time)))) as second_mile, SEC_TO_TIME(AVG(TIME_TO_SEC(ADDTIME(TIMEDIFF(moveit_reached_time,moveit_accept_time),TimeDiff(moveit_actual_delivered_time,moveit_pickup_time))))) as Avg_time from Orders as ord left join MoveitUser as mu on mu.userid = ord.moveit_user_id where ord.moveit_user_id !=0 and ord.moveit_accept_time IS NOT NULL and ord.moveit_reached_time IS NOT NULL and ord.moveit_actual_delivered_time IS NOT NULL and ord.moveit_pickup_time IS NOT NULL and ord.orderid NOT IN (select orderid from Force_delivery_logs) and ord.orderstatus=6 and Date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"' group by mu.userid,date(ord.ordertime) order by date(ord.ordertime),ord.moveit_user_id";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
-      } else {
-        if (res.length !== 0) {
-          let resobj = {
-            success: true,
-            status:true,
-            result:res
-          };
-          result(null, resobj);
-        }else {
-          let resobj = {
-            success: true,
-            message: "Sorry! no data found.",
-            status:false
-          };
-          result(null, resobj);
-        }
+      } else {        
+        result(null, res);
       }
     }
   );
 };
+
+
 
 module.exports = Makeituser;
