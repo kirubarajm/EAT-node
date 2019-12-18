@@ -32,6 +32,7 @@ PackageInvetoryTracking.createPackageInventoryTracking = function createPackageI
         status: true
       };
 
+      if(result)
       result(null, resobj);
     }
   });
@@ -122,21 +123,23 @@ PackageInvetoryTracking.StocksUpdate = function StocksUpdate(
       } else {
         if (res.length > 0) {
           var remaining_count = parseInt(res[0].remaining_count);
-          var stockcount= (oldcount-remaining_count)
-          if(stockcount<count){
+          var stockcount= (oldcount-remaining_count);
+          if(remaining_count>=count){
             var total_count=0;
-            if(remaining_count<count){
-              total_count = (count - remaining_count)+remaining_count;
-            }else if(remaining_count>=count){
-              total_count = remaining_count-(remaining_count-count);
-            }
+            total_count =(remaining_count-count);
+            // if(remaining_count<count){
+            //   total_count = (count - remaining_count)+remaining_count;
+            // }else if(remaining_count>=count){
+            //   total_count = remaining_count-(remaining_count-count);
+            // }
+
             var package_inventory_tracking = new PackageInvetoryTracking(
               packageinvetory
             );
             package_inventory_tracking.remaining_count = total_count;
             PackageInvetoryTracking.createPackageInventoryTracking(
               package_inventory_tracking,
-              result
+              null
             );
             let resobj = {
               success: true,
@@ -147,9 +150,8 @@ PackageInvetoryTracking.StocksUpdate = function StocksUpdate(
             let resobj = {
               success: true,
               status: false,
-              message:"Sorry Cann't edit the package count"
+              message:"Sorry Cann't edit,Enter count exit the remaing count"
             };
-      
             result(null, resobj);
           }
         }

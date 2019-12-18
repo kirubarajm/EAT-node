@@ -174,6 +174,26 @@ PackageInvetory.getPackageInventoryList = function getPackageInventoryList(
   });
 };
 
+PackageInvetory.getPackageMapInventoryList = function getPackageMapInventoryList(
+  req,
+  result
+) {
+  var packageQuery ="SELECT it.packageid as id,pb.name FROM InventoryTracking it left join PackagingBox pb on pb.id =it.packageid where it.makeit_id="+req.makeit_id+" GROUP BY it.packageid";
+  sql.query(packageQuery, function(err, res) {
+    if (err) {
+      result(null, err);
+    } else {
+      let resobj = {
+        success: true,
+        status: true,
+        result: res
+      };
+
+      result(null, resobj);
+    }
+  });
+};
+
 PackageInvetory.getPackageInventoryByid = function getPackageInventoryByid(
   req,
   result
@@ -240,6 +260,7 @@ PackageInvetory.getAllPackageInventoryList = function getAllPackageInventoryList
 
   sql.query(packageInventoryQuery, function(err, res) {
     if (err) {
+      console.log("err-->",err);
       result(null, err);
     } else {
       let resobj = {
@@ -290,6 +311,7 @@ PackageInvetory.updatePackageInventory = function updatePackageInventory(
                             status: true,
                             message:"Update Successfully"
                           };
+                          result(null, resobj);
                   }
                 });
               }else result(null, res2);
