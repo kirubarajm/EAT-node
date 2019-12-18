@@ -344,12 +344,13 @@ exports.makeituser_logout = function(req, res) {
       .status(400)
       .send({ error: true, status: false, message: "Please provide userid" });
   } else {
-    Makeituser.makeituser_logout(req.body, function(err, user) {
+    Makeituser.makeituser_logout(req.body,req.headers, function(err, user) {
       if (err) res.send(err);
       res.json(user);
     });
   }
 };
+
 exports.makeit_user_forgot_password_update = function(req, res) {
   if (!req.body.password) {
     res.status(400).send({ error: true, message: "Please provide password" });

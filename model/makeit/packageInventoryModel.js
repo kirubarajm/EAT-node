@@ -13,7 +13,6 @@ PackageInvetory.createPackageInventory = function createPackageInventory(
   packageinvetory,
   result
 ) {
-  console.log(packageinvetory);
   sql.query("INSERT INTO Package_Inventory set ?", packageinvetory, function(
     err,
     res
@@ -22,7 +21,6 @@ PackageInvetory.createPackageInventory = function createPackageInventory(
       sql.rollback(function() {
         throw err;
       });
-      //res(null, err);
     }else{
       let resobj = {
         success: true,
@@ -40,6 +38,31 @@ PackageInvetory.createPackageInventory = function createPackageInventory(
       });
 
       result(null, resobj);
+    }
+  });
+};
+
+PackageInvetory.packageInventoryCheckAfterCreate = function packageInventoryCheckAfterCreate(
+  packageinvetory,
+  result
+) {
+  sql.query("SELECT * from Package_Inventory where date(created_at)= CURDATE() and makeit_id = "+packageinvetory.makeit_id+" and packageid="+packageinvetory.packageid, function(
+    err,
+    res
+  ) {
+    if (err) {
+      result(null, err);
+    }else{
+      if(res.length>0){
+        let resobj = {
+          success: true,
+          status:false,
+          message:'Already added this package in today'
+        };
+        result(null, resobj);
+      }else{
+          PackageInvetory.createPackageInventory(packageinvetory,result);
+      }
     }
   });
 };
@@ -155,8 +178,7 @@ PackageInvetory.getPackageInventoryByid = function getPackageInventoryByid(
   req,
   result
 ) {
-  var packageQuery =
-    "select * from Package_Inventory pi join PackagingBox pb on pb.id =pi.packageid where pi.id="+req.inventoryid;
+  var packageQuery ="select pi.*,pb.*,mk.brandname from Package_Inventory pi join PackagingBox pb on pb.id =pi.packageid join MakeitUser mk on mk.userid=pi.makeit_id where pi.id="+req.inventoryid;
   sql.query(packageQuery, function(err, res) {
     if (err) {
       result(null, err);
@@ -230,4 +252,53 @@ PackageInvetory.getAllPackageInventoryList = function getAllPackageInventoryList
     }
   });
 };
+
+
+PackageInvetory.updatePackageInventory = function updatePackageInventory(
+  req,
+  result
+) {
+  // var packageQuery ="select pi.*,pb.*,mk.brandname from Package_Inventory pi join PackagingBox pb on pb.id =pi.packageid join MakeitUser mk on mk.userid=pi.makeit_id where pi.id="+req.inventoryid;
+  // sql.query(packageQuery, function(err, res) {
+  //   if (err) {
+  //     result(null, err);
+  //   } else {
+
+      sql.query(
+        "update Package_Inventory set count = ?, updated_at= ?, packageid = ?, makeit_id = ? where id = ? ",
+        [
+          req.count,
+          new Date(),
+          req.packageid,
+          req.makeit_id,
+          req.inventoryid
+        ],
+        function(err, res2) {
+          if (err) {
+            result(null, err);
+          }else{
+            let resobj = {
+              success: true,
+              status: true,
+              message:"Update Successfully"
+            };
+            PackageInvetoryTeacking.StocksUpdate(req,function(
+              err,
+              res
+            ) {
+              if (err) {
+                sql.rollback(function() {
+                  throw err;
+                });
+              }
+            });
+            result(null, resobj);
+          }
+        }
+      );
+      
+  //   }
+  // });
+};
+
 module.exports = PackageInvetory;

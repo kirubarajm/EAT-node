@@ -26,7 +26,7 @@ exports.create_PackageInventory = function(req, res) {
   }else if (!package_Inventory.count) {
     res.status(400).send({ error: true,status:false, message: "Please provide package count" });
   } else {
-    PackageInventory.createPackageInventory(package_Inventory, function(err, result) {
+    PackageInventory.packageInventoryCheckAfterCreate(package_Inventory, function(err, result) {
       if (err) res.send(err);
       res.json(result);
     });
@@ -42,6 +42,13 @@ exports.getPackageInventoryStockList = function(req, res) {
 
 exports.getAllPackageInventoryList = function(req, res) {
   PackageInventory.getAllPackageInventoryList(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.send(result);
+  });
+};
+
+exports.updatePackageInventory = function(req, res) {
+  PackageInventory.updatePackageInventory(req.body, function(err, result) {
     if (err) res.send(err);
     res.send(result);
   });

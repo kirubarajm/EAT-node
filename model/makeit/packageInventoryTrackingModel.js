@@ -102,6 +102,46 @@ PackageInvetoryTracking.CheckandUpdate = function CheckandUpdate(
   );
 };
 
+PackageInvetoryTracking.StocksUpdate = function StocksUpdate(
+  packageinvetory,
+  result
+) {
+  var makeit_id = packageinvetory.makeit_id;
+  var packageid = packageinvetory.packageid;
+  var count = parseInt(packageinvetory.count);
+  sql.query(
+    "SELECT * FROM InventoryTracking where makeit_id = " +
+      makeit_id +
+      " and packageid =" +
+      packageid +
+      " order by id desc limit 1",
+    function(err, res) {
+      if (err) {
+        result(null, err);
+      } else {
+        if (res.length > 0) {
+          var remaining_count = parseInt(res[0].remaining_count);
+          var total_count=0;
+          if(remaining_count<count){
+            total_count = (count - remaining_count)+remaining_count;
+          }else if(remaining_count>=count){
+            total_count = remaining_count-(remaining_count-count);
+          }
+          var package_inventory_tracking = new PackageInvetoryTracking(
+            packageinvetory
+          );
+          package_inventory_tracking.remaining_count = total_count;
+          PackageInvetoryTracking.createPackageInventoryTracking(
+            package_inventory_tracking,
+            result
+          );
+          
+        }
+      }
+    }
+  );
+};
+
 PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTracking(
   orderid,
   makeit_id,

@@ -330,7 +330,7 @@ Menuitem.update_a_menuitem_makeit_userid = function(req, result){
 Menuitem.update_delete_status =  function(itemid, result){
  
  
-  sql.query(" select * from Productitem where itemid = "+itemid+" and delete_status =0", function (err, res) {
+  sql.query("select * from Productitem pi join Product pt on pt.productid =pi.productid where pi.itemid ="+itemid+" and pi.delete_status =0 and pt.approved_status != 3  ", function (err, res) {
     if(err) {
         console.log("error: ", err);
         result(null, err);
