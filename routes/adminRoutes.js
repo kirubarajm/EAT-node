@@ -224,16 +224,21 @@ app.route("/admin/reports/Itemwisereport").post(routesVersioning({"1.0.0":orders
 app.route("/admin/reports/moveit_master_report").post(routesVersioning({"1.0.0":orders.moveit_master_report}));
 app.route("/admin/reports/makeit_master_report").post(routesVersioning({"1.0.0":orders.makeit_master_report}));
 
-////User Exp report///
+////KPI Dashboard Reports User Exp report///
 app.route("/admin/reports/userexperience").post(routesVersioning({"1.0.0":orders.userexperience_report}));
-////Total completed orders revenu////
+////KPI Dashboard Reports Total completed orders revenu////
 app.route("/admin/reports/virtualordercompletedrevenu").post(routesVersioning({"1.0.0":orders.virtualorder_completedrevenu_report}));
 app.route("/admin/reports/realordercompletedrevenu").post(routesVersioning({"1.0.0":orders.realorder_completedrevenu_report}));
-////Total cancelled orders revenu////
+////KPI Dashboard Reports Total cancelled orders revenu////
 app.route("/admin/reports/virtualordercancelledrevenu").post(routesVersioning({"1.0.0":orders.virtualorder_cancelledrevenu_report}));
 app.route("/admin/reports/realordercancelledrevenu").post(routesVersioning({"1.0.0":orders.realorder_cancelledrevenu_report}));
-////Abandoned Cart orders revenu////
+////KPI Dashboard Reports Abandoned Cart orders revenu////
 app.route("/admin/reports/virtualabandonedcartrevenu").post(routesVersioning({"1.0.0":orders.virtual_abandonedcartrevenu_report}));
 app.route("/admin/reports/realabandonedcartrevenu").post(routesVersioning({"1.0.0":orders.real_abandonedcartrevenu_report}));
+
+////KPI Dashboard Reports Home Successtion rate////
+app.route("/admin/reports/homesuccesstionrate").post(routesVersioning({"1.0.0":makeituser.homesuccesstionrate_report}));
+////KPI Dashboard Reports Moveit Avg First and Last Miles////
+app.route("/admin/reports/moveitavgfirstandlastmile").post(routesVersioning({"1.0.0":makeituser.moveitavgfirstandlastmile_report}));
 
 }
