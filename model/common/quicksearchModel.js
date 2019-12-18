@@ -14,6 +14,7 @@ var Order = require("../../model/common/orderModel.js");
 var OrderStatusHistory = require("../common/orderstatushistoryModel");
 var Dunzo = require("../../model/webhooks/dunzoModel.js");
 var dunzoconst = require('../../model/dunzo_constant');
+var PackageStockInventory = require('../makeit/packageStockModel')
 
 
 
@@ -757,5 +758,33 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
     isCronRun=false;
   }
 };
+
+const Package_tracking = new CronJob("0 0 7,0 * * * ", async function() {
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");
+  var currenthour = moment(day).format("HH");
+  var start_session=7;
+  var end_session =0;
+  var session_status =0;
+  if(currenthour==start_session){
+    session_status=1;
+  }else if(currenthour==end_session){
+    session_status=2;
+  }
+  console.log("Package_tracking-->",Package_tracking);
+  var packageStockQuery ="SELECT mk.userid,it.packageid,it.remaining_count FROM MakeitUser mk right join InventoryTracking it on it.makeit_id=mk.userid left join PackagingBox pb on it.packageid =pb.id where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id=mk.userid GROUP BY packageid) and mk.virtualkey=0"
+  var res = await query(packageStockQuery);
+  if(res.length>0){
+    for(var i=0;i<res.length;i++){
+      var packdetail =res[i]
+      packdetail.stock_count=packdetail.remaining_count;
+      packdetail.makeit_id=packdetail.userid;
+      packdetail.pid=packdetail.packageid;
+      packdetail.session=session_status;
+      var packageStockInventory = new PackageStockInventory(packdetail);
+      PackageStockInventory.createpackageSession(packageStockInventory);
+    }
+  }
+});
+Package_tracking.start();
 
 module.exports = QuickSearch;

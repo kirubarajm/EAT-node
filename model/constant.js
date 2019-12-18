@@ -99,8 +99,9 @@ const calculate = {
 
      makeit_applink: "http://bit.ly/2Em3K9T",
      makeit_iosapplink: "http://bit.ly/2Em3K9T",
-     makeit_refferalcontent:"Welcome to EAT Kitchen. Click the link to download the EAT app from play store"
+     makeit_refferalcontent:"Welcome to EAT Kitchen. Click the link to download the EAT app from play store",
     
+    order_cover_package_id :5
     
 
 

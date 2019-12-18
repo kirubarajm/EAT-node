@@ -24,6 +24,8 @@ module.exports = function(app) {
   var Stories = require("../controllers/common/StoryController");
   var adminController = require("../controllers/admin/adminUserController");
   var zoneController = require("../controllers/common/ZoneController");
+  var packageController = require("../controllers/common/PackagingBoxTrackingController");
+  var packageInventoryController = require("../controllers/makeit/PackageInventoryController");
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));
@@ -244,5 +246,21 @@ app.route("/admin/reports/moveitavgfirstandlastmile").post(routesVersioning({"1.
 app.route("/admin/reports/averageordervalue").post(routesVersioning({"1.0.0":orders.averageordervalue_report}));
 ///KPI Dashboard Reports Live Kitchen count////
 app.route("/admin/reports/livekitchenavgcount").post(routesVersioning({"1.0.0":orders.livekitchenavgcount_report}));
+
+
+///PackageBox///
+app.route("/admin/packagingbox/add").post(routesVersioning({"1.0.0":packageController.create_a_packagingbox}));
+app.route("/admin/packagingbox/getlist").get(routesVersioning({"1.0.0":packageController.list_all_packagingbox}));
+app.route("/admin/packagingbox/getlist/:id").get(routesVersioning({"1.0.0":packageController.list_single_packagingbox}));
+app.route("/admin/packagingbox/update").put(routesVersioning({"1.0.0":packageController.updatePackagingBoxType}));
+
+//Package Inventory//
+app.route("/admin/packageinventory/getallpackagelist").post(routesVersioning({"1.0.0":packageInventoryController.getAllPackageInventoryList}));
+app.route("/admin/packageinventory/getlist/:makeit_id").get(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryList}));
+app.route("/admin/packageinventory/:inventoryid").get(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryByid}));
+app.route("/admin/packageinventory/add").post(routesVersioning({"1.0.0":packageInventoryController.create_PackageInventory}));
+app.route("/admin/packageinventory/update").put(routesVersioning({"1.0.0":packageInventoryController.updatePackageInventory}));
+app.route("/admin/packageinventory/stocklist").post(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryStockList}));
+app.route("/admin/makeit/packagemakeitusers").get(routesVersioning({"1.0.0":makeituser.get_makeit_package_user}));
 
 }

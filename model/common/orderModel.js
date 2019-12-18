@@ -26,6 +26,7 @@ var OrderStatusHistory = require("../common/orderstatushistoryModel");
 var Dunzo = require("../../model/webhooks/dunzoModel.js");
 var requestpromise = require('request-promise');
 var dunzoconst = require('../../model/dunzo_constant');
+var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTrackingModel');
 
 
 
@@ -1326,6 +1327,12 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
             null,
             PushConstant.masteridOrder_Prepared
           );
+          // PackageInvetoryTracking.orderbasedpackageTracking(req.orderid,orderdetails[0].makeit_user_id, function(err,res4){
+          //   if (err) {
+          //     result(err, null);
+          //   } else {
+          //   }
+          // });
         }
 
 

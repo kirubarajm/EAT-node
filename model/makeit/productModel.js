@@ -1,6 +1,7 @@
 "user strict";
 var sql = require("../db.js");
 var Productitem = require("../../model/makeit/productitemsModel.js");
+var Packageitem = require("../../model/makeit/packageitemsModel.js");
 var producthistory = require("../../model/makeit/liveproducthistoryModel.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
@@ -69,7 +70,7 @@ Product.getTotalPrice = async function getTotalPrice(itemlist, makeit_userid, re
   return itemdetail;
 };
 
-Product.createProduct = async function createProduct(newProduct,itemlist,result) {
+Product.createProduct = async function createProduct(newProduct,itemlist,packageList,result) {
   //console.log(itemlist);
   //=> praveen // var Productdetail = await Product.getTotalPrice(itemlist);
   var Productdetail = await Product.getTotalPrice(itemlist,newProduct.makeit_userid);
@@ -100,6 +101,21 @@ Product.createProduct = async function createProduct(newProduct,itemlist,result)
             });
           }  
         });
+      }
+      if(packageList.length>0){
+        for (var i = 0; i < packageList.length; i++) {
+          var package_item = new Packageitem(packageList[i]);
+          package_item.product_id = productid;
+          package_item.makeit_id = newProduct.makeit_userid;
+          package_item.package_id = packageList[i].id;
+          Packageitem.createPackageitems(package_item, function(err, result) {
+            if (err) { 
+              sql.rollback(function() {
+                throw err;
+              });
+            }  
+          });
+        }
       }
         
       let mesobj = "Product Created successfully";
@@ -357,10 +373,8 @@ Product.productitemlist = function productitemlist(req, result) {
       "",
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(null, err);
       } else {
-        console.log("Product : ", res);
         let sucobj = true;
         let resobj = {
           success: sucobj,
@@ -618,9 +632,9 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
           req.original_price = Productdetail.original_price;
           var staticquery = "UPDATE Product SET ";
           var column = "";
-
+          
           for (const [key, value] of Object.entries(req)) {
-            if (key !== "productid" && key !== "items") {
+            if (key !== "productid" && key !== "items"&& key !== "packageItems" ) {
               column = column + key + "='" + value + "',";
             }
           }
@@ -636,12 +650,38 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
           }
           itemid = itemid.slice(0, -1);
           Productitem.deleteProductitems(
-            product_item.productid,
+            req.productid,
             itemid,
             function(err, result) {
               if (err) res.send(err);
             }
           );
+///Package Update///
+
+var package_id = "";
+var packageItems = req.packageItems|| [];
+console.log("packageItems-->",packageItems.length);
+for (var i = 0; i < packageItems.length; i++) {
+  var package_item = new Packageitem(packageItems[i]);
+  package_id = package_id + packageItems[i].id + ",";
+  package_item.product_id = req.productid;
+  package_item.package_id=packageItems[i].id ;
+  package_item.makeit_id=req.makeit_userid
+  Packageitem.updatePackageitems(package_item, function(err, result) {
+    if (err) res.send(err);
+  });
+}
+package_id = package_id.slice(0, -1);
+Packageitem.deletePackageitems(
+  req.productid,
+  package_id,
+  function(err, result) {
+    if (err) res.send(err);
+  }
+);
+
+          
+
 
           var query =
             staticquery +
@@ -780,22 +820,24 @@ Product.productview_by_productid = function productview_by_productid(
         console.log("error: ", err);
         result(null, err);
       } else {
-        sql.query(
-          "select pi.quantity,mi.price,mi.menuitemid,mi.menuitem_name,mi.vegtype,mi.approved_status from Productitem pi join Menuitem mi on mi.Menuitemid = pi.itemid where pi.productid = " +
-            req.productid +
-            "",
-          function(err, res1) {
+        var menuItemQuery="select pi.quantity,mi.price,mi.menuitemid,mi.menuitem_name,mi.vegtype,mi.approved_status from Productitem pi join Menuitem mi on mi.Menuitemid = pi.itemid where pi.productid ="+req.productid
+        var packageQuery=menuItemQuery+";"+"select * from ProductPackaging join PackagingBox pb on pb.id = package_id where product_id = "+ req.productid
+        sql.query(packageQuery,
+          function(err, resArray) {
             if (err) {
               console.log("error: ", err);
               result(null, err);
             } else {
-              //console.log(res1[0]);
-              for (let i = 0; i < res1.length; i++) {
-                items.push(res1[i]);
-              }
+              console.log(resArray[0]);
+              var resProductItems=resArray[0];
+              var resPackageItems=resArray[1];
+              // for (let i = 0; i < res1.length; i++) {
+              //   items.push(res1[i]);
+              // }
 
               res[0].makeitdetail = JSON.parse(res[0].makeitdetail);
-              res[0].items = items;
+              res[0].items = resProductItems;
+              res[0].packageItems = resPackageItems;
               let sucobj = true;
               let resobj = {
                 success: sucobj,
