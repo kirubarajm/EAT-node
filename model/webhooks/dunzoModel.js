@@ -181,7 +181,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           break;
       case dunzoconst.reached_for_pickup:
           console.log("reached_for_pickup");
-
+          console.log(orderdetails[0].orderid);
          // Order.moveit_kitchen_reached_status = function(req, result) {
             var kitchenreachtime = moment().format("YYYY-MM-DD HH:mm:ss");
             updatequery ="UPDATE Orders  SET moveit_reached_time = '" +kitchenreachtime +"'  WHERE orderid ='" +orderdetails[0].orderid +"'";
@@ -200,37 +200,40 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
 
           break; 
       case dunzoconst.pickup_complete:
+          // console.log("pickup_complete");
+          //   var order_pickup_time = moment().format("YYYY-MM-DD HH:mm:ss");
+          //   var twentyMinutesLater = moment().add(0, "seconds").add(req.eta.dropoff, "minutes").format("YYYY-MM-DD HH:mm:ss");
+         
+          // updatequery ="UPDATE Orders  SET orderstatus = 5 ,moveit_pickup_time = '" +order_pickup_time+"',moveit_expected_delivered_time = '" +twentyMinutesLater +"'  WHERE orderid ='" +orderdetails[0].orderid +"'";
+          //       const updatestatuspickup = await query(updatequery);
+          //       var pickup = req.eta.pickup || 0;
+          //       var dropoff = req.eta.dropoff || 0;
+              
+          //      update_pickup_eta ="UPDATE Dunzo_moveit_details SET runner_eta_pickup_min = '" +  pickup +"' ,runner_eta_dropoff_min= '" + dropoff +"' WHERE task_id ='" +req.task_id+"'";
+          //      const update_pickup_eta_by_dunzo = await query(update_pickup_eta);
+
+          //             let resobj = {
+          //               success: true,
+          //               status: true,
+          //               status_code : 200,
+          //               message: "Order Pickedup successfully"
+          //             };
+              
+          //             await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
+       
+          //        result(null, resobj);
+
           console.log("pickup_complete");
-          
+          console.log(orderdetails[0].orderid);
          // Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveituser( req,kitchenqualitylist,result) {
             var order_pickup_time = moment().format("YYYY-MM-DD HH:mm:ss");
             var twentyMinutesLater = moment().add(0, "seconds").add(req.eta.dropoff, "minutes").format("YYYY-MM-DD HH:mm:ss");
          
-            // if (orderdetails.length !==0) {     
-            //   if (orderdetails[0].orderstatus == 7) {
-            //     let resobj = {
-            //       success: true,
-            //       status:false,
-            //       status_code : 400,
-            //       message: "Sorry! This order already canceled."
-            //     };
-                
-            //     result(null, resobj);
-            //    // return;
-            //   }else if (orderdetails[0].orderstatus < 3 ) {
-            //     let resobj = {
-            //       success: true,
-            //       status:false,
-            //       status_code : 400,
-            //       message: "Please wait food not yet prepared"
-            //     };
-            //     result(null, resobj);
-            //   //  return;
-            //   }else{
-           
+            
                 updatequery ="UPDATE Orders  SET orderstatus = 5 ,moveit_pickup_time = '" +order_pickup_time+"',moveit_expected_delivered_time = '" +twentyMinutesLater +"'  WHERE orderid ='" +orderdetails[0].orderid +"'";
                 const updatestatuspickup = await query(updatequery);
-
+              var pickup = req.eta.pickup || 0;
+              var dropoff = req.eta.dropoff || 0;
               
                update_pickup_eta ="UPDATE Dunzo_moveit_details SET runner_eta_pickup_min = '" +  pickup +"' ,runner_eta_dropoff_min= '" + dropoff +"' WHERE task_id ='" +req.task_id+"'";
                const update_pickup_eta_by_dunzo = await query(update_pickup_eta);
@@ -241,24 +244,12 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                         status_code : 200,
                         message: "Order Pickedup successfully"
                       };
-                      PushConstant.Pageid_eat_order_pickedup = 5;
+                     
                       await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
        
                  result(null, resobj);
         
-             // }
-            // }else{
-            //   let response = {
-            //     success: true,
-            //     status: false,
-            //     status_code : 400,
-            //     message: "Order not found.",
-             
-            //   };
-            //   result(null, response);
-            // }
-         // };
-
+        
         
           break;
       case dunzoconst.started_for_delivery:

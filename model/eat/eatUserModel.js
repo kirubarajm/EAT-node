@@ -2443,59 +2443,64 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
         }
       }
 
+      var kitchen_pagenation_limit =0;
+      if (kitchenlist.length < 30) {
+        kitchen_pagenation_limit=6;
+      }else if(kitchenlist.length > 30 || kitchenlist.length < 50){
+        kitchen_pagenation_limit=Math.ceil(kitchencount / kitchen_pagenation_limit);
+      }else{
+        kitchen_pagenation_limit=Math.ceil(kitchencount / kitchen_pagenation_limit);
+      }
 
 
-//       ///infinity screen
-//       var collectionlist = [];
-//    await  Collection.list_all_active_collection(req,async function(err,res3) {
-//         if (err) {
-//           result(err, null);
-//         } else {
-//           if (res3.status != true) {
-//             result(null, res3);
-//           } else {
-//                    console.log("collectionlist--------------",res3);
-//                    collectionlist.push(res3)
-//             // let resobj = {
-//             //   success: true,
-//             //   status:true,
-//             //   zoneId:userzoneid,
-//             //   zoneName:zonename,
-//             //   result: kitchenlist,
-//             //   collectionlist:res3
-//             // };
-//             // result(null, resobj);
+     //  var collectionlist =   await Collection.list_all_active_collection(req)
+        
+      if (kitchenlist.length!=0) {
+        var kitchencount = kitchenlist.length;
+      var pagecount = Math.ceil(kitchencount / kitchen_pagenation_limit);
+      var orderlimit = kitchen_pagenation_limit;
+      var page = req.page || 1;
+      var startlimit = (page - 1) * orderlimit;
+      var endlimit = startlimit + orderlimit;
 
-//           }
-//         }
-//  });
-       var collectionlist =   await Collection.list_all_active_collection(req)
-  
-       
-if (kitchenlist.length!=0) {
-  var kitchencount = kitchenlist.length;
-var pagecount = Math.ceil(kitchencount / constant.kitchen_pagenation_limit);
-var orderlimit = constant.kitchen_pagenation_limit;
-var page = req.page || 1;
-var startlimit = (page - 1) * orderlimit;
-var endlimit = startlimit + orderlimit;
+      var kitchenlist = kitchenlist.slice(startlimit, endlimit);
+      }
+       ///infinity screen
+      if (page==1) {
+    
+      Collection.list_all_active_collection(req,async function(err,res3) {
+        if (err) {
+          result(err, null);
+        } else {
+          if (res3.status != true) {
+            result(null, res3);
+          } else {
+            var collectionlist = {};
+           collectionlist.collection = res3.collection;
+           var collectiontype =collectionlist.collection;
+           collectionlist.collection = collectiontype.filter(collectiontype => collectiontype.type>1);
+            kitchenlist.push(collectionlist);
+                   let resobj = {
+                    success: true,
+                    status:true,
+                    zoneId:userzoneid,
+                    zoneName:zonename,
+                    kitchencount :kitchencount ||0,
+                    pagecount : pagecount ||0,
+                    result: kitchenlist
+                  };
+            
+                  result(null, resobj);
 
-var kitchenlist = kitchenlist.slice(startlimit, endlimit);
-}
+          }
+        }
+ });
+      }else if(page==2){
+
+      }
 
 
-
-      let resobj = {
-        success: true,
-        status:true,
-        zoneId:userzoneid,
-        zoneName:zonename,
-        kitchencount :kitchencount ||0,
-        pagecount : pagecount ||0,
-        result: kitchenlist
-      };
-
-      result(null, resobj);
+      
     }
 
    
@@ -2975,6 +2980,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
   var emailstatus = false;
   var otpstatus = false;
   var genderstatus = false;
+  //var userdetails = await query ("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid,razer_customerid,referredby,token,first_tunnel from User where userid = '"+req.userid+"'");
 
   if (req.phoneno == '9500313689' && req.otp == 30878) {
     
@@ -2988,7 +2994,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
       otpstatus: true,
       genderstatus: true,
       userid: 135,
-      result: []
+      result: userdetails
     };
 
     result(null, resobj);
@@ -3002,12 +3008,10 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
       result(err, null);
     } else {
 
-      console.log(res);
-      console.log(req.otp);
 
       if (res[0].otp == req.otp) {
         console.log("OTP VALID");
-        sql.query("Select * from User where phoneno = '" + req.phoneno + "'",function(err, res1) {
+        sql.query("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid,razer_customerid,referredby,token,first_tunnel from User where phoneno = '" + req.phoneno + "'",function(err, res1) {
             if (err) {
               console.log("error: ", err);
               result(err, null);
@@ -3040,7 +3044,7 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                       otpstatus: true,
                       genderstatus: genderstatus,
                       userid: res2.insertId,
-                      result: []
+                      result: res1
                     };
 
                     result(null, resobj);
@@ -3079,6 +3083,15 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
                       if (res3.length !== 0) {
                         responce.push(res3[0]);
                         responce[0].razer_customerid = res1[0].razer_customerid
+                        responce[0].userid = res1[0].userid
+                        responce[0].name = res1[0].name
+                        responce[0].email = res1[0].email
+                        responce[0].phoneno = res1[0].phoneno
+                        responce[0].referalcode = res1[0].referalcode
+                        responce[0].gender = res1[0].gender
+                        responce[0].virtualkey = res1[0].virtualkey
+                        responce[0].regionid = res1[0].regionid
+                        
                       }
 
                       let token = jwt.sign({username: req.phoneno},
@@ -3130,8 +3143,9 @@ Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
 }
 };
 
-Eatuser.edit_eat_users = function(req, result) {
-
+Eatuser.edit_eat_users =async function(req, result) {
+ 
+ // var userdetails = await query ("");
   var staticquery = "UPDATE User SET updated_at = ?, ";
   var column = "";
   req.referalcode = "EATWELL" + req.userid;
@@ -3153,12 +3167,28 @@ Eatuser.edit_eat_users = function(req, result) {
     if (err) {
       result(err, null);
     } else {
-      let resobj = {
-        success: true,
-        status: true,
-        message: "Updated successfully"
-      };
-      result(null, resobj);
+
+      sql.query("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid from User where userid = '"+req.userid+"' ", function(err, userdetails) {
+        if (err) {
+          result(err, null);
+        } else {
+          let resobj = {
+            success: true,
+            status: true,
+            result : userdetails,
+            message: "Updated successfully"
+          };
+          result(null, resobj);
+        }
+      });
+
+      // let resobj = {
+      //   success: true,
+      //   status: true,
+      //   result : userdetails,
+      //   message: "Updated successfully"
+      // };
+      // result(null, resobj);
     }
   });
 };

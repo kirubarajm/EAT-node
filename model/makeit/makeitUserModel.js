@@ -52,6 +52,8 @@ var Makeituser = function(makeituser) {
   this.ka_status = makeituser.ka_status || 0;
   this.unservicable = makeituser.unservicable || 0;
   this.zone =makeituser.zone || 0;
+  this.referredby=makeituser.referredby;
+  this.pushid_ios=makeituser.pushid_ios;
 };
 
 Makeituser.createUser = function createUser(newUser,isAdmin,result) {
@@ -2124,28 +2126,66 @@ Makeituser.makeit_user_otpverification = function makeit_user_otpverification(re
   });
 };
 
-Makeituser.makeituser_logout = async function makeituser_logout(req, result) { 
+Makeituser.makeituser_logout = async function makeituser_logout(req,headers, result) { 
   sql.query("select * from MakeitUser where userid = "+req.userid+" ",async function(err,userdetails) {
     if (err) {
       console.log("error: ", err);
       result(null, err);
     } else {
-
-      console.log(req);
        
       if (userdetails.length !==0) {
+
+        var orders = await query("select  * from Orders WHERE makeit_user_id  = '"+req.userid+"' and lock_status = 0 and payment_status < 2  and orderstatus < 6 and DATE(created_at) = CURDATE()");
         
-        updatequery = await query("Update MakeitUser set pushid_android = 'null' where userid = '"+req.userid+"'");
+        if (orders.length ==0) {
+          
+          
+        var liveproduct = await query("Select * from Product where active_status = 1 and delete_status !=1 and makeit_userid = " +req.userid+"");
+        
+        
+        if (liveproduct.length ==0) {
+          if (headers.apptype==1) {
+            updatequery = await query("Update MakeitUser set pushid_android = 'null' where userid = '"+req.userid+"'");
+          }else{
+            updatequery = await query("Update MakeitUser set pushid_ios = 'null' where userid = '"+req.userid+"'");
+          }
+          
+         
 
 
-        let resobj = {
-          success: true,
-           status: true,
-          // message:mesobj,
-          message: 'Logout Successfully!'  
-        };
-  
-        result(null, resobj);
+          let resobj = {
+            success: true,
+             status: true,
+            // message:mesobj,
+            message: 'Logout Successfully!'  
+          };
+    
+          result(null, resobj);
+        } else {
+          let resobj = {
+            success: true,
+             status: false,
+            // message:mesobj,
+            message: 'Sorry you have a liveproduct'  
+          };
+    
+          result(null, resobj);
+        }
+       
+
+        }else{
+
+          let resobj = {
+            success: true,
+             status: false,
+            // message:mesobj,
+            message: 'Sorry you have a order'  
+          };
+    
+          result(null, resobj);
+
+        }
+        
       }else{
 
         let resobj = {
