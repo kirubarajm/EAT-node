@@ -7667,7 +7667,7 @@ Order.userexperience_report= function userexperience_report(req, result) {
 
 ////Virtual Total completed orders revenu////
 Order.virtualorder_completedrevenu_report= function virtualorder_completedrevenu_report(req, result) {  
-  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=1 and ord.ordertype=0 and ord.orderstatus=6 and date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"' GROUP BY date(ord.created_at)";
+  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=1 and ord.ordertype=0 and ord.orderstatus=6 and date(ord.created_at) BETWEEN CURDATE()-6 AND  CURDATE() GROUP BY date(ord.created_at)";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -7681,7 +7681,7 @@ Order.virtualorder_completedrevenu_report= function virtualorder_completedrevenu
 
 ////Real Total completed orders revenu////
 Order.realorder_completedrevenu_report= function realorder_completedrevenu_report(req, result) {  
-  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=0 and ord.ordertype=0 and ord.orderstatus=6 and date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"' GROUP BY date(ord.created_at)";
+  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=0 and ord.ordertype=0 and ord.orderstatus=6 and date(ord.created_at) BETWEEN CURDATE()-6 AND  CURDATE() GROUP BY date(ord.created_at)";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -7695,7 +7695,7 @@ Order.realorder_completedrevenu_report= function realorder_completedrevenu_repor
 
 ////Virtual Total cancelled orders revenu////
 Order.virtualorder_cancelledrevenu_report= function virtualorder_cancelledrevenu_report(req, result) {  
-  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=1 and ord.ordertype=0 and ord.orderstatus=7 and date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"' GROUP BY date(ord.created_at)";
+  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=1 and ord.ordertype=0 and ord.orderstatus=7 and date(ord.created_at) BETWEEN CURDATE()-6 AND  CURDATE() GROUP BY date(ord.created_at)";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -7709,7 +7709,7 @@ Order.virtualorder_cancelledrevenu_report= function virtualorder_cancelledrevenu
 
 ////Real Total cancelled orders revenu////
 Order.realorder_cancelledrevenu_report= function realorder_cancelledrevenu_report(req, result) {  
-  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=0 and ord.ordertype=0 and ord.orderstatus=7 and date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"' GROUP BY date(ord.created_at)";
+  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=0 and ord.ordertype=0 and ord.orderstatus=7 and date(ord.created_at) BETWEEN CURDATE()-6 AND  CURDATE() GROUP BY date(ord.created_at)";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -7723,7 +7723,7 @@ Order.realorder_cancelledrevenu_report= function realorder_cancelledrevenu_repor
 
 ////Virtual Abandoned Cart orders revenu////
 Order.virtual_abandonedcartrevenu_report= function virtual_abandonedcartrevenu_report(req, result) {  
-  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=1 and ord.ordertype=0 and ord.orderstatus=11 and date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"' GROUP BY date(ord.created_at)";
+  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=1 and ord.ordertype=0 and ord.orderstatus=11 and date(ord.created_at) BETWEEN CURDATE()-6 AND  CURDATE() GROUP BY date(ord.created_at)";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -7737,7 +7737,7 @@ Order.virtual_abandonedcartrevenu_report= function virtual_abandonedcartrevenu_r
 
 ////real Abandoned Cart orders revenu////
 Order.real_abandonedcartrevenu_report= function real_abandonedcartrevenu_report(req, result) {  
-  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=0 and ord.ordertype=0 and ord.orderstatus=11 and date(ord.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"' GROUP BY date(ord.created_at)";
+  var query="select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=0 and ord.ordertype=0 and ord.orderstatus=11 and date(ord.created_at) BETWEEN CURDATE()-6 AND  CURDATE() GROUP BY date(ord.created_at)";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -7751,9 +7751,9 @@ Order.real_abandonedcartrevenu_report= function real_abandonedcartrevenu_report(
 
 ////real Abandoned Cart orders revenu////
 Order.averageordervalue_report= async function averageordervalue_report(req, result) {  
-  var virtuallist = await query("select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price,( sum(ord.price)/count(ord.orderid)) as avg_price  from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=1 and ord.ordertype=0 and ord.orderstatus=6 and date(ord.created_at)  BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"' GROUP BY date(ord.created_at) Order BY date(ord.created_at)");
+  var virtuallist = await query("select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price,( sum(ord.price)/count(ord.orderid)) as avg_price  from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=1 and ord.ordertype=0 and ord.orderstatus=6 and date(ord.created_at)  BETWEEN CURDATE()-6 AND  CURDATE() GROUP BY date(ord.created_at) Order BY date(ord.created_at)");
 
-  var reallist = await query("select date(ord.created_at) as date,count(ord.orderid) as real_order_count,sum(ord.price) as real_price,( sum(ord.price)/count(ord.orderid)) as real_avg_price  from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=0 and ord.ordertype=0 and ord.orderstatus=6 and date(ord.created_at)  BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"' GROUP BY date(ord.created_at) Order BY date(ord.created_at)");
+  var reallist = await query("select date(ord.created_at) as date,count(ord.orderid) as real_order_count,sum(ord.price) as real_price,( sum(ord.price)/count(ord.orderid)) as real_avg_price  from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=0 and ord.ordertype=0 and ord.orderstatus=6 and date(ord.created_at)  BETWEEN CURDATE()-6 AND  CURDATE() GROUP BY date(ord.created_at) Order BY date(ord.created_at)");
 
   for(var i=0; i<virtuallist.length; i++){
     for(var j=0; j<reallist.length; j++){
@@ -7780,34 +7780,39 @@ Order.livekitchenavgcount_report= async function livekitchenavgcount_report(req,
     cyclequery = cyclequery + " and pro.dinner = 1";
   }
   
-  var virtuallistquery = "select pro.makeit_userid,mu.brandname,count(pro.productid) as  product_count from Product as pro left join MakeitUser as mu on mu.userid = pro.makeit_userid where pro.dinner = 1 and mu.virtualkey=1 and (mu.appointment_status = 3 and mu.ka_status = 2 and pro.approved_status=2 and mu.verified_status = 1 ) and (pro.active_status = 1 and pro.quantity != 0 and pro.delete_status !=1 )  "+cyclequery+" group by mu.userid order by pro.makeit_userid ASC";
-  console.log("virtuallistquery ==========>",virtuallistquery)
+  var makeithubquery = "select makeithub_id,address from Makeit_hubs order by address ASC";
+  var hublist = await query(makeithubquery);
+
+  var virtuallistquery = "select mu.brandname,mh.makeithub_id,mh.address,count(pro.productid) as  product_count from Makeit_hubs as mh left join MakeitUser as mu on mu.makeithub_id = mh.makeithub_id left join Product as pro on pro.makeit_userid = mu.userid where mu.virtualkey=1 and (mu.appointment_status = 3 and mu.ka_status = 2 and pro.approved_status=2 and mu.verified_status = 1 ) and (pro.active_status = 1 and pro.quantity != 0 and pro.delete_status !=1 ) "+cyclequery+" group by mu.userid order by mh.address,pro.makeit_userid ASC";
   var virtuallist = await query(virtuallistquery);
   
-  var reallistquery = "select pro.makeit_userid,mu.brandname,count(pro.productid) as  product_count from Product as pro left join MakeitUser as mu on mu.userid = pro.makeit_userid where pro.dinner = 1 and mu.virtualkey=0 and (mu.appointment_status = 3 and mu.ka_status = 2 and pro.approved_status=2 and mu.verified_status = 1 ) and (pro.active_status = 1 and pro.quantity != 0 and pro.delete_status !=1 )  "+cyclequery+" group by mu.userid order by pro.makeit_userid ASC";
-  console.log("reallistquery ==========>",reallistquery)
+  var reallistquery = "select mu.brandname,mh.makeithub_id,mh.address,count(pro.productid) as  product_count from Makeit_hubs as mh left join MakeitUser as mu on mu.makeithub_id = mh.makeithub_id left join Product as pro on pro.makeit_userid = mu.userid where mu.virtualkey=0 and (mu.appointment_status = 3 and mu.ka_status = 2 and pro.approved_status=2 and mu.verified_status = 1 ) and (pro.active_status = 1 and pro.quantity != 0 and pro.delete_status !=1 ) "+cyclequery+" group by mu.userid order by mh.address,pro.makeit_userid ASC";
   var reallist = await query(reallistquery);
 
-  var Vproductcount = 0;
-  for(var i=0; i<virtuallist.length; i++){
-    Vproductcount = Vproductcount+virtuallist[i].product_count;
-  }
-  
-  var Rproductcount = 0;
-  for(var i=0; i<reallist.length; i++){
-    Rproductcount = Rproductcount+reallist[i].product_count;
+  for(var i=0; i<hublist.length; i++){
+    hublist[i].virtual_kitchencount = 0;
+    hublist[i].virtual_productcount = 0;
+    for(var j=0; j<virtuallist.length; j++){
+      if(hublist[i].makeithub_id == virtuallist[j].makeithub_id){
+        hublist[i].virtual_kitchencount++;
+        hublist[i].virtual_productcount = hublist[i].virtual_productcount + virtuallist[j].product_count;
+      }      
+    }
+    hublist[i].virtual_kitchen_average = hublist[i].virtual_productcount/hublist[i].virtual_kitchencount || 0;
   }
 
-  var res = [{
-              "virtual_kitchen_count":virtuallist.length,
-              "virtual_kitchen_product_count":Vproductcount,
-              "virtual_kitchen_average":Vproductcount/virtuallist.length,
-              "real_kitchen_count":reallist.length,
-              "real_kitchen_product_count":Rproductcount,
-              "real_kitchen_average":Rproductcount/reallist.length,
-            }];
-
-  result(null, res);
+  for(var i=0; i<hublist.length; i++){
+    hublist[i].real_kitchencount = 0;
+    hublist[i].real_productcount = 0;
+    for(var j=0; j<reallist.length; j++){
+      if(hublist[i].makeithub_id == reallist[j].makeithub_id){
+        hublist[i].real_kitchencount++;
+        hublist[i].real_productcount = hublist[i].real_productcount + reallist[j].product_count;
+      }
+    }
+    hublist[i].real_kitchen_average = hublist[i].real_productcount/hublist[i].real_kitchencount || 0;
+  }
+  result(null, hublist);
 };
 
 module.exports = Order;
