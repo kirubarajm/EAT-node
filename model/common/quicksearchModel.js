@@ -180,7 +180,7 @@ const job = new CronJob("0 */1 * * * *", async function(search, result) {
     }
   });
 });
-//job.start();
+job.start();
 
 //incomplete online and release product quantity and order release by user.
 const job1 = new CronJob("*/3 * * * *", async function() {
@@ -225,7 +225,7 @@ const job1 = new CronJob("*/3 * * * *", async function() {
     }
   }
 });
-//job1.start();
+job1.start();
 
 QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(
   req,
@@ -339,7 +339,7 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
     }
   }
 });
-///liveproducthistory.start();
+liveproducthistory.start();
 
 //cron run by moveit user offline every night 2 AM.
 const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
@@ -367,7 +367,7 @@ const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
     }
   }
 });
-//job1moveitlogout.start();
+job1moveitlogout.start();
 
 // const order_auto_assign = new CronJob("1 7-23 * * * ", async function() {
 //   console.log("order_auto_assign");
@@ -662,7 +662,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
 }
 
 };
-//order_auto_assign_Change.start();
+order_auto_assign_Change.start();
 
 ////Zone Based Moveit 
 QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){

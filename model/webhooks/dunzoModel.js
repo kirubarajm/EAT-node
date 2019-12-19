@@ -554,7 +554,7 @@ Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
   //var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+dunzo_taskid+'/_cancel?test=true'
 
 
-  var url = dunzoconst.dunzo_cancel_url+'/'+ req.dunzo_taskid+'/_cancel?test=true'
+  var url = dunzoconst.dunzo_cancel_url+'/'+ req.dunzo_taskid+'/_cancel'
 
  
 
@@ -584,7 +584,7 @@ Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
 ////task status
 Dunzo.dunzo_track_status = async function dunzo_track_status(req) {
 
-  var url =dunzoconst.dunzo_cancel_url+'/'+req.task_id+'/status?test=true'
+  var url =dunzoconst.dunzo_cancel_url+'/'+req.task_id+'/status'
 
 
 
