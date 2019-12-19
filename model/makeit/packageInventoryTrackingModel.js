@@ -123,16 +123,26 @@ PackageInvetoryTracking.StocksUpdate = function StocksUpdate(
       } else {
         if (res.length > 0) {
           var remaining_count = parseInt(res[0].remaining_count);
-          var stockcount= (oldcount-remaining_count);
-          if(remaining_count>=count){
-            var total_count=0;
-            total_count =(remaining_count-count);
+          var total_count=0;
+          var i=0;
+
+          if(oldcount>count){
+            i=oldcount-count;
+            total_count=remaining_count-i;
+          }else if(count>oldcount){
+            i=count-oldcount;
+            total_count=remaining_count+i;
+          }else if(count==oldcount){
+            total_count=0;
+          }
+
+          if(total_count>-1){
+            //total_count =(remaining_count-count);
             // if(remaining_count<count){
             //   total_count = (count - remaining_count)+remaining_count;
             // }else if(remaining_count>=count){
             //   total_count = remaining_count-(remaining_count-count);
             // }
-
             var package_inventory_tracking = new PackageInvetoryTracking(
               packageinvetory
             );
@@ -150,7 +160,7 @@ PackageInvetoryTracking.StocksUpdate = function StocksUpdate(
             let resobj = {
               success: true,
               status: false,
-              message:"Sorry Cann't edit,Enter count exit the remaing count"
+              message:count==oldcount?"Sorry cann't edit old and new count values are same.":"Sorry Cann't edit enter count exit the remaing count."
             };
             result(null, resobj);
           }
