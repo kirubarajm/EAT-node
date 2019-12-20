@@ -21,4 +21,4 @@ authentication = {
 // };
 
 
-module.exports = authentication;
+module.exports = authentication;s
