@@ -7418,7 +7418,7 @@ Order.onlinerefunded_couponreport= function onlinerefunded_couponreport(req, res
 //////////order_report_byadmin/////////////
 Order.order_report_byadmin= function order_report_byadmin(req, result) {
   
-  var query="Select o.created_at as Orderdate ,o.orderid, o.orderstatus,u.name as Customername,u.userid as Eatuserid,o.address_title,o.locality_name,o.delivery_charge,o.price, o.original_price,o.refund_amount,o.gst,o.makeit_earnings as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_accept_time,o.moveit_pickup_time,o.moveit_expected_delivered_time,o.makeit_expected_preparing_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,ma.address as hub_location,CASE WHEN o.ordertype=1 then 'Virtual' WHEN o.ordertype=0 then 'Real' END as order_type,o.moveit_user_id as moveit_id,mu.name from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join User as u on o.userid=u.userid left join MoveitUser as mu on mu.userid = o.moveit_user_id where (o.orderstatus=6 or o.orderstatus=7  or  o.orderstatus=8 or o.orderstatus=9 or o.orderstatus=10 or o.orderstatus=11) and  (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.created_at as Orderdate ,o.orderid, o.orderstatus,u.name as Customername,u.userid as Eatuserid,o.address_title,o.locality_name,o.delivery_charge,o.price, o.original_price,o.refund_amount,o.gst,o.makeit_user_id,o.makeit_earnings as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_accept_time,o.moveit_pickup_time,o.moveit_expected_delivered_time,o.makeit_expected_preparing_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,ma.address as hub_location,CASE WHEN o.ordertype=1 then 'Virtual' WHEN o.ordertype=0 then 'Real' END as order_type,o.moveit_user_id as moveit_id,mu.name from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join User as u on o.userid=u.userid left join MoveitUser as mu on mu.userid = o.moveit_user_id where (o.orderstatus=6 or o.orderstatus=7  or  o.orderstatus=8 or o.orderstatus=9 or o.orderstatus=10 or o.orderstatus=11) and  (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -7532,126 +7532,46 @@ Order.makeit_master_report= function makeit_master_report(req, result) {
 
 ///User Exp report///
 Order.userexperience_report= function userexperience_report(req, result) {  
-  var query="select orderid,date(ordertime) as date,count(orderid) as order_count, CASE WHEN (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:45:00')) THEN  '5' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:45:00')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:47:50'))) THEN  '4'  WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:47:50')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:50:50'))) THEN  '3' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:50:50')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:55:00'))) THEN  '2' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:55:00')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('01:00:00'))) THEN  '1' WHEN (TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('01:00:00')) THEN  '0' END as user_experience from Orders where moveit_actual_delivered_time IS NOT NULL and ordertime Is NOT NULL and date(created_at) between '"+req.fromdate+"' AND  '"+req.todate+"' and orderstatus=6 group by date(ordertime),user_experience order by date(ordertime),user_experience ASC";
+  var query="select orderid,date(ordertime) as date,count(orderid) as order_count, CASE WHEN (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:45:00')) THEN  '5' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:45:00')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:47:50'))) THEN  '4'  WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:47:50')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:50:50'))) THEN  '3' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:50:50')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:55:00'))) THEN  '2' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:55:00')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('01:00:00'))) THEN  '1' WHEN (TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('01:00:00')) THEN  '0' END as user_experience from Orders where moveit_actual_delivered_time IS NOT NULL and ordertime Is NOT NULL and date(created_at) between CURDATE()-6 AND  CURDATE() and orderstatus=6 group by date(ordertime),user_experience order by date(ordertime),user_experience ASC";
   // console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
       } else {
-        if (res.length !== 0) {
-          
-
-
+        if (res.length !== 0) {       
           var dates     = res[0].date;
           var datelist  = new Array();
-          datelist.push(dates);
+          datelist.push({"date":dates});
           var daycount  = 0;
-
+          
           for(var i=0; i<res.length; i++){ 
-            if(res[i].date != datelist[daycount]){
-              datelist.push(res[i].date);
+            if(res[i].date != datelist[daycount].date){
+              datelist.push({"date":res[i].date});
               daycount++;              
             }else{   }
           }
-          newarray = new Array();
-          newobject = {};
-          console.log("newarray Befor ===============>",newarray);
+          
           for(var z=0; z<datelist.length; z++){
-            newobject.date = datelist[z];
             for(var j=0; j<res.length; j++){                
-              if(datelist[z] == res[j].date){
+              if(datelist[z].date == res[j].date){
                 if(res[j].user_experience == 0){
-                  newobject.user_experience = 0;                  
+                  datelist[z].user_exp0 = res[j].order_count;                  
                 }else if(res[j].user_experience == 1){
-                  newobject.user_experience = 1;
+                  datelist[z].user_exp1 = res[j].order_count;
                 }else if(res[j].user_experience == 2){
-                  newobject.user_experience = 2;
+                  datelist[z].user_exp2 = res[j].order_count;
                 }else if(res[j].user_experience == 3){
-                  newobject.user_experience = 3;
+                  datelist[z].user_exp3 = res[j].order_count;
                 }else if(res[j].user_experience == 4){
-                  newobject.user_experience = 4;
+                  datelist[z].user_exp4 = res[j].order_count;
                 }else if(res[j].user_experience == 5){
-                  newobject.user_experience = 5;
+                  datelist[z].user_exp5 = res[j].order_count;
                 }else{   }                
-              }else{ newarray.push(newobject); }
-              console.log("newobject After===============>",newobject);
+              }else{ }
             }        
           }
-          //console.log("newobject After===============>",newobject);
-          //console.log("newarray After===============>",newarray);
 
-          result(null, newarray);
-        //   var getDateArray = function(start, end) {
-        //     var arr = new Array();
-        //     var dt = new Date(start);
-        //     while (dt <= end) {
-        //         arr.push(new Date(dt,"YYYY-MM-DD"));
-        //         dt.setDate(dt.getDate() + 1);
-        //     }
-        //     return arr;
-        // }
-        
-        //var dateArr = ['2019-12-09','2019-12-10','2019-12-11','2019-12-12','2019-12-13','2019-12-14','2019-12-15'];
-        /* var dateArr = ['2019-12-14','2019-12-15'];
-        console.log("dates=============>",dateArr);
-
-
-          //////arrange excel data/////////
-          var dayscount = 1;
-          var newarray = [];
-          var days = [];
-          var twoarray = [];
-          //console.log("empty days ===============>",days);
-          var dates = res[0].date;
-          console.log("dates 1 ===============>",dates);
-          for(var i=0; i<res.length; i++){  
-            console.log("Date ============>",res[i].date);          
-            if(dates == res[i].date){               
-              twoarray.date = dates;
-              switch (res[i].user_experience){
-                case "0":
-                  twoarray.user_exp0 = res[i].order_count;
-                  break;
-
-                case "1":
-                  twoarray.user_exp1 = res[i].order_count; 
-                  break;
-                  
-                case "2":
-                  twoarray.user_exp2 = res[i].order_count;
-                  break;
-                  
-                case "3":
-                  twoarray.user_exp3 = res[i].order_count;
-                  break;
-                  
-                case "4":
-                  twoarray.user_exp4 = res[i].order_count;
-                  break;
-                  
-                case "5":
-                  twoarray.user_exp5 = res[i].order_count;
-                  break;
-
-                default:
-                  break;
-              }              
-            }else{              
-              dates = res[i].date;
-              ///daycount++;
-              console.log("two array============>",twoarray);
-              newarray.push(twoarray);
-            }  
-            
-          }
-          newarray.push(twoarray);
-          console.log("newarray============>",newarray);
-          let resobj = {
-            success: true,
-            status:true,
-            result:res
-          };
-          result(null, resobj); */
+          result(null, datelist);        
         }else {
           let resobj = {
             success: true,

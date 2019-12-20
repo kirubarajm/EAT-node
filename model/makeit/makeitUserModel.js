@@ -3230,7 +3230,7 @@ Makeituser.kitchen_liveproduct_status_kpi= async function kitchen_liveproduct_st
 
 ////Home Successtion rate KPI Dashboard////
 Makeituser.homesuccesstionrate_report = async function(req, result) {
-  var makeit = await query("select DISTINCT lph.makeit_id,mu.brandname from Live_Product_History as lph left join MakeitUser as mu on mu.userid = lph.makeit_id where date(lph.created_at)=CURDATE() ");
+  var makeit = await query("select DISTINCT lph.makeit_id,if(mu.virtualkey=1,'virtual','real') as Kitchen_type,mu.brandname from Live_Product_History as lph left join MakeitUser as mu on mu.userid = lph.makeit_id where date(lph.created_at)=CURDATE() ");
     if(makeit.length>0){
       ////Get Kitchen Percentage////////
       for(var i=0; i<makeit.length; i++){
