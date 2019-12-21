@@ -1,7 +1,7 @@
 "user strict";
 var sql = require("../db.js");
 var PackageInvetoryTeacking = require("../../model/makeit/packageInventoryTrackingModel.js");
-
+const constant = require("../constant");
 //Task object constructor
 var PackageInvetory = function(packageinvetory) {
   this.makeit_id = packageinvetory.makeit_id;
@@ -178,7 +178,7 @@ PackageInvetory.getPackageMapInventoryList = function getPackageMapInventoryList
   req,
   result
 ) {
-  var packageQuery ="SELECT it.packageid as id,pb.name FROM InventoryTracking it left join PackagingBox pb on pb.id =it.packageid where it.makeit_id="+req.makeit_id+" GROUP BY it.packageid";
+  var packageQuery ="SELECT it.packageid as id,pb.name FROM InventoryTracking it left join PackagingBox pb on pb.id =it.packageid where it.makeit_id="+req.makeit_id+" and it.packageid!="+constant.order_cover_package_id+ " GROUP BY it.packageid";
   sql.query(packageQuery, function(err, res) {
     if (err) {
       result(null, err);

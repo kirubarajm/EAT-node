@@ -393,7 +393,7 @@ Product.admin_list_all_product = function admin_list_all_product(req, result) {
   var query =
     "Select * from Product where makeit_userid = '" +
     req.makeit_userid +
-    "' and delete_status !=1";
+    "' and delete_status !=1 and approved_status !=3 ";
   if(req.approved_status){
     query = query +" and approved_status = '" +req.approved_status+ "'";
   }
@@ -1107,24 +1107,30 @@ Product.approve_product_status = function(req, result) {
 
 
 Product.admin_list_all__unapproval_product = function admin_list_all__unapproval_product(req,result) {
-  console.log(req);
-
   var query =
     "Select pd.*,mk.brandname,mk.name as makeit_name from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid  where delete_status !=1 ";
 
-  query =query +" and approved_status = '"+req.approved_status +"' order by created_at desc";
+  query =query +" and approved_status In (1,4) order by created_at desc";
   console.log(query);
   sql.query(query, function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(null, err);
     } else {
-      console.log("Product : ", res);
+      //collectionlist.collection_details = collectiontype.filter(collectiontype => collectiontype.type=1);
+      var newCount =res.filter(res=>res.approved_status==1);
+      var editCount =res.filter(res=>res.approved_status==4);
+      var totalArray=res;
+      if(req.approved_status==1) totalArray=newCount;
+      if(req.approved_status==4) totalArray=editCount;
       let sucobj = true;
       let resobj = {
         success: sucobj,
         status: true,
-        result: res
+        newCount:newCount.length,
+        editCount:editCount.length,
+        totalCount:res.length,
+        result: totalArray
       };
 
       result(null, resobj);

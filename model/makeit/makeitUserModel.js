@@ -55,6 +55,7 @@ var Makeituser = function(makeituser) {
   this.zone =makeituser.zone || 0;
   this.referredby=makeituser.referredby;
   this.pushid_ios=makeituser.pushid_ios;
+  this.makeit_type=makeituser.makeit_type;
 };
 
 Makeituser.createUser = function createUser(newUser,isAdmin,result) {
@@ -69,8 +70,10 @@ Makeituser.createUser = function createUser(newUser,isAdmin,result) {
         result(err, null);
       } else {
         if (res2.length == 0) {
-          if(!isAdmin){Makeituser.user_register(newUser,result);}
-          else{
+          if(!isAdmin){
+            newUser.makeit_type=0;
+            Makeituser.user_register(newUser,result);
+          }else{
           ZoneModel.check_map_boundaries(newUser,async function(err,res){
             if(err||res.status===false) {
               let resobj = {
@@ -164,7 +167,7 @@ Makeituser.getUserById = async function getUserById(userId, result) {
   //var query1 = "Select * from MakeitUser where userid = '" + userId + "'";
   // JSON_OBJECT('img1',mk.img1,'img2',mk.img2,'img3',mk.img3,'img4',mk.img4) As Images
   var query1 =
-    "select mk.userid,mk.makeit_type,mk.ka_status,mk.pincode, mk.commission,mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey,mk.unservicable, mk.img1,mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mk.food_type,mk.member_type,mk.about,mk.virutal_rating_count,mkh.makeithub_id,mkh.makeithub_name,mk.unservicable, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
+    "select mk.userid,mk.makeit_type,mk.zone,zn.Zonename,mk.ka_status,mk.pincode, mk.commission,mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey,mk.unservicable, mk.img1,mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mk.food_type,mk.member_type,mk.about,mk.virutal_rating_count,mkh.makeithub_id,mkh.address as makeithub_address,mkh.makeithub_name,mk.unservicable, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid left join Hometown ht on ht.hometownid=mk.hometownid left join Zone zn on zn.id=mk.zone left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
     userId +
     "'";
   sql.query(query1, async function(err, res) {
@@ -3263,7 +3266,7 @@ Makeituser.moveitavgfirstandlastmile_report= async function moveitavgfirstandlas
 
 ////Get Package Makeit User/////////////
 Makeituser.get_makeit_package_user=  function get_makeit_package_user(req,result) {
-    var getmakeituser ="select userid,brandname from MakeitUser where ka_status=2 and virtualkey=0";
+    var getmakeituser ="select userid,brandname from MakeitUser where ka_status=2 and virtualkey=0 and makeit_type=1";
     sql.query(getmakeituser, async function(err, res) {
       if(err){
         result(null, err);
