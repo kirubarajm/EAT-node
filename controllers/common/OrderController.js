@@ -1024,7 +1024,6 @@ exports.real_abandonedcartrevenu_report = function(req, res) {
   });
 };
 
-<<<<<<< HEAD
 
 //Dunzo zone cod orders
 exports.list_dunzo_zone_cod_orders = function(req, res) {
@@ -1040,17 +1039,11 @@ exports.list_dunzo_zone_cod_orders = function(req, res) {
 
 exports.dunzo_order_assign = function(req, res) {
   Order.dunzo_order_assign(req.body, function(err, result) {
-=======
-////Avg Order Value KPI Dashboard////
-exports.averageordervalue_report = function(req, res) {
-  Order.averageordervalue_report(req.body, function(err, result) {
->>>>>>> 07ab038c3b5a80badca320ef21d77b69a2db2d4e
     if (err) res.send(err);
     res.json(result);
   });
 };
 
-<<<<<<< HEAD
 
 //dunzo order delivery
 exports.dunzo_order_delivery= function(req, res) {
@@ -1073,7 +1066,6 @@ exports.list_dunzo_zone_cod_orders_list = function(req, res) {
     res.send(user);
   });
 }
-=======
 ///////KPI Dashboard Reports Live Kitchen count////
 exports.livekitchenavgcount_report = function(req, res) {
   Order.livekitchenavgcount_report(req.body, function(err, result) {
@@ -1081,4 +1073,3 @@ exports.livekitchenavgcount_report = function(req, res) {
     res.json(result);
   });
 };
->>>>>>> 07ab038c3b5a80badca320ef21d77b69a2db2d4e
