@@ -784,6 +784,16 @@ const master = [
                 "status": "manual"
             }
         ]
+    },{
+        'package_session': [{
+                "id": 1,
+                "session": "start_session"
+            },
+            {
+                "id": 2,
+                "session": "end_session"
+            }
+        ]
     },
 
 

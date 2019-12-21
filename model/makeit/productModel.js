@@ -1,6 +1,7 @@
 "user strict";
 var sql = require("../db.js");
 var Productitem = require("../../model/makeit/productitemsModel.js");
+var Packageitem = require("../../model/makeit/packageitemsModel.js");
 var producthistory = require("../../model/makeit/liveproducthistoryModel.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
@@ -69,7 +70,7 @@ Product.getTotalPrice = async function getTotalPrice(itemlist, makeit_userid, re
   return itemdetail;
 };
 
-Product.createProduct = async function createProduct(newProduct,itemlist,result) {
+Product.createProduct = async function createProduct(newProduct,itemlist,packageList,result) {
   //console.log(itemlist);
   //=> praveen // var Productdetail = await Product.getTotalPrice(itemlist);
   var Productdetail = await Product.getTotalPrice(itemlist,newProduct.makeit_userid);
@@ -100,6 +101,21 @@ Product.createProduct = async function createProduct(newProduct,itemlist,result)
             });
           }  
         });
+      }
+      if(packageList.length>0){
+        for (var i = 0; i < packageList.length; i++) {
+          var package_item = new Packageitem(packageList[i]);
+          package_item.product_id = productid;
+          package_item.makeit_id = newProduct.makeit_userid;
+          package_item.package_id = packageList[i].id;
+          Packageitem.createPackageitems(package_item, function(err, result) {
+            if (err) { 
+              sql.rollback(function() {
+                throw err;
+              });
+            }  
+          });
+        }
       }
         
       let mesobj = "Product Created successfully";
@@ -357,10 +373,8 @@ Product.productitemlist = function productitemlist(req, result) {
       "",
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(null, err);
       } else {
-        console.log("Product : ", res);
         let sucobj = true;
         let resobj = {
           success: sucobj,
@@ -379,7 +393,7 @@ Product.admin_list_all_product = function admin_list_all_product(req, result) {
   var query =
     "Select * from Product where makeit_userid = '" +
     req.makeit_userid +
-    "' and delete_status !=1";
+    "' and delete_status !=1 and approved_status !=3 ";
   if(req.approved_status){
     query = query +" and approved_status = '" +req.approved_status+ "'";
   }
@@ -428,34 +442,51 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
           };
           result(null, resobj);
         }else if (res[0].approved_status !== 0) {
+
           sql.query(
-            "UPDATE Product SET quantity = ? WHERE productid = ? and makeit_userid = ?",
-            [req.quantity, req.productid, req.makeit_userid],
-            function(err, res) {
+            "select pt.approved_status,pt.active_status,mu.ka_status,mu.makeit_type,mu.virtualkey from Product pt left join MakeitUser mu on mu.userid = pt.makeit_userid where productid = '" + req.productid + "'",
+            function(err, res1) {
               if (err) {
-                console.log("error: ", err);
                 result(null, err);
               } else {
-                /////=Edit Live Product History =//////////
-                req.action=2;
-                Product.createliveproductstatushistory(req, function(err,result2){
-                  if (err) {
-                      result(err, null);
-                  } else{
-                      console.log(result2);
-                  }
-                });
-                //////////////////////////////////////////
-                let message = "Quantity added successfully";
-                let resobj = {
-                  success: true,
-                  status : true,
-                  message: message
-                };
-                result(null, resobj);
+                  var isEdit=true;
+                  req.active_status=res1[0].active_status;
+                  if(res1[0].makeit_type===0){
+                    Product.Check_Package(req,isEdit,result);
+                  }else{
+                    Product.update_quantity_valid_package(req,isEdit,result);
+                  } 
               }
             }
           );
+          // sql.query(
+          //   "UPDATE Product SET quantity = ? WHERE productid = ? and makeit_userid = ?",
+          //   [req.quantity, req.productid, req.makeit_userid],
+          //   function(err, res) {
+          //     if (err) {
+          //       console.log("error: ", err);
+          //       result(null, err);
+          //     } else {
+          //       /////=Edit Live Product History =//////////
+          //       req.action=2;
+          //       Product.createliveproductstatushistory(req, function(err,result2){
+          //         if (err) {
+          //             result(err, null);
+          //         } else{
+          //             console.log(result2);
+          //         }
+          //       });
+          //       //////////////////////////////////////////
+          //       let message = "Quantity added successfully";
+          //       let resobj = {
+          //         success: true,
+          //         status : true,
+          //         message: message
+          //       };
+          //       result(null, resobj);
+          //     }
+          //   }
+          // );
          } else if (res[0].approved_status == 0) {
           console.log("product live");
           let resobj = {
@@ -505,7 +536,7 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
     );
   } else{
     sql.query(
-      "select pt.approved_status,pt.active_status,mu.ka_status from Product pt left join MakeitUser mu on mu.userid = pt.makeit_userid where productid = '" + req.productid + "'",
+      "select pt.approved_status,pt.active_status,mu.ka_status,mu.makeit_type,mu.virtualkey from Product pt left join MakeitUser mu on mu.userid = pt.makeit_userid where productid = '" + req.productid + "'",
       function(err, res1) {
         if (err) {
           console.log("error: ", err);
@@ -527,40 +558,16 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
             };
             result(null, resobj);
           }else if (res1[0].approved_status !== 0) {
-            sql.query(
-              "UPDATE Product SET quantity = ?,active_status = ? WHERE productid = ? and makeit_userid = ?",
-              [
-                req.quantity,
-                req.active_status,
-                req.productid,
-                req.makeit_userid
-              ],
-              function(err, res) {
-                if (err) {
-                  console.log("error: ", err);
-                  result(null, err);
-                } else {
-                  /////=Add Live Product History =//////////
-                  req.action=1;
-                  Product.createliveproductstatushistory(req, function(err,result2){
-                    if (err) {
-                          result(err, null);
-                        } else{
-                          console.log(result2);
-                        }
-                  });
-                  /////////////////////////////////////////
-                  let message =
-                    "Quantity added and product moved to live successfully";
-                  let resobj = {
-                    success: true,
-                    message: message,
-                    status: true
-                  };
-                  result(null, resobj);
-                }
-              }
-            );
+
+            console.log("res1[0].makeit_type-->",res1[0].makeit_type)
+            var isEdit=false;
+            if(res1[0].makeit_type===0){
+              console.log("No ...");
+              Product.Check_Package(req,isEdit,result);
+            }else{
+              Product.update_quantity_valid_package(req,isEdit,result);
+            } 
+            
           } else if (res1[0].approved_status === 0) {
            
             let resobj = {
@@ -585,16 +592,125 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
   }
 };
 
-Product.quantitydecrease = function(orderlist, result) {
+Product.update_quantity_valid_package=function(req,isEdit,result){
+  sql.query(
+    "UPDATE Product SET quantity = ?,active_status = ? WHERE productid = ? and makeit_userid = ?",
+    [
+      req.quantity,
+      req.active_status,
+      req.productid,
+      req.makeit_userid
+    ],
+    function(err, res) {
+      if (err) {
+        result(null, err);
+      } else {
+        /////=Edit Live Product History =//////////
+        let message='';
+        if(isEdit){
+          req.action=2;
+          message = "Quantity added successfully";
+        }else{
+          /////////////////////////////////////////
+          /////=Add Live Product History =//////////
+          req.action=1;
+          message ="Quantity added and product moved to live successfully";
+        }
+        Product.createliveproductstatushistory(req, function(err,result2){
+          if (err) {
+                result(err, null);
+              } else{
+                console.log(result2);
+              }
+        });
+        
+        let resobj = {
+          success: true,
+          message: message,
+          status: true
+        };
+        result(null, resobj);
+      }
+    }
+  );
+}
+
+Product.Check_Package=async function(req,isEdit,result){
+
+  var currentProductPackageIDQuery = "SELECT pp.package_id from ProductPackaging pp where pp.product_id="+req.productid+" and pp.makeit_id="+req.makeit_userid;
+  var currentProductPackageID = await query(currentProductPackageIDQuery);
+  if(currentProductPackageID.length>0){
+   // console.log("currentProductPackageIDQuery-->",currentProductPackageID);
+    var liveProductListWithpackage = await query("SELECT pp.package_id,sum(pp.count*pt.quantity) as sumcount from Product pt left join ProductPackaging pp on pp.product_id=pt.productid where pt.active_status=1 and pt.productid !="+req.productid+" and pt.makeit_userid="+req.makeit_userid +" and pp.package_id in ("+currentProductPackageIDQuery+") GROUP BY pp.package_id");
+    //console.log("liveProductListWithpackage-->",liveProductListWithpackage);
+    var currentProductPackageCountQuery = await query("SELECT pp.package_id,pp.count from ProductPackaging pp where pp.product_id="+req.productid+" and pp.makeit_id="+req.makeit_userid);
+    //console.log("currentProductPackageCountQuery-->",currentProductPackageCountQuery);
+
+    for(var i=0;i<currentProductPackageCountQuery.length;i++){
+      for(var j=0;j<liveProductListWithpackage.length;j++){
+        var currentPgid =currentProductPackageCountQuery[i].package_id;
+        var livedPgid =liveProductListWithpackage[j].package_id;
+        
+        if(currentPgid==livedPgid){
+          var currentCount =parseInt(currentProductPackageCountQuery[i].count) * parseInt(req.quantity);
+          var livedCount =parseInt(liveProductListWithpackage[j].sumcount);
+          
+          var totalCount =currentCount+livedCount;
+          currentProductPackageCountQuery[i].count=totalCount;
+        }
+      }
+    }
+
+    //console.log("cuPackageCount->",currentProductPackageCountQuery);
+    var stockPackageCountQuery = await query("SELECT it.packageid,it.remaining_count FROM InventoryTracking it where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id="+req.makeit_userid +" and packageid in ("+currentProductPackageIDQuery+") GROUP BY packageid) order by packageid");
+    //console.log("stockPackageCountQuery-->",stockPackageCountQuery);
+    var isProductLive=true;
+    for(var i=0;i<currentProductPackageCountQuery.length;i++){
+      for(var j=0;j<stockPackageCountQuery.length;j++){
+        var currentPgid =currentProductPackageCountQuery[i].package_id;
+        var stockPgid =stockPackageCountQuery[j].packageid;
+        //console.log("currentPgid==livedPgid-->",currentPgid+"==="+stockPgid);
+        if(currentPgid==stockPgid){
+          var currentCount =parseInt(currentProductPackageCountQuery[i].count);
+          var stockCount =parseInt(stockPackageCountQuery[j].remaining_count);
+          //console.log("currentCount==livedCount-->",currentCount+"==="+stockCount);
+          if(currentCount>stockCount) {
+            isProductLive =false;
+            //console.log("isProductLive-->",isProductLive);
+          }
+        }
+      }
+    }
+    //console.log("isProductLive if -->",isProductLive);
+     if(isProductLive){
+      Product.update_quantity_valid_package(req,isEdit,result);
+     }else{
+      var resObj={
+        success:true,
+        status:false,
+        message:"Sorry your packing count is limit exited. Please contact admin."
+      }
+      result(null,resObj);
+     }
+
+  }else{
+    var resObj={
+      success:true,
+      status:false,
+      message:"Not Mapping package detail. Please contact admin."
+    }
+    result(null,resObj);
+  }
+}
+
+Product.quantitydecrease = function(orderlist,isEdit,result) {
   sql.query(
     "update Product set quantity= quantity-? WHERE productid = ",
     [orderlist.quantity, orderlist.productid],
     function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(null, err);
       } else {
-        console.log("test");
         result(null, res);
       }
     }
@@ -618,9 +734,9 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
           req.original_price = Productdetail.original_price;
           var staticquery = "UPDATE Product SET ";
           var column = "";
-
+          
           for (const [key, value] of Object.entries(req)) {
-            if (key !== "productid" && key !== "items") {
+            if (key !== "productid" && key !== "items"&& key !== "packageItems" ) {
               column = column + key + "='" + value + "',";
             }
           }
@@ -636,12 +752,38 @@ Product.update_a_product_by_makeit_userid = function(req, items, result) {
           }
           itemid = itemid.slice(0, -1);
           Productitem.deleteProductitems(
-            product_item.productid,
+            req.productid,
             itemid,
             function(err, result) {
               if (err) res.send(err);
             }
           );
+///Package Update///
+
+var package_id = "";
+var packageItems = req.packageItems|| [];
+console.log("packageItems-->",packageItems.length);
+for (var i = 0; i < packageItems.length; i++) {
+  var package_item = new Packageitem(packageItems[i]);
+  package_id = package_id + packageItems[i].id + ",";
+  package_item.product_id = req.productid;
+  package_item.package_id=packageItems[i].id ;
+  package_item.makeit_id=req.makeit_userid
+  Packageitem.updatePackageitems(package_item, function(err, result) {
+    if (err) res.send(err);
+  });
+}
+package_id = package_id.slice(0, -1);
+Packageitem.deletePackageitems(
+  req.productid,
+  package_id,
+  function(err, result) {
+    if (err) res.send(err);
+  }
+);
+
+          
+
 
           var query =
             staticquery +
@@ -780,22 +922,24 @@ Product.productview_by_productid = function productview_by_productid(
         console.log("error: ", err);
         result(null, err);
       } else {
-        sql.query(
-          "select pi.quantity,mi.price,mi.menuitemid,mi.menuitem_name,mi.vegtype,mi.approved_status from Productitem pi join Menuitem mi on mi.Menuitemid = pi.itemid where pi.productid = " +
-            req.productid +
-            "",
-          function(err, res1) {
+        var menuItemQuery="select pi.quantity,mi.price,mi.menuitemid,mi.menuitem_name,mi.vegtype,mi.approved_status from Productitem pi join Menuitem mi on mi.Menuitemid = pi.itemid where pi.productid ="+req.productid
+        var packageQuery=menuItemQuery+";"+"select * from ProductPackaging join PackagingBox pb on pb.id = package_id where product_id = "+ req.productid
+        sql.query(packageQuery,
+          function(err, resArray) {
             if (err) {
               console.log("error: ", err);
               result(null, err);
             } else {
-              //console.log(res1[0]);
-              for (let i = 0; i < res1.length; i++) {
-                items.push(res1[i]);
-              }
+              console.log(resArray[0]);
+              var resProductItems=resArray[0];
+              var resPackageItems=resArray[1];
+              // for (let i = 0; i < res1.length; i++) {
+              //   items.push(res1[i]);
+              // }
 
               res[0].makeitdetail = JSON.parse(res[0].makeitdetail);
-              res[0].items = items;
+              res[0].items = resProductItems;
+              res[0].packageItems = resPackageItems;
               let sucobj = true;
               let resobj = {
                 success: sucobj,
@@ -963,24 +1107,30 @@ Product.approve_product_status = function(req, result) {
 
 
 Product.admin_list_all__unapproval_product = function admin_list_all__unapproval_product(req,result) {
-  console.log(req);
-
   var query =
     "Select pd.*,mk.brandname,mk.name as makeit_name from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid  where delete_status !=1 ";
 
-  query =query +" and approved_status = '"+req.approved_status +"' order by created_at desc";
+  query =query +" and approved_status In (1,4) order by created_at desc";
   console.log(query);
   sql.query(query, function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(null, err);
     } else {
-      console.log("Product : ", res);
+      //collectionlist.collection_details = collectiontype.filter(collectiontype => collectiontype.type=1);
+      var newCount =res.filter(res=>res.approved_status==1);
+      var editCount =res.filter(res=>res.approved_status==4);
+      var totalArray=res;
+      if(req.approved_status==1) totalArray=newCount;
+      if(req.approved_status==4) totalArray=editCount;
       let sucobj = true;
       let resobj = {
         success: sucobj,
         status: true,
-        result: res
+        newCount:newCount.length,
+        editCount:editCount.length,
+        totalCount:res.length,
+        result: totalArray
       };
 
       result(null, resobj);
@@ -1049,14 +1199,17 @@ Product.createliveproductstatushistory = async function(req, result) {
     if (getproductdetails.err) {
       result(err, null);
     }else{
-      var inserthistory = await producthistory.createProducthistory(getproductdetails);
-      let resobj = {
-        success : true,
-        message : "Live Product History Created Successfully",
-        status  : false,
-        result  : inserthistory
-      };
-      result(null, resobj);
+     
+      if(getproductdetails.length>0){
+        var inserthistory = await producthistory.createProducthistory(getproductdetails);
+        let resobj = {
+          success : true,
+          message : "Live Product History Created Successfully",
+          status  : false,
+          result  : inserthistory
+        };
+        result(null, resobj);
+      }
     }
   }else{
     result(err, null);

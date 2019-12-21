@@ -14,6 +14,7 @@ var MakeitBadges = require("../../model/makeit/makeitbadgesmappingModel");
 var PushConstant = require("../../push/PushConstant.js");
 var Notification = require("../../model/common/notificationModel.js");
 var ZoneModel    = require("../../model/common/zoneModel.js");
+var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTrackingModel');
 
 //Task object constructor
 var Makeituser = function(makeituser) {
@@ -54,6 +55,7 @@ var Makeituser = function(makeituser) {
   this.zone =makeituser.zone || 0;
   this.referredby=makeituser.referredby;
   this.pushid_ios=makeituser.pushid_ios;
+  this.makeit_type=makeituser.makeit_type;
 };
 
 Makeituser.createUser = function createUser(newUser,isAdmin,result) {
@@ -68,8 +70,10 @@ Makeituser.createUser = function createUser(newUser,isAdmin,result) {
         result(err, null);
       } else {
         if (res2.length == 0) {
-          if(!isAdmin){Makeituser.user_register(newUser,result);}
-          else{
+          if(!isAdmin){
+            newUser.makeit_type=0;
+            Makeituser.user_register(newUser,result);
+          }else{
           ZoneModel.check_map_boundaries(newUser,async function(err,res){
             if(err||res.status===false) {
               let resobj = {
@@ -163,7 +167,7 @@ Makeituser.getUserById = async function getUserById(userId, result) {
   //var query1 = "Select * from MakeitUser where userid = '" + userId + "'";
   // JSON_OBJECT('img1',mk.img1,'img2',mk.img2,'img3',mk.img3,'img4',mk.img4) As Images
   var query1 =
-    "select mk.userid, mk.ka_status,mk.pincode, mk.commission,mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey,mk.unservicable, mk.img1,mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mk.food_type,mk.member_type,mk.about,mk.virutal_rating_count,mkh.makeithub_id,mkh.makeithub_name,mk.unservicable, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid  left join Hometown ht on ht.hometownid=mk.hometownid left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
+    "select mk.userid,mk.makeit_type,mk.zone,zn.Zonename,mk.ka_status,mk.pincode, mk.commission,mk.name, mk.email,bank_account_no, mk.phoneno, mk.lat, mk.brandname, mk.lon, mk.localityid, mk.appointment_status, mk.verified_status, mk.referalcode, mk.created_at, mk.bank_name, mk.ifsc, mk.bank_holder_name, mk.address, mk.virtualkey,mk.unservicable, mk.img1,mk.regionid, mk.costfortwo, mk.pushid_android, mk.updated_at, mk.branch_name, mk.rating, mk.hometownid,ht.hometownname,re.regionname,mk.food_type,mk.member_type,mk.about,mk.virutal_rating_count,mkh.makeithub_id,mkh.address as makeithub_address,mkh.makeithub_name,mk.unservicable, JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cu.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk  join Cuisine_makeit cm on cm.makeit_userid=mk.userid left join Hometown ht on ht.hometownid=mk.hometownid left join Zone zn on zn.id=mk.zone left join Region re on re.regionid=ht.regionid join Cuisine cu on cu.cuisineid=cm.cuisineid left join Makeit_hubs mkh on mkh.makeithub_id=mk.makeithub_id where userid = '" +
     userId +
     "'";
   sql.query(query1, async function(err, res) {
@@ -521,9 +525,7 @@ Makeituser.orderviewbymakeituser = function(req, result) {
         } else {
           // sql.query("select userid,ordertime,locality,delivery_charge,orderstatus from Orders where orderid = '" + id.orderid +"'", function (err, responce) {
           sql.query(
-            "SELECT dm.*,ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid left join Dunzo_moveit_details dm on dm.task_id=ors.dunzo_taskid where ors.orderid =" +
-              req.orderid +
-              " ",
+            "SELECT dm.*,ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.Locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'package_items',coalesce((SELECT JSON_ARRAYAGG(JSON_OBJECT('productid', pp.product_id,'package_name', pb.name,'package_id',pp.package_id,'package_count',(pp.count*ci.quantity))) from ProductPackaging pp left join PackagingBox pb on pb.id = pp.package_id where pp.product_id = ci.productid),json_array())))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid left join Dunzo_moveit_details dm on dm.task_id=ors.dunzo_taskid where ors.orderid =" +req.orderid +" ",
             function(err, res) {
               if (err) {
                 console.log("error: ", err);
@@ -735,7 +737,12 @@ Makeituser.all_order_list_bydate = function(req, result) {
   );
 };
 
-Makeituser.orderstatusbyorderid = function(req, result) {
+Makeituser.orderstatusbyorderid = async function(req, result) {
+  var orderdetails = await query(
+    "select ors.makeit_user_id from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid ='" +
+      req.orderid +
+      "'"
+  );
   var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
   sql.query(
     "UPDATE Orders SET orderstatus = ?,makeit_actual_preparing_time='" +
@@ -744,7 +751,6 @@ Makeituser.orderstatusbyorderid = function(req, result) {
     [req.orderstatusid, req.orderid],
     async function(err, res) {
       if (err) {
-        console.log("error: ", err);
         result(null, err);
       } else {
         await Notification.orderEatPushNotification(
@@ -760,8 +766,13 @@ Makeituser.orderstatusbyorderid = function(req, result) {
           status: sucobj,
           message: mesobj
         };
-        ////Insert Order History////
-        
+        ////Package Inventory tracking////
+        PackageInvetoryTracking.orderbasedpackageTracking(req.orderid,orderdetails[0].makeit_user_id, function(err,res4){
+          if (err) {
+            result(err, null);
+          } else {
+          }
+        });
         ////////////////////////////
         result(null, resobj);
       }
@@ -3150,6 +3161,112 @@ Makeituser.makeit_zoneid_update= async function makeit_zoneid_update(req,result)
     }
 };
 
+//Get Live Product Status Based on the Kitchen 
+Makeituser.kitchen_liveproduct_status_kpi= async function kitchen_liveproduct_status_kpi(req, date, result) {
+  if(req.makeit_id){
+    var getmaxquantity = await query("select lph.makeit_id,lph.product_id,p.product_name,MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage,0 as kitchen_product_count_percentage,0 as kitchen_product_percentage from Live_Product_History lph left join Product as p on p.productid=lph.product_id where date(lph.created_at)=CURDATE() and lph.makeit_id="+req.makeit_id+" group by lph.product_id order by lph.product_id ASC");
+  
+    var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)=CURDATE() and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+req.makeit_id+" group by oi.productid order by oi.productid ASC");
+    //result(null, getsoldquantity);
+    var product_count = 0;
+    var kitchen_percentage = 0;
+    if(getmaxquantity.length !=0){
+      ////Calculation For Product Count
+      
+      for(var i=0; i<getmaxquantity.length; i++){
+        var quantity=getmaxquantity[i].total_quantity|| 0;
+        product_count = parseInt(product_count) + parseInt(quantity);
+      }
+
+      for(var i=0; i<getmaxquantity.length; i++){
+        for(var j=0; j<getsoldquantity.length; j++){
+          if(getmaxquantity[i].product_id==getsoldquantity[j].productid){
+            ////Set Soldout Quantity
+            getmaxquantity[i].sold_quantity = getsoldquantity[j].sold_quantity;
+            ////Calculation For Product Percentage
+            getmaxquantity[i].product_percentage = ((getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100);
+            ////Calculation For Kitchen Product Percentage
+            getmaxquantity[i].kitchen_product_count_percentage = ((getmaxquantity[i].total_quantity/product_count)*100);
+            ////Calculation For Kitchen Percentage
+            getmaxquantity[i].kitchen_product_percentage = (getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100));
+            ////Calcualtion For kitchen percentage
+            kitchen_percentage = kitchen_percentage+(getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100));
+          }
+        }
+      }
+      let resobj = {
+        success: true,
+        status : true,
+        product_count: product_count,
+        kitchen_percentage: kitchen_percentage.toFixed(2) || 0,
+        result : getmaxquantity
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status : false
+      };
+      result(null, resobj);
+    }
+  }else{
+    let resobj = {
+      success: true,
+      message: "Invalid Makeit_id",
+      status : false
+    };
+    result(null, resobj);
+  }
+};
+
+////Home Successtion rate KPI Dashboard////
+Makeituser.homesuccesstionrate_report = async function(req, result) {
+  var makeit = await query("select DISTINCT lph.makeit_id,if(mu.virtualkey=1,'virtual','real') as Kitchen_type,mu.brandname from Live_Product_History as lph left join MakeitUser as mu on mu.userid = lph.makeit_id where date(lph.created_at)=CURDATE() ");
+    if(makeit.length>0){
+      ////Get Kitchen Percentage////////
+      for(var i=0; i<makeit.length; i++){
+        makeit[i].makeit_id=makeit[i].makeit_id;
+        await Makeituser.kitchen_liveproduct_status_kpi(makeit[i],req.date,function(err,percentage){
+          makeit[i].kitchen_percentage=percentage.kitchen_percentage || 0;
+        });
+      }
+      //////////////////////////////////
+      result(null, makeit);      
+    }else{
+      result(null, makeit);
+    }
+};
+
+//// Moveit Avg First and Last Miles/////
+Makeituser.moveitavgfirstandlastmile_report= async function moveitavgfirstandlastmile_report(req, result) {  
+  var query="Select date(ord.ordertime) as date,ord.moveit_user_id,mu.name,count(ord.orderid)as order_count, SEC_TO_TIME(AVG(TIME_TO_SEC(TIMEDIFF(moveit_reached_time,moveit_accept_time)))) as first_mile, SEC_TO_TIME(AVG(TIME_TO_SEC(TimeDiff(moveit_actual_delivered_time,moveit_pickup_time)))) as second_mile, SEC_TO_TIME(AVG(TIME_TO_SEC(ADDTIME(TIMEDIFF(moveit_reached_time,moveit_accept_time),TimeDiff(moveit_actual_delivered_time,moveit_pickup_time))))) as Avg_time from Orders as ord left join MoveitUser as mu on mu.userid = ord.moveit_user_id where ord.moveit_user_id !=0 and ord.moveit_accept_time IS NOT NULL and ord.moveit_reached_time IS NOT NULL and ord.moveit_actual_delivered_time IS NOT NULL and ord.moveit_pickup_time IS NOT NULL and ord.orderid NOT IN (select orderid from Force_delivery_logs) and ord.orderstatus=6 and Date(ord.created_at) BETWEEN CURDATE()-6 AND  CURDATE() group by mu.userid,date(ord.ordertime) order by date(ord.ordertime),ord.moveit_user_id";
+  //console.log("query-->",query);
+  sql.query(query,async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {        
+        result(null, res);
+      }
+    }
+  );
+};
 
 
+////Get Package Makeit User/////////////
+Makeituser.get_makeit_package_user=  function get_makeit_package_user(req,result) {
+    var getmakeituser ="select userid,brandname from MakeitUser where ka_status=2 and virtualkey=0 and makeit_type=1";
+    sql.query(getmakeituser, async function(err, res) {
+      if(err){
+        result(null, err);
+      }else{
+        let resobj = {
+          success: true,
+          status : true,
+          result : res
+        };
+        result(null, resobj);
+      }
+    });
+};
 module.exports = Makeituser;

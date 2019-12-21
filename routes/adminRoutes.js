@@ -24,6 +24,8 @@ module.exports = function(app) {
   var Stories = require("../controllers/common/StoryController");
   var adminController = require("../controllers/admin/adminUserController");
   var zoneController = require("../controllers/common/ZoneController");
+  var packageController = require("../controllers/common/PackagingBoxTrackingController");
+  var packageInventoryController = require("../controllers/makeit/PackageInventoryController");
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));
@@ -224,18 +226,19 @@ app.route("/admin/reports/Itemwisereport").post(routesVersioning({"1.0.0":orders
 app.route("/admin/reports/moveit_master_report").post(routesVersioning({"1.0.0":orders.moveit_master_report}));
 app.route("/admin/reports/makeit_master_report").post(routesVersioning({"1.0.0":orders.makeit_master_report}));
 
-////User Exp report///
+////KPI Dashboard Reports User Exp report///
 app.route("/admin/reports/userexperience").post(routesVersioning({"1.0.0":orders.userexperience_report}));
-////Total completed orders revenu////
+////KPI Dashboard Reports Total completed orders revenu////
 app.route("/admin/reports/virtualordercompletedrevenu").post(routesVersioning({"1.0.0":orders.virtualorder_completedrevenu_report}));
 app.route("/admin/reports/realordercompletedrevenu").post(routesVersioning({"1.0.0":orders.realorder_completedrevenu_report}));
-////Total cancelled orders revenu////
+////KPI Dashboard Reports Total cancelled orders revenu////
 app.route("/admin/reports/virtualordercancelledrevenu").post(routesVersioning({"1.0.0":orders.virtualorder_cancelledrevenu_report}));
 app.route("/admin/reports/realordercancelledrevenu").post(routesVersioning({"1.0.0":orders.realorder_cancelledrevenu_report}));
-////Abandoned Cart orders revenu////
+////KPI Dashboard Reports Abandoned Cart orders revenu////
 app.route("/admin/reports/virtualabandonedcartrevenu").post(routesVersioning({"1.0.0":orders.virtual_abandonedcartrevenu_report}));
 app.route("/admin/reports/realabandonedcartrevenu").post(routesVersioning({"1.0.0":orders.real_abandonedcartrevenu_report}));
 
+<<<<<<< HEAD
 //admin dunzo cod order list
 
 app.route("/admin/dunzocodorders").post(routesVersioning({"1.0.0":orders.list_dunzo_zone_cod_orders}));
@@ -243,5 +246,32 @@ app.route("/admin/dunzoorderlist").post(routesVersioning({"1.0.0":orders.list_du
 app.route("/admin/dunzoorder/assign").post(routesVersioning({"1.0.0":orders.dunzo_order_assign}));
 app.route("/admin/dunzoorder/delivery").post(routesVersioning({"1.0.0":orders.dunzo_order_delivery}));
 
+=======
+////KPI Dashboard Reports Home Successtion rate////
+app.route("/admin/reports/homesuccesstionrate").post(routesVersioning({"1.0.0":makeituser.homesuccesstionrate_report}));
+////KPI Dashboard Reports Moveit Avg First and Last Miles////
+app.route("/admin/reports/moveitavgfirstandlastmile").post(routesVersioning({"1.0.0":makeituser.moveitavgfirstandlastmile_report}));
+///KPI Dashboard Reports Avg Order Value////
+app.route("/admin/reports/averageordervalue").post(routesVersioning({"1.0.0":orders.averageordervalue_report}));
+///KPI Dashboard Reports Live Kitchen count////
+app.route("/admin/reports/livekitchenavgcount").post(routesVersioning({"1.0.0":orders.livekitchenavgcount_report}));
+
+
+///PackageBox///
+app.route("/admin/packagingbox/add").post(routesVersioning({"1.0.0":packageController.create_a_packagingbox}));
+app.route("/admin/packagingbox/getlist").get(routesVersioning({"1.0.0":packageController.list_all_packagingbox}));
+app.route("/admin/packagingbox/getlist/:id").get(routesVersioning({"1.0.0":packageController.list_single_packagingbox}));
+app.route("/admin/packagingbox/update").put(routesVersioning({"1.0.0":packageController.updatePackagingBoxType}));
+
+//Package Inventory//
+app.route("/admin/packageinventory/getallpackagelist").post(routesVersioning({"1.0.0":packageInventoryController.getAllPackageInventoryList}));
+app.route("/admin/packageinventory/getlist/:makeit_id").get(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryList}));
+app.route("/admin/packageinventory/getpackagemaplist/:makeit_id").get(routesVersioning({"1.0.0":packageInventoryController.getPackageMapInventoryList}));
+app.route("/admin/packageinventory/:inventoryid").get(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryByid}));
+app.route("/admin/packageinventory/add").post(routesVersioning({"1.0.0":packageInventoryController.create_PackageInventory}));
+app.route("/admin/packageinventory/update").put(routesVersioning({"1.0.0":packageInventoryController.updatePackageInventory}));
+app.route("/admin/packageinventory/stocklist").post(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryStockList}));
+app.route("/admin/makeit/packagemakeitusers").get(routesVersioning({"1.0.0":makeituser.get_makeit_package_user}));
+>>>>>>> 07ab038c3b5a80badca320ef21d77b69a2db2d4e
 
 }
