@@ -205,7 +205,15 @@ const master = [
             },
             {
                 "OrderStatusid": 10,
-                "OrderStatus": "Incomplete online order reject "
+                "OrderStatus": "Tunnel order"
+            },
+            {
+                "OrderStatusid": 11,
+                "OrderStatus": "Moveit order Hign demand"
+            },
+            {
+                "OrderStatusid": 12,
+                "OrderStatus": "Dunzo Hign demand "
             }
         ]
     },

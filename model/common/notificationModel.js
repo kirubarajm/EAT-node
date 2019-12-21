@@ -17,7 +17,7 @@ var Notification = function(notification) {
 
 Notification.getPushOrderDetail = async function(orderid) {
   var orders = await query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'pushid_ios',us.pushid_ios,'pushid_android',us.pushid_android,'name',us.name) as userdetail,"+
-    "JSON_OBJECT('userid',ms.userid,'name',ms.name,'brandName',ms.brandName,'virtualkey',ms.virtualkey,'pushid_android',ms.pushid_android) as makeitdetail,"+
+    "JSON_OBJECT('userid',ms.userid,'name',ms.name,'brandName',ms.brandName,'virtualkey',ms.virtualkey,'pushid_android',ms.pushid_android,'pushid_ios',ms.pushid_ios) as makeitdetail,"+
     "JSON_OBJECT('userid',mu.userid,'name',mu.name,'Vehicle_no',mu.Vehicle_no,'pushid_android',mu.pushid_android) as moveitdetail "+
     "from Orders as ors "+
     "left join User as us on ors.userid=us.userid "+
@@ -191,9 +191,16 @@ Notification.orderMakeItPushNotification = async function(
 
   if (data == null) return;
 
-  if (makeituser && makeituser.pushid_android&&makeituser.virtualkey===0) {
-    console.log("Android->", makeituser.pushid_android);
-    FCM_Makeit.sendNotificationAndroid(makeituser.pushid_android, data);
+  if (makeituser && makeituser.virtualkey===0) {
+    if (makeituser.pushid_android) {
+      console.log("Android->", makeituser.pushid_android);
+      FCM_Makeit.sendNotificationAndroid(makeituser.pushid_android, data);
+    } 
+
+    if (makeituser.pushid_ios) {
+      console.log("ios->", makeituser.pushid_ios);
+      FCM_Makeit.sendNotificationAndroid(makeituser.pushid_ios, data);
+    }
   }else{
    
     var pushDetail = await Notification.getVirtualMakeitPushId(makeituser.userid);

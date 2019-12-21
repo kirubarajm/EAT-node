@@ -134,7 +134,7 @@ exports.order_list_eatuser = function(req, res) {
 };
 
 exports.order_assign = function(req, res) {
-  console.log(req.body);
+ 
   Order.order_assign(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
@@ -1023,3 +1023,46 @@ exports.real_abandonedcartrevenu_report = function(req, res) {
     res.json(user);
   });
 };
+
+
+//Dunzo zone cod orders
+exports.list_dunzo_zone_cod_orders = function(req, res) {
+  Order.list_dunzo_zone_cod_orders_by_admin(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+};
+
+//dunzo order assign
+
+exports.dunzo_order_assign = function(req, res) {
+  Order.dunzo_order_assign(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+
+//dunzo order delivery
+exports.dunzo_order_delivery= function(req, res) {
+  if (req.body.orderid) {
+    Order.dunzo_order_delivery_by_admin(req.body, function(err, result) {
+      if (err) res.send(err);
+      res.json(result);
+    });
+  } else {
+    res.status(400).send({ error: true,status:false, message: "Please provide orderid" });
+  }
+};
+
+//Dunzo zone cod orders
+exports.list_dunzo_zone_cod_orders_list = function(req, res) {
+  Order.list_dunzo_zone_cod_orders_list_by_admin(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+}

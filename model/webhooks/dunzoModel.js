@@ -200,28 +200,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
 
           break; 
       case dunzoconst.pickup_complete:
-          // console.log("pickup_complete");
-          //   var order_pickup_time = moment().format("YYYY-MM-DD HH:mm:ss");
-          //   var twentyMinutesLater = moment().add(0, "seconds").add(req.eta.dropoff, "minutes").format("YYYY-MM-DD HH:mm:ss");
-         
-          // updatequery ="UPDATE Orders  SET orderstatus = 5 ,moveit_pickup_time = '" +order_pickup_time+"',moveit_expected_delivered_time = '" +twentyMinutesLater +"'  WHERE orderid ='" +orderdetails[0].orderid +"'";
-          //       const updatestatuspickup = await query(updatequery);
-          //       var pickup = req.eta.pickup || 0;
-          //       var dropoff = req.eta.dropoff || 0;
-              
-          //      update_pickup_eta ="UPDATE Dunzo_moveit_details SET runner_eta_pickup_min = '" +  pickup +"' ,runner_eta_dropoff_min= '" + dropoff +"' WHERE task_id ='" +req.task_id+"'";
-          //      const update_pickup_eta_by_dunzo = await query(update_pickup_eta);
-
-          //             let resobj = {
-          //               success: true,
-          //               status: true,
-          //               status_code : 200,
-          //               message: "Order Pickedup successfully"
-          //             };
-              
-          //             await Notification.orderEatPushNotification(orderdetails[0].orderid,null,PushConstant.Pageid_eat_order_pickedup);
-       
-          //        result(null, resobj);
+          
 
           console.log("pickup_complete");
           console.log(orderdetails[0].orderid);
@@ -289,27 +268,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
 
        //   Order.order_delivery_status_by_moveituser = async function(req, result) {
             var order_delivery_time = moment().format("YYYY-MM-DD HH:mm:ss");
-            // if (orderdetails.length !== 0) {
-          
-            //   if (orderdetails[0].orderstatus == 6) {
-            //     let resobj = {
-            //       success: true,
-            //       message: "Sorry!  order was already deliverd.",
-            //       status_code : 400,
-            //       status:false
-            //     };
-            //     result(null, resobj);
-            //   }else if (orderdetails[0].orderstatus == 7) {
-            //     let resobj = {
-            //       success: true,
-            //       message: "Sorry!  order already canceled.",
-            //       status_code : 400,
-            //       status:false
-            //     };
-            //     result(null, resobj);
-            //   }else{
-    
-            //   if (orderdetails[0].payment_status == 1) {
+           
                 updatequery ="UPDATE Orders SET orderstatus = 6,moveit_actual_delivered_time = '" +order_delivery_time+"',dunzo_price='"+req.price+"' WHERE orderid ='" +orderdetails[0].orderid +"'";
                 const updatestatusdeliverd = await query(updatequery);
                       let deliverd = {
@@ -326,33 +285,12 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
                      
                  result(null, deliverd);
 
-            //   } else {
-            //     let resobj = {
-            //       success: true,
-            //       status:false,
-            //       status_code : 400,
-            //       message: "Payment not yet paid!",
-            //       orderdeliverystatus: false
-            //     };
-            //     result(null, resobj);
-            //   }
-            // }
-            // } else {
-            //   let resobj = {
-            //     success: true,
-            //     message: "Orders not found!.",
-            //     status_code : 400,
-            //     status:false
-            //   };
-            //   result(null, resobj);
-            // }
-         // };
         
           break;
       case dunzoconst.cancelled:
           console.log("cancelled");
           var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderdetails[0].orderid+"");
-          updatequery = await query("UPDATE Orders SET moveit_status = 0,delivery_vendor=0,dunzo_taskid=''  WHERE orderid ='" +orderdetails[0].orderid +"'");
+         updatequery = await query("UPDATE Orders SET moveit_status = 0,delivery_vendor=0,dunzo_taskid=''  WHERE orderid ='" +orderdetails[0].orderid +"'");
 
           let orderqueue = {
             success: true,
@@ -382,7 +320,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
     //var url ='https://apis-staging.dunzo.in/api/v1/tasks?test=true';
    // var orderquery =  "SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  where ors.orderid ="+orderid +" ";
    // order_details = await query(orderquery);
-   var order_details = await query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1,'landmark',ms.landmark,'flatno',ms.flatno,'pincode',ms.pincode,'locality',ms.locality,'virtualkey',ms.virtualkey) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('makeithub_name',mh.makeithub_name,'lat',mh.lat,'lon',mh.lon,'address',mh.address,'flat_no',mh.flat_no,'phone_number',mh.phone_number,'pincode',mh.pincode) as makeithubdetail,   JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  left join Makeit_hubs mh on mh.makeithub_id=ms.makeithub_id where ors.orderid ="+orderid +" ");
+   var order_details = await query("SELECT ors.*,JSON_OBJECT('userid',us.userid,'name',us.name,'phoneno',us.phoneno,'email',us.email,'locality',us.locality) as userdetail,JSON_OBJECT('userid',ms.userid,'name',ms.name,'phoneno',ms.phoneno,'email',ms.email,'address',ms.address,'lat',ms.lat,'lon',ms.lon,'brandName',ms.brandName,'localityid',ms.localityid,'makeitimg',ms.img1,'landmark',ms.landmark,'flatno',ms.flatno,'pincode',ms.pincode,'locality',ms.locality,'virtualkey',ms.virtualkey) as makeitdetail,JSON_OBJECT('userid',mu.userid,'name',mu.name,'phoneno',mu.phoneno,'email',mu.email,'Vehicle_no',mu.Vehicle_no,'localityid',ms.localityid) as moveitdetail,JSON_OBJECT('makeithub_name',mh.makeithub_name,'lat',mh.lat,'lon',mh.lon,'address',mh.address,'addressDetails',mh.addressDetails,'flat_no',mh.flat_no,'phone_number',mh.phone_number,'pincode',mh.pincode) as makeithubdetail,   JSON_OBJECT('item', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'vegtype',pt.vegtype))) AS items, ( 3959 * acos( cos( radians(ors.cus_lat) ) * cos( radians( ms.lat ) )  * cos( radians( ms.lon ) - radians(ors.cus_lon) ) + sin( radians(ors.cus_lat) ) * sin(radians(ms.lat)) ) ) AS distance from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser ms on ors.makeit_user_id = ms.userid left join MoveitUser mu on mu.userid = ors.moveit_user_id left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid  left join Makeit_hubs mh on mh.makeithub_id=ms.makeithub_id where ors.orderid ="+orderid +" ");
    var order_assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
    var cuurent_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
@@ -412,6 +350,8 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
     pickup.phoneno = order_details[0].makeitdetail.phoneno;
     pickup.pincode = order_details[0].makeitdetail.pincode;
     pickup.name= order_details[0].makeitdetail.brandName;
+    pickup.address= order_details[0].makeitdetail.address;
+    
 
   } else {
     pickup.lat = order_details[0].makeithubdetail.lat;
@@ -419,10 +359,11 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
     pickup.phoneno = order_details[0].makeithubdetail.phone_number;
     pickup.pincode = order_details[0].makeithubdetail.pincode;
     pickup.name= order_details[0].makeithubdetail.makeithub_name;
+    pickup.address= order_details[0].makeithubdetail.addressDetails;
   }
 
   var items=order_details[0].items;
-  console.log(items.length);
+
 
   if (items.length !=0) {
     
@@ -441,8 +382,8 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
         lng: pickup.lng,
         address: {
           apartment_address : order_details[0].makeitdetail.flatno,
-          street_address_1: order_details[0].makeitdetail.address,
-          street_address_2: order_details[0].makeitdetail.address,
+          street_address_1: pickup.address,
+          street_address_2: pickup.address,
           landmark: order_details[0].makeitdetail.landmark,
           city: order_details[0].makeitdetail.locality,
           state: "tamilnadu",
@@ -475,7 +416,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
      package_content: ["Documents | Books", "Clothes | Accessories", "Electronic Items"],
      // package_content: ["Food"],
       package_approx_value: order_details[0].price,
-      special_instructions: "Orderid : " + order_details[0].orderid.toString() + " ,Kitchen name : " +pickup.name+ " ,phone no :" + pickup.phoneno+",product name : " +product_name}
+      special_instructions: "Orderid : " + order_details[0].orderid.toString() + " ,Kitchen name : " +pickup.name+ " ,Kitchen address : " +pickup.address+ " ,phone no :" + pickup.phoneno+",product name : " +product_name}
   
   
     var headers= {
@@ -487,7 +428,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
   
     //set request parameter
     request.post({headers: headers, url: dunzoconst.dunzo_create_url, json: form, method: 'POST'},async function (e, r, body) {
-      console.log(body);
+     
       dunzo_data={};
       dunzo_data.orderid = orderid;
       dunzo_data.dunzo_responce = JSON.stringify(body);
@@ -553,10 +494,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
 Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
   //var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+dunzo_taskid+'/_cancel?test=true'
 
-
   var url = dunzoconst.dunzo_cancel_url+'/'+ req.dunzo_taskid+'/_cancel?test=true'
-
- 
 
   //set form data
   var form = {
@@ -585,8 +523,6 @@ Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
 Dunzo.dunzo_track_status = async function dunzo_track_status(req) {
 
   var url =dunzoconst.dunzo_cancel_url+'/'+req.task_id+'/status?test=true'
-
-
 
   var headers= {
     'Content-Type': 'application/json',

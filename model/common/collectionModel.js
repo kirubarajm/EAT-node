@@ -215,7 +215,7 @@ Collection.getcollectionlist = async function(res,req){
   var userdetails = await query("Select * From User where userid = '" +req.eatuserid +"'");
   for (let i = 0; i < res.length; i++) {
     req.cid = res[i].cid;
-    console.log("res[i].query"+res[i].query);
+   
     req.query = res[i].query;
     await Collection.get_all_collection_by_cid_getkichens(req, async function(err,res3) {
       if (err) {
@@ -381,7 +381,7 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
           var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
         }
           
-        console.log(productlist);
+ 
           
         await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], async function(err, res1) {
             if (err) {
@@ -1277,7 +1277,7 @@ Collection.get_all_collection_by_cid_getkichens_v2 = async function get_all_coll
           var productlist = req.query + productquery  ;
         }
        
-        console.log(productlist);
+      
       //   var res1 = await query(productlist,[req.lat,req.lon,req.lat,cycle,nextcycle,req.eatuserid,req.eatuserid])
    
           var res1 = await query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid])

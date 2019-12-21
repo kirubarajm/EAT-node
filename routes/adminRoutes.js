@@ -236,4 +236,12 @@ app.route("/admin/reports/realordercancelledrevenu").post(routesVersioning({"1.0
 app.route("/admin/reports/virtualabandonedcartrevenu").post(routesVersioning({"1.0.0":orders.virtual_abandonedcartrevenu_report}));
 app.route("/admin/reports/realabandonedcartrevenu").post(routesVersioning({"1.0.0":orders.real_abandonedcartrevenu_report}));
 
+//admin dunzo cod order list
+
+app.route("/admin/dunzocodorders").post(routesVersioning({"1.0.0":orders.list_dunzo_zone_cod_orders}));
+app.route("/admin/dunzoorderlist").post(routesVersioning({"1.0.0":orders.list_dunzo_zone_cod_orders_list}));
+app.route("/admin/dunzoorder/assign").post(routesVersioning({"1.0.0":orders.dunzo_order_assign}));
+app.route("/admin/dunzoorder/delivery").post(routesVersioning({"1.0.0":orders.dunzo_order_delivery}));
+
+
 }

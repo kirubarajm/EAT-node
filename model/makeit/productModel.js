@@ -734,7 +734,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
             column.slice(0, -1) +
             " ,approved_status = "+approved_status+" where productid = " +
             req.productid;
-          console.log(query);
+    
 
           sql.query(query, new Date(), function(err, res1) {
             if (err) {

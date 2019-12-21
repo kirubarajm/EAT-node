@@ -13,7 +13,7 @@ const dunzoconst = {
     cancelled:"cancelled",
     
     order_assign_dunzo:true,
-    order_assign_dunzo_waiting_min:3,
+    order_assign_dunzo_waiting_min:1,
 
     //////////////// ========> Demo <========= /////////////////
     dunzo_create_url:'https://apis-staging.dunzo.in/api/v1/tasks?test=true',

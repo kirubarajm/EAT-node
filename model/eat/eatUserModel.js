@@ -2171,8 +2171,8 @@ if ( headers.apptype ==1) {
      kitchenlist = serviceablekitchenlist.concat(unserviceablekitchenlist); 
     //  kitchenlist.push(serviceablekitchenlist);
     //  kitchenlist.push(unserviceablekitchenlist);
-
-    console.log(tunnelkitchenliststatus);
+//
+kitchenlist = kitchenlist.slice(0, 30);
         if (tunnelkitchenliststatus == false) {
           
             for (let i = 0; i < kitchenlist.length; i++) {
@@ -2930,7 +2930,7 @@ Eatuser.eatuser_logout = async function eatuser_logout(req, result) {
       result(null, err);
     } else {
 
-      console.log(req);
+  
      //  let token = req.headers['x-access-token'] || req.headers['token'];
       // let apptype = req.headers['x-access-token'] || req.headers['apptype'];
    
@@ -4120,7 +4120,7 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
     
       return await instance.customers.create({name, email, contact, notes,fail_existing}).then((data) => {
         cuId=data.id;
-        console.log(data);
+        
         //  const updateforrazer_customerid = await query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ");
        
           sql.query("UPDATE User SET razer_customerid ='" +data.id+"'  where userid = " + req.userid +" ", function(err, customerupdate) {

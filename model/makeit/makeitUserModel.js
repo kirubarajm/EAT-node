@@ -1040,8 +1040,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           tempmessage = tempmessage + res1[0].product_name + ",";
           isAvaliableItem = false;
         }else if (res1[0][productquery] !== 1) {
-          console.log(res1[0][productquery]);
-          console.log("cycle_status" + productquery);
+      
           res1[0].availablity = false;
           tempmessage = tempmessage + res1[0].product_name + ",";
           isAvaliableItem = false;
@@ -1104,7 +1103,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               );
               //  makeitavailability[0].distance = makeitavailability[0].distance * constant.onemile;
               //makeitavailability[0].distance = makeitavailability[0].distance.toFixed(2) ;
-              console.log(makeitavailability[0].distance);
+           
               distance=makeitavailability[0].distance;   
               var eta = constant.foodpreparationtime + (constant.onekm * makeitavailability[0].distance);        
               if (makeitavailability[0].unservicable == 1) {
@@ -1260,7 +1259,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             
           //this code is modified 23-09-2019
           if (delivery_charge !==0) {
-            console.log(delivery_charge);
+           
             deliverychargeinfo.title = "Handling charge";
             deliverychargeinfo.charges = delivery_charge;
             deliverychargeinfo.status = true;
@@ -1382,7 +1381,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                       discount_amount = maxdiscount;
                     }
                     if (totalamount >= discount_amount) {
-                      console.log(discount_amount);
+                     
                       totalamount = totalamount - discount_amount;
                       coupon_discount_amount = discount_amount;
                     }else{
@@ -1675,7 +1674,7 @@ Makeituser.update_makeit_user = async function update_makeit_user(req ,cuisines,
               }
             }
             editquery =staticquery + column.slice(0, -1) + " where userid = " + req.userid;
-            console.log("query: ", editquery);
+          
             sql.query(editquery, function(err, res) {
               if (err) {
                 console.log("error: ", err);
@@ -1749,7 +1748,7 @@ Makeituser.update_makeit_user = async function update_makeit_user(req ,cuisines,
                 if (kitcheninfoimage.length !== 0) {
                   kitcheninfoimagestatus = true;
 
-                  console.log("kitchenmenuimage:2 ");
+                
                   for (let i = 0; i < kitcheninfoimage.length; i++) {
                     var new_kitcheninfoimage = new MakeitImages(kitcheninfoimage[i]);
                     new_kitcheninfoimage.makeitid = req.userid;
@@ -1770,10 +1769,9 @@ Makeituser.update_makeit_user = async function update_makeit_user(req ,cuisines,
                 if (kitchenmenuimage.length !== 0) {
                   kitchenmenuimagestatus = true;
 
-                  console.log("kitchenmenuimage:4 ");
+              
 
                   for (let i = 0; i < kitchenmenuimage.length; i++) {
-                    console.log("kitchenmenuimage: ", kitchenmenuimage[i]);
                     var new_kitchenmenuimage = new MakeitImages(kitchenmenuimage[i]);
                     new_kitchenmenuimage.makeitid = req.userid;
                     MakeitImages.createMakeitImages(new_kitchenmenuimage, function(
@@ -1793,7 +1791,6 @@ Makeituser.update_makeit_user = async function update_makeit_user(req ,cuisines,
                 if (Specialitiesfood.length !== 0) {
                   Specialitiesfoodstatus = true;
 
-                  console.log("kitchenmenuimage:3 ");
                   for (let i = 0; i < Specialitiesfood.length; i++) {
                     var new_Specialitiesfood = new MakeitImages(Specialitiesfood[i]);
                     new_Specialitiesfood.makeitid = req.userid;
@@ -1814,7 +1811,6 @@ Makeituser.update_makeit_user = async function update_makeit_user(req ,cuisines,
                 if (Signature.length !== 0) {
                   Signaturestatus = true;
 
-                  console.log("kitchenmenuimage:1 ");
                   for (let i = 0; i < Signature.length; i++) {
                     var new_Signature = new MakeitImages(Signature[i]);
                     new_Signature.makeitid = req.userid;
@@ -1875,7 +1871,6 @@ Makeituser.update_makeit_regionid = async function(req, result) {
       req.userid +
       "' "
   );
-  console.log(updatestatus);
   // sql.query("UPDATE MakeitUser SET regionid = '"+req.regionid+"' WHERE userid = '"+req.userid+"' ",function(err, res) {
   //     if (err) {
   //       console.log("error: ", err);
@@ -2005,7 +2000,6 @@ Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(
               } else {
                 console.log(response.statusCode, body);
                 var responcecode = body.split("#");
-                console.log(responcecode);
 
                 if (responcecode[0] === "0") {
                   sql.query(
@@ -2082,7 +2076,6 @@ Makeituser.makeit_user_otpverification = function makeit_user_otpverification(re
               console.log("error: ", err);
               result(err, null);
             } else {
-              console.log(res1.length);
               if (res1.length == 1) {
            
 
@@ -2109,8 +2102,7 @@ Makeituser.makeit_user_otpverification = function makeit_user_otpverification(re
           }
         );
       } else {
-        console.log(res[0]);
-        console.log("OTP FAILED");
+       
         let message = "OTP is not valid!, Try once again";
         let sucobj = true;
 
@@ -2260,7 +2252,6 @@ Makeituser.makeit_user_forgot_password_send_otp = function makeit_user_forgot_pa
         console.log("error: ", err);
         result(null, err);
       } else {
-        console.log(response.statusCode, body);
         var responcecode = body.split("#");
 
         if (responcecode[0] === "0") {
@@ -2898,7 +2889,6 @@ Makeituser.get_admin_list_all_makeitusers_percentage_report = function(req, resu
   if(req.date){
     var query = "select mk.userid,mk.name,mk.brandname from MakeitUser mk LEFT JOIN Orders ord on ord.makeit_user_id=mk.userid where date(ord.created_at)='"+req.date+"' and mk.virtualkey  ="+ virtualkey+" group by mk.userid";
 
-    console.log("Query->"+query);
     sql.query(query, async function(err, res) {
       if (err) {
         //console.log("error: ", err);
@@ -3104,7 +3094,6 @@ Makeituser.makeit_daywise_earnings= async function makeit_daywise_earnings(req,r
 
 ////Get First Order/////////////
 Makeituser.makeit_get_firstorder= async function makeit_get_firstorder(req,result) {
-  console.log(req); 
     var getfirstmakeitorder = await query("select orderid,date(created_at) as firstorder from Orders where makeit_user_id="+req.makeit_userid+" order by orderid asc LIMIT 1");
     if(getfirstmakeitorder.length>0){
       let resobj = {
