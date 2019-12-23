@@ -66,14 +66,14 @@ Collection.list_all_active_collection_v2 = function list_all_active_collection_v
 
 
 Collection.list_all_active_collection = function list_all_active_collection(req,result) {
-  sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at from Collections where active_status=1",async function(err, res) {
+  sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at,type,icon from Collections where active_status=1",async function(err, res) {
     if (err) {
       result(err, null);
     } else {
 
       var kitchens =   await Collection.getcollectionlist(res,req)
 
-      console.log("first collection");
+      //console.log("first collection");
        if (res.length !== 0 ) {
         let resobj = {
           success: true,
@@ -215,7 +215,6 @@ Collection.getcollectionlist = async function(res,req){
   var userdetails = await query("Select * From User where userid = '" +req.eatuserid +"'");
   for (let i = 0; i < res.length; i++) {
     req.cid = res[i].cid;
-    console.log("res[i].query"+res[i].query);
     req.query = res[i].query;
     await Collection.get_all_collection_by_cid_getkichens(req, async function(err,res3) {
       if (err) {
@@ -223,32 +222,27 @@ Collection.getcollectionlist = async function(res,req){
       } else {
         if (res3.status != true) {
           result(null, res3);
-        } else {
-          
-         // console.log("kitchenlist"+res3.result);
-         // res[i].kitchenlist = res3.result;
-        var kitchenlist = res3.result
-      //   console.log(kitchenlist.length);
-          
-        if (userdetails[0].first_tunnel == 0) {
-        if (kitchenlist.length !==0) {
-          res[i].collectionstatus = true;
-        }else{
-          res[i].collectionstatus = false;
-        }
-      }else{
-        res[i].collectionstatus = true;
-      }
-           	
+        } else {          
+          // console.log("kitchenlist"+res3.result);
+          // res[i].kitchenlist = res3.result;
+          var kitchenlist = res3.result
+          //console.log("userdetails===============>",userdetails);          
+          if (userdetails[0].first_tunnel == 0) {
+            if (kitchenlist.length !==0) {
+              res[i].collectionstatus = true;
+            }else{
+              res[i].collectionstatus = false;
+            }
+          }else{
+            res[i].collectionstatus = true;
+          }           	
           delete res[i].query;
          // delete json[res[i].query]
         }
       }
     });
-
   }
-
-return res
+  return res
 }
 
 // Collection.getcollectionlist = async function(res,req){
@@ -381,7 +375,7 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
           var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
         }
           
-        console.log(productlist);
+     
           
         await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], async function(err, res1) {
             if (err) {
@@ -1276,8 +1270,7 @@ Collection.get_all_collection_by_cid_getkichens_v2 = async function get_all_coll
         }else if(req.cid === 3 ) {
           var productlist = req.query + productquery  ;
         }
-       
-        console.log(productlist);
+     
       //   var res1 = await query(productlist,[req.lat,req.lon,req.lat,cycle,nextcycle,req.eatuserid,req.eatuserid])
    
           var res1 = await query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid])
