@@ -3255,7 +3255,7 @@ Makeituser.moveitavgfirstandlastmile_report= async function moveitavgfirstandlas
 
 ////Get Package Makeit User/////////////
 Makeituser.get_makeit_package_user=  function get_makeit_package_user(req,result) {
-    var getmakeituser ="select userid,brandname from MakeitUser where ka_status=2 and virtualkey=0 and makeit_type=1";
+    var getmakeituser ="select userid,brandname,makeit_type from MakeitUser where ka_status=2 and virtualkey=0";
     sql.query(getmakeituser, async function(err, res) {
       if(err){
         result(null, err);

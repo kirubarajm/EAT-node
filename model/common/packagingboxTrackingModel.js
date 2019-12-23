@@ -2,6 +2,7 @@
 var sql = require("../db.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
+const constant = require("../constant");
 
 var PackagingBoxType = function(packagingbox) {
     this.name = packagingbox.name;
@@ -50,6 +51,7 @@ var PackagingBoxType = function(packagingbox) {
         let resobj = {
           success: true,
           status:true,
+          eat_cover_id:constant.order_cover_package_id,
           result :res
         };
         result(null, resobj);
