@@ -178,7 +178,8 @@ PackageInvetory.getPackageMapInventoryList = function getPackageMapInventoryList
   req,
   result
 ) {
-  var packageQuery ="SELECT it.packageid as id,pb.name FROM InventoryTracking it left join PackagingBox pb on pb.id =it.packageid where it.makeit_id="+req.makeit_id+" and it.packageid!="+constant.order_cover_package_id+ " GROUP BY it.packageid";
+  //var packageQuery ="SELECT it.packageid as id,pb.name FROM InventoryTracking it left join PackagingBox pb on pb.id =it.packageid where it.makeit_id="+req.makeit_id+" and it.packageid!="+constant.order_cover_package_id+ " GROUP BY it.packageid";
+  var packageQuery ="SELECT * FROM PackagingBox where id!="+constant.order_cover_package_id;
   sql.query(packageQuery, function(err, res) {
     if (err) {
       result(null, err);
