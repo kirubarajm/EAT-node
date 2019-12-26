@@ -2,6 +2,7 @@ const firebase = require("firebase-admin");
 var EatserverKey = require("../eat-app-9c47f-firebase-adminsdk-dgp75-7c570f4349.json");
 var EAT = null;
 
+
 function initializeAppName () {
   if (!EAT) {
     EAT=firebase.initializeApp(
@@ -17,6 +18,7 @@ function initializeAppName () {
   
   
 };
+
 
 exports.sendNotificationAndroid = function(
   token,

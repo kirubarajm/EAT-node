@@ -44,15 +44,19 @@ Notification.getMovieitDetail = async function(userid) {
   return MoveitUser[0];
 };
 
-Notification.orderEatPushNotification = async function(
-  orderid,
-  userid,
-  pageid
-) {
-  var orders = await Notification.getPushOrderDetail(orderid);
-  var user = JSON.parse(orders.userdetail);
-  var makeituser = JSON.parse(orders.makeitdetail);
-  var moveituser = JSON.parse(orders.moveitdetail);
+Notification.orderEatPushNotification = async function(orderid,userid,pageid) {
+  if (orderid) {
+    var orders = await Notification.getPushOrderDetail(orderid);
+    var user = JSON.parse(orders.userdetail);
+    var makeituser = JSON.parse(orders.makeitdetail);
+    var moveituser = JSON.parse(orders.moveitdetail);
+  }else{
+    var userdetails = await Notification.getEatUserDetail(userid.userid);
+    var user = {};
+    user.pushid_android=userdetails.pushid_android
+    user.pushid_ios=userdetails.pushid_ios
+  }
+
 
   var data = null;
   switch (pageid) {
@@ -141,13 +145,23 @@ Notification.orderEatPushNotification = async function(
       };
 
       break;
+      case PushConstant.Pageid_eat_send_notification:
+        data = {
+          title: userid.title,
+          message: userid.user_message,
+          pageid: "" + pageid,
+          app: "Eat",
+          notification_type: "1"
+        };
+        break;
   }
   if (data == null) return;
   //const user = await Notification.getEatUserDetail(userid);
+   console.log("data->", data);
   if (user && user.pushid_android) {
-    FCM_EAT.sendNotificationAndroid(user.pushid_android, data);
+    FCM_EAT.sendNotificationAndroid(user.pushid_android, data );
   }
-  console.log("data->", data);
+ 
   if (user && user.pushid_ios) {
     FCM_EAT.sendNotificationAndroid(user.pushid_ios, data);
   }

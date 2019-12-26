@@ -709,7 +709,9 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
 
       Dunzo.dunzo_task_create(res[i].orderid,async function(err,res3) {
         if (err) {
-          result(err, null);
+          console.log("Dunzo auto assign cod err-------->",err);
+          i++;
+          Zone_order_assign(res,i);
         } else {
           i++;
           Zone_order_assign(res,i);
@@ -732,7 +734,10 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
       //  Zone_order_assign(res,i);
       Dunzo.dunzo_task_create(res[i].orderid,async function(err,res3) {
         if (err) {
-          result(err, null);
+          //result(err, null);
+          console.log("Dunzo auto assign dunzo err-------->",err);
+          i++;
+          Zone_order_assign(res,i);
         } else {
           i++;
           Zone_order_assign(res,i);
