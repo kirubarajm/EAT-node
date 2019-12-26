@@ -82,7 +82,7 @@ var Order = function(order) {
   this.moveit_accept_time = order.moveit_accept_time;
   this.moveit_status = order.moveit_status || 0;
   this.cancel_charge = order.cancel_charge;
-  this.rating_skip = order.rating_skip;
+  this.rating_skip = order.rating_skip || 0;
   this.landmark = order.landmark;
   this.flatno = order.flatno;
   this.app_type = order.app_type || 3;
@@ -3107,7 +3107,7 @@ Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
       trackingDetail.message3 =moveit_name?
       "Mr." + moveit_name + " is on his way to pickup":"Delivery partner is awaiting the order";
       if (!moveit_name) {
-        trackingDetail.message3 =" Dunzo partner is on his way to pickup";
+        trackingDetail.message3 =" Delivery partner is awaiting the order";
       }
       break;
 
@@ -3118,7 +3118,7 @@ Order.orderTrackingDetail = function(orderstatus, moveit_detail) {
         "Mr." + moveit_name + " is on his way to delivery";
         if (!moveit_name) {
           trackingDetail.message3 =
-          " Dunzo partner is on his way to delivery";
+          " Delivery partner is on his way to delivery";
         }
       break;
   }
@@ -3473,7 +3473,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
  
   if (orderdetails.length !== 0) {
 
-    orderdetails[0].rating = true;
+    orderdetails[0].rating = false;
     orderdetails[0].showrating = false;
     
   if (orderdetails[0].rating_skip < constant.max_order_rating_skip) {
@@ -3536,8 +3536,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
             } else {
          
 
-              
-
+      
               for (let i = 0; i < res1.length; i++) {
            
                 if (res1[i].items) {
@@ -7341,7 +7340,24 @@ Order.zone_moveit_order_auto_assign = async function zone_moveit_order_auto_assi
             });
             
           }else{
-            if (req.zone_status !=2 && req.payment_type ==1) {
+            console.log("req.zone_status",req.zone_status);
+            console.log("req.payment_type",req.payment_type);
+            if ((req.zone_status ==2 || req.zone_status ==1) && req.payment_type ==1) {
+              var new_Ordersqueue = new Ordersqueue(req);
+              new_Ordersqueue.status = 0;
+              Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+                if (err) { 
+                  result(err, null);
+                }else{
+                  let resobj = {
+                    success: true,
+                    status: true,
+                    message: "Order moved to Queue"
+                  };
+                  result(null, resobj);
+                }
+              });
+            }else if (req.zone_status ==1 && req.payment_type ==0) {
               var new_Ordersqueue = new Ordersqueue(req);
               new_Ordersqueue.status = 0;
               Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
@@ -7837,8 +7853,10 @@ Order.dunzo_order_assign =async function dunzo_order_assign(req, result) {
      var queryvalues=[req.moveit_user_id, assign_time, req.orderid]
     var  message= "Order Assign Successfully"
   }else{
+    var twentyMinutesLater = moment().add(0, "seconds").add(constant.foodpreparationtime, "minutes").format("YYYY-MM-DD HH:mm:ss");
+
     var query = "UPDATE Orders SET orderstatus = ?,moveit_expected_delivered_time = ? WHERE orderid = ?"
-    var queryvalues = [5, assign_time, req.orderid]
+    var queryvalues = [5, twentyMinutesLater, req.orderid]
     var  message= "Order pickuped Successfully"
     await Notification.orderEatPushNotification(req.orderid,null,PushConstant.Pageid_eat_order_pickedup);
   }

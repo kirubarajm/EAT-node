@@ -271,4 +271,10 @@ app.route("/admin/packageinventory/update").put(routesVersioning({"1.0.0":packag
 app.route("/admin/packageinventory/stocklist").post(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryStockList}));
 app.route("/admin/makeit/packagemakeitusers").get(routesVersioning({"1.0.0":makeituser.get_makeit_package_user}));
 
+///////Eat Users History
+app.route("/admin/makeithub/user").post(routesVersioning({"1.0.0":eatuser.hub_based_userlist}));
+app.route("/admin/user/sendnotification").post(routesVersioning({"1.0.0":eatuser.user_based_notification}));
+
+
+
 }

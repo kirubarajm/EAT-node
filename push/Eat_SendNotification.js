@@ -2,6 +2,7 @@ const firebase = require("firebase-admin");
 var EatserverKey = require("../eat-app-9c47f-firebase-adminsdk-dgp75-7c570f4349.json");
 var EAT = null;
 
+
 function initializeAppName () {
   if (!EAT) {
     EAT=firebase.initializeApp(
@@ -17,6 +18,7 @@ function initializeAppName () {
   
   
 };
+
 
 exports.sendNotificationAndroid = function(
   token,
@@ -37,5 +39,20 @@ exports.sendNotificationAndroid = function(
     }
   };
   console.log("token-->",token+""+payload.data);
-  EAT.messaging().sendToDevice(token, payload, options);
+  EAT.messaging().sendToDevice(token, payload, options)
+  .then(Response => {
+    
+
+    console.log(Response);
+      // var new_responce= new Eat_notification_responce(Response);
+      //  new_responce.userid=dat.userid;
+
+   //   Eat_notification_responce.createEat_notification_responce(new_responce);
+  
+ 
+  })
+
+  .catch(err => {
+    console.log(err);
+  });
 };

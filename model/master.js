@@ -784,7 +784,8 @@ const master = [
                 "status": "manual"
             }
         ]
-    },{
+    },
+    {
         'package_session': [{
                 "id": 1,
                 "session": "start_session"
@@ -794,7 +795,17 @@ const master = [
                 "session": "end_session"
             }
         ]
-    },
+    },{
+        'push_notification_type': [{
+                "type": 1,
+                "description": "user with out order list"
+            },
+            {
+                "type": 2,
+                "description": "user with order list"
+            }
+        ]
+    }
 
 
 ]

@@ -704,3 +704,21 @@ exports.payment_retry = function(req, res) {
     res.json(user);
   });
 };
+
+
+/////hub based userlist
+exports.hub_based_userlist = function(req, res) {
+  Eatuser.hub_based_userlist(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+
+/////user based notification
+exports.user_based_notification = function(req, res) {
+  Eatuser.user_based_notification(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

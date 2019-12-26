@@ -16,10 +16,7 @@ function initializeAppName() {
   }
 };
 
-exports.sendNotificationWEB = function(
-  token,
-  dat,
-) {
+exports.sendNotificationWEB = function(token,dat,) {
  initializeAppName();
  console.log("token-->",token);
  const options = {
