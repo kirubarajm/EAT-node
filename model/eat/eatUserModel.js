@@ -12,6 +12,9 @@ var masters = require('../master');
 var Locationtracking = require("../../model/common/usersfirstlocationtrackingModel");
 var zoneModel = require("../../model/common/zoneModel.js");
 var Collection = require("../../model/common/collectionModel");
+var Notification = require("../../model/common/notificationModel.js");
+var PushConstant = require("../../push/PushConstant.js");
+
 
 // var instance = new Razorpay({
 //     key_id: 'rzp_test_3cduMl5T89iR9G',
@@ -2974,13 +2977,13 @@ Eatuser.eatuser_logout = async function eatuser_logout(req, result) {
  
 };
 
-Eatuser.eatuser_otpverification = function eatuser_otpverification(req,result) {
+Eatuser.eatuser_otpverification =async function eatuser_otpverification(req,result) {
   var otp = 0;
   var passwordstatus = false;
   var emailstatus = false;
   var otpstatus = false;
   var genderstatus = false;
-  //var userdetails = await query ("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid,razer_customerid,referredby,token,first_tunnel from User where userid = '"+req.userid+"'");
+  var userdetails = await query ("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid,razer_customerid,referredby,token,first_tunnel from User where userid = '"+req.userid+"'");
 
   if (req.phoneno == '9500313689' && req.otp == 30878) {
     
@@ -4288,8 +4291,16 @@ Eatuser.eat_explore_kitchen_dish_v2 =async function eat_explore_kitchen_dish_v2(
               }
               ////////////////////////////////////// 
             }
-              res[i].eta = Math.round(eta) + " mins";
+             // res[i].eta = Math.round(eta) + " mins";
             
+              if ( res[i].eta > 60) {           
+                //console.log(rhours);
+                //console.log(rminutes);
+                // res[i].eta =   +rhours+" hour and " +rminutes +" minute."
+                res[i].eta = "above 60 Mins"
+              }else{
+                res[i].eta = Math.round(eta) + " mins";
+              }
           }
 
 
@@ -4396,8 +4407,16 @@ Eatuser.eat_explore_kitchen_dish =async function eat_explore_kitchen_dish(req,re
                   }
                 }
               }
-              res[i].eta = Math.round(eta) + " mins";
-            
+              res[i].eta = Math.round(eta);
+              
+              if ( res[i].eta > 60) {           
+                //console.log(rhours);
+                //console.log(rminutes);
+                // res[i].eta =   +rhours+" hour and " +rminutes +" minute."
+                res[i].eta = "above 60 Mins"
+              }else{
+                res[i].eta = Math.round(eta) + " mins";
+              }
           }
 
 
@@ -4596,4 +4615,142 @@ Eatuser.payment_retry = async function payment_retry(req, result) {
   }
 };
 
+
+/////hub_based_userlist
+Eatuser.hub_based_userlist = async function hub_based_userlist(req, result) {
+  var getuserquery ="select u.userid,u.name,u.email,u.phoneno,ord.orderid,u.pushid_android,u.pushid_ios,u.Locality,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(),INTERVAL "+constant.interval_days+" DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid join MakeitUser as mk on mk.userid=ord.makeit_user_id  join Makeit_hubs as mh on mh.makeithub_id=mk.makeithub_id where u.userid!='' and mh.makeithub_id="+req.makeithub_id+"  and ord.orderstatus < 8 and orderid in (SELECT max(orderid) FROM Orders  GROUP BY userid) order by ord.created_at desc";
+  sql.query(getuserquery, function(err, res) {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {
+   
+      if (req.type==1) {
+
+         res = res.filter(re => re.with7day ===0);
+      }else{
+         res = res.filter(re => re.with7day !==0);
+
+      }
+      
+
+      let resobj = {
+        success: true,
+        status: true,
+        result: res
+      };
+
+      result(null, resobj);
+    }
+  });
+};
+
+
+/////user_based_notification
+Eatuser.user_based_notification = async function user_based_notification(req, result) {
+ 
+  var getuserquery ="select u.userid,u.name,u.email,u.phoneno,ord.orderid,u.pushid_android,u.pushid_ios,u.Locality,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(),INTERVAL "+constant.interval_days+" DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid join MakeitUser as mk on mk.userid=ord.makeit_user_id  join Makeit_hubs as mh on mh.makeithub_id=mk.makeithub_id where u.userid!='' and mh.makeithub_id="+req.makeithub_id+"  and ord.orderstatus < 8 and orderid in (SELECT max(orderid) FROM Orders  GROUP BY userid) order by ord.created_at desc";
+ // var userlist = req.userlist;
+  sql.query(getuserquery,async function(err, res) {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {
+   
+      if (req.type==1) {
+
+       var userlist = res.filter(re => re.with7day ===0);
+     }else{
+       var userlist = res.filter(re => re.with7day !==0);
+
+     }
+     // const userlist = res.filter(re => re.with7day===0);
+
+     // const userlist = req.userlist;
+      for (let i = 0; i < userlist.length; i++) {
+     //   console.log(userlist[i]);
+        user={};
+        user.userid=userlist[i].userid;
+        user.user_message = req.user_message;
+        user.title = req.title;
+    
+        await Notification.orderEatPushNotification(
+          null,
+          user,
+          PushConstant.Pageid_eat_send_notification
+        );
+        
+      } 
+     
+  let resobj = {
+    success: true,
+    status: true,
+    message: "notification sent successfully"
+  };
+
+  result(null, resobj);
+   }
+  });
+  
+
+  // let resobj = {
+  //   success: true,
+  //   status: true,
+  //   message: "notification sent successfully"
+  // };
+
+  // result(null, resobj);
+
+};
+
+
+/////user_based_notification
+// Eatuser.user_based_notification = async function user_based_notification(req, result) {
+ 
+// //   var getuserquery ="select u.userid,u.name,u.email,u.phoneno,ord.orderid,u.pushid_android,u.pushid_ios,u.Locality,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(),INTERVAL 7 DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid join MakeitUser as mk on mk.userid=ord.makeit_user_id  join Makeit_hubs as mh on mh.makeithub_id=mk.makeithub_id where u.userid!='' and mh.makeithub_id="+req.makeithub_id+"  group by u.userid order by ord.orderid desc";
+// //  // var userlist = req.userlist;
+// //   sql.query(getuserquery,async function(err, res) {
+// //     if (err) {
+// //       console.log("error: ", err);
+// //       result(err, null);
+// //     } else {
+   
+// //       const userlist = res.filter(re => re.with7day===0);
+
+//       const userlist = req.userlist;
+//       for (let i = 0; i < userlist.length; i++) {
+//      //   console.log(userlist[i]);
+//         user={};
+//         user.userid=userlist[i];
+//         user.user_message = req.user_message;
+//         user.title = req.title;
+    
+//         await Notification.orderEatPushNotification(
+//           null,
+//           user,
+//           PushConstant.Pageid_eat_send_notification
+//         );
+        
+//       } 
+     
+//   let resobj = {
+//     success: true,
+//     status: true,
+//     message: "notification sent successfully"
+//   };
+
+//   result(null, resobj);
+//   //  }
+//   // });
+  
+
+//   // let resobj = {
+//   //   success: true,
+//   //   status: true,
+//   //   message: "notification sent successfully"
+//   // };
+
+//   // result(null, resobj);
+
+// };
 module.exports = Eatuser;
