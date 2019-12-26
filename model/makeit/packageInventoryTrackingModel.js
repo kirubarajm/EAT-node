@@ -182,7 +182,8 @@ PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTr
     orderid;
   sql.query(productQuery, async function(err, res) {
     if (err) {
-      result(null, err);
+      console.log('InventoryTracking-->',err);
+     // result(null, err);
     } else {
       if (res.length > 0) {
         for (var i = 0; i < res.length; i++) {

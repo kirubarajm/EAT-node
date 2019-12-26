@@ -1114,7 +1114,7 @@ Product.approve_product_status = function(req, result) {
 
 Product.admin_list_all__unapproval_product = function admin_list_all__unapproval_product(req,result) {
   var query =
-    "Select pd.*,mk.brandname,mk.name as makeit_name from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid  where delete_status !=1 ";
+    "Select pd.*,mk.brandname,mk.name as makeit_name from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid  where pd.delete_status !=1 ";
 
   query =query +" and approved_status In (1,4) order by created_at desc";
   console.log(query);
