@@ -68,6 +68,7 @@ var PackagingBoxType = function(packagingbox) {
         let resobj = {
           success: true,
           status:true,
+          eat_cover_id:constant.order_cover_package_id,
           result :res
         };
         result(null, resobj);

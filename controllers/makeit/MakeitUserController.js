@@ -596,3 +596,11 @@ exports.get_makeit_package_user = function(req, res) {
     res.json(user);
   });
 };
+
+////Get Package Makeit User/////////////
+exports.makeit_delete = function(req, res) {
+  Makeituser.makeit_delete(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

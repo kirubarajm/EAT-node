@@ -270,5 +270,6 @@ app.route("/admin/packageinventory/add").post(routesVersioning({"1.0.0":packageI
 app.route("/admin/packageinventory/update").put(routesVersioning({"1.0.0":packageInventoryController.updatePackageInventory}));
 app.route("/admin/packageinventory/stocklist").post(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryStockList}));
 app.route("/admin/makeit/packagemakeitusers").get(routesVersioning({"1.0.0":makeituser.get_makeit_package_user}));
+app.route("/admin/makeit/delete").put(routesVersioning({"1.0.0":makeituser.makeit_delete}));
 
 }

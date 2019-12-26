@@ -2833,12 +2833,15 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
   req.appointment_status = req.appointment_status || "all";
   req.virtualkey = req.virtualkey;
 
-  var query = "select mk.* from MakeitUser mk";
+  var query = "select mk.* from MakeitUser mk ";
   var searchquery = "(mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE  '%" + req.search + "%' or mk.userid LIKE  '%" + req.search + "%')";
 
   if(req.active_status){
     query = query + " LEFT JOIN Product p on p.makeit_userid=mk.userid where p.active_status=1" ;
   }
+
+  if(query.toLowerCase().includes('where')) query = query +" and  mk.delete_status!=1"
+  else query = query +" where  mk.delete_status!=1"
 
   if(req.appointment_status!=="all"){
     if(query.toLowerCase().includes('where')) query =query +" and mk.appointment_status  = '" + req.appointment_status+"'"
@@ -2862,6 +2865,7 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
   }
 
   limitquery = query +" order by userid ASC limit " +startlimit +"," +kitchenlimit;
+  console.log("error: ", limitquery);
   sql.query(limitquery, async function(err, res) {
     if (err) {
       //console.log("error: ", err);
@@ -3268,5 +3272,32 @@ Makeituser.get_makeit_package_user=  function get_makeit_package_user(req,result
         result(null, resobj);
       }
     });
+};
+
+////Get Package Makeit User/////////////
+Makeituser.makeit_delete= async function makeit_delete(req,result) {
+  var makeit = await query("select * from Product where active_status = 1 and makeit_userid="+req.userid);
+  if(makeit.length===0){
+    var deleteMakeit ="Update MakeitUser set delete_status=1 where userid="+req.userid;
+    sql.query(deleteMakeit, async function(err, res) {
+      if(err){
+        result(null, err);
+      }else{
+        let resobj = {
+          success: true,
+          status : true,
+        };
+        result(null, resobj);
+      }
+    });
+  }else{
+    let resobj = {
+      success: true,
+      status : false,
+      message : "First remove the live products, after try again."
+    };
+    result(null, resobj);
+  }
+  
 };
 module.exports = Makeituser;
