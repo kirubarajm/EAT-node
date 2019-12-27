@@ -33,3 +33,26 @@ exports.check_map_boundaries = function(req, res) {
     res.json(user);
   });
 };
+
+
+////Update x factore
+exports.update_a_xfactore = function(req, res) {
+  if (!req.body.id) {
+    res
+      .status(400)
+      .send({ error: true, status: false, message: "Please provide oid" });
+  } else if (!req.body.xfactor) {
+    res
+      .status(400)
+      .send({
+        error: true,
+        status: false,
+        message: "Please provide xfactor values"
+      });
+  } else {
+  Zone.update_a_xfactore(req.body,function(err, faq) {
+    if (err) res.send(err);
+    res.send(faq);
+  });
+}
+};

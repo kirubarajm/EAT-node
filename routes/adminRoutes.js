@@ -26,6 +26,7 @@ module.exports = function(app) {
   var zoneController = require("../controllers/common/ZoneController");
   var packageController = require("../controllers/common/PackagingBoxTrackingController");
   var packageInventoryController = require("../controllers/makeit/PackageInventoryController");
+  var zone = require("../controllers/common/ZoneController");
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));
@@ -277,5 +278,11 @@ app.route("/admin/makeithub/user").post(routesVersioning({"1.0.0":eatuser.hub_ba
 app.route("/admin/user/sendnotification").post(routesVersioning({"1.0.0":eatuser.user_based_notification}));
 
 
+//////zone
+app.route("/admin/zone/xfactorupdate").post(routesVersioning({"1.0.0":zone.update_a_xfactore}));
+
+///KPI Dashboard Reports Live Kitchen count////
+app.route("/admin/reports/loglivekitchenavgcount").post(routesVersioning({"1.0.0":orders.log_livekitchenavgcount_report}));
+app.route("/admin/reports/loghublivekitchenavgcount").post(routesVersioning({"1.0.0":orders.log_hub_livekitchenavgcount_report}));
 
 }

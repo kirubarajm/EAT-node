@@ -8020,4 +8020,92 @@ Order.livekitchenavgcount_report= async function livekitchenavgcount_report(req,
   result(null, hublist);
 };
 
+
+////KPI Live Kitchen count and Avg////
+Order.log_livekitchenavgcount_report= async function log_livekitchenavgcount_report(req, result) {    
+  var kpiproducthistoryquery = "select time(kph.created_at) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id where date(kph.created_at)=CURDATE() group by kph.makeit_id,time(kph.created_at) order by time(kph.created_at)";
+  var producthistory = await query(kpiproducthistoryquery);
+  var timearray = new Array();
+  timearray.push({"time":producthistory[0].time});
+  
+  for(var i=0; i<producthistory.length; i++){
+    if(timearray[timearray.length-1].time != producthistory[i].time){
+      timearray.push({"time":producthistory[i].time});
+    }
+  }
+
+  for(var j=0; j<timearray.length; j++){
+    var realmakeitcount     = 0;
+    var realproductcount    = 0;
+    var virtualmakeitcount  = 0;
+    var virtualproductcount = 0;
+    for(var k=0; k<producthistory.length; k++){
+      if((timearray[j].time == producthistory[k].time) && (producthistory[k].virtualkey==0)){
+        realmakeitcount++;
+        realproductcount = realproductcount+producthistory[k].product_count;
+      }
+      if((timearray[j].time == producthistory[k].time) && (producthistory[k].virtualkey==1)){
+        virtualmakeitcount++;
+        virtualproductcount = virtualproductcount+producthistory[k].product_count;
+      }
+    }
+    timearray[j].realmakeitcount  = realmakeitcount;
+    timearray[j].realproductcount = realproductcount;
+    timearray[j].realavg = realproductcount/realmakeitcount;
+    timearray[j].virtualmakeitcount  = virtualmakeitcount;
+    timearray[j].virtualproductcount = virtualproductcount;
+    timearray[j].virtualavg = virtualproductcount/virtualmakeitcount;
+  }
+  result(null, timearray);
+};
+
+////KPI HUB Live Kitchen count and Avg////
+Order.log_hub_livekitchenavgcount_report= async function log_hub_livekitchenavgcount_report(req, result) { 
+  var makeithubquery = "select makeithub_id,address from Makeit_hubs order by address ASC";
+  var hublist = await query(makeithubquery);
+
+  var kpiproducthistoryquery = "select time(kph.created_at) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey,mu.makeithub_id,mh.address from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id where date(kph.created_at)=CURDATE() group by kph.makeit_id,time(kph.created_at) order by time(kph.created_at)";
+  var producthistory = await query(kpiproducthistoryquery);
+  var timearray = new Array();
+
+  for(var hub=0; hub<hublist.length; hub++){
+    timearray.push({"makeithub_id":hublist[hub].makeithub_id,"hub":hublist[hub].address,"time":producthistory[0].time});
+  }
+  
+  for(var hub1=0; hub1<hublist.length; hub1++){
+    for(var i=0; i<producthistory.length; i++){
+      if(hublist[hub1].makeithub_id == producthistory[i].makeithub_id){
+        if(timearray[timearray.length-1].time != producthistory[i].time){
+          timearray.push({"makeithub_id":hublist[hub1].makeithub_id,"hub":hublist[hub1].address,"time":producthistory[i].time});
+        }
+      }      
+    }
+  } 
+
+  for(var j=0; j<timearray.length; j++){
+    var realmakeitcount     = 0;
+    var realproductcount    = 0;
+    var virtualmakeitcount  = 0;
+    var virtualproductcount = 0;
+    for(var k=0; k<producthistory.length; k++){
+      if((timearray[j].time == producthistory[k].time) && (producthistory[k].virtualkey==0) && (timearray[j].makeithub_id==producthistory[k].makeithub_id)){
+        realmakeitcount++;
+        realproductcount = realproductcount+producthistory[k].product_count;
+      }
+      if((timearray[j].time == producthistory[k].time) && (producthistory[k].virtualkey==1) && (timearray[j].makeithub_id==producthistory[k].makeithub_id)){
+        virtualmakeitcount++;
+        virtualproductcount = virtualproductcount+producthistory[k].product_count;
+      }
+    }
+    timearray[j].realmakeitcount  = realmakeitcount ||0;
+    timearray[j].realproductcount = realproductcount ||0;
+    timearray[j].realavg = realproductcount/realmakeitcount ||0;
+    timearray[j].virtualmakeitcount  = virtualmakeitcount ||0;
+    timearray[j].virtualproductcount = virtualproductcount ||0;
+    timearray[j].virtualavg = virtualproductcount/virtualmakeitcount ||0;
+  }
+  result(null, timearray);
+};
+
+
 module.exports = Order;
