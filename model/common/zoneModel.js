@@ -248,9 +248,6 @@ Zone.updateMakeitZoneId = function updateMakeitZoneId(zoneid) {
 ////Update Zone
 Zone.update_a_xfactore = function update_a_xfactore(req, result) {
 
-  console.log(req.xfactor);
-  console.log( req.id);
-
   sql.query("UPDATE Zone set xfactor = '"+req.xfactor+"' WHERE id = '"+req.id+"'",function(err, res) {
       if (err) {
         result(err, null);

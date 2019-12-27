@@ -281,6 +281,8 @@ app.route("/admin/user/sendnotification").post(routesVersioning({"1.0.0":eatuser
 //////zone
 app.route("/admin/zone/xfactorupdate").post(routesVersioning({"1.0.0":zone.update_a_xfactore}));
 
-
+///KPI Dashboard Reports Live Kitchen count////
+app.route("/admin/reports/loglivekitchenavgcount").post(routesVersioning({"1.0.0":orders.log_livekitchenavgcount_report}));
+app.route("/admin/reports/loghublivekitchenavgcount").post(routesVersioning({"1.0.0":orders.log_hub_livekitchenavgcount_report}));
 
 }
