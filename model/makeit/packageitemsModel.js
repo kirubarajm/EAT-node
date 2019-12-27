@@ -1,5 +1,8 @@
 "user strict";
 var sql = require("../db.js");
+const util = require("util");
+const constant = require("../constant");
+const query = util.promisify(sql.query).bind(sql);
 
 //Task object constructor
 var Packageitem = function(packageitem) {
@@ -102,7 +105,7 @@ Packageitem.updatePackageitems = function updatePackageitems(
 };
 
 Packageitem.packageitemlist = function packageitemlist(req, result) {
-  var packageQuery="select pb.name,pp.count,pp.product_id,pp.package_id from ProductPackaging pp join PackagingBox pb on pb.id =pp.package_id where pp.product_id = "+ req.productid
+  var packageQuery="select pb.name,pp.count,pp.product_id,pp.package_id,mu.makeit_type from ProductPackaging pp join PackagingBox pb on pb.id =pp.package_id join MakeitUser mu on mu.userid =pp.makeit_id where pp.product_id = "+ req.productid
   sql.query(packageQuery,
     function(err, res) {
       if (err) {
@@ -111,7 +114,7 @@ Packageitem.packageitemlist = function packageitemlist(req, result) {
         let resobj = {
           success: true,
           status:true,
-          result: res
+          result:(res.length>0 && res[0].makeit_type===1)?[]:res
         };
         result(null, resobj);
       }
