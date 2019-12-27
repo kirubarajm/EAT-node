@@ -446,6 +446,8 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
       var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
     }else if (body.code=="duplicate_request") {
       console.log("duplicate_request");
+      var order_queue_update = await query("update Orders_queue set status = 1,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"'  where orderid =" +orderid+"");
+      var order_update = await query("update Orders set moveit_status=1,dunzo_taskid ='"+body.task_id+"',delivery_vendor=1,order_assigned_time='"+order_assign_time+"'  where orderid =" +orderid+"");
 
      // var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
     }else if (body.code=="different_city_error") {
