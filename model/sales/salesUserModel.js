@@ -301,6 +301,9 @@ Salesuser.checkLogin = function checkLogin(req, result) {
 
 Salesuser.getAllsalesSearch = function getAllsalesSearch(req, result) {
   var today = new Date();
+  var listlimit = 20;
+  var page = req.page || 1;
+  var startlimit = (page - 1) * listlimit;
 
   //  var query = "Select * from Sales_QA_employees ";
 
@@ -324,8 +327,9 @@ Salesuser.getAllsalesSearch = function getAllsalesSearch(req, result) {
 
   query = query + " group by se.id";
   //DATE(al.assign_date) = CURDATE()
+  var limitquery = query +" limit " +startlimit +"," +listlimit;
 
-  sql.query(query, function(err, res) {
+  sql.query(query+";"+limitquery, function(err, res) {
     if (err) {
       console.log("error: ", err);
       result(err, null);
@@ -333,7 +337,9 @@ Salesuser.getAllsalesSearch = function getAllsalesSearch(req, result) {
       let sucobj = true;
       let resobj = {
         success: sucobj,
-        result: res
+        pageLimt:listlimit,
+        total_list_count:res[0].length,
+        result: res[1]
       };
 
       result(null, resobj);

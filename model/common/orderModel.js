@@ -4865,8 +4865,8 @@ Order.get_orders_cash_online_amount = async function get_orders_cash_online_amou
   req.startdate = req.startdate;
   req.enddate = req.enddate;
   var paymentType=req.payment_type;
-  var orderquery = "select * from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1 and moveit_user_id!=0";
-  var orderamountquery ="select sum(price) as totalamount from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1 and moveit_user_id!=0";
+  var orderquery = "select * from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1 and (moveit_user_id!=0 or delivery_vendor=1)";
+  var orderamountquery ="select sum(price) as totalamount from Orders where moveit_actual_delivered_time between '"+req.startdate+"' and '"+req.enddate+"' and orderstatus = 6  and payment_status = 1 and (moveit_user_id!=0 or delivery_vendor=1)";
   
   if(paymentType===0||paymentType===1){
     orderquery=orderquery+" and payment_type = "+paymentType;

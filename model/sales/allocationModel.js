@@ -267,6 +267,12 @@ Allocation.list_all_allocation_by_admin = function list_all_allocation_by_admin(
       var qu=req.appointmentstatus?" and Date(alc.booking_date_time) ='"+req.date+"'":" where Date(alc.booking_date_time) ='"+req.date+"'";
       allocationquery = allocationquery+qu;
     }
+
+    if (req.search) {
+      var squery=" (mu.phoneno LIKE  '%" + req.search + "%' or mu.email LIKE  '%" +req.search +"%' or mu.name LIKE  '%" +req.search+ "%'  or mu.userid LIKE  '%" + req.search +"%')";
+      if(allocationquery.toLowerCase().includes('where'))  allocationquery = allocationquery + " and "+squery;
+      else allocationquery = allocationquery + " where "+squery;
+    }
     var limtquery = allocationquery +" order by alc.aid desc limit "+startlimit+"," +allocationlimit +" ";
     console.log(allocationquery);
     

@@ -219,6 +219,10 @@ PackageInvetory.getPackageInventoryStockList = function getPackageInventoryStock
   req,
   result
 ) {
+  var listlimit = 20;
+  var page = req.page || 1;
+  var startlimit = (page - 1) * listlimit;
+  
   // SELECT mk.userid,mk.name,mk.phoneno,mk.brandname,it.packageid,it.remaining_count,pb.name FROM MakeitUser mk right join InventoryTracking it on it.makeit_id=mk.userid left join PackagingBox pb on it.packageid =pb.id where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id=mk.userid GROUP BY packageid) and  it.packageid=1
   var packageStockQuery ="SELECT mk.userid,mk.phoneno,mk.brandname,it.packageid,it.remaining_count,pb.name FROM MakeitUser mk right join InventoryTracking it on it.makeit_id=mk.userid left join PackagingBox pb on it.packageid =pb.id where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id=mk.userid GROUP BY packageid)"
 
@@ -230,15 +234,19 @@ PackageInvetory.getPackageInventoryStockList = function getPackageInventoryStock
     packageStockQuery=packageStockQuery+" and it.remaining_count<=25"
   }
 
+  var limitquery = packageStockQuery +" limit " +startlimit +"," +listlimit;
+
   
-  sql.query(packageStockQuery, function(err, res) {
+  sql.query(packageStockQuery+";"+limitquery, function(err, res) {
     if (err) {
       result(null, err);
     } else {
       let resobj = {
         success: true,
         status: true,
-        result: res
+        pageLimt:listlimit,
+        total_list_count:res[0].length,
+        result: res[1]
       };
 
       result(null, resobj);
@@ -251,6 +259,11 @@ PackageInvetory.getAllPackageInventoryList = function getAllPackageInventoryList
   result
 ) {
 
+  var listlimit = 20;
+  var page = req.page || 1;
+  var startlimit = (page - 1) * listlimit;
+  
+
   var packageInventoryQuery ="select pi.id,mk.userid,mk.name,mk.phoneno,mk.brandname,pi.packageid,pi.created_at,pi.count,pb.name as pname from Package_Inventory pi join PackagingBox pb on pb.id =pi.packageid join MakeitUser mk on mk.userid=pi.makeit_id"
 
   if(req.search){
@@ -259,7 +272,10 @@ PackageInvetory.getAllPackageInventoryList = function getAllPackageInventoryList
 
   packageInventoryQuery =packageInventoryQuery+" order by pi.created_at desc";
 
-  sql.query(packageInventoryQuery, function(err, res) {
+  
+  var limitquery = packageInventoryQuery +" limit " +startlimit +"," +listlimit;
+
+  sql.query(packageInventoryQuery+";"+limitquery, function(err, res) {
     if (err) {
       console.log("err-->",err);
       result(null, err);
@@ -267,7 +283,9 @@ PackageInvetory.getAllPackageInventoryList = function getAllPackageInventoryList
       let resobj = {
         success: true,
         status: true,
-        result: res
+        pageLimt:listlimit,
+        total_list_count:res[0].length,
+        result: res[1]
       };
 
       result(null, resobj);

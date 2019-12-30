@@ -2829,6 +2829,7 @@ Makeituser.get_admin_list_all_makeitusers_percentage = function(req, result) {
   var kitchenlimit = 10;
   var page = req.page || 1;
   var startlimit = (page - 1) * kitchenlimit;
+  
 
   req.appointment_status = req.appointment_status || "all";
   req.virtualkey = req.virtualkey;
