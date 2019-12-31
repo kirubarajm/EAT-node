@@ -7954,7 +7954,7 @@ Order.dunzo_order_delivery_by_admin = function dunzo_order_delivery_by_admin(req
 };
 
 
-////real Abandoned Cart orders revenu////
+////Average Order Value////
 Order.averageordervalue_report= async function averageordervalue_report(req, result) {  
   var virtuallist = await query("select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price,( sum(ord.price)/count(ord.orderid)) as avg_price  from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=1 and ord.ordertype=0 and ord.orderstatus=6 and date(ord.created_at)  BETWEEN CURDATE()-6 AND  CURDATE() GROUP BY date(ord.created_at) Order BY date(ord.created_at)");
 
@@ -8020,10 +8020,10 @@ Order.livekitchenavgcount_report= async function livekitchenavgcount_report(req,
   result(null, hublist);
 };
 
-
 ////KPI Live Kitchen count and Avg////
 Order.log_livekitchenavgcount_report= async function log_livekitchenavgcount_report(req, result) {    
-  var kpiproducthistoryquery = "select time(kph.created_at) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id where date(kph.created_at)=CURDATE() group by kph.makeit_id,time(kph.created_at) order by time(kph.created_at)";
+  var kpiproducthistoryquery = "select time(kph.created_at) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id where date(kph.created_at)='2019-12-27' group by kph.makeit_id,time(kph.date_time) order by time(kph.created_at)";
+  //console.log("kpiproducthistoryquery =================>", kpiproducthistoryquery);
   var producthistory = await query(kpiproducthistoryquery);
   var timearray = new Array();
   timearray.push({"time":producthistory[0].time});
@@ -8064,7 +8064,7 @@ Order.log_hub_livekitchenavgcount_report= async function log_hub_livekitchenavgc
   var makeithubquery = "select makeithub_id,address from Makeit_hubs order by address ASC";
   var hublist = await query(makeithubquery);
 
-  var kpiproducthistoryquery = "select time(kph.created_at) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey,mu.makeithub_id,mh.address from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id where date(kph.created_at)=CURDATE() group by kph.makeit_id,time(kph.created_at) order by time(kph.created_at)";
+  var kpiproducthistoryquery = "select time(kph.created_at) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey,mu.makeithub_id,mh.address from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id where date(kph.created_at)=CURDATE() group by kph.makeit_id,time(kph.created_at) order by time(kph.date_time)";
   var producthistory = await query(kpiproducthistoryquery);
   var timearray = new Array();
 

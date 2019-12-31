@@ -103,7 +103,9 @@ const calculate = {
     
     order_cover_package_id :1,
 
-    interval_days : 3
+    //////////////Infinity/////////////
+    infinity_kitchen_page_limit:5,
+    infinity_repeat_switch_loop:2,
     
 
 
