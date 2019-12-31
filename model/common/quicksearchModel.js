@@ -644,6 +644,10 @@ QuickSearch.order_assign=async function order_assign(res,i){
                             res[i].orderid +
                             ""
                         );
+                        var req={};
+                        req.state=1;
+                        req.moveit_user_id=nearbymoveit[0].userid;
+                         Order.update_moveit_lat_long(req);
                         await Notification.orderMoveItPushNotification(
                           res[i].orderid,
                           PushConstant.pageidMoveit_Order_Assigned
@@ -772,6 +776,10 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
                       } else {
                         await query("update Orders_queue set status = 1 where orderid =" +res[i].orderid+"");
                         await Notification.orderMoveItPushNotification(res[i].orderid,PushConstant.pageidMoveit_Order_Assigned);
+                        var req={};
+                        req.state=1;
+                        req.moveit_user_id=zoneInsideMoveitlist[0].userid
+                         Order.update_moveit_lat_long(req);
                         i++;
                         Zone_order_assign(res,i);
                       }

@@ -325,3 +325,49 @@ exports.getInsideZoneMoveitList = async function getInsideZoneMoveitList(makeitL
   }))
   result(null,make_it_id)
 }
+
+exports.get_moveit_lat_long=async function get_moveit_lat_long(moveit_id,result) {
+  console.log(moveit_id);
+  var moveit_info={};
+  initializeAppName()
+ // await Promise.all(moveit_id.map(async function(item){
+    await geoFire.get(""+moveit_id).then(function(location) {
+
+     console.log(location);
+     
+       moveit_info.userid=moveit_id;
+       if (location) {
+       moveit_info.lat=location[0];
+       moveit_info.long=location[1];
+       }else{
+        moveit_info.lat=0;
+        moveit_info.long=0;
+       }
+      // if (location === null) {
+      //   console.log("Provided key is not in GeoFire");
+      //   item.islocation=false;
+      //   item.distance=0;
+      // }else{
+      //   var dist = geodist(geoLocation, location,{exact: true, unit: 'km'});
+      //   console.log("Provided key has a location of " +geoLocation);
+      //   item.distance= dist.toFixed(2);//new geoFires.GeoFire.distance(location1,location2);
+      //   item.location= location;
+      //   item.islocation=true;
+       
+      // }
+    }, function(error) {
+      console.log("Error: " + error);
+      // item.islocation=false;
+      // item.distance=0;
+    });
+    // await firebaseRef.child(item).once('value').then(function(snapshot) {
+    //     console.log(snapshot.val().online_status + "username at order_status--"+snapshot.val().order_status);
+    //     if(snapshot.val().online_status===1&&snapshot.val().order_status===0)
+    //     filterarray.push(item)
+    //     console.log("make_it_id--",filterarray)
+    //   });
+    // }))
+     console.log("moveit_info--->",moveit_info);
+  // return moveit_info;
+  result(null,moveit_info)
+}

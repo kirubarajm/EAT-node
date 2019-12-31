@@ -3156,7 +3156,7 @@ Eatuser.edit_eat_users =async function(req, result) {
   var values =[];
   values.push(new Date());
   for (const [key, value] of Object.entries(req)) {
-    if (key !== "userid") {
+    if (key !== "userid" && key !== "other_region" ) {
       column = column + key +" = ?,";
       values.push(value);
     }

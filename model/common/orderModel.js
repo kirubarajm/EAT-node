@@ -1894,24 +1894,30 @@ Order.order_assign = function order_assign(req, result) {
         if (res1[0].login_status == 1) {
                  
         if (online_status == 1) {
-          sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[req.moveit_user_id, assign_time, req.orderid],async function(err, res2) {
-              if (err) {
-                result(err, null);
-              } else {
-                //update to queue
-                var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+          
+        
+              
+              sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[req.moveit_user_id, assign_time, req.orderid],async function(err, res2) {
+                if (err) {
+                  result(err, null);
+                } else {
+                  //update to queue
+                  var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+  
+                  await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned,res1[0]);
+                  req.state=1;
+                  Order.update_moveit_lat_long(req);
+                  let resobj = {
+                    success: true,
+                    status:true,
+                    message: "Order Assign Successfully"
+                  };
+                  result(null, resobj);
+                }
+              });
+          
 
-                await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned,res1[0]);
-
-                let resobj = {
-                  success: true,
-                  status:true,
-                  message: "Order Assign Successfully"
-                };
-                result(null, resobj);
-              }
-            }
-          );
+        
         } else {
           let resobj = {
             success: true,
@@ -1938,8 +1944,7 @@ Order.order_assign = function order_assign(req, result) {
       result(null, resobj);
       }
       }
-    }
-  );
+  });
 };
 
 Order.getUnassignorders =async function getUnassignorders(req,result) {
@@ -2074,8 +2079,7 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
           );
         }
 
-        sql.query(
-          "UPDATE Orders SET orderstatus = ? ,moveit_pickup_time = ?,moveit_expected_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
+        sql.query("UPDATE Orders SET orderstatus = ? ,moveit_pickup_time = ?,moveit_expected_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
           [
             req.orderstatus,
             order_pickup_time,
@@ -2094,6 +2098,9 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
               req.deslat = res1[0].cus_lat;
               req.deslon = res1[0].cus_lon;
     
+              req.state=4;
+              req.moveit_user_id=req.moveit_userid;
+              Order.update_moveit_lat_long(req);
               Order.eat_order_distance_calculation(req ,async function(err,res3) {
                 if (err) {
                   result(err, null);
@@ -2318,7 +2325,9 @@ Order.order_delivery_status_by_moveituser =async function(req, result) {
                       result(err, null);
                     } else {
     
-                     
+                      req.state=6;
+                      Order.update_moveit_lat_long(req);  
+
                       let resobj = {
                         success: true,
                         message: "Order Delivery successfully",
@@ -2381,17 +2390,12 @@ Order.moveit_kitchen_reached_status = function(req, result) {
         req.status = 2
         await Order.insert_order_status(req);
 
-        sql.query(
-          "UPDATE Orders SET moveit_reached_time = ? WHERE orderid = ? and moveit_user_id =?",
-          [           
-            kitchenreachtime,
-            req.orderid,
-            req.moveit_user_id
-          ],
-         async  function(err, res) {
+        sql.query("UPDATE Orders SET moveit_reached_time = ? WHERE orderid = ? and moveit_user_id =?"[kitchenreachtime,req.orderid,req.moveit_user_id],async  function(err, res) {
             if (err) {
               result(err, null);
             } else {
+              req.state=3;
+              Order.update_moveit_lat_long(req);
               let resobj = {
                 success: true,
                 status:true,
@@ -4295,6 +4299,10 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
         if (err) {
           result(err, null);
         } else {
+
+          req.state=2;
+          req.moveit_user_id=req.moveituserid
+          Order.update_moveit_lat_long(req);
           let response = {
             success: true,
             status: true,
@@ -5316,6 +5324,10 @@ Order.moveit_customer_location_reached_by_userid = function(req, result) {
             if (err) {
               result(err, null);
             } else {
+
+              req.state=5;
+              Order.update_moveit_lat_long(req);
+
               let resobj = {
                 success: true,
                 status:true,
@@ -6967,6 +6979,9 @@ if (order_queue_query.length ==0) {
                 if (err) {
                   result(err, null);
                 } else {
+                  req.state=1;
+                  req.moveit_user_id=nearbymoveit[0].userid
+                   Order.update_moveit_lat_long(req);
                   var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
                   await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
@@ -7308,6 +7323,9 @@ Order.zone_moveit_order_auto_assign = async function zone_moveit_order_auto_assi
                   result(err, null);
                 } else {
                   await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+                  req.state=1;
+                  req.moveit_user_id=zoneInsideMoveitlist[0].userid
+                   Order.update_moveit_lat_long(req);
                   await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
                   let resobj = {
                     success: true,
@@ -8105,6 +8123,62 @@ Order.log_hub_livekitchenavgcount_report= async function log_hub_livekitchenavgc
     timearray[j].virtualavg = virtualproductcount/virtualmakeitcount ||0;
   }
   result(null, timearray);
+};
+
+////update moveit lat long////
+Order.update_moveit_lat_long= async function update_moveit_lat_long(req, result) { 
+ 
+ MoveitFireBase.get_moveit_lat_long(req.moveit_user_id,async function(err, moveit_info) {
+            if (err) {
+              let error = {
+                success: true,
+                status: false,
+                message:"No Move-it found,please after some time"
+              };
+              result(error, null);
+            }else{
+
+              switch(req.state) {
+                case 1:
+                  update_assign_query = await query("UPDATE Orders SET moveit_assign_lat=?,moveit_assign_long=? WHERE orderid = ?",[moveit_info.lat,moveit_info.long,req.orderid]);
+                  
+                  break;
+                case 2:
+                  console.log("case");
+                  // code block
+                  update_accept_query = await query("UPDATE Orders SET moveit_accept_lat=?,moveit_accept_long=? WHERE orderid = ?",[moveit_info.lat,moveit_info.long,req.orderid]);
+
+                  break;
+                  case 3:
+                  console.log("case 3");
+                  update_accept_query = await query("UPDATE Orders SET moveit_kitchen_reached_lat=?,moveit_kitchen_reached_long=? WHERE orderid = ?",[moveit_info.lat,moveit_info.long,req.orderid]);
+
+                  // code block
+                  break;
+                  case 4:
+                  console.log("case 4");
+                  update_accept_query = await query("UPDATE Orders SET moveit_Pickup_lat=?,moveit_Pickup_long=? WHERE orderid = ?",[moveit_info.lat,moveit_info.long,req.orderid]);
+
+                  // code block
+                  break;
+                  case 5:
+                  console.log("case 5 ");
+                  // code block
+                  update_accept_query = await query("UPDATE Orders SET moveit_customer_location_reached_lat=?,moveit_customer_location_reached_long=? WHERE orderid = ?",[moveit_info.lat,moveit_info.long,req.orderid]);
+
+                  break;
+                  case 6:
+                  console.log("case 6 ");
+                  // code block
+                  update_accept_query = await query("UPDATE Orders SET moveit_delivery_lat=?,moveit_delivery_long=? WHERE orderid = ?",[moveit_info.lat,moveit_info.long,req.orderid]);
+
+                  break;
+                default:
+                  // code block
+              }
+             
+            }
+          })
 };
 
 
