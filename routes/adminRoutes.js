@@ -264,4 +264,10 @@ app.route("/admin/packageinventory/update").put(routesVersioning({"1.0.0":packag
 app.route("/admin/packageinventory/stocklist").post(routesVersioning({"1.0.0":packageInventoryController.getPackageInventoryStockList}));
 app.route("/admin/makeit/packagemakeitusers").get(routesVersioning({"1.0.0":makeituser.get_makeit_package_user}));
 
+///KPI Dashboard Reports Live Kitchen count////
+app.route("/admin/reports/loglivekitchenavgcount").post(routesVersioning({"1.0.0":orders.log_livekitchenavgcount_report}));
+app.route("/admin/reports/loghublivekitchenavgcount").post(routesVersioning({"1.0.0":orders.log_hub_livekitchenavgcount_report}));
+
+////Moveit Performanse Report
+app.route("/admin/reports/moveitperformanse").post(routesVersioning({"1.0.0":orders.moveitperformanse_report}));
 }

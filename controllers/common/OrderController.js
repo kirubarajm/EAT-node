@@ -1039,3 +1039,27 @@ exports.livekitchenavgcount_report = function(req, res) {
     res.json(result);
   });
 };
+
+///////Log KPI Dashboard Reports Live Kitchen count////
+exports.log_livekitchenavgcount_report = function(req, res) {
+  Order.log_livekitchenavgcount_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+///////Log HUB KPI Dashboard Reports Live Kitchen count////
+exports.log_hub_livekitchenavgcount_report = function(req, res) {
+  Order.log_hub_livekitchenavgcount_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+///////Moveit Performanse Report////
+exports.moveitperformanse_report = function(req, res) {
+  Order.moveitperformanse_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

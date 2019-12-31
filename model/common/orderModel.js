@@ -7735,4 +7735,182 @@ Order.livekitchenavgcount_report= async function livekitchenavgcount_report(req,
   result(null, hublist);
 };
 
+////KPI Live Kitchen count and Avg////
+Order.log_livekitchenavgcount_report= async function log_livekitchenavgcount_report(req, result) {    
+  var kpiproducthistoryquery = "select time(kph.created_at) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id where date(kph.created_at)='2019-12-27' group by kph.makeit_id,time(kph.date_time) order by time(kph.created_at)";
+  //console.log("kpiproducthistoryquery =================>", kpiproducthistoryquery);
+  var producthistory = await query(kpiproducthistoryquery);
+  var timearray = new Array();
+  timearray.push({"time":producthistory[0].time});
+  
+  for(var i=0; i<producthistory.length; i++){
+    if(timearray[timearray.length-1].time != producthistory[i].time){
+      timearray.push({"time":producthistory[i].time});
+    }
+  }
+
+  for(var j=0; j<timearray.length; j++){
+    var realmakeitcount     = 0;
+    var realproductcount    = 0;
+    var virtualmakeitcount  = 0;
+    var virtualproductcount = 0;
+    for(var k=0; k<producthistory.length; k++){
+      if((timearray[j].time == producthistory[k].time) && (producthistory[k].virtualkey==0)){
+        realmakeitcount++;
+        realproductcount = realproductcount+producthistory[k].product_count;
+      }
+      if((timearray[j].time == producthistory[k].time) && (producthistory[k].virtualkey==1)){
+        virtualmakeitcount++;
+        virtualproductcount = virtualproductcount+producthistory[k].product_count;
+      }
+    }
+    timearray[j].realmakeitcount  = realmakeitcount;
+    timearray[j].realproductcount = realproductcount;
+    timearray[j].realavg = realproductcount/realmakeitcount;
+    timearray[j].virtualmakeitcount  = virtualmakeitcount;
+    timearray[j].virtualproductcount = virtualproductcount;
+    timearray[j].virtualavg = virtualproductcount/virtualmakeitcount;
+  }
+  result(null, timearray);
+};
+
+////KPI Live Kitchen count and Avg////
+Order.log_hub_livekitchenavgcount_report= async function log_hub_livekitchenavgcount_report(req, result) { 
+  var makeithubquery = "select makeithub_id,address from Makeit_hubs order by address ASC";
+  var hublist = await query(makeithubquery);
+
+  var kpiproducthistoryquery = "select time(kph.created_at) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey,mu.makeithub_id,mh.address from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id where date(kph.created_at)=CURDATE() group by kph.makeit_id,time(kph.created_at) order by time(kph.date_time)";
+  var producthistory = await query(kpiproducthistoryquery);
+  var timearray = new Array();
+
+  for(var hub=0; hub<hublist.length; hub++){
+    timearray.push({"makeithub_id":hublist[hub].makeithub_id,"hub":hublist[hub].address,"time":producthistory[0].time});
+  }
+  
+  for(var hub1=0; hub1<hublist.length; hub1++){
+    for(var i=0; i<producthistory.length; i++){
+      if(hublist[hub1].makeithub_id == producthistory[i].makeithub_id){
+        if(timearray[timearray.length-1].time != producthistory[i].time){
+          timearray.push({"makeithub_id":hublist[hub1].makeithub_id,"hub":hublist[hub1].address,"time":producthistory[i].time});
+        }
+      }      
+    }
+  } 
+
+  for(var j=0; j<timearray.length; j++){
+    var realmakeitcount     = 0;
+    var realproductcount    = 0;
+    var virtualmakeitcount  = 0;
+    var virtualproductcount = 0;
+    for(var k=0; k<producthistory.length; k++){
+      if((timearray[j].time == producthistory[k].time) && (producthistory[k].virtualkey==0) && (timearray[j].makeithub_id==producthistory[k].makeithub_id)){
+        realmakeitcount++;
+        realproductcount = realproductcount+producthistory[k].product_count;
+      }
+      if((timearray[j].time == producthistory[k].time) && (producthistory[k].virtualkey==1) && (timearray[j].makeithub_id==producthistory[k].makeithub_id)){
+        virtualmakeitcount++;
+        virtualproductcount = virtualproductcount+producthistory[k].product_count;
+      }
+    }
+    timearray[j].realmakeitcount  = realmakeitcount ||0;
+    timearray[j].realproductcount = realproductcount ||0;
+    timearray[j].realavg = realproductcount/realmakeitcount ||0;
+    timearray[j].virtualmakeitcount  = virtualmakeitcount ||0;
+    timearray[j].virtualproductcount = virtualproductcount ||0;
+    timearray[j].virtualavg = virtualproductcount/virtualmakeitcount ||0;
+  }
+  result(null, timearray);
+};
+
+////Moveit Performanse Report////
+Order.moveitperformanse_report= async function moveitperformanse_report(req, result) { 
+  var orderquery = "select date(ord.created_at) as date,ord.created_at,ord.moveit_user_id,mu.name,mh.location,ord.orderstatus from Orders as ord left join MoveitUser as mu on mu.userid=ord.moveit_user_id left join Moveit_hubs as mh on mh.moveithub_id=mu.moveit_hub where ord.moveit_user_id!=0 and ord.orderstatus<8 and (DATE(ord.created_at) BETWEEN '2019-12-20' AND  '2019-12-26') order by date(ord.created_at)";
+  var orderlist = await query(orderquery);
+
+  var moveitquery = "select ord.moveit_user_id,mu.name,mh.address from Orders as ord left join MoveitUser as mu on mu.userid=ord.moveit_user_id left join Moveit_hubs as mh on mh.moveithub_id=mu.moveit_hub where ord.moveit_user_id!=0 and ord.orderstatus<8 and (DATE(ord.created_at) BETWEEN '2019-12-20' AND  '2019-12-26') group by ord.moveit_user_id order by date(ord.created_at)";
+  var moveitlist = await query(moveitquery);
+
+  var daylistquery = "select date(ord.created_at) as date from Orders as ord left join MoveitUser as mu on mu.userid=ord.moveit_user_id left join Moveit_hubs as mh on mh.moveithub_id=mu.moveit_hub where ord.moveit_user_id!=0 and ord.orderstatus<8 and (DATE(ord.created_at) BETWEEN '2019-12-20' AND  '2019-12-26') group by date(ord.created_at) order by date(ord.created_at)";
+  var daylist = await query(daylistquery);
+
+  var daywisearray = new Array();
+
+  for (let daycount = 0; daycount< daylist.length; daycount++) {
+    for (let moveitcount = 0; moveitcount < moveitlist.length; moveitcount++) {
+      var breakfast = 0;
+      var lunch     = 0;
+      var evening   = 0;
+      var dinner    = 0;
+      var totalorder    = 0;
+      var cancelorders  = 0;
+      for (let ordercount = 0; ordercount < orderlist.length; ordercount++) {        
+        if((orderlist[ordercount].date == daylist[daycount].date) && (orderlist[ordercount].moveit_user_id == moveitlist[moveitcount].moveit_user_id)){
+          if(orderlist[ordercount].orderstatus==6){
+            var orderhr   = moment(orderlist[ordercount].created_at).format("HH");
+            if(orderhr >=8 && orderhr <=12){
+              breakfast++;
+              totalorder++;
+            }else if(orderhr >=12 && orderhr <=16){
+              lunch++;
+              totalorder++;
+            }else if(orderhr >=16 && orderhr <=19){
+              evening++;
+              totalorder++;
+            }else if(orderhr >=19 && orderhr <=23){
+              dinner++;
+              totalorder++;
+            }else{
+              totalorder++;
+            }
+          }else{
+            totalorder++;
+            cancelorders++;
+          }
+          
+        }
+      }
+      daywisearray.push({"date":daylist[daycount].date,"moveit_id":moveitlist[moveitcount].moveit_user_id,"moveit_name":moveitlist[moveitcount].name,"hub_name":moveitlist[moveitcount].address,"totalorders":totalorder,"Breakfast_slot_orders":breakfast,"Lunch_slot_orders":lunch,"Evening_slot_orders":evening,"Dinner_slot_orders":dinner,"cancel_orders":cancelorders});
+    }
+  }
+
+/*
+  for(var hub=0; hub<hublist.length; hub++){
+    timearray.push({"makeithub_id":hublist[hub].makeithub_id,"hub":hublist[hub].address,"time":producthistory[0].time});
+  }
+  
+  for(var hub1=0; hub1<hublist.length; hub1++){
+    for(var i=0; i<producthistory.length; i++){
+      if(hublist[hub1].makeithub_id == producthistory[i].makeithub_id){
+        if(timearray[timearray.length-1].time != producthistory[i].time){
+          timearray.push({"makeithub_id":hublist[hub1].makeithub_id,"hub":hublist[hub1].address,"time":producthistory[i].time});
+        }
+      }      
+    }
+  } 
+
+  for(var j=0; j<timearray.length; j++){
+    var realmakeitcount     = 0;
+    var realproductcount    = 0;
+    var virtualmakeitcount  = 0;
+    var virtualproductcount = 0;
+    for(var k=0; k<producthistory.length; k++){
+      if((timearray[j].time == producthistory[k].time) && (producthistory[k].virtualkey==0) && (timearray[j].makeithub_id==producthistory[k].makeithub_id)){
+        realmakeitcount++;
+        realproductcount = realproductcount+producthistory[k].product_count;
+      }
+      if((timearray[j].time == producthistory[k].time) && (producthistory[k].virtualkey==1) && (timearray[j].makeithub_id==producthistory[k].makeithub_id)){
+        virtualmakeitcount++;
+        virtualproductcount = virtualproductcount+producthistory[k].product_count;
+      }
+    }
+    timearray[j].realmakeitcount  = realmakeitcount ||0;
+    timearray[j].realproductcount = realproductcount ||0;
+    timearray[j].realavg = realproductcount/realmakeitcount ||0;
+    timearray[j].virtualmakeitcount  = virtualmakeitcount ||0;
+    timearray[j].virtualproductcount = virtualproductcount ||0;
+    timearray[j].virtualavg = virtualproductcount/virtualmakeitcount ||0;
+  } */
+  result(null, daywisearray);
+};
+
 module.exports = Order;

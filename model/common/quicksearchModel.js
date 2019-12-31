@@ -14,7 +14,8 @@ var Order = require("../../model/common/orderModel.js");
 var OrderStatusHistory = require("../common/orderstatushistoryModel");
 var Dunzo = require("../../model/webhooks/dunzoModel.js");
 var dunzoconst = require('../../model/dunzo_constant');
-var PackageStockInventory = require('../makeit/packageStockModel')
+var PackageStockInventory = require('../makeit/packageStockModel');
+var kpiproducthistory = require("../makeit/kpiproducthistoryModel.js");
 
 
 
@@ -786,5 +787,45 @@ const Package_tracking = new CronJob("0 0 7,0 * * * ", async function() {
   }
 });
 //Package_tracking.start();
+
+///// KPI Product History CRON ///////////
+const kpidashboardproducthistory = new CronJob("0 */1 * * * *", async function(req, result) {
+  var breatfastcycle    = constant.breatfastcycle;
+  var lunchcycle        = constant.lunchcycle;
+  var dinnercyclestart  = constant.dinnercycle;
+  var dinnercycle       = constant.dinnerend + 1; //22+1
+  var day               = moment().format("YYYY-MM-DD HH:mm:ss");
+  var currenthour       = moment(day).format("HH");
+  var CSwherequery      = "";
+  
+  if ((currenthour >breatfastcycle) && (currenthour < lunchcycle)) {
+    CSwherequery = " and prd.breakfast=1";
+  } else if ((currenthour >lunchcycle) && (currenthour < dinnercyclestart)) {
+    CSwherequery = " and prd.lunch=1";
+  } else if ((currenthour >dinnercyclestart) && (currenthour < dinnercycle)) {
+    CSwherequery = " and prd.dinner=1";
+  } else {
+  }
+
+  if (breatfastcycle && lunchcycle && dinnercyclestart && dinnercycle) {
+    const getproductdetailscs = await query("select prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.quantity !=0 and prd.delete_status !=1 " +CSwherequery +" group by prd.productid");
+      
+    if (getproductdetailscs.err) {
+      //result(err, null);
+      console.log(getproductdetailscs.err);
+    } else {
+      for (var i = 0; i < getproductdetailscs.length; i++) {
+        getproductdetailscs[i].date_time=day;
+        var inserthistory = await kpiproducthistory.createkpiProducthistory(getproductdetailscs[i]);
+      }
+    }
+  }
+});
+var currentday  = moment().format("YYYY-MM-DD HH:mm:ss");
+var currenthr   = moment(currentday).format("HH");
+if(currenthr >= 8 && currenthr <= 23){
+  //kpidashboardproducthistory.start();
+}
+
 
 module.exports = QuickSearch;
