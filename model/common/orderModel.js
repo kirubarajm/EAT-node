@@ -7669,7 +7669,7 @@ Order.real_abandonedcartrevenu_report= function real_abandonedcartrevenu_report(
   );
 };
 
-////real Abandoned Cart orders revenu////
+////Average Order Value////
 Order.averageordervalue_report= async function averageordervalue_report(req, result) {  
   var virtuallist = await query("select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price,( sum(ord.price)/count(ord.orderid)) as avg_price  from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=1 and ord.ordertype=0 and ord.orderstatus=6 and date(ord.created_at)  BETWEEN CURDATE()-6 AND  CURDATE() GROUP BY date(ord.created_at) Order BY date(ord.created_at)");
 
@@ -7684,7 +7684,7 @@ Order.averageordervalue_report= async function averageordervalue_report(req, res
       }
     }
   }
-  result(null, reallist);
+  result(null, virtuallist);
 };
 
 ////Live Kitchen count////

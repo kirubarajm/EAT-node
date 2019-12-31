@@ -2482,6 +2482,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
       var endlimit      = startlimit + orderlimit;
       var kitchenlist   = kitchenlist.slice(startlimit, endlimit);
     }    
+
     if(switchrun==0){
       switch(parseInt(page)){
         case 1:
@@ -2492,19 +2493,19 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
               } else {
                 if (res3.status != true) {
                   result(null, res3);
-                } else {      
+                } else {   
                   var collectionlist        = {};
                   collectionlist.collection = res3.collection;
                   var collectiontype        = collectionlist.collection;
                   collectionlist.collection = collectiontype.filter(collectiontype => collectiontype.type>1);
+                  
                   if(kitchenlist.length >= kitchen_pagenation_limit){
                     kitchenlist.push(collectionlist);
-                  }               
-  
-                  kitchenlist[kitchenlist.length-1].title   = "Collections";
-                  kitchenlist[kitchenlist.length-1].subtitle= "Collections";
-                  kitchenlist[kitchenlist.length-1].type    = 1;  
-                  
+                    kitchenlist[kitchenlist.length-1].title   = "Collections";
+                    kitchenlist[kitchenlist.length-1].subtitle= "Collections";
+                    kitchenlist[kitchenlist.length-1].type    = 1; 
+                  }                     
+
                   let resobj = {
                     success: true,
                     status:true,
@@ -2542,12 +2543,12 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                 stories.story = storieslist.result;
   
                 if(kitchenlist.length >= kitchen_pagenation_limit){
-                  kitchenlist.push(stories);   
-                }
-  
-                kitchenlist[kitchenlist.length-1].title   = "NEW ON EAT";
-                kitchenlist[kitchenlist.length-1].subtitle= "Meet our newly onboared homemakers and kitchens";
-                kitchenlist[kitchenlist.length-1].type    = 2;
+                  kitchenlist.push(stories); 
+                  kitchenlist[kitchenlist.length-1].title   = "NEW ON EAT";
+                  kitchenlist[kitchenlist.length-1].subtitle= "Meet our newly onboared homemakers and kitchens";
+                  kitchenlist[kitchenlist.length-1].type    = 2;  
+                }                
+                
                 let resobj = {
                   success: true,
                   status:true,
@@ -2584,12 +2585,11 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
   
                 if(kitchenlist.length >= kitchen_pagenation_limit){
                   kitchenlist.push(regioncard);
+                  kitchenlist[kitchenlist.length-1].title   = "EAT REGIONS";
+                  kitchenlist[kitchenlist.length-1].subtitle= "Home cooked food from over 25 plus regions";
+                  kitchenlist[kitchenlist.length-1].type    = 3;
                 }
-  
-                kitchenlist[kitchenlist.length-1].title   = "EAT REGIONS";
-                kitchenlist[kitchenlist.length-1].subtitle= "Home cooked food from over 25 plus regions";
-                kitchenlist[kitchenlist.length-1].type    = 3;
-            
+
                 let resobj = {
                   success: true,
                   status:true,
@@ -2630,11 +2630,11 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                   
                   if(kitchenlist.length >= kitchen_pagenation_limit){
                     kitchenlist.push(collectionlist);
+                    kitchenlist[kitchenlist.length-1].title   = "CollectionDetails";
+                    kitchenlist[kitchenlist.length-1].subtitle= "CollectionDetails";
+                    kitchenlist[kitchenlist.length-1].type    = 4;
                   }
-  
-                  kitchenlist[kitchenlist.length-1].title   = "CollectionDetails";
-                  kitchenlist[kitchenlist.length-1].subtitle= "CollectionDetails";
-                  kitchenlist[kitchenlist.length-1].type    = 4;
+
                   let resobj = {
                     success: true,
                     status:true,
@@ -2672,11 +2672,10 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
   
                 if(kitchenlist.length >= kitchen_pagenation_limit){
                   kitchenlist.push(Couponlist); 
-                }
-  
-                kitchenlist[kitchenlist.length-1].title   = "Couponlist";
-                kitchenlist[kitchenlist.length-1].subtitle= "Couponlist";
-                kitchenlist[kitchenlist.length-1].type    = 5;
+                  kitchenlist[kitchenlist.length-1].title   = "Couponlist";
+                  kitchenlist[kitchenlist.length-1].subtitle= "Couponlist";
+                  kitchenlist[kitchenlist.length-1].type    = 5;
+                }                
   
                 let resobj = {
                   success: true,
@@ -2723,11 +2722,10 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                     collectionlist.collection = collectiontype.filter(collectiontype => collectiontype.type>1);
                     if(kitchenlist.length >= kitchen_pagenation_limit){
                       kitchenlist.push(collectionlist);
-                    }               
-    
-                    kitchenlist[kitchenlist.length-1].title   = "Collections";
-                    kitchenlist[kitchenlist.length-1].subtitle= "Collections";
-                    kitchenlist[kitchenlist.length-1].type    = 1;  
+                      kitchenlist[kitchenlist.length-1].title   = "Collections";
+                      kitchenlist[kitchenlist.length-1].subtitle= "Collections";
+                      kitchenlist[kitchenlist.length-1].type    = 1; 
+                    }  
                     
                     let resobj = {
                       success: true,
@@ -2766,11 +2764,11 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                         
                         if(kitchenlist.length >= kitchen_pagenation_limit){
                           kitchenlist.push(collectionlist);
+                          kitchenlist[kitchenlist.length-1].title   = "CollectionDetails";
+                          kitchenlist[kitchenlist.length-1].subtitle= "CollectionDetails";
+                          kitchenlist[kitchenlist.length-1].type    = 4;
                         }
-  
-                        kitchenlist[kitchenlist.length-1].title   = "CollectionDetails";
-                        kitchenlist[kitchenlist.length-1].subtitle= "CollectionDetails";
-                        kitchenlist[kitchenlist.length-1].type    = 4;
+
                         let resobj = {
                           success: true,
                           status:true,

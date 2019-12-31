@@ -568,9 +568,17 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
               var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
               var userzoneid = getzone.zone_id;
               var zonename = getzone.zone_name;
-              var getzonekitchen = await query("select * from MakeitUser where unservicable=0 and zone="+userzoneid);
+
+              if(currenthour >=8 && currenthour <=12){
+                currentcycle = "pro.breakfast=1";
+              }else if(currenthour >=12 && currenthour <=16){
+                currentcycle = "pro.lunch=1";
+              }else if(currenthour >=16 && currenthour <=23){
+                currentcycle = "pro.lunch=1";
+              }else{   }              
+              var zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pro on pro.makeit_userid = mu.userid where (mu.appointment_status = 3 and mu.ka_status = 2 and pro.approved_status=2 and mu.verified_status = 1 ) and (pro.active_status = 1 and pro.quantity != 0 and pro.delete_status !=1 ) and zone="+userzoneid);
             }
-            console.log("getzonekitchen =============================>",getzonekitchen);
+            
             for (let i = 0; i < res1.length; i++) {  
                   if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
                     res1[i].productlist =JSON.parse(res1[i].productlist)
@@ -605,17 +613,15 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
               if (res1[i].serviceablestatus !== false) {
                 // Add Zone Controle Condition//////
                 if(constant.zone_control){
-                  if(getzone.zone_id && getzone.zone_id!=0 && res1[i].zone==getzone.zone_id){
+                  if(getzone.zone_id && getzone.zone_id!=0 && res1[i].zone==getzone.zone_id && zonemakeitsrrsy.length>=1){
                     res1[i].status = 0;
                     res1[i].serviceablestatus = true;
-                  }else{
-                    if (res1[i].distance <= radiuslimit) {
+                  }else if(zonemakeitsrrsy.length ==0 && res[0].distance <= radiuslimit){
                       res1[i].status = 0;
                       res1[i].serviceablestatus = true;
-                    }else{
+                  }else{
                       res1[i].serviceablestatus = false;
-                      res1[i].status = 1;
-                    }
+                      res1[i].status = 1;                  
                   } 
                 }else{
                   if (res1[i].distance <= radiuslimit) {
