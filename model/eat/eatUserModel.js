@@ -2223,7 +2223,7 @@ Eatuser.list_all_active_collection_cid = function list_all_active_collection_cid
 
 //kitchen list infinity
 Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
-  console.log("req ---------------------->",req);
+  //console.log("req ---------------------->",req);
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm               = constant.onekm;
   var radiuslimit         = constant.radiuslimit;
@@ -2764,8 +2764,8 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                         
                         if(kitchenlist.length >= kitchen_pagenation_limit){
                           kitchenlist.push(collectionlist);
-                          kitchenlist[kitchenlist.length-1].title   = "CollectionDetails";
-                          kitchenlist[kitchenlist.length-1].subtitle= "CollectionDetails";
+                          kitchenlist[kitchenlist.length-1].title   = collectionlist.collection_details[0].heading;
+                          kitchenlist[kitchenlist.length-1].subtitle= collectionlist.collection_details[0].subheading;
                           kitchenlist[kitchenlist.length-1].type    = 4;
                         }
 
