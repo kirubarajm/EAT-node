@@ -27,7 +27,12 @@ exports.sendNotificationAndroid = function(
   };
   console.log("token:"+token);
   var payload = {
-    data: dat
+    data: dat,
+    notification: {
+      title: dat.title,
+      body: dat.message, // <= CHANGE
+      sound : "default"
+    }
   };
   console.log("payload:"+payload.data.title);
   Makeit.messaging().sendToDevice(token, payload, options);

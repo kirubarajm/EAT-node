@@ -922,7 +922,7 @@ Product.productview_by_productid = function productview_by_productid(
 ) {
   const items = [];
   sql.query(
-    " select pd.*,JSON_OBJECT('userid',mk.userid,'name',mk.name,'phoneno',mk.phoneno,'email',mk.email,'address',mk.address,'lat',mk.lat,'lon',mk.lon,'brandName',mk.brandName,'localityid',mk.localityid,'virtualkey',mk.virtualkey,'ka_status',mk.ka_status) as makeitdetail from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid where productid = " + req.productid + "",
+    " select pd.*,JSON_OBJECT('makeit_type',mk.makeit_type,'userid',mk.userid,'name',mk.name,'phoneno',mk.phoneno,'email',mk.email,'address',mk.address,'lat',mk.lat,'lon',mk.lon,'brandName',mk.brandName,'localityid',mk.localityid,'virtualkey',mk.virtualkey,'ka_status',mk.ka_status) as makeitdetail from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid where productid = " + req.productid + "",
     function(err, res) {
       if (err) {
         console.log("error: ", err);
