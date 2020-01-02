@@ -367,7 +367,7 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
 
       //based on logic this conditions will change
       ///product
-        if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
+        if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7 || req.cid == 8 || req.cid == 9 || req.cid == 10) {
           var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
         }else if(req.cid == 3 ) {    ///kitchen
           var productlist = res[0].query + productquery  + orderbyquery;
@@ -397,12 +397,13 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
               }else{   }
               
               var zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pro on pro.makeit_userid = mu.userid where (mu.appointment_status = 3 and mu.ka_status = 2 and pro.approved_status=2 and mu.verified_status = 1 ) and (pro.active_status = 1 and pro.quantity != 0 and pro.delete_status !=1 ) and zone="+userzoneid);
-              console.log("zonemakeitsrrsy====>",zonemakeitsrrsy.length);
+              //console.log("zonemakeitsrrsy====>",zonemakeitsrrsy.length);
             }
             
               for (let i = 0; i < res1.length; i++) {
-
-                if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
+                res1[i].heading    = res[0].heading;
+                res1[i].subheading = res[0].subheading;
+                if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7 || req.cid == 8 || req.cid == 9 || req.cid == 10) {
                   res1[i].productlist =JSON.parse(res1[i].productlist);
                   //remove duplicate values
                   var arr = res1[i].productlist;
@@ -467,10 +468,10 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
               }
             }
 
-              if (req.cid == 1||req.cid == 4 ||req.cid == 2 || req.cid == 6|| req.cid == 7) {
+              if (req.cid == 1||req.cid == 4 ||req.cid == 2 || req.cid == 6|| req.cid == 7 || req.cid == 8 || req.cid == 9 || req.cid == 10) {
                 res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
               }
-
+              
             let resobj = {
               success: true,
               status: true,
@@ -515,7 +516,7 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
         if (err) {
           result(err, null);
         } else {
-  
+          
         if (res.length !== 0) {
           
           
@@ -550,7 +551,7 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
         
   
         //based on logic this conditions will change
-           if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
+           if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7 || req.cid == 8 || req.cid == 9 || req.cid == 10) {
           var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
         }else if(req.cid == 3 ) {    ///kitchen
           var productlist = res[0].query + productquery  + orderbyquery;
@@ -580,7 +581,7 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
             }
             
             for (let i = 0; i < res1.length; i++) {  
-                  if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
+                  if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7 || req.cid == 8 || req.cid == 9 || req.cid == 10) {
                     res1[i].productlist =JSON.parse(res1[i].productlist)
                     var arr = res1[i].productlist;
                
@@ -647,7 +648,7 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
                   
                 }
   
-                if (req.cid == 1||req.cid == 4 ||req.cid == 2 || req.cid == 6  || req.cid == 7) {
+                if (req.cid == 1||req.cid == 4 ||req.cid == 2 || req.cid == 6  || req.cid == 7 || req.cid == 8 || req.cid == 9 || req.cid == 10) {
                   res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
                 }
   
