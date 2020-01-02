@@ -14,8 +14,8 @@ var Order = require("../../model/common/orderModel.js");
 var OrderStatusHistory = require("../common/orderstatushistoryModel");
 var Dunzo = require("../../model/webhooks/dunzoModel.js");
 var dunzoconst = require('../../model/dunzo_constant');
-var PackageStockInventory = require('../makeit/packageStockModel')
-var kpiproducthistory = require("../../model/makeit/kpiproducthistoryModel.js");
+var PackageStockInventory = require('../makeit/packageStockModel');
+var kpiproducthistory = require("../makeit/kpiproducthistoryModel.js");
 
 
 
@@ -851,6 +851,7 @@ const kpidashboardproducthistory = new CronJob("0 */10 * * * *", async function(
       console.log(getproductdetailscs.err);
     } else {
       for (var i = 0; i < getproductdetailscs.length; i++) {
+        getproductdetailscs[i].date_time=day;
         var insertkpihistory = await kpiproducthistory.createkpiProducthistory(getproductdetailscs[i]);
       }
     }

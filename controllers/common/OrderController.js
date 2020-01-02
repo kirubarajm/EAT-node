@@ -1089,3 +1089,10 @@ exports.log_hub_livekitchenavgcount_report = function(req, res) {
     res.json(result);
   });
 };
+////Avg Order Value KPI Dashboard////
+exports.averageordervalue_report = function(req, res) {
+  Order.averageordervalue_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
