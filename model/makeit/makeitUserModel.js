@@ -2143,7 +2143,7 @@ Makeituser.makeituser_logout = async function makeituser_logout(req,headers, res
         if (orders.length ==0) {
           
           
-        var liveproduct = await query("Select * from Product where active_status = 1 and delete_status !=1 and makeit_userid = " +req.userid+"");
+        var liveproduct = await query("Select * from Product where active_status = 1 and delete_status !=1 and quantity !=0 and makeit_userid = " +req.userid+"");
         
         
         if (liveproduct.length ==0) {

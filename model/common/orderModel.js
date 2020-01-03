@@ -4301,7 +4301,9 @@ Order.moveit_order_accept = async function moveit_order_accept(req, result) {
         } else {
 
           req.state=2;
-          req.moveit_user_id=req.moveituserid
+          req.moveit_user_id=req.moveituserid;
+          req.makeit_user_id=orderdetails[0].makeit_user_id;
+
           Order.update_moveit_lat_long(req);
           let response = {
             success: true,
@@ -8145,8 +8147,32 @@ Order.update_moveit_lat_long= async function update_moveit_lat_long(req, result)
                   break;
                 case 2:
                   console.log("case");
-                  // code block
-                  update_accept_query = await query("UPDATE Orders SET moveit_accept_lat=?,moveit_accept_long=? WHERE orderid = ?",[moveit_info.lat,moveit_info.long,req.orderid]);
+                  // code block//
+                  var makeit_details = await query("select * from MakeitUser where userid = '"+req.makeit_user_id+"'");
+                  req.orglat = moveit_info.lat;
+                  req.orglon = moveit_info.long ;
+                  req.deslat = makeit_details[0].makeit_lat;
+                  req.deslon = makeit_details[0].makeit_lon;
+                  Order.eat_order_distance_calculation(req ,async function(err,res3) {
+                    if (err) {
+                      result(err, null);
+                    } else {
+                      if (res3.status != true) {
+                        result(null, res3);
+                      } else {
+            
+                        var routes = res3.result;
+                        var caldistance = routes.routes;
+                        var deliverytimedata = caldistance[0].legs;
+                       
+                        req.distance = parseInt(deliverytimedata[0].distance.text);
+                        req.duration = parseInt(deliverytimedata[0].duration.text);
+        
+                        update_accept_query = await query("UPDATE Orders SET moveit_accept_lat=?,moveit_accept_long=?,first_mile=? WHERE orderid = ?",[moveit_info.lat,moveit_info.long,req.distance,req.orderid]);
+                        
+                      }
+                    }
+                  });
 
                   break;
                   case 3:
