@@ -102,6 +102,8 @@ const calculate = {
      makeit_refferalcontent:"Welcome to EAT Kitchen. Click the link to download the EAT app from play store",
     
     order_cover_package_id :1,
+    
+    interval_days : 3,
 
     //////////////Infinity/////////////
     infinity_kitchen_page_limit:5,
