@@ -106,7 +106,7 @@ app.route("/eat/makeituser/:userid").get(middleware.checkToken,routesVersioning(
 app.route("/eat/orderplace").post(middleware.checkToken,routesVersioning({"1.0.0":orders.online_order_place_conformation}));
 app.route("/eat/cartdetails").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.read_a_cartdetails}));
 app.route("/eat/dishlist").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_dish_sort_filter}));
-app.route("/eat/kitchenlist").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_kitchen_sort_filter,"2.0.0":eatuser.eat_kitchen_sort_filter_v2,"2.0.1":eatuser.eat_kitchen_sort_filter_v_2_1,"2.0.2":eatuser.eat_kitchen_sort_filter_v_2_2}));
+app.route("/eat/kitchenlist").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.eat_kitchen_sort_filter,"2.0.0":eatuser.eat_kitchen_sort_filter_v2,"2.0.1":eatuser.eat_kitchen_sort_filter_v_2_1}));
 //app.route("/eat/kitchenlist").post(middleware.checkToken,routesVersioning({"2.0.0":eatuser.eat_kitchen_sort_filter_2}));
 app.route("/eat/fav").post(middleware.checkToken,routesVersioning({"1.0.0":fav.create_a_fav}));
 app.route("/eat/fav/:id").delete(middleware.checkToken,routesVersioning({"1.0.0":fav.delete_a_fav}));
@@ -158,10 +158,11 @@ app.route("/eat/coupon/validate").post(middleware.checkToken,routesVersioning({"
 app.route("/eat/coupon").post(middleware.checkToken,routesVersioning({"1.0.0":coupon.get_all_coupons_by_userid}));
 app.route("/eat/coupon/:eatuserid").get(middleware.checkToken,routesVersioning({"1.0.0":coupon.get_coupons_by_userid_new}));
 //app.route("/eat/collection").get(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection}));
-app.route("/eat/collectionlist").post(middleware.checkToken,routesVersioning({"1.0.0":collection.read_all_collection_by_userid}));
+//app.route("/eat/collectionlist").post(middleware.checkToken,routesVersioning({"1.0.0":collection.read_all_collection_by_userid}));
 app.route("/eat/collectiondetails").post(middleware.checkToken,routesVersioning({"1.0.0":collection.get_all_collection_by_cid,"2.0.0":collection.get_all_collection_by_cid_v2}));
-app.route("/eat/versioncheck").post(routesVersioning({"1.0.0": eatuser.eat_app_version_check}));
 app.route("/eat/collection").post(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection}));
+app.route("/eat/collectionicons").post(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection_icons}));
+app.route("/eat/versioncheck").post(routesVersioning({"1.0.0": eatuser.eat_app_version_check}));
 app.route("/eat/orderskip").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eat_order_skip_count}));
 app.route("/eat/order/deliverytime").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eat_get_delivery_time}));
 app.route("/eat/order/distance").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eat_order_distance_calculation}));
