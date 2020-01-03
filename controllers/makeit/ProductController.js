@@ -119,7 +119,8 @@ exports.add_quantity_productlive = function(req, res) {
     res
       .status(400)
       .send({
-        error: true,
+        success: false,
+        status: false,
         message: "Please provide productid / makeit_userid / quantity"
       });
   } else {
