@@ -11,6 +11,15 @@ exports.list_all_collection = function(req, res) {
   });
 };
 
+exports.list_all_collection_icons = function(req, res) {
+  Collection.list_all_active_collection_icons(req.body,function(err, result) {
+  //console.log("controller");
+  if (err) res.send(err);
+  //console.log("res", result);
+  res.send(result);
+});
+};
+
 exports.list_all_active_collection_v2 = function(req, res) {
   Collection.list_all_active_collection_v2(req.body,function(err, result) {
   console.log("controller");
