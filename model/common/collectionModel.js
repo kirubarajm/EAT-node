@@ -1360,7 +1360,7 @@ Collection.get_collectionlist_infinity_screen = async function(res,req){
     req.cid = res[i].cid;
     req.query = res[i].query;
     req.category = res[i].category;
-    console.log("req123   ------------->",req);
+    //console.log("req123   ------------->",req);
     await Collection.get_all_collection_by_cid_getkichens_infinity_screen(req, async function(err,res3) {
       if (err) {
         result(err, null);
@@ -1418,9 +1418,16 @@ Collection.get_all_collection_by_cid_getkichens_infinity_screen = async function
   }
  
   var res1 = await query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid]);
+  //console.log("res1 --------->",res1);
     for (let i = 0; i < res1.length; i++) {
+      //console.log("productlist",res1[i].productlist);
+
       if (req.category == 1) {
-        res1[i].productlist =JSON.parse(res1[i].productlist)
+        if(res1[i].productlist){
+          res1[i].productlist =JSON.parse(res1[i].productlist);
+        }else{
+          res1[i].productlist = 0;
+        }        
       }      
       var eta = foodpreparationtime + (onekm * res1[i].distance);          
       res1[i].serviceablestatus   = false;          

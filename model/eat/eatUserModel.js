@@ -2616,35 +2616,45 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
           break;
         case 4:
           if (kitchenlist.length !=0) {
-            req.cid = 29;
-            Collection.get_all_collection_by_cid_v2_infinity_screen(req,async function(err,collectiontype2list) {
+            Collection.list_all_active_collection(req,async function(err,cidlist) {
               if (err) { 
                 result(err, null);
               } else {
-                if (collectiontype2list.status != true) {
-                  result(null, collectiontype2list);
-                } else {
-                  var collectionlist = {};
-                  collectionlist.collection_details = collectiontype2list.result;
-                  console.log("collectionlist.collection_details ===>",collectionlist.collection_details);
-                  if(kitchenlist.length >= kitchen_pagenation_limit){
-                    kitchenlist.push(collectionlist);
-                    kitchenlist[kitchenlist.length-1].title   = collectionlist.collection_details[0].heading;
-                    kitchenlist[kitchenlist.length-1].subtitle= collectionlist.collection_details[0].subheading;
-                    kitchenlist[kitchenlist.length-1].type    = 4;
-                  }
+                collectionlist = cidlist.collection.filter(collectiontype => collectiontype.type=3);
+                var cidarray = collectionlist.map(obj =>{  return obj.cid; });
+                req.cid = cidarray[Math.floor(Math.random()*cidarray.length)];
+                Collection.get_all_collection_by_cid_v2_infinity_screen(req,async function(err,collectiontype2list) {
+                  if (err) { 
+                    result(err, null);
+                  } else {
+                    if (collectiontype2list.status != true) {
+                      repeat_collection = 1;
+                      result(null, collectiontype2list);
+                    } else {
+                      var collectionlist = {};
+                      collectionlist.collection_details = collectiontype2list.result;
+                      
+                      if(kitchenlist.length >= kitchen_pagenation_limit){
+                        kitchenlist.push(collectionlist);
+                        kitchenlist[kitchenlist.length-1].title   = collectionlist.collection_details[0].heading;
+                        kitchenlist[kitchenlist.length-1].subtitle= collectionlist.collection_details[0].subheading;
+                        kitchenlist[kitchenlist.length-1].type    = 4;
+                      }
 
-                  let resobj = {
-                    success: true,
-                    status:true,
-                    zoneId:userzoneid,
-                    zoneName:zonename,
-                    kitchencount :kitchencount ||0,
-                    pagecount : pagecount ||0,
-                    result: kitchenlist
-                  };            
-                  result(null, resobj);
-                }
+                      let resobj = {
+                        success: true,
+                        status:true,
+                        zoneId:userzoneid,
+                        zoneName:zonename,
+                        kitchencount :kitchencount ||0,
+                        pagecount : pagecount ||0,
+                        result: kitchenlist
+                      }; 
+                      repeat_collection=1;           
+                      result(null, resobj);
+                    }
+                  }
+                }); 
               }
             });
           } else {
