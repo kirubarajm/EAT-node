@@ -2487,17 +2487,18 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
       switch(parseInt(page)){
         case 1:
           if (kitchenlist.length !=0) {
-            await Collection.list_all_active_collection(req,async function(err,res3) {
+            await Collection.list_all_active_collection_infinity_screen(req,async function(err,res3) {
               if (err) {
                 result(err, null);
               } else {
                 if (res3.status != true) {
                   result(null, res3);
                 } else {   
+                  console.log("kitchen list",res3);
                   var collectionlist        = {};
                   collectionlist.collection = res3.collection;
                   var collectiontype        = collectionlist.collection;
-                  collectionlist.collection = collectiontype.filter(collectiontype => collectiontype.type>1);
+                  collectionlist.collection = collectiontype.filter(collectiontype => collectiontype.type=2);
                   
                   if(kitchenlist.length >= kitchen_pagenation_limit){
                     kitchenlist.push(collectionlist);
@@ -2618,7 +2619,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
         case 4:
           if (kitchenlist.length !=0) {
             req.cid = 1;
-            Collection.get_all_collection_by_cid(req,async function(err,collectiontype2list) {
+            Collection.get_all_collection_by_cid_v2(req,async function(err,collectiontype2list) {
               if (err) { 
                 result(err, null);
               } else {
@@ -2627,7 +2628,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                 } else {
                   var collectionlist = {};
                   collectionlist.collection_details = collectiontype2list.result;
-                  
+                  console.log(collectionlist.collection_details);
                   if(kitchenlist.length >= kitchen_pagenation_limit){
                     kitchenlist.push(collectionlist);
                     kitchenlist[kitchenlist.length-1].title   = collectionlist.collection_details[0].heading;
@@ -2708,7 +2709,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
             if(repeat_collection ==0){
               ///////////Collection List//////////////
               console.log("Collection List  ===============>");
-              await Collection.list_all_active_collection(req,async function(err,res3) {
+              await Collection.list_all_active_collection_infinity_screen(req,async function(err,res3) {
                 if (err) {
                   result(err, null);
                 } else {
@@ -2744,7 +2745,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
             }else{
               ///////////Collection Details//////////////
               console.log("Collection Details  ===============>");
-              Collection.list_all_active_collection(req,async function(err,cidlist) {
+              Collection.list_all_active_collection_infinity_screen(req,async function(err,cidlist) {
                 if (err) { 
                   result(err, null);
                 } else {
