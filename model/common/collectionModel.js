@@ -1327,4 +1327,275 @@ Collection.get_all_collection_by_cid_getkichens_v2 = async function get_all_coll
         
 };
 
+//////////////Infinity Screen Collection List///////////////////////
+Collection.list_all_active_collection_infinity_screen = function list_all_active_collection_infinity_screen(req,result) {
+  sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at,type,icon from Collections where active_status=1 and type =2",async function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      var kitchens =   await Collection.get_collectionlist_infinity_screen(res,req);
+      if (res.length !== 0 ) {
+        let resobj = {
+          success: true,
+          status:true,
+          collection: res
+        };
+        result(null, resobj);
+      } else {
+        let resobj = {
+          success: true,
+          status:false,
+          message: "Sorry there no active collections"
+        };
+        result(null, resobj);
+      }     
+    }
+  });
+};
+
+//////////////Infinity Screen Collection List///////////////////////
+Collection.get_collectionlist_infinity_screen = async function(res,req){
+  var userdetails = await query("Select * From User where userid = '" +req.eatuserid +"'");
+  for (let i = 0; i < res.length; i++) {
+    req.cid = res[i].cid;
+    req.query = res[i].query;
+    req.category = res[i].category;
+    await Collection.get_all_collection_by_cid_getkichens_infinity_screen(req, async function(err,res3) {
+      if (err) {
+        result(err, null);
+      } else {
+        if (res3.status != true) {
+          result(null, res3);
+        } else {          
+          var kitchenlist = res3.result
+          if (userdetails[0].first_tunnel == 0) {
+            if (kitchenlist.length !==0) {
+              res[i].collectionstatus = true;
+            }else{
+              res[i].collectionstatus = false;
+            }
+          }else{
+            res[i].collectionstatus = true;
+          }           	
+          delete res[i].query;
+        }
+      }
+    });
+  }
+  return res
+}
+
+//////////////Infinity Screen Collection List///////////////////////
+Collection.get_all_collection_by_cid_getkichens_infinity_screen = async function get_all_collection_by_cid_getkichens_infinity_screen(req,result) {
+  var foodpreparationtime = constant.foodpreparationtime;
+  var onekm = constant.onekm;
+  var radiuslimit     = constant.radiuslimit;
+  var  productquery   = '';
+  var  groupbyquery   = " GROUP BY pt.makeit_userid";
+  var  orderbyquery   = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
+  var breatfastcycle  = constant.breatfastcycle;
+  var dinnercycle     = constant.dinnercycle;
+  var lunchcycle      = constant.lunchcycle;
+  var day   = moment().format("YYYY-MM-DD HH:mm:ss");;
+  var currenthour     = moment(day).format("HH");
+  var productquery    = "";
+  // console.log(currenthour);
+
+  if (currenthour < lunchcycle) {
+    productquery = productquery + " and pt.breakfast = 1";
+  }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+    productquery = productquery + " and pt.lunch = 1";
+  }else if( currenthour >= dinnercycle){    
+    productquery = productquery + " and pt.dinner = 1";
+  }
+
+  //based on logic this conditions will change
+  if (req.category == 1 ) {
+    var productlist = req.query + productquery  + groupbyquery;
+  }else if(req.category == 2 ) {
+    var productlist = req.query + productquery  + orderbyquery;
+  }
+ 
+  var res1 = await query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid]);
+    for (let i = 0; i < res1.length; i++) {
+      if (req.category == 1) {
+        res1[i].productlist =JSON.parse(res1[i].productlist)
+      }      
+      var eta = foodpreparationtime + (onekm * res1[i].distance);          
+      res1[i].serviceablestatus   = false;          
+      if (res1[i].distance <= radiuslimit) {
+        res1[i].serviceablestatus = true;
+      }         
+      res1[i].eta = Math.round(eta) + " mins";
+      if (res1[i].cuisines) {
+        res1[i].cuisines = JSON.parse(res1[i].cuisines);
+      }        
+    }
+
+    let resobj = {
+      success: true,
+      status:true,
+      result: res1
+    };
+    result(null, resobj);  
+};
+
+//////////////Infinity Screen Collection List///////////////////////
+Collection.get_all_collection_by_cid_v2_infinity_screen  = async function get_all_collection_by_cid_v2_infinity_screen (req,result) {  
+  var foodpreparationtime = constant.foodpreparationtime;
+  var onekm = constant.onekm;
+  var radiuslimit = constant.radiuslimit;
+  var tunnelkitchenliststatus = true;
+  const userdetails = await query("select * from User where userid = "+req.eatuserid+" ");
+    
+  if (userdetails[0].first_tunnel == 1 ) {        
+    tunnelkitchenliststatus = false;    
+  }
+    
+  await sql.query("Select * from Collections where active_status= 1 and cid = '"+req.cid+"'", async function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {   
+      if (res.length !== 0) {
+        var productquery  = '';
+        var groupbyquery  = " GROUP BY pt.makeit_userid";
+        //  var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
+        var orderbyquery  = " GROUP BY pt.productid ORDER BY mk.rating desc,mk.unservicable = 0 desc";          
+        var breatfastcycle = constant.breatfastcycle;
+        var dinnercycle   = constant.dinnercycle;
+        var lunchcycle    = constant.lunchcycle;
+        var day = moment().format("YYYY-MM-DD HH:mm:ss");
+        var currenthour  = moment(day).format("HH");
+        var productquery = "";
+        
+        if (currenthour < lunchcycle) {    
+          productquery = productquery + " and pt.breakfast = 1";
+        }else if(currenthour >= lunchcycle && currenthour < dinnercycle){    
+          productquery = productquery + " and pt.lunch = 1";
+        }else if( currenthour >= dinnercycle){              
+          productquery = productquery + " and pt.dinner = 1";
+        }
+            
+        //based on logic this conditions will change
+        if (req.cid) {
+          var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
+        }else if(req.cid == 3 ) {    ///kitchen
+          var productlist = res[0].query + productquery  + orderbyquery;
+        }else if(req.cid= 5){
+          var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
+        }              
+      
+        await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid],async function(err, res1) {
+          if (err) {
+            result(err, null);
+          } else {
+            if(constant.zone_control){
+              var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+              var userzoneid = getzone.zone_id;
+              var zonename = getzone.zone_name;
+      
+              if(currenthour >=8 && currenthour <=12){
+                currentcycle = "pro.breakfast=1";
+              }else if(currenthour >=12 && currenthour <=16){
+                currentcycle = "pro.lunch=1";
+              }else if(currenthour >=16 && currenthour <=23){
+                currentcycle = "pro.lunch=1";
+              }else{   }              
+              var zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pro on pro.makeit_userid = mu.userid where (mu.appointment_status = 3 and mu.ka_status = 2 and pro.approved_status=2 and mu.verified_status = 1 ) and (pro.active_status = 1 and pro.quantity != 0 and pro.delete_status !=1 ) and zone="+userzoneid);
+            }
+                  
+            for (let i = 0; i < res1.length; i++) {  
+              res1[i].heading    = res[0].heading;
+              res1[i].subheading = res[0].subheading;
+              if (req.cid) {
+                res1[i].productlist =JSON.parse(res1[i].productlist)
+                var arr = res1[i].productlist;
+                    
+                function getUniqueListBy(arr, key) {
+                  return [...new Map(arr.map(item => [item[key], item])).values()]
+                }
+                
+                res1[i].productlist = getUniqueListBy(arr, 'productid')
+              }
+                        
+              res1[i].distance = res1[i].distance.toFixed(2);
+              //  15min Food Preparation time , 3min 1 km
+              //  eta = 15 + 3 * res[i].distance;
+              var eta = foodpreparationtime + onekm * res1[i].distance;                    
+              // res1[i].serviceablestatus = false; 
+              // if (res1[i].distance <= radiuslimit) {
+              //   res1[i].serviceablestatus = true;
+              // } 
+        
+              res1[i].serviceablestatus = false;
+              res1[i].status = 1;
+          
+              if (res1[i].unservicable == 0) {
+                res1[i].serviceablestatus = true;
+                res1[i].status = 0;
+              }
+                        
+              if (res1[i].serviceablestatus !== false) {
+                // Add Zone Controle Condition//////
+                if(constant.zone_control){
+                  if(getzone.zone_id && getzone.zone_id!=0 && res1[i].zone==getzone.zone_id && zonemakeitsrrsy.length>=1){
+                    res1[i].status = 0;
+                    res1[i].serviceablestatus = true;
+                  }else if(zonemakeitsrrsy.length ==0 && res[0].distance <= radiuslimit){
+                    res1[i].status = 0;
+                    res1[i].serviceablestatus = true;
+                  }else{
+                    res1[i].serviceablestatus = false;
+                    res1[i].status = 1;                  
+                  } 
+                }else{
+                  if (res1[i].distance <= radiuslimit) {
+                    res1[i].status = 0;
+                    res1[i].serviceablestatus = true;
+                  }else{
+                    res1[i].serviceablestatus = false;
+                    res1[i].status = 1;
+                  }
+                }
+                ////////////////////////////////////// 
+              }
+        
+              if (tunnelkitchenliststatus == false) {
+                res1[i].status = 0;
+                res1[i].serviceablestatus = true;
+              }
+                      
+              res1[i].eta = Math.round(eta) + " mins";
+              if (res1[i].cuisines) {
+                res1[i].cuisines = JSON.parse(res1[i].cuisines);
+              }                  
+            }
+        
+            if (req.cid) {
+              res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
+            }
+        
+            let resobj = {
+              success: true,
+              status: true,
+              result: res1
+            };
+            result(null, resobj);
+          }
+        });
+      }else{
+        let resobj = {
+          success: true,
+          status: false,
+          result: res
+        };
+        result(null, resobj);
+      }
+    }
+  });
+};
+
+
+
+
 module.exports = Collection;

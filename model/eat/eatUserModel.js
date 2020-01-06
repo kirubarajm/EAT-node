@@ -2223,7 +2223,6 @@ Eatuser.list_all_active_collection_cid = function list_all_active_collection_cid
 
 //kitchen list infinity
 Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
-  console.log("req ================>",req);
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm               = constant.onekm;
   var radiuslimit         = constant.radiuslimit;
@@ -2487,7 +2486,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
       switch(parseInt(page)){
         case 1:
           if (kitchenlist.length !=0) {
-            await Collection.list_all_active_collection(req,async function(err,res3) {
+            await Collection.list_all_active_collection_infinity_screen(req,async function(err,res3) {
               if (err) {
                 result(err, null);
               } else {
@@ -2617,8 +2616,8 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
           break;
         case 4:
           if (kitchenlist.length !=0) {
-            req.cid = 1;
-            Collection.get_all_collection_by_cid(req,async function(err,collectiontype2list) {
+            req.cid = 29;
+            Collection.get_all_collection_by_cid_v2_infinity_screen(req,async function(err,collectiontype2list) {
               if (err) { 
                 result(err, null);
               } else {
@@ -2627,11 +2626,11 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                 } else {
                   var collectionlist = {};
                   collectionlist.collection_details = collectiontype2list.result;
-                  
+                  console.log("collectionlist.collection_details ===>",collectionlist.collection_details);
                   if(kitchenlist.length >= kitchen_pagenation_limit){
                     kitchenlist.push(collectionlist);
-                    kitchenlist[kitchenlist.length-1].title   = "CollectionDetails";
-                    kitchenlist[kitchenlist.length-1].subtitle= "CollectionDetails";
+                    kitchenlist[kitchenlist.length-1].title   = collectionlist.collection_details[0].heading;
+                    kitchenlist[kitchenlist.length-1].subtitle= collectionlist.collection_details[0].subheading;
                     kitchenlist[kitchenlist.length-1].type    = 4;
                   }
 
@@ -2748,10 +2747,10 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                 if (err) { 
                   result(err, null);
                 } else {
-                  collectionlist = cidlist.collection.filter(collectiontype => collectiontype.type=2);
+                  collectionlist = cidlist.collection.filter(collectiontype => collectiontype.type=3);
                   var cidarray = collectionlist.map(obj =>{  return obj.cid; });
                   req.cid = cidarray[Math.floor(Math.random()*cidarray.length)];
-                  Collection.get_all_collection_by_cid(req,async function(err,collectiontype2list) {
+                  Collection.get_all_collection_by_cid_v2_infinity_screen(req,async function(err,collectiontype2list) {
                     if (err) { 
                       result(err, null);
                     } else {
@@ -2764,8 +2763,8 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                         
                         if(kitchenlist.length >= kitchen_pagenation_limit){
                           kitchenlist.push(collectionlist);
-                          kitchenlist[kitchenlist.length-1].title   = "CollectionDetails";
-                          kitchenlist[kitchenlist.length-1].subtitle= "CollectionDetails";
+                          kitchenlist[kitchenlist.length-1].title   = collectionlist.collection_details[0].heading;
+                          kitchenlist[kitchenlist.length-1].subtitle= collectionlist.collection_details[0].subheading;
                           kitchenlist[kitchenlist.length-1].type    = 4;
                         }
 
