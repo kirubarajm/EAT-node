@@ -2991,7 +2991,7 @@ Eatuser.eatuser_logout = async function eatuser_logout(req, result) {
  
 };
 
-Eatuser.eatuser_otpverification =async function eatuser_otpverification(req,result) {
+Eatuser.eatuser_otpverification = async function eatuser_otpverification(req,result) {
   var otp = 0;
   var passwordstatus = false;
   var emailstatus = false;
@@ -3160,7 +3160,7 @@ Eatuser.eatuser_otpverification =async function eatuser_otpverification(req,resu
 }
 };
 
-Eatuser.edit_eat_users =async function(req, result) {
+Eatuser.edit_eat_users = async function(req, result) {
  
  // var userdetails = await query ("");
   var staticquery = "UPDATE User SET updated_at = ?, ";
@@ -3512,8 +3512,6 @@ Eatuser.update_pushid = function(req, result) {
     });
   }
 };
-
-
 
 Eatuser.get_eat_region_makeit_list = function get_eat_region_makeit_list(req,result) {
 
