@@ -8022,7 +8022,7 @@ Order.livekitchenavgcount_report= async function livekitchenavgcount_report(req,
 
 ////KPI Live Kitchen count and Avg////
 Order.log_livekitchenavgcount_report= async function log_livekitchenavgcount_report(req, result) {    
-  var kpiproducthistoryquery = "select time(kph.created_at) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id where date(kph.created_at)='2019-12-27' group by kph.makeit_id,time(kph.date_time) order by time(kph.created_at)";
+  var kpiproducthistoryquery = "select time(kph.date_time) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id where date(kph.created_at)='2019-12-27' group by kph.makeit_id,time(kph.date_time) order by time(kph.created_at)";
   //console.log("kpiproducthistoryquery =================>", kpiproducthistoryquery);
   var producthistory = await query(kpiproducthistoryquery);
   var timearray = new Array();
@@ -8064,7 +8064,7 @@ Order.log_hub_livekitchenavgcount_report= async function log_hub_livekitchenavgc
   var makeithubquery = "select makeithub_id,address from Makeit_hubs order by address ASC";
   var hublist = await query(makeithubquery);
 
-  var kpiproducthistoryquery = "select time(kph.created_at) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey,mu.makeithub_id,mh.address from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id where date(kph.created_at)=CURDATE() group by kph.makeit_id,time(kph.created_at) order by time(kph.date_time)";
+  var kpiproducthistoryquery = "select time(kph.date_time) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey,mu.makeithub_id,mh.address from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id where date(kph.created_at)=CURDATE() group by kph.makeit_id,time(kph.created_at) order by time(kph.date_time)";
   var producthistory = await query(kpiproducthistoryquery);
   var timearray = new Array();
 
