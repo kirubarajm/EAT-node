@@ -1360,6 +1360,7 @@ Collection.get_collectionlist_infinity_screen = async function(res,req){
     req.cid = res[i].cid;
     req.query = res[i].query;
     req.category = res[i].category;
+    console.log("req123   ------------->",req);
     await Collection.get_all_collection_by_cid_getkichens_infinity_screen(req, async function(err,res3) {
       if (err) {
         result(err, null);
@@ -1594,6 +1595,38 @@ Collection.get_all_collection_by_cid_v2_infinity_screen  = async function get_al
     }
   });
 };
+
+/////////////////Get All Collection Icons////////////
+Collection.list_all_active_collection_icons = function list_all_active_collection_icons(req,result) {
+  sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at,type,icon from Collections where active_status=1 and type = 1",async function(err, res) {
+    if (err) {
+      result(err, null);
+    } else { 
+console.log("res =========>",res);
+      var kitchens =   await Collection.get_collectionlist_infinity_screen(res,req);
+
+      //console.log("first collection");
+       if (res.length !== 0 ) {
+        let resobj = {
+          success: true,
+          status:true,
+          collection: res
+        };
+        result(null, resobj);
+       } else {
+        let resobj = {
+          success: true,
+          status:false,
+          message: "Sorry there no active collections"
+        };
+        result(null, resobj);
+       }
+     
+    }
+  });
+};
+
+
 
 
 

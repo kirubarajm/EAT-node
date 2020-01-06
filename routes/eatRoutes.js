@@ -174,4 +174,9 @@ app.route("/eat/getotp/:phone_number").get(middleware.checkToken,routesVersionin
 //////////Razorpay////////////////////
 app.route("/eat/payment/retry").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.payment_retry}));
 
+////////Get All Collection Icon list/////////////
+app.route("/eat/collectionicons").post(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection_icons}));
+
+
+
 }

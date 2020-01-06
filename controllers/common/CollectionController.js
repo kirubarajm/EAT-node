@@ -81,4 +81,12 @@ exports.read_all_collection_by_userid = function(req, res) {
 });
 }
 
-
+////Get All Collection Icons
+exports.list_all_collection_icons = function(req, res) {
+  Collection.list_all_active_collection_icons(req.body,function(err, result) {
+  //console.log("controller");
+  if (err) res.send(err);
+  //console.log("res", result);
+  res.send(result);
+});
+};
