@@ -2776,17 +2776,37 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
  
 //new otp url 02-01-2020
 
+console.log("newUser.otpcode",newUser.otpcode);
+    // var otpurl =
+    // "https://www.instaalerts.zone/SendSMS/sendmsg.php?uname=EATotp1&pass=abc321&send=EATHOM&dest=" +
+    // newUser.phoneno +
+    // "&msg=<%23>Your EAT App OTP is " +
+    // OTP +
+    // ". Note: Please DO NOT SHARE this OTP with anyone. " +
+    // newUser.otpcode +
+    // " ";
 
+
+     if (newUser.otpcode) {
+      var otpurl =
+      "https://www.instaalerts.zone/SendSMS/sendmsg.php?uname=EATotp1&pass=abc321&send=EATHOM&dest=" +
+      newUser.phoneno +
+      "&msg=<%23>Your EAT App OTP is " +
+      OTP +
+      ". Note: Please DO NOT SHARE this OTP with anyone. " +
+      newUser.otpcode +
+      " ";
+   }else{
     var otpurl =
     "https://www.instaalerts.zone/SendSMS/sendmsg.php?uname=EATotp1&pass=abc321&send=EATHOM&dest=" +
     newUser.phoneno +
     "&msg=<%23>Your EAT App OTP is " +
     OTP +
-    ". Note: Please DO NOT SHARE this OTP with anyone. " +
-    newUser.otpcode +
-    " ";
-  
+    ". Note: Please DO NOT SHARE this OTP with anyone.";
+   }
 
+  
+  console.log(otpurl);
   sql.query("Select * from User where phoneno = '" + newUser.phoneno + "'",function(err, res) {
       if (err) {
         console.log("error: ", err);
