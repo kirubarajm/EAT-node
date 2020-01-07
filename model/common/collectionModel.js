@@ -1485,13 +1485,20 @@ Collection.get_all_collection_by_cid_v2_infinity_screen  = async function get_al
         }
             
         //based on logic this conditions will change
-        if (req.cid) {
+        // if (req.cid) {
+        //   var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
+        // }else if(req.cid == 3 ) {    ///kitchen
+        //   var productlist = res[0].query + productquery  + orderbyquery;
+        // }else if(req.cid= 5){
+        //   var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
+        // }   
+        
+        if (res[0].category == 1) {
           var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
-        }else if(req.cid == 3 ) {    ///kitchen
+        }else if(res[0].category == 2) {    ///kitchen
           var productlist = res[0].query + productquery  + orderbyquery;
-        }else if(req.cid= 5){
-          var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
-        }              
+        }
+
       
         await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid],async function(err, res1) {
           if (err) {
@@ -1515,7 +1522,7 @@ Collection.get_all_collection_by_cid_v2_infinity_screen  = async function get_al
             for (let i = 0; i < res1.length; i++) {  
               res1[i].heading    = res[0].heading;
               res1[i].subheading = res[0].subheading;
-              if (req.cid) {
+              if (res[0].category == 1) {
                 res1[i].productlist =JSON.parse(res1[i].productlist)
                 var arr = res1[i].productlist;
                     
