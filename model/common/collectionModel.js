@@ -158,7 +158,6 @@ Collection.get_collectionlist_infinity_screen = async function(res,req){
     });
   }
 
-  console.log(res);
   return res
 }
 
@@ -208,7 +207,10 @@ Collection.get_all_collection_by_cid_getkichens_infinity_screen = async function
         for (let i = 0; i < res1.length; i++) {
 
           if (req.category == 1) {
-            res1[i].productlist =JSON.parse(res1[i].productlist)
+            if (res1[i].productlist) {
+              res1[i].productlist =JSON.parse(res1[i].productlist)
+            }
+            
           }
 
           var eta = foodpreparationtime + (onekm * res1[i].distance);
@@ -750,13 +752,17 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
 
             for (let i = 0; i < res1.length; i++) {  
                   if (res[0].category == 1) {
-                    res1[i].productlist =JSON.parse(res1[i].productlist)
-                    var arr = res1[i].productlist;
-               
-                    function getUniqueListBy(arr, key) {
-                      return [...new Map(arr.map(item => [item[key], item])).values()]
-                   }
-                     res1[i].productlist = getUniqueListBy(arr, 'productid')
+
+                    if (res1[i].productlist) {
+                      res1[i].productlist =JSON.parse(res1[i].productlist)
+                      var arr = res1[i].productlist;
+                 
+                      function getUniqueListBy(arr, key) {
+                        return [...new Map(arr.map(item => [item[key], item])).values()]
+                     }
+                       res1[i].productlist = getUniqueListBy(arr, 'productid')
+                    }
+                   
                   }
                   
                   res1[i].distance = res1[i].distance.toFixed(2);

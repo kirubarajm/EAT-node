@@ -2028,7 +2028,8 @@ Order.orderviewbymoveituser = function(orderid, result) {
 Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveituser( req,kitchenqualitylist,result) {
   var order_pickup_time = moment().format("YYYY-MM-DD HH:mm:ss");
   var twentyMinutesLater = moment().add(0, "seconds").add(constant.foodpreparationtime, "minutes").format("YYYY-MM-DD HH:mm:ss");
-  console.log(req);
+  req.lat = req.lat || 0;
+  req.lon = req.lon || 0;
 
 sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id where ors.orderid = ?", [req.orderid],async function(err,res1) {
     if (err) {
@@ -2078,11 +2079,13 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
         }
 
         sql.query(
-          "UPDATE Orders SET orderstatus = ? ,moveit_pickup_time = ?,moveit_expected_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",
+          "UPDATE Orders SET orderstatus = ? ,moveit_pickup_time = ?,moveit_expected_delivered_time = ?,moveit_Pickup_lat=?,moveit_Pickup_long=? WHERE orderid = ? and moveit_user_id =?",
           [
             req.orderstatus,
             order_pickup_time,
             twentyMinutesLater,
+            req.lat,
+            req.lon,
             req.orderid,
             req.moveit_userid
           ],
@@ -2260,7 +2263,8 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
 
 
 Order.order_delivery_status_by_moveituser =async function(req, result) {
-  console.log(req);
+  req.lat = req.lat || 0;
+  req.lon = req.lon || 0;
   var order_delivery_time = moment().format("YYYY-MM-DD HH:mm:ss");
   const orderdetails = await query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon,mk.makeithub_id,mk.zone,zo.zone_status from Orders ors join MakeitUser mk on mk.userid = ors.makeit_user_id left join Zone zo on zo.id=mk.zone where ors.orderid ='" + req.orderid + "'");
   sql.query("Select * from Orders where orderid = ? and moveit_user_id = ?",[req.orderid, req.moveit_user_id],async function(err, res1) {
@@ -2317,7 +2321,7 @@ Order.order_delivery_status_by_moveituser =async function(req, result) {
                   req.duration = parseInt(deliverytimedata[0].duration.text);
   
                 
-                  sql.query("UPDATE Orders SET orderstatus = ?,moveit_actual_delivered_time = ?,last_mile=? WHERE orderid = ? and moveit_user_id =?",[req.orderstatus, order_delivery_time, req.distance, req.orderid, req.moveit_user_id],async function(err, res) {
+                  sql.query("UPDATE Orders SET orderstatus = ?,moveit_actual_delivered_time = ?,last_mile=?,moveit_delivery_lat=?,moveit_delivery_long=? WHERE orderid = ? and moveit_user_id =?",[req.orderstatus, order_delivery_time, req.distance,req.lat,req.lon, req.orderid, req.moveit_user_id],async function(err, res) {
                     if (err) {
                       result(err, null);
                     } else {
@@ -2374,7 +2378,8 @@ Order.moveit_kitchen_reached_status = function(req, result) {
   var kitchenreachtime = moment().format("YYYY-MM-DD HH:mm:ss");
   var twentyMinutesLater = new Date();
   twentyMinutesLater.setMinutes(twentyMinutesLater.getMinutes() + 20);
-  console.log(req);
+  req.lat = req.lat || 0;
+  req.lon = req.lon || 0;
   sql.query("Select * from Orders where orderid = ?", [req.orderid],async function(err,res1) {
     if (err) {
       result(err, null);
@@ -2386,9 +2391,11 @@ Order.moveit_kitchen_reached_status = function(req, result) {
         await Order.insert_order_status(req);
 
         sql.query(
-          "UPDATE Orders SET moveit_reached_time = ? WHERE orderid = ? and moveit_user_id =?",
+          "UPDATE Orders SET moveit_reached_time = ?,moveit_kitchen_reached_lat=?,moveit_kitchen_reached_long=? WHERE orderid = ? and moveit_user_id =?",
           [           
             kitchenreachtime,
+            req.lat,
+            req.lon,
             req.orderid,
             req.moveit_user_id
           ],
@@ -4275,7 +4282,7 @@ Order.insert_order_status = function insert_order_status(req) {
 Order.moveit_order_accept = async function moveit_order_accept(req, result) {
 
  // const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' and moveit_user_id= '" + req.moveituserid + "'");
-console.log(req);
+
   const orderdetails = await query("select * from Orders where orderid ='" + req.orderid + "' ");
 
   const ordermoveitstatus = await query("select * from Moveit_status where orderid ='" + req.orderid + "' ");
@@ -4292,8 +4299,9 @@ console.log(req);
       
       
       var orderaccepttime = moment().format("YYYY-MM-DD HH:mm:ss");
-   
-      updatequery ="UPDATE Orders SET moveit_status = 1 ,moveit_accept_time= '" + orderaccepttime +"' WHERE orderid ='" +req.orderid +"'";
+      req.lat = req.lat || 0;
+      req.lon = req.lon || 0;
+      updatequery ="UPDATE Orders SET moveit_status = 1 ,moveit_accept_time= '" + orderaccepttime +"',moveit_accept_lat='" + req.lat +"',moveit_accept_long='" + req.lon +"' WHERE orderid ='" +req.orderid +"'";
      
       sql.query(updatequery, async function(err, res) {
         if (err) {
@@ -5297,7 +5305,8 @@ Order.eat_get_delivery_time_by_moveit_id = async function eat_get_delivery_time_
 
 Order.moveit_customer_location_reached_by_userid = function(req, result) {
   var customerlocationreachtime = moment().format("YYYY-MM-DD HH:mm:ss");
-console.log(req);
+req.lat=req.lat || 0;
+req.lon=req.lon || 0;
   sql.query("Select * from Orders where orderid = ?", [req.orderid],async function(err,res1) {
     if (err) {
       result(err, null);
@@ -5310,9 +5319,11 @@ console.log(req);
         await Order.insert_order_status(req);
 
         sql.query(
-          "UPDATE Orders SET moveit_customerlocation_reached_time = ? WHERE orderid = ? and moveit_user_id =?",
+          "UPDATE Orders SET moveit_customerlocation_reached_time = ?,moveit_customer_location_reached_lat=?,moveit_customer_location_reached_long=? WHERE orderid = ? and moveit_user_id =?",
           [           
             customerlocationreachtime,
+            req.lat,
+            req.lon,
             req.orderid,
             req.moveit_user_id
           ],
@@ -6808,13 +6819,13 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
     if(constant.zone_control){
       var get_hub_id_from_orders= await query("Select zone from MakeitUser where userid="+req.makeit_user_id);
       var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and zone="+get_hub_id_from_orders[0].zone);
-    //  var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and status !=1 and Date(oq.created_at)= CURDATE()") ;
+     // var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and status !=1 and Date(oq.created_at)= CURDATE()") ;
       var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid where oq.zoneid="+get_hub_id_from_orders[0].zone+" and ors.orderstatus < 6 and oq.status !=1 and Date(oq.created_at)= CURDATE()");
       var get_hub_id_from_makeithub= await query("Select xfactor,zone_status from Zone where id="+get_hub_id_from_orders[0].zone);
     }else{
       var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
       var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
-      //var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status !=1") ;
+     // var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status !=1") ;
       var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid where oq.zoneid="+get_hub_id_from_orders[0].zone+" and ors.orderstatus < 6 and oq.status !=1 and Date(oq.created_at)= CURDATE()");
       var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
     }

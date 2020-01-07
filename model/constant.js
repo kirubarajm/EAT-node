@@ -98,7 +98,7 @@ const calculate = {
      Dunzo_max_req:10,
 
      makeit_applink: "http://bit.ly/2Em3K9T",
-     makeit_iosapplink: "http://bit.ly/2Em3K9T",
+     makeit_iosapplink: "https://apple.co/2lna3n9",
      makeit_refferalcontent:"Welcome to EAT Kitchen. Click the link to download the EAT app from play store",
     
     order_cover_package_id :1,
