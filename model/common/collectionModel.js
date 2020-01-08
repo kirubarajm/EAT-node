@@ -400,7 +400,7 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
                 var getzone     = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
                 var userzoneid  = '';
                 var zonename    = '';
-                var zonemakeitsrrsy = 0;
+                var zonemakeitsrrsy = [];
                 if(getzone.zone_id){          
                   userzoneid = getzone.zone_id;
                   zonename   = getzone.zone_name;
@@ -588,7 +588,7 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
               var getzone     = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
               var userzoneid  = '';
               var zonename    = '';
-              var zonemakeitsrrsy = 0;
+              var zonemakeitsrrsy = [];
               if(getzone.zone_id){          
                 userzoneid = getzone.zone_id;
                 zonename   = getzone.zone_name;
@@ -1541,7 +1541,7 @@ Collection.get_all_collection_by_cid_v2_infinity_screen  = async function get_al
               var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
               var userzoneid ='';
               var zonename ='';
-              var zonemakeitsrrsy = 0;
+              var zonemakeitsrrsy = [];
 
               if(getzone.zone_id){
                 userzoneid = getzone.zone_id;

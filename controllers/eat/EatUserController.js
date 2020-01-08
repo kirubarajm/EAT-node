@@ -274,9 +274,9 @@ exports.eat_kitchen_sort_filter_v_2_1 = function(req, res) {
       .send({ error: true, status: false, message: "Please provide eatuserid" });
   } else {
     Eatuser.get_eat_kitchen_list_sort_filter_v_2_1(req.body,req.headers, function(err, user) {
-      console.log("Kitchen List Sort Filter v_2_1 controller");
+      //console.log("Kitchen List Sort Filter v_2_1 controller");
       if (err) res.send(err);
-      console.log("res", user);
+      //console.log("res", user);
       res.send(user);
     });
   }

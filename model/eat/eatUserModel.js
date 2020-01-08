@@ -415,7 +415,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
         var userzoneid ='';
         var zonename ='';
-        var zonemakeitsrrsy = 0;
+        var zonemakeitsrrsy = [];
 
         if(getzone.zone_id){
           userzoneid = getzone.zone_id;
@@ -652,7 +652,7 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
         var userzoneid ='';
         var zonename ='';
-        var zonemakeitsrrsy = 0;
+        var zonemakeitsrrsy = [];
 
         if(getzone.zone_id){
           userzoneid = getzone.zone_id;
@@ -909,7 +909,7 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
         var userzoneid ='';
         var zonename ='';
-        var zonemakeitsrrsy = 0;
+        var zonemakeitsrrsy = [];
 
         if(getzone.zone_id){
           userzoneid = getzone.zone_id;
@@ -1442,7 +1442,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
         var userzoneid ='';
         var zonename = '';
-        var zonemakeitsrrsy =0;
+        var zonemakeitsrrsy =[];
         if(getzone.zone_id){          
           userzoneid = getzone.zone_id;
           zonename = getzone.zone_name;
@@ -1825,7 +1825,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
         var userzoneid ='';
         var zonename   = '';
-        var zonemakeitsrrsy = 0;
+        var zonemakeitsrrsy = [];
         if(getzone.zone_id){          
           userzoneid = getzone.zone_id;
           zonename = getzone.zone_name;
@@ -2085,7 +2085,7 @@ if ( headers.apptype ==1) {
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
         var userzoneid ='';
         var zonename = '';
-        var zonemakeitsrrsy =0;
+        var zonemakeitsrrsy =[];
         if(getzone.zone_id){          
           userzoneid = getzone.zone_id;
           zonename = getzone.zone_name;
@@ -2110,7 +2110,7 @@ if ( headers.apptype ==1) {
           res[i].serviceablestatus = true;
           res[i].kitchenstatus = 0;
         }
-
+        
         //////////////Zone Condition//////////
         if(constant.zone_control){
           if (res[i].serviceablestatus !== false) {
@@ -2196,7 +2196,7 @@ if ( headers.apptype ==1) {
     //  kitchenlist.push(serviceablekitchenlist);
     //  kitchenlist.push(unserviceablekitchenlist);
 
-    console.log(tunnelkitchenliststatus);
+   // console.log(tunnelkitchenliststatus);
         if (tunnelkitchenliststatus == false) {
           
             for (let i = 0; i < kitchenlist.length; i++) {
@@ -2334,7 +2334,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
         var getzone     = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
         var userzoneid  = '';
         var zonename    = '';
-        var zonemakeitsrrsy = 0;
+        var zonemakeitsrrsy = [];
         if(getzone.zone_id){          
           userzoneid = getzone.zone_id;
           zonename   = getzone.zone_name;
@@ -4225,7 +4225,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
           var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
           var userzoneid ='';
           var zonename = '';
-          var zonemakeitsrrsy =0;
+          var zonemakeitsrrsy =[];
           if(getzone.zone_id){            
             userzoneid = getzone.zone_id;
             zonename = getzone.zone_name;
@@ -4378,7 +4378,7 @@ Eatuser.get_eat_region_kitchen_list_show_more = async function get_eat_region_ki
         var getzone     = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
         var userzoneid  = '';
         var zonename    = '';
-        var zonemakeitsrrsy = 0;
+        var zonemakeitsrrsy = [];
         if(getzone.zone_id){          
           userzoneid = getzone.zone_id;
           zonename   = getzone.zone_name;
@@ -4504,7 +4504,7 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
         var getzone     = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
         var userzoneid  = '';
         var zonename    = '';
-        var zonemakeitsrrsy = 0;
+        var zonemakeitsrrsy = [];
         if(getzone.zone_id){          
           userzoneid = getzone.zone_id;
           zonename   = getzone.zone_name;
