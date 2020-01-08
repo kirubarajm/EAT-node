@@ -106,7 +106,7 @@ Eatuser.createUser = function createUser(newUser, result) {
 
 Eatuser.getUserById = function getUserById(userId, result) {
   sql.query(
-    "Select us.userid,us.name,us.email,us.phoneno,us.Locality,us.created_at,us.virtualkey,us.gender,re.regionname,us.regionid,us.razer_customerid from User us left join Region re on re.regionid = us.regionid  where us.userid = ? ",
+    "Select us.userid,us.name,us.email,us.phoneno,us.Locality,us.created_at,us.virtualkey,us.gender,re.regionname,us.regionid,us.razer_customerid,us.other_region from User us left join Region re on re.regionid = us.regionid  where us.userid = ? ",
     userId,
     function(err, res) {
       if (err) {
@@ -417,7 +417,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
         var zonename ='';
         var zonemakeitsrrsy = 0;
 
-        if(getzone){
+        if(getzone.zone_id){
           userzoneid = getzone.zone_id;
           zonename   = getzone.zone_name;
                 
@@ -654,7 +654,7 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
         var zonename ='';
         var zonemakeitsrrsy = 0;
 
-        if(getzone){
+        if(getzone.zone_id){
           userzoneid = getzone.zone_id;
           zonename   = getzone.zone_name;               
           if (currenthour < lunchcycle) {    
@@ -911,7 +911,7 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
         var zonename ='';
         var zonemakeitsrrsy = 0;
 
-        if(getzone){
+        if(getzone.zone_id){
           userzoneid = getzone.zone_id;
           zonename   = getzone.zone_name;
                 
@@ -2332,7 +2332,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
       if(constant.zone_control){
         ////Get User Zone////
         var getzone     = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-        var userzoneid  = '';
+        var userzoneid  = 0;
         var zonename    = '';
         var zonemakeitsrrsy = 0;
         if(getzone.zone_id){          
@@ -3443,7 +3443,7 @@ Eatuser.edit_eat_users =async function(req, result) {
   var values =[];
   values.push(new Date());
   for (const [key, value] of Object.entries(req)) {
-    if (key !== "userid" && key !== "other_region" ) {
+    if (key !== "userid") {
       column = column + key +" = ?,";
       values.push(value);
     }
@@ -3458,7 +3458,7 @@ Eatuser.edit_eat_users =async function(req, result) {
       result(err, null);
     } else {
 
-      sql.query("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid from User where userid = '"+req.userid+"' ", function(err, userdetails) {
+      sql.query("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid,other_region from User where userid = '"+req.userid+"' ", function(err, userdetails) {
         if (err) {
           result(err, null);
         } else {
@@ -4039,7 +4039,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
         if(constant.zone_control){
           ////Get User Zone////
           var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-          var userzoneid ='';
+          var userzoneid =0;
           var zonename = '';
           var zonemakeitsrrsy =0;
           if(getzone.zone_id){            

@@ -511,7 +511,7 @@ const order_auto_assign_Change = new CronJob("* */1 7-23 * * * ", async function
   //   "select oq.*,mk.makeithub_id,mk.userid,mk.lat,mk.pincode,mk.lon,ors.makeit_accept_time,ors.payment_type from Orders_queue as oq join Orders as ors on ors.orderid=oq.orderid join MakeitUser as mk on mk.userid = ors.makeit_user_id where oq.status !=1  and ors.orderstatus < 6  order by ors.ordertime ASC"
   // ); //and created_at > (NOW() - INTERVAL 10 MINUTE
 
-  var res = await query("select oq.*,zo.zone_status,mk.makeithub_id,mk.userid,mk.lat,mk.pincode,mk.lon,ors.makeit_accept_time,ors.payment_type,ors.price from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid left join MakeitUser as mk on mk.userid = ors.makeit_user_id left join Zone as zo on zo.id=mk.zone where oq.status !=1 and ors.orderstatus < 6 and ors.dunzo_taskid IS NULL order by ors.ordertime  ASC");
+  var res = await query("select oq.*,zo.zone_status,mk.makeithub_id,mk.userid,mk.lat,mk.pincode,mk.lon,ors.makeit_accept_time,ors.payment_type,ors.price from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid left join MakeitUser as mk on mk.userid = ors.makeit_user_id left join Zone as zo on zo.id=mk.zone where oq.status !=1 and ors.orderstatus < 6 and ors.dunzo_taskid IS NULL order by ors.ordertime ASC");
   console.log('res length-->',res.length);
   console.log('isCronRun-->',isCronRun);
   if (res.length !== 0&&!isCronRun) {
@@ -644,6 +644,10 @@ QuickSearch.order_assign=async function order_assign(res,i){
                             res[i].orderid +
                             ""
                         );
+                         var req={};
+                        req.state=1;
+                        req.moveit_user_id=nearbymoveit[0].userid;
+                         Order.update_moveit_lat_long(req);
                         await Notification.orderMoveItPushNotification(
                           res[i].orderid,
                           PushConstant.pageidMoveit_Order_Assigned
@@ -772,6 +776,10 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
                       } else {
                         await query("update Orders_queue set status = 1 where orderid =" +res[i].orderid+"");
                         await Notification.orderMoveItPushNotification(res[i].orderid,PushConstant.pageidMoveit_Order_Assigned);
+                        var req={};
+                        req.state=1;
+                        req.moveit_user_id=zoneInsideMoveitlist[0].userid;
+                        Order.update_moveit_lat_long(req);
                         i++;
                         Zone_order_assign(res,i);
                       }

@@ -27,13 +27,16 @@ exports.sendNotificationAndroid = function(
   };
   console.log("token:"+token);
   var payload = {
-    data: dat,
-    notification: {
+    data: dat
+  };
+
+  if (dat.app_type=2) {
+    payload .notification= {
       title: dat.title,
       body: dat.message, // <= CHANGE
       sound : "default"
     }
-  };
+  }
   console.log("payload:"+payload.data.title);
   Makeit.messaging().sendToDevice(token, payload, options);
 };

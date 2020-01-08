@@ -289,9 +289,13 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
           break;
       case dunzoconst.cancelled:
           console.log("cancelled");
-          var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderdetails[0].orderid+"");
-         updatequery = await query("UPDATE Orders SET moveit_status = 0,delivery_vendor=0,dunzo_taskid=''  WHERE orderid ='" +orderdetails[0].orderid +"'");
+          var orderqueuequery  = await query("select * from  Orders_queue  where orderid =" +orderdetails[0].orderid+"");
 
+          if (orderqueuequery[0].status !=1) {
+          var order_queue_update = await query("update Orders_queue set status = 2 where orderid =" +orderdetails[0].orderid+"");
+          updatequery = await query("UPDATE Orders SET moveit_status = 0,delivery_vendor=0,dunzo_taskid=''  WHERE orderid ='" +orderdetails[0].orderid +"'");
+          }
+          
           let orderqueue = {
             success: true,
             message: "Order again pushed into queue.",

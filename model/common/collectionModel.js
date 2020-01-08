@@ -66,7 +66,7 @@ Collection.list_all_active_collection_v2 = function list_all_active_collection_v
 
 
 Collection.list_all_active_collection = function list_all_active_collection(req,result) {
-  sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at,type,icon from Collections where active_status=1",async function(err, res) {
+  sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at,type,icon from Collections where active_status=1 and type=0",async function(err, res) {
     if (err) {
       result(err, null);
     } else {

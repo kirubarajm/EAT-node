@@ -207,11 +207,13 @@ Notification.orderMakeItPushNotification = async function(
 
   if (makeituser && makeituser.virtualkey===0) {
     if (makeituser.pushid_android) {
+      data.app_type = 1;
       console.log("Android->", makeituser.pushid_android);
       FCM_Makeit.sendNotificationAndroid(makeituser.pushid_android, data);
     } 
 
     if (makeituser.pushid_ios) {
+      data.app_type = 2;
       console.log("ios->", makeituser.pushid_ios);
       FCM_Makeit.sendNotificationAndroid(makeituser.pushid_ios, data);
     }
@@ -364,7 +366,12 @@ Notification.appointment_makeit_PushNotification = async function(
     "SELECT pushid_android FROM MakeitUser where userid = " + makeit_userid
   );
   if (Makeituser && Makeituser[0].pushid_android && data) {
+    data.app_type=1;
     FCM_Makeit.sendNotificationAndroid(Makeituser[0].pushid_android, data);
+  }
+  if (Makeituser && Makeituser[0].pushid_ios && data) {
+    data.app_type=2;
+    FCM_Makeit.sendNotificationAndroid(Makeituser[0].pushid_ios, data);
   }
 };
 
@@ -474,10 +481,12 @@ Notification.queries_answers_PushNotification = async function(
   );
 
   if (Userdetails && Userdetails[0].pushid_ios) {
+    data.app_type=2;
     FCM_EAT.sendNotificationAndroid(Userdetails[0].pushid_ios, data);
   }
 
   if (Userdetails && Userdetails[0].pushid_android && data) {
+    data.app_type=1;
     FCM_Obj.sendNotificationAndroid(Userdetails[0].pushid_android, data);
   }
 };
