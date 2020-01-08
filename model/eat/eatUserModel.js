@@ -429,7 +429,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
             currentcycle = " and pt.dinner = 1";
           }
 
-          zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pt on pt.makeit_userid = mu.userid where (mu.appointment_status = 3 and mu.ka_status = 2 and pt.approved_status=2 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) "+currentcycle+" and zone="+userzoneid);
+          zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pt on pt.makeit_userid = mu.userid where mu.unservicable=0 and (mu.appointment_status = 3 and mu.ka_status = 2 and pt.approved_status=2 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) "+currentcycle+" and zone="+userzoneid);
         }
       }     
 
@@ -665,7 +665,7 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
             currentcycle = " and pt.dinner = 1";
           }
 
-          zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pt on pt.makeit_userid = mu.userid where (mu.appointment_status = 3 and mu.ka_status = 2 and pt.approved_status=2 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) "+currentcycle+" and zone="+userzoneid);
+          zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pt on pt.makeit_userid = mu.userid where mu.unservicable=0 and (mu.appointment_status = 3 and mu.ka_status = 2 and pt.approved_status=2 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) "+currentcycle+" and zone="+userzoneid);
         }
       }   
 
@@ -922,7 +922,7 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
           }else if( currenthour >= dinnercycle){              
             currentcycle = " and pt.dinner = 1";
           }
-          zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pt on pt.makeit_userid = mu.userid where (mu.appointment_status = 3 and mu.ka_status = 2 and pt.approved_status=2 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) "+currentcycle+" and zone="+userzoneid);
+          zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pt on pt.makeit_userid = mu.userid where mu.unservicable=0 and (mu.appointment_status = 3 and mu.ka_status = 2 and pt.approved_status=2 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) "+currentcycle+" and zone="+userzoneid);
         }
       }   
 
@@ -2332,7 +2332,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
       if(constant.zone_control){
         ////Get User Zone////
         var getzone     = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-        var userzoneid  = 0;
+        var userzoneid  = '';
         var zonename    = '';
         var zonemakeitsrrsy = 0;
         if(getzone.zone_id){          
