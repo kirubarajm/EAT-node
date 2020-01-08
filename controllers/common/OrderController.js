@@ -179,11 +179,7 @@ exports.orderview = function(req, res) {
 
 exports.order_pickup_status = function(req, res) {
   var kitchenqualitylist = req.body.qualitychecklist;
-
-  Order.order_pickup_status_by_moveituser(
-    req.body,
-    kitchenqualitylist,
-    function(err, result) {
+  Order.order_pickup_status_by_moveituser(req.body,kitchenqualitylist,function(err, result) {
       if (err) res.send(err);
       res.json(result);
     }

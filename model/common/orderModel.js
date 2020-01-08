@@ -2071,9 +2071,7 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
           qualitylist.makeit_userid = req.makeit_userid;
           qualitylist.moveit_userid = req.moveit_userid;
   
-          MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck(
-            qualitylist,
-            function(err, res2) {
+          MoveitRatingForMakeit.create_moveit_kitchen_qualitycheck(qualitylist,function(err, res2) {
               if (err) result(err, null);
             }
           );

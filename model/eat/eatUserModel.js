@@ -2787,7 +2787,7 @@ console.log("newUser.otpcode",newUser.otpcode);
     // " ";
 
 
-     if (newUser.otpcode) {
+   if (newUser.otpcode) {
       var otpurl =
       "https://www.instaalerts.zone/SendSMS/sendmsg.php?uname=EATotp1&pass=abc321&send=EATHOM&dest=" +
       newUser.phoneno +
@@ -2797,16 +2797,15 @@ console.log("newUser.otpcode",newUser.otpcode);
       newUser.otpcode +
       " ";
    }else{
-    var otpurl =
-    "https://www.instaalerts.zone/SendSMS/sendmsg.php?uname=EATotp1&pass=abc321&send=EATHOM&dest=" +
-    newUser.phoneno +
-    "&msg=<%23>Your EAT App OTP is " +
-    OTP +
-    ". Note: Please DO NOT SHARE this OTP with anyone.";
+      var otpurl =
+      "https://www.instaalerts.zone/SendSMS/sendmsg.php?uname=EATotp1&pass=abc321&send=EATHOM&dest=" +
+      newUser.phoneno +
+      "&msg=<%23>Your EAT App OTP is " +
+      OTP +
+      ". Note: Please DO NOT SHARE this OTP with anyone.";
    }
 
   
-  console.log(otpurl);
   sql.query("Select * from User where phoneno = '" + newUser.phoneno + "'",function(err, res) {
       if (err) {
         console.log("error: ", err);
@@ -2847,7 +2846,7 @@ console.log("newUser.otpcode",newUser.otpcode);
                         let resobj = {
                           success: true,
                           status: true,
-                          message: body,
+                          message: "Message sent successfully",
                           passwordstatus: passwordstatus,
                           otpstatus: otpstatus,
                           genderstatus: genderstatus,
@@ -2862,7 +2861,7 @@ console.log("newUser.otpcode",newUser.otpcode);
                   let resobj = {
                     success: true,
                     status: false,
-                    message: body,
+                    message: "Message sent successfully",
                     passwordstatus: passwordstatus,
                     otpstatus: otpstatus,
                     genderstatus: genderstatus
@@ -2915,7 +2914,7 @@ console.log("newUser.otpcode",newUser.otpcode);
                           let resobj = {
                             success: true,
                             status: true,
-                            message: body,
+                            message: "Message sent successfully",
                             passwordstatus: passwordstatus,
                             otpstatus: otpstatus,
                             genderstatus: genderstatus,
@@ -2930,7 +2929,7 @@ console.log("newUser.otpcode",newUser.otpcode);
                     let resobj = {
                       success: true,
                       status: false,
-                      message: body,
+                      message: "Message sent successfully",
                       otpstatus: otpstatus,
                       genderstatus: genderstatus,
                       message : responcecode
@@ -4579,7 +4578,6 @@ Eatuser.get_otp= function get_otp(req, result) {
 
 };
  
-
 /////Eat Users History
 Eatuser.user_history = async function user_history(req, result) {
   var getorderlist = await query("Select o.orderid,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,o.created_at,o.orderstatus,o.price from Orders as o left join OrderItem as oi on o.orderid=oi.orderid left join Product as p on p.productid = oi.productid left join MakeitUser as ma on o.makeit_user_id=ma.userid where o.userid="+req.userid+" GROUP BY o.orderid");
@@ -4647,7 +4645,6 @@ Eatuser.payment_retry = async function payment_retry(req, result) {
   }
 };
 
-
 /////hub_based_userlist
 Eatuser.hub_based_userlist = async function hub_based_userlist(req, result) {
   var getuserquery ="select u.userid,u.name,u.email,u.phoneno,ord.orderid,u.pushid_android,u.pushid_ios,u.Locality,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(),INTERVAL "+constant.interval_days+" DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid join MakeitUser as mk on mk.userid=ord.makeit_user_id  join Makeit_hubs as mh on mh.makeithub_id=mk.makeithub_id where u.userid!='' and mh.makeithub_id="+req.makeithub_id+"  and ord.orderstatus < 8 and orderid in (SELECT max(orderid) FROM Orders  GROUP BY userid) order by ord.created_at desc";
@@ -4676,7 +4673,6 @@ Eatuser.hub_based_userlist = async function hub_based_userlist(req, result) {
     }
   });
 };
-
 
 /////user_based_notification
 Eatuser.user_based_notification = async function user_based_notification(req, result) {
