@@ -3507,7 +3507,7 @@ Eatuser.eatuser_otpverification =async function eatuser_otpverification(req,resu
 
       if (res[0].otp == req.otp) {
         console.log("OTP VALID");
-        sql.query("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid,razer_customerid,referredby,token,first_tunnel from User where phoneno = '" + req.phoneno + "'",function(err, res1) {
+        sql.query("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid,razer_customerid,referredby,token,first_tunnel,other_region from User where phoneno = '" + req.phoneno + "'",function(err, res1) {
             if (err) {
               console.log("error: ", err);
               result(err, null);
@@ -3587,7 +3587,17 @@ Eatuser.eatuser_otpverification =async function eatuser_otpverification(req,resu
                         responce[0].gender = res1[0].gender
                         responce[0].virtualkey = res1[0].virtualkey
                         responce[0].regionid = res1[0].regionid
+                        responce[0].other_region=res1[0].other_region
                         
+                      }else{
+                        res1[0].aid=0;
+                        res1[0].lat=0.0;
+                        res1[0].lon=0.0;
+                      //  responce[0].landmark='';
+                        res1[0].address_type=0;
+                        res1[0].delete_status=0;
+                        res1[0].address_default=0;
+                        responce.push (res1[0]);
                       }
 
                       let token = jwt.sign({username: req.phoneno},
