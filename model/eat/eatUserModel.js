@@ -3476,7 +3476,7 @@ Eatuser.eatuser_otpverification =async function eatuser_otpverification(req,resu
   var emailstatus = false;
   var otpstatus = false;
   var genderstatus = false;
-  var userdetails = await query ("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid,razer_customerid,referredby,token,first_tunnel from User where userid = '"+req.userid+"'");
+  var userdetails = await query ("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid,razer_customerid,referredby,token,first_tunnel from User where userid = 135 ");
 
   if (req.phoneno == '9500313689' && req.otp == 30878) {
     
