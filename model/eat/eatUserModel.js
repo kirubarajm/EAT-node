@@ -4223,7 +4223,7 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
         if(constant.zone_control){
           ////Get User Zone////
           var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-          var userzoneid =0;
+          var userzoneid ='';
           var zonename = '';
           var zonemakeitsrrsy =0;
           if(getzone.zone_id){            
