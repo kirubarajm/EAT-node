@@ -413,16 +413,24 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
       if(constant.zone_control){
         ////Get User Zone////
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-        console.log(getzone);
-        if(getzone.zone_id){
-          var userzoneid ='';
-          var zonename = '';
-          var zonemakeitsrrsy =0;
+        var userzoneid ='';
+        var zonename ='';
+        var zonemakeitsrrsy = 0;
+
+        if(getzone){
           userzoneid = getzone.zone_id;
-          zonename = getzone.zone_name;
+          zonename   = getzone.zone_name;
+                
+          if (currenthour < lunchcycle) {    
+            currentcycle = " and pt.breakfast = 1";
+          }else if(currenthour >= lunchcycle && currenthour < dinnercycle){    
+            currentcycle = " and pt.lunch = 1";
+          }else if( currenthour >= dinnercycle){              
+            currentcycle = " and pt.dinner = 1";
+          }
+
+          zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pt on pt.makeit_userid = mu.userid where (mu.appointment_status = 3 and mu.ka_status = 2 and pt.approved_status=2 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) "+currentcycle+" and zone="+userzoneid);
         }
-        ////Make Zone Servicable kitchen array////
-        var zonemakeitsrrsy = res.filter(kitchenarray => (kitchenarray.zone==userzoneid && kitchenarray.unservicable==0));
       }     
 
       // if(res[0].makeitimg) Images.push(res[0].makeitimg);
@@ -642,16 +650,23 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
       if(constant.zone_control){
         ////Get User Zone////
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-       
-        if(getzone.zone_id){
-          var userzoneid ='';
-          var zonename = '';
-          var zonemakeitsrrsy =0;
+        var userzoneid ='';
+        var zonename ='';
+        var zonemakeitsrrsy = 0;
+
+        if(getzone){
           userzoneid = getzone.zone_id;
-          zonename = getzone.zone_name;
+          zonename   = getzone.zone_name;               
+          if (currenthour < lunchcycle) {    
+            currentcycle = " and pt.breakfast = 1";
+          }else if(currenthour >= lunchcycle && currenthour < dinnercycle){    
+            currentcycle = " and pt.lunch = 1";
+          }else if( currenthour >= dinnercycle){              
+            currentcycle = " and pt.dinner = 1";
+          }
+
+          zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pt on pt.makeit_userid = mu.userid where (mu.appointment_status = 3 and mu.ka_status = 2 and pt.approved_status=2 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) "+currentcycle+" and zone="+userzoneid);
         }
-        ////Make Zone Servicable kitchen array////
-        var zonemakeitsrrsy = res.filter(kitchenarray => (kitchenarray.zone==userzoneid && kitchenarray.unservicable==0));
       }   
 
       if (res[0].makeituserid !== null) {
@@ -892,25 +907,23 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
       if(constant.zone_control){
         ////Get User Zone////
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+        var userzoneid ='';
+        var zonename ='';
+        var zonemakeitsrrsy = 0;
 
-        if(getzone.zone_id){
-          var userzoneid ='';
-          var zonename = '';
-          var zonemakeitsrrsy =0;
+        if(getzone){
           userzoneid = getzone.zone_id;
-          zonename = getzone.zone_name;
+          zonename   = getzone.zone_name;
+                
+          if (currenthour < lunchcycle) {    
+            currentcycle = " and pt.breakfast = 1";
+          }else if(currenthour >= lunchcycle && currenthour < dinnercycle){    
+            currentcycle = " and pt.lunch = 1";
+          }else if( currenthour >= dinnercycle){              
+            currentcycle = " and pt.dinner = 1";
+          }
+          zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pt on pt.makeit_userid = mu.userid where (mu.appointment_status = 3 and mu.ka_status = 2 and pt.approved_status=2 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) "+currentcycle+" and zone="+userzoneid);
         }
-        ////Make Zone Servicable kitchen array////
-        //var zonemakeitsrrsy = res.filter(kitchenarray => (kitchenarray.zone==userzoneid && kitchenarray.unservicable==0));
-        if(currenthour >=8 && currenthour <=12){
-          currentcycle = "pro.breakfast=1";
-        }else if(currenthour >=12 && currenthour <=16){
-          currentcycle = "pro.lunch=1";
-        }else if(currenthour >=16 && currenthour <=23){
-          currentcycle = "pro.lunch=1";
-        }else{   }
-        
-        var zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pro on pro.makeit_userid = mu.userid where (mu.appointment_status = 3 and mu.ka_status = 2 and pro.approved_status=2 and mu.verified_status = 1 ) and (pro.active_status = 1 and pro.quantity != 0 and pro.delete_status !=1 ) and zone="+userzoneid);
       }   
 
       if (res[0].makeituserid !== null) {
@@ -1427,11 +1440,10 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
       if(constant.zone_control){
         ////Get User Zone////
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-        //console.log(getzone);
-        if(getzone.zone_id){
-          var userzoneid ='';
-          var zonename = '';
-          var zonemakeitsrrsy =0;
+        var userzoneid ='';
+        var zonename = '';
+        var zonemakeitsrrsy =0;
+        if(getzone.zone_id){          
           userzoneid = getzone.zone_id;
           zonename = getzone.zone_name;
         }
@@ -1811,11 +1823,10 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
       if(constant.zone_control){
         ////Get User Zone////
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-        //console.log(getzone);
-        if(getzone.zone_id){
-          var userzoneid ='';
-          var zonename = '';
-          var zonemakeitsrrsy =0;
+        var userzoneid ='';
+        var zonename   = '';
+        var zonemakeitsrrsy = 0;
+        if(getzone.zone_id){          
           userzoneid = getzone.zone_id;
           zonename = getzone.zone_name;
         }
@@ -2072,11 +2083,10 @@ if ( headers.apptype ==1) {
       if(constant.zone_control){
         ////Get User Zone////
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-        //console.log(getzone);
-        if(getzone.zone_id){
-          var userzoneid ='';
-          var zonename = '';
-          var zonemakeitsrrsy =0;
+        var userzoneid ='';
+        var zonename = '';
+        var zonemakeitsrrsy =0;
+        if(getzone.zone_id){          
           userzoneid = getzone.zone_id;
           zonename = getzone.zone_name;
         }
@@ -2223,14 +2233,12 @@ Eatuser.list_all_active_collection_cid = function list_all_active_collection_cid
 
 //kitchen list infinity
 Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
-  //console.log("req ---------------------->",req);
   var foodpreparationtime = constant.foodpreparationtime;
   var onekm               = constant.onekm;
   var radiuslimit         = constant.radiuslimit;
   var tunnelkitchenliststatus = true;
   const userdetails       = await query("select * from User where userid = "+req.eatuserid+" ");
-  // const userdetails = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
-  //if ( headers.apptype ==1) {
+  
   if (userdetails[0].first_tunnel == 1 ) {
     var tunnelkitchenquery =
       "Select distinct mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,re.regionname,mk.costfortwo,mk.img1 as makeitimg,mk.unservicable,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
@@ -2242,26 +2250,22 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
       "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
       req.eatuserid +
       "' left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) GROUP BY pt.productid HAVING distance < "+radiuslimit+"  ORDER BY mk.unservicable = 0 desc";
-
     const tunnelkitchenlist = await query(tunnelkitchenquery);
 
     if (tunnelkitchenlist.length == 0) {
-      tunnelkitchenliststatus = false;
-        var locationdetails = {};
-        locationdetails.lat=req.lat;
-        locationdetails.lon=req.lon;
-        locationdetails.address= req.address;
-        locationdetails.locality= req.locality ||'';
-        locationdetails.city= req.city || '';
-        locationdetails.userid=req.eatuserid;
-        await Eatuser.create_first_tunnel_user_location(locationdetails);
-      }else{
-        const usertunnelupdate = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
-      }
-  }
-  // }else{
-  //   const usertunnelupdate = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
-  // }
+      tunnelkitchenliststatus     = false;
+      var locationdetails       = {};
+      locationdetails.lat       = req.lat;
+      locationdetails.lon       = req.lon;
+      locationdetails.address   = req.address;
+      locationdetails.locality  = req.locality ||'';
+      locationdetails.city      = req.city || '';
+      locationdetails.userid    = req.eatuserid;
+      await Eatuser.create_first_tunnel_user_location(locationdetails);
+    }else{
+      const usertunnelupdate = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
+    }
+  }  
   
   var cuisinequery  = "";
   var cuisinelist   = [];
@@ -2271,8 +2275,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
 
   if (cuisinelist) {
     for (let i = 0; i < cuisinelist.length; i++) {
-      cuisinequery =
-        cuisinequery + " cm.cuisineid = '" + cuisinelist[i].cuisine + "' or";
+      cuisinequery = cuisinequery + " cm.cuisineid = '" + cuisinelist[i].cuisine + "' or";
     }
   }
 
@@ -2300,7 +2303,6 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
   }
  
   if (cuisinelist !== undefined) {
-    // query =query +" where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) and (" +filterquery;
     kitchenquery = kitchenquery +" where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) and (" +cuisinequery;
   }else{
     kitchenquery = kitchenquery + " where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and  mk.verified_status = 1)  and (pt.quantity != 0 and pt.delete_status !=1 and pt.active_status = 1 ) ";
@@ -2309,17 +2311,6 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
   if (req.vegtype) {
     kitchenquery = kitchenquery + "and mk.food_type= 0";
   }
-
- 
-  // var day = new Date();
-  // var currenthour = day.getHours();
-  // if (currenthour < 12) {
-  //   kitchenquery = kitchenquery + " and pt.breakfast = 1";
-  // }else if(currenthour >= 12 && currenthour < 16){
-  //   kitchenquery = kitchenquery + " and pt.lunch = 1";
-  // }else if( currenthour >= 16){
-  //   kitchenquery = kitchenquery + " and pt.dinner = 1";
-  // }
 
   if (req.sortid == 1) {
     kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY distance,mk.unservicable = 0 desc ";
@@ -2335,42 +2326,36 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
 
   sql.query(kitchenquery, async function(err, res) {
     if (err) {
-      console.log("error: ", err);
       result(err, null);
     } else {
       ////Zone Condition Make Array////
       if(constant.zone_control){
         ////Get User Zone////
-        var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-        //console.log(getzone);
-        if(getzone.zone_id){
-          var userzoneid ='';
-          var zonename = '';
-          var zonemakeitsrrsy =0;
+        var getzone     = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+        var userzoneid  = '';
+        var zonename    = '';
+        var zonemakeitsrrsy = 0;
+        if(getzone.zone_id){          
           userzoneid = getzone.zone_id;
-          zonename = getzone.zone_name;
-        }
-        ////Make Zone Servicable kitchen array////
-        var zonemakeitsrrsy = res.filter(kitchenarray => (kitchenarray.zone==userzoneid && kitchenarray.unservicable==0));
+          zonename   = getzone.zone_name;
+          ////Make Zone Servicable kitchen array////
+          var zonemakeitsrrsy = res.filter(kitchenarray => (kitchenarray.zone==userzoneid && kitchenarray.unservicable==0));
+        }        
       }
 
       for (let i = 0; i < res.length; i++) {
         res[i].title    = "kitchen";
         res[i].subtitle = "kitchen";
         res[i].type     = 0;
-
-        //res[i].distance = res[i].distance * constant.onemile;
         res[i].distance = res[i].distance.toFixed(2) ;
-        //console.log(res[i].distance);
-        var eta = foodpreparationtime + (onekm * res[i].distance);
-        //15min Food Preparation time , 3min 1 km       
-        res[i].eta = Math.round(eta);    
+        var eta         = foodpreparationtime + (onekm * res[i].distance);
+        res[i].eta      = Math.round(eta);    
         res[i].serviceablestatus = false;
-        res[i].kitchenstatus = 1;
+        res[i].kitchenstatus     = 1;
 
         if (res[i].unservicable == 0) {
           res[i].serviceablestatus = true;
-          res[i].kitchenstatus = 0;
+          res[i].kitchenstatus     = 0;
         }
 
         //////////////Zone Condition//////////
@@ -2400,15 +2385,13 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
         }
 
         //for time sort purpose
-        res[i].etatime = Math.round(eta);
-        
+        res[i].etatime = Math.round(eta);        
         if ( res[i].eta > 60) {
-          var hours = res[i].eta / 60;
-          var rhours = Math.floor(hours);
-          var minutes = (hours - rhours) * 60;
-          var rminutes = Math.round(minutes);
-          // res[i].eta =   +rhours+" hour and " +rminutes +" minute."
-          res[i].eta = "above 60 Mins"
+          var hours     = res[i].eta / 60;
+          var rhours    = Math.floor(hours);
+          var minutes   = (hours - rhours) * 60;
+          var rminutes  = Math.round(minutes);
+          res[i].eta    = "above 60 Mins"
         }else{
           res[i].eta = Math.round(eta) + " mins";
         }
@@ -2448,17 +2431,13 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
       
       var kitchenlist = [];
       kitchenlist = serviceablekitchenlist.concat(unserviceablekitchenlist); 
-      //  kitchenlist.push(serviceablekitchenlist);
-      //  kitchenlist.push(unserviceablekitchenlist);
-      //  console.log("tunnelkitchenliststatus====>",tunnelkitchenliststatus);
-
+      
       if (tunnelkitchenliststatus == false) {
         for (let i = 0; i < kitchenlist.length; i++) {
           kitchenlist[i].serviceablestatus = true;
           kitchenlist[i].kitchenstatus = 0;   
         }
       }
-
       
     ///=============>Start: infinity screen<==============//////////////
     var kitchen_pagenation_limit = constant.infinity_kitchen_page_limit;
@@ -2476,7 +2455,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
         }
       }else if(totalpagecount <= page){
         switchrun  = 1;
-      }else{    }
+      }
 
       var startlimit    = (page - 1) * orderlimit;
       var endlimit      = startlimit + orderlimit;
@@ -2494,11 +2473,10 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                 if (res3.status != true) {
                   result(null, res3);
                 } else {   
-                  console.log("kitchen list",res3);
                   var collectionlist        = {};
                   collectionlist.collection = res3.collection;
                   var collectiontype        = collectionlist.collection;
-                  collectionlist.collection = collectiontype.filter(collectiontype => collectiontype.type=2);
+                  collectionlist.collection = collectiontype.filter(collectiontype => collectiontype.type==2);
                   
                   if(kitchenlist.length >= kitchen_pagenation_limit){
                     kitchenlist.push(collectionlist);
@@ -2618,18 +2596,19 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
           break;
         case 4:
           if (kitchenlist.length !=0) {
-            req.cid = 1;
-            Collection.get_all_collection_by_cid_v2(req,async function(err,collectiontype2list) {
+            req.cid = constant.infinity_first_collection_details_cid;
+            Collection.get_all_collection_by_cid_v2_infinity_screen(req,async function(err,collectiontype2list) {
               if (err) { 
                 result(err, null);
               } else {
                 if (collectiontype2list.status != true) {
+                  repeat_collection = 1;
                   result(null, collectiontype2list);
                 } else {
                   var collectionlist = {};
                   collectionlist.collection_details = collectiontype2list.result;
-                  console.log(collectionlist.collection_details);
-                  if(kitchenlist.length >= kitchen_pagenation_limit){
+                  
+                  if(kitchenlist.length >= kitchen_pagenation_limit && collectionlist.collection_details.length>0){
                     kitchenlist.push(collectionlist);
                     kitchenlist[kitchenlist.length-1].title   = collectionlist.collection_details[0].heading;
                     kitchenlist[kitchenlist.length-1].subtitle= collectionlist.collection_details[0].subheading;
@@ -2644,11 +2623,12 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                     kitchencount :kitchencount ||0,
                     pagecount : pagecount ||0,
                     result: kitchenlist
-                  };            
+                  }; 
+                  repeat_collection=1;           
                   result(null, resobj);
                 }
               }
-            });
+            }); 
           } else {
             let resobj = {
               success: true,
@@ -2709,7 +2689,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
             if(repeat_collection ==0){
               ///////////Collection List//////////////
               console.log("Collection List  ===============>");
-              await Collection.list_all_active_collection_infinity_screen(req,async function(err,res3) {
+              await Collection.list_all_active_collection(req,async function(err,res3) {
                 if (err) {
                   result(err, null);
                 } else {
@@ -2720,7 +2700,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                     var collectionlist        = {};
                     collectionlist.collection = res3.collection;
                     var collectiontype        = collectionlist.collection;
-                    collectionlist.collection = collectiontype.filter(collectiontype => collectiontype.type>1);
+                    collectionlist.collection = collectiontype.filter(collectiontype => collectiontype.type==2);
                     if(kitchenlist.length >= kitchen_pagenation_limit){
                       kitchenlist.push(collectionlist);
                       kitchenlist[kitchenlist.length-1].title   = "Collections";
@@ -2745,14 +2725,14 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
             }else{
               ///////////Collection Details//////////////
               console.log("Collection Details  ===============>");
-              Collection.list_all_active_collection_infinity_screen(req,async function(err,cidlist) {
+              Collection.list_all_active_collection(req,async function(err,cidlist) {
                 if (err) { 
                   result(err, null);
                 } else {
-                  collectionlist = cidlist.collection.filter(collectiontype => collectiontype.type=2);
+                  collectionlist = cidlist.collection.filter(collectiontype => collectiontype.type==3);
                   var cidarray = collectionlist.map(obj =>{  return obj.cid; });
                   req.cid = cidarray[Math.floor(Math.random()*cidarray.length)];
-                  Collection.get_all_collection_by_cid(req,async function(err,collectiontype2list) {
+                  Collection.get_all_collection_by_cid_v2_infinity_screen(req,async function(err,collectiontype2list) {
                     if (err) { 
                       result(err, null);
                     } else {
@@ -3061,26 +3041,26 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
   var genderstatus = false;
   var otptemp = 0;
 
-  if (newUser.otpcode) {
-    var otpurl =
-    "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
+
+   if (newUser.otpcode) {
+   var otpurl =
+    "https://www.instaalerts.zone/SendSMS/sendmsg.php?uname=EATotp1&pass=abc321&send=EATHOM&dest=" +
     newUser.phoneno +
-    "&senderId=EATHOM&message=<%23>Your EAT App OTP is " +
+    "&msg=<%23>Your EAT App OTP is " +
     OTP +
     ". Note: Please DO NOT SHARE this OTP with anyone. " +
     newUser.otpcode +
     " ";
   }else{
 
-    var otpurl =
-    "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
+   var otpurl =
+    "https://www.instaalerts.zone/SendSMS/sendmsg.php?uname=EATotp1&pass=abc321&send=EATHOM&dest=" +
     newUser.phoneno +
-    "&senderId=EATHOM&message=Your EAT App OTP is " +
+    "&msg=<%23>Your EAT App OTP is " +
     OTP +
     ". Note: Please DO NOT SHARE this OTP with anyone. ";
   }
 
- 
 
   // var otpurl = "https://www.google.com/";
 
@@ -3107,7 +3087,7 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
                 var responcecode = body.split("#");
                 console.log(responcecode);
 
-                if (responcecode[0] === "0") {
+                if (body) {
                   sql.query(
                     "insert into Otp(phone_number,apptype,otp)values('" +
                       newUser.phoneno +
@@ -3122,7 +3102,7 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
                         let resobj = {
                           success: true,
                           status: true,
-                          message: responcecode[1],
+                          message: "message sent successfully",
                           passwordstatus: passwordstatus,
                           otpstatus: otpstatus,
                           genderstatus: genderstatus,
@@ -3137,7 +3117,7 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
                   let resobj = {
                     success: true,
                     status: false,
-                    message: responcecode[1],
+                    message: "message sent successfully",
                     passwordstatus: passwordstatus,
                     otpstatus: otpstatus,
                     genderstatus: genderstatus
@@ -3149,7 +3129,7 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
             }
           );
         } else {
-          console.log(res);
+       
              //eat login password validate condition commanded 04-07-2019
           // if (res[0].password !== "" && res[0].password !== null) {
           //   passwordstatus = true;
@@ -3179,7 +3159,7 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
                   var responcecode = body.split("#");
                   console.log('responcecode'+responcecode[0]);
 
-                  if (responcecode[0] === "0") {
+                  if (body) {
                     sql.query("insert into Otp(phone_number,apptype,otp)values('" +newUser.phoneno +"',4,'" +OTP +"')",function(err, res1) {
                         if (err) {
                           console.log("error: ", err);
@@ -3188,7 +3168,7 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
                           let resobj = {
                             success: true,
                             status: true,
-                            message: responcecode[1],
+                            message: "message sent successfully",
                             passwordstatus: passwordstatus,
                             otpstatus: otpstatus,
                             genderstatus: genderstatus,
@@ -3203,7 +3183,7 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
                     let resobj = {
                       success: true,
                       status: false,
-                      message: responcecode[0],
+                      message: "message sent successfully",
                       otpstatus: otpstatus,
                       genderstatus: genderstatus,
                       message : responcecode
@@ -3463,7 +3443,7 @@ Eatuser.edit_eat_users =async function(req, result) {
   var values =[];
   values.push(new Date());
   for (const [key, value] of Object.entries(req)) {
-    if (key !== "userid") {
+    if (key !== "userid" && key !== "other_region" ) {
       column = column + key +" = ?,";
       values.push(value);
     }
@@ -4059,11 +4039,10 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
         if(constant.zone_control){
           ////Get User Zone////
           var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-    
-          if(getzone.zone_id){
-            var userzoneid ='';
-            var zonename = '';
-            var zonemakeitsrrsy =0;
+          var userzoneid ='';
+          var zonename = '';
+          var zonemakeitsrrsy =0;
+          if(getzone.zone_id){            
             userzoneid = getzone.zone_id;
             zonename = getzone.zone_name;
           }
@@ -4211,11 +4190,17 @@ Eatuser.get_eat_region_kitchen_list_show_more = async function get_eat_region_ki
     }else{
       ////Zone Condition////
       if(constant.zone_control){
-        var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-        if(getzone.zone_id){
-          var userzoneid = getzone.zone_id;
-          var zonename = getzone.zone_name;
-        }
+        ////Get User Zone////
+        var getzone     = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+        var userzoneid  = '';
+        var zonename    = '';
+        var zonemakeitsrrsy = 0;
+        if(getzone.zone_id){          
+          userzoneid = getzone.zone_id;
+          zonename   = getzone.zone_name;
+          ////Make Zone Servicable kitchen array////
+          var zonemakeitsrrsy = res.filter(kitchenarray => (kitchenarray.zone==userzoneid && kitchenarray.unservicable==0));
+        } 
       }
 
       for (let i = 0; i < res.length; i++) { 
@@ -4260,14 +4245,19 @@ Eatuser.get_eat_region_kitchen_list_show_more = async function get_eat_region_ki
           res[i].serviceablestatus = true;
         }
                   
-        if (res[i].serviceablestatus !== false) {   
-          if(constant.zone_control){
-            if(getzone.zone_id && getzone.zone_id!=0 && res[i].zone==getzone.zone_id){
+        //////////////Zone Condition//////////
+        if(constant.zone_control){
+          if (res[i].serviceablestatus !== false) {
+            if(zonemakeitsrrsy.length !=0 && res[i].zone==userzoneid){
+              res[i].serviceablestatus = true;
+            }else if (zonemakeitsrrsy.length ==0 && res[i].distance <= radiuslimit){
               res[i].serviceablestatus = true;
             }else{
               res[i].serviceablestatus = false;
-            } 
-          }else{                  
+            }
+          }
+        }else{
+          if (res[i].serviceablestatus !== false) {
             if (res[i].distance <= radiuslimit) {
               res[i].serviceablestatus = true;
             }else{
@@ -4301,7 +4291,7 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
   var lunchcycle = constant.lunchcycle;
   var tunnelkitchenliststatus = true;
   const userdetails = await query("select * from User where userid = "+req.eatuserid+" ");
-
+  
   if (userdetails[0].first_tunnel == 1 ) {    
     tunnelkitchenliststatus = false;
   }
@@ -4326,11 +4316,17 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
     }else{
       ////Zone Condition////
       if(constant.zone_control){
-        var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-        if(getzone.zone_id){
-          var userzoneid = getzone.zone_id;
-          var zonename = getzone.zone_name;
-        }
+        ////Get User Zone////
+        var getzone     = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+        var userzoneid  = '';
+        var zonename    = '';
+        var zonemakeitsrrsy = 0;
+        if(getzone.zone_id){          
+          userzoneid = getzone.zone_id;
+          zonename   = getzone.zone_name;
+          ////Make Zone Servicable kitchen array////
+          var zonemakeitsrrsy = res.filter(kitchenarray => (kitchenarray.zone==userzoneid && kitchenarray.unservicable==0));
+        } 
       }
 
       for (let i = 0; i < res.length; i++) {
@@ -4375,27 +4371,27 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
         if (res[i].unservicable == 0) {
           res[i].serviceablestatus = true;
         }
-                  
-        
-        if (res[i].serviceablestatus !== false) { 
-          if(constant.zone_control){
-            if(getzone.zone_id && getzone.zone_id!=0 && res[i].zone==getzone.zone_id){
+
+        //////////////Zone Condition//////////
+        if(constant.zone_control){
+          if (res[i].serviceablestatus !== false) {
+            if(zonemakeitsrrsy.length !=0 && res[i].zone==userzoneid){
+              res[i].serviceablestatus = true;
+            }else if (zonemakeitsrrsy.length ==0 && res[i].distance <= radiuslimit){
               res[i].serviceablestatus = true;
             }else{
-              if (res[i].distance <= radiuslimit) {
-                res[i].serviceablestatus = true;
-              }else{
-                res[i].serviceablestatus = false;
-              }
-            } 
-          }else{                   
+              res[i].serviceablestatus = false;
+            }
+          }
+        }else{
+          if (res[i].serviceablestatus !== false) {
             if (res[i].distance <= radiuslimit) {
               res[i].serviceablestatus = true;
             }else{
               res[i].serviceablestatus = false;
             }
           }
-        }        
+        }
 
         if ( tunnelkitchenliststatus == false) {      
           res[i].serviceablestatus = true;                  

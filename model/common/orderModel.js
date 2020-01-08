@@ -302,16 +302,16 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
       var get_hub_id_from_orders= await query("Select zone from MakeitUser where userid="+req.makeit_user_id);
       var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and zone="+get_hub_id_from_orders[0].zone);
      // var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and  status=0") ;
-     var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid where oq.zoneid="+get_hub_id_from_orders[0].zone+" and ors.orderstatus < 6 and oq.status !=1 and Date(oq.created_at)= CURDATE()");
-     var get_hub_id_from_makeithub= await query("Select xfactor,zone_status from Zone where id="+get_hub_id_from_orders[0].zone);
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid where oq.zoneid="+get_hub_id_from_orders[0].zone+" and oq.status !=1 and orderstatus < 6 and  Date(oq.created_at)= CURDATE()");
+      var get_hub_id_from_makeithub= await query("Select xfactor,zone_status from Zone where id="+get_hub_id_from_orders[0].zone);
     }else{
         //get x factore is if true
         console.log("get x factore is if true");
       var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
       var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
      // var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status=0") ;
-     var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid where oq.zoneid="+get_hub_id_from_orders[0].zone+" and ors.orderstatus < 6 and oq.status !=1 and Date(oq.created_at)= CURDATE()"); 
-     var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid where oq.hubid="+get_hub_id_from_orders[0].makeithub_id+" and oq.status !=1 and orderstatus < 6 and  Date(oq.created_at)= CURDATE()") ;    
+      var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
     }   
      //check zone status if dunzo or (moveit or dunzo)
     if (get_hub_id_from_makeithub[0].zone_status == 1 || get_hub_id_from_makeithub[0].zone_status == undefined) {
@@ -6819,14 +6819,14 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
     if(constant.zone_control){
       var get_hub_id_from_orders= await query("Select zone from MakeitUser where userid="+req.makeit_user_id);
       var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and zone="+get_hub_id_from_orders[0].zone);
-     // var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and status !=1 and Date(oq.created_at)= CURDATE()") ;
-      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid where oq.zoneid="+get_hub_id_from_orders[0].zone+" and ors.orderstatus < 6 and oq.status !=1 and Date(oq.created_at)= CURDATE()");
+    //  var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and  status !=1") ;
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid where oq.zoneid="+get_hub_id_from_orders[0].zone+" and oq.status !=1 and orderstatus < 6 and  Date(oq.created_at)= CURDATE()") ;
       var get_hub_id_from_makeithub= await query("Select xfactor,zone_status from Zone where id="+get_hub_id_from_orders[0].zone);
     }else{
       var get_hub_id_from_orders= await query("Select makeithub_id from MakeitUser where userid="+req.makeit_user_id);
       var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and moveit_hub="+get_hub_id_from_orders[0].makeithub_id);
      // var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where hubid="+get_hub_id_from_orders[0].makeithub_id+" and  status !=1") ;
-      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid where oq.zoneid="+get_hub_id_from_orders[0].zone+" and ors.orderstatus < 6 and oq.status !=1 and Date(oq.created_at)= CURDATE()");
+      var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid where oq.hubid="+get_hub_id_from_orders[0].makeithub_id+" and oq.status !=1 and orderstatus < 6 and  Date(oq.created_at)= CURDATE()") ;
       var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
     }
 ///this condition is Dunzo zone 10 //09-dec-2019
@@ -7049,7 +7049,7 @@ if (order_queue_query.length ==0) {
 
     }else{
 
-      if (req.zone_status !=2 && req.payment_type ==1) {
+      if ((req.zone_status ==2 || req.zone_status ==1) && req.payment_type ==1) {
         var new_Ordersqueue = new Ordersqueue(req);
         new_Ordersqueue.status = 0;
         Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
@@ -7548,7 +7548,7 @@ Order.onlinerefunded_couponreport= function onlinerefunded_couponreport(req, res
 //////////order_report_byadmin/////////////
 Order.order_report_byadmin= function order_report_byadmin(req, result) {
   
-  var query="Select o.created_at as Orderdate ,o.orderid, o.orderstatus,u.name as Customername,u.userid as Eatuserid,o.address_title,o.locality_name,o.delivery_charge,o.price, o.original_price,o.refund_amount,o.gst,o.makeit_user_id,o.makeit_earnings as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_accept_time,o.moveit_pickup_time,o.moveit_expected_delivered_time,o.makeit_expected_preparing_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,ma.address as hub_location,CASE WHEN o.ordertype=1 then 'Virtual' WHEN o.ordertype=0 then 'Real' END as order_type,o.moveit_user_id as moveit_id,mu.name from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join User as u on o.userid=u.userid left join MoveitUser as mu on mu.userid = o.moveit_user_id where (o.orderstatus=6 or o.orderstatus=7  or  o.orderstatus=8 or o.orderstatus=9 or o.orderstatus=10 or o.orderstatus=11) and  (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.created_at as Orderdate ,o.orderid, o.orderstatus,CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) then 'AfterCancel' WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) then 'BeforeCancel' END as order_cancel_status,u.name as Customername,u.userid as Eatuserid,o.address_title,o.locality_name,o.delivery_charge,o.price, o.original_price,o.refund_amount,o.gst,o.makeit_user_id,o.makeit_earnings as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_accept_time,o.moveit_pickup_time,o.moveit_expected_delivered_time,o.makeit_expected_preparing_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,ma.address as hub_location,CASE WHEN o.ordertype=1 then 'Virtual' WHEN o.ordertype=0 then 'Real' END as order_type,o.moveit_user_id as moveit_id,mu.name from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join User as u on o.userid=u.userid left join MoveitUser as mu on mu.userid = o.moveit_user_id where (o.orderstatus=6 or o.orderstatus=7  or  o.orderstatus=8 or o.orderstatus=9 or o.orderstatus=10 or o.orderstatus=11) and  (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -8039,7 +8039,7 @@ Order.livekitchenavgcount_report= async function livekitchenavgcount_report(req,
 
 ////KPI Live Kitchen count and Avg////
 Order.log_livekitchenavgcount_report= async function log_livekitchenavgcount_report(req, result) {    
-  var kpiproducthistoryquery = "select time(kph.date_time) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id where date(kph.created_at)='2019-12-27' group by kph.makeit_id,time(kph.date_time) order by time(kph.created_at)";
+  var kpiproducthistoryquery = "select time(kph.date_time) as time,kph.makeit_id,count(kph.product_id) as product_count,mu.virtualkey from KPI_Product_History as kph left join MakeitUser as mu on mu.userid=kph.makeit_id where date(kph.created_at)=CURDATE() group by kph.makeit_id,time(kph.date_time) order by time(kph.created_at)";
   //console.log("kpiproducthistoryquery =================>", kpiproducthistoryquery);
   var producthistory = await query(kpiproducthistoryquery);
   var timearray = new Array();

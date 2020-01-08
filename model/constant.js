@@ -107,9 +107,8 @@ const calculate = {
 
     //////////////Infinity/////////////
     infinity_kitchen_page_limit:5,
-    infinity_repeat_switch_loop:2,
-    
-
+    infinity_repeat_switch_loop:2,    
+    infinity_first_collection_details_cid:24,
 
 }
 

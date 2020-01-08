@@ -385,7 +385,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
           street_address_1: pickup.address,
           street_address_2: pickup.address,
           landmark: order_details[0].makeitdetail.landmark,
-          city: order_details[0].makeitdetail.locality,
+          city: "chennai",
           state: "tamilnadu",
           pincode: pickup.pincode,
           country: "India"
@@ -399,7 +399,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
           street_address_1: order_details[0].cus_address,
           street_address_2: order_details[0].cus_address,
           landmark: order_details[0].landmark,
-          city: order_details[0].locality,
+          city: "chennai",
           state: "tamilnadu",
           pincode: order_details[0].cus_pincode,
           country: "India"
@@ -446,7 +446,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
       var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
     }else if (body.code=="duplicate_request") {
       console.log("duplicate_request");
-      var order_queue_update = await query("update Orders_queue set status = 1,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"'  where orderid =" +orderid+"");
+        var order_queue_update = await query("update Orders_queue set status = 1,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"'  where orderid =" +orderid+"");
       var order_update = await query("update Orders set moveit_status=1,dunzo_taskid ='"+body.task_id+"',delivery_vendor=1,order_assigned_time='"+order_assign_time+"'  where orderid =" +orderid+"");
 
      // var order_queue_update = await query("update Orders_queue set status = 2,dunzo_req_count= dunzo_req_count+1,updated_at='"+cuurent_time+"' where orderid =" +orderid+"");
@@ -496,7 +496,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
 Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
   //var url ='https://apis-staging.dunzo.in/api/v1/tasks/'+dunzo_taskid+'/_cancel?test=true'
 
-  var url = dunzoconst.dunzo_cancel_url+'/'+ req.dunzo_taskid+'/_cancel?test=true'
+  var url = dunzoconst.dunzo_cancel_url+'/'+ req.dunzo_taskid+'/_cancel'
 
   //set form data
   var form = {
@@ -524,7 +524,7 @@ Dunzo.dunzo_task_cancel = async function dunzo_task_cancel(req,result) {
 ////task status
 Dunzo.dunzo_track_status = async function dunzo_track_status(req) {
 
-  var url =dunzoconst.dunzo_cancel_url+'/'+req.task_id+'/status?test=true'
+  var url =dunzoconst.dunzo_cancel_url+'/'+req.task_id+'/status'
 
   var headers= {
     'Content-Type': 'application/json',
