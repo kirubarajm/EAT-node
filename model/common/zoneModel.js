@@ -174,7 +174,7 @@ Zone.pointInPolygon = function pointInPolygon(polygonPath, coordinates) {
 
 ////Check Boundaries
 Zone.check_boundaries = async function check_boundaries(req) {
-  console.log("Request =========>", req);
+  //console.log("Request =========>", req);
   var res = await query("Select * from Zone where boundaries IS NOT NULL");
 
   var isZone = false;
@@ -198,7 +198,7 @@ Zone.check_boundaries = async function check_boundaries(req) {
       zone_id: res[i].id
     };
     return resobj;
-    console.log("Response =======>", resobj);
+    //console.log("Response =======>", resobj);
     //return resobj;
   } else {
     let resobj = {
@@ -206,7 +206,7 @@ Zone.check_boundaries = async function check_boundaries(req) {
       status: false,
       message: "No Zone Available."
     };
-    console.log("Response =======>", resobj);
+    //console.log("Response =======>", resobj);
     return resobj;
   }
 

@@ -29,9 +29,10 @@ exports.sendNotificationAndroid = function(
   var payload = {
     data: dat
   };
-
-  if (dat.app_type=2) {
-    payload .notification= {
+console.log("-------->",dat.app_type);
+  if (dat.app_type===2) {
+    dat.app_type=''+dat.app_type;
+    payload.notification= {
       title: dat.title,
       body: dat.message, // <= CHANGE
       sound : "default"

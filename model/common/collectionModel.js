@@ -375,26 +375,39 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
 
       //based on logic this conditions will change
       ///product
-        if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
-          var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
-        }else if(req.cid == 3 ) {    ///kitchen
-          var productlist = res[0].query + productquery  + orderbyquery;
-        }else if(req.cid= 5){
-          var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
-        }
+        // if (req.cid == 1 || req.cid == 2 || req.cid == 4 || req.cid == 6 || req.cid == 7) {
+        //   var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
+        // }else if(req.cid == 3 ) {    ///kitchen
+        //   var productlist = res[0].query + productquery  + orderbyquery;
+        // }else if(req.cid= 5){
+        //   var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
+        // }
           
- 
+        if (res[0].category == 1) {
+          var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
+        }else if(res[0].category == 2) {    ///kitchen
+          var productlist = res[0].query + productquery  + orderbyquery;
+        }
           
         await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid], async function(err, res1) {
             if (err) {
               result(err, null);
             } else {
 
-            if(constant.zone_control){
-              var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-              var userzoneid = getzone.zone_id;
-              var zonename = getzone.zone_name;
-            }
+              ////Zone Condition////
+              if(constant.zone_control){
+                ////Get User Zone////
+                var getzone     = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+                var userzoneid  = '';
+                var zonename    = '';
+                var zonemakeitsrrsy = [];
+                if(getzone.zone_id){          
+                  userzoneid = getzone.zone_id;
+                  zonename   = getzone.zone_name;
+                  ////Make Zone Servicable kitchen array////
+                  var zonemakeitsrrsy = res1.filter(kitchenarray => (kitchenarray.zone==userzoneid && kitchenarray.unservicable==0));
+                } 
+              }
             
               for (let i = 0; i < res1.length; i++) {
 
@@ -432,31 +445,30 @@ Collection.get_all_collection_by_cid = async function get_all_collection_by_cid(
                   res1[i].status = 0;
                 }
                 
-              if (res1[i].serviceablestatus !== false) {
-                // Add Zone Controle Condition//////
-                if(constant.zone_control){
-                  if(getzone.zone_id && getzone.zone_id!=0 && res1[i].zone==getzone.zone_id){
-                    res1[i].status = 0;
+              //////////////Zone Condition//////////
+              if(constant.zone_control){
+                if (res1[i].serviceablestatus !== false) {
+                  if(zonemakeitsrrsy.length !=0 && res1[i].zone==userzoneid){
                     res1[i].serviceablestatus = true;
-                  }else{
-                    if (res1[i].distance <= radiuslimit) {
-                      res1[i].status = 0;
-                      res1[i].serviceablestatus = true;
-                    }else{
-                      res1[i].serviceablestatus = false;
-                      res1[i].status = 1;
-                    }
-                  } 
-                }else{
-                  if (res1[i].distance <= radiuslimit) {
                     res1[i].status = 0;
+                  }else if (zonemakeitsrrsy.length ==0 && res1[i].distance <= radiuslimit){
                     res1[i].serviceablestatus = true;
+                    res1[i].status = 0;
                   }else{
                     res1[i].serviceablestatus = false;
                     res1[i].status = 1;
                   }
                 }
-                ////////////////////////////////////// 
+              }else{
+                if (res1[i].serviceablestatus !== false) {
+                  if (res1[i].distance <= radiuslimit) {
+                    res1[i].serviceablestatus = true;
+                    res1[i].status = 0;
+                  }else{
+                    res1[i].serviceablestatus = false;
+                    res1[i].status = 1;
+                  }
+                }
               }
 
               res1[i].eta = Math.round(eta) + " mins";
@@ -556,27 +568,35 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
         //   var productlist = res[0].query + productquery+ " GROUP BY mk.userid ORDER BY mk.unservicable = 0 desc,mk.created_at desc limit 10"
         // }
             
-             if (res[0].category == 1) {
+        if (res[0].category == 1) {
           var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
         }else if(res[0].category == 2) {    ///kitchen
           var productlist = res[0].query + productquery  + orderbyquery;
         }
   
-           // console.log(productlist);
+        // console.log(productlist);
         await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid],async function(err, res1) {
-              if (err) {
-                result(err, null);
-              } else {
-
-            
-                if (res1.length !=0) {
+          if (err) {
+            result(err, null);
+          } else {            
+            if (res1.length !=0) {
                   
                 
+            ////Zone Condition////
             if(constant.zone_control){
-              var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
-              var userzoneid = getzone.zone_id;
-              var zonename = getzone.zone_name;
+              ////Get User Zone////
+              var getzone     = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+              var userzoneid  = '';
+              var zonename    = '';
+              var zonemakeitsrrsy = [];
+              if(getzone.zone_id){          
+                userzoneid = getzone.zone_id;
+                zonename   = getzone.zone_name;
+                ////Make Zone Servicable kitchen array////
+                var zonemakeitsrrsy = res1.filter(kitchenarray => (kitchenarray.zone==userzoneid && kitchenarray.unservicable==0));
+              } 
             }
+
 
             for (let i = 0; i < res1.length; i++) {  
                   if (res[0].category == 1) {
@@ -613,31 +633,31 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
                     res1[i].status = 0;
                   }
                   
-              if (res1[i].serviceablestatus !== false) {
-                // Add Zone Controle Condition//////
-                if(constant.zone_control){
-                  if(getzone.zone_id && getzone.zone_id!=0 && res1[i].zone==getzone.zone_id){
-                    res1[i].status = 0;
+              
+              //////////////Zone Condition//////////
+              if(constant.zone_control){
+                if (res1[i].serviceablestatus !== false) {
+                  if(zonemakeitsrrsy.length !=0 && res1[i].zone==userzoneid){
                     res1[i].serviceablestatus = true;
-                  }else{
-                    if (res1[i].distance <= radiuslimit) {
-                      res1[i].status = 0;
-                      res1[i].serviceablestatus = true;
-                    }else{
-                      res1[i].serviceablestatus = false;
-                      res1[i].status = 1;
-                    }
-                  } 
-                }else{
-                  if (res1[i].distance <= radiuslimit) {
                     res1[i].status = 0;
+                  }else if (zonemakeitsrrsy.length ==0 && res1[i].distance <= radiuslimit){
                     res1[i].serviceablestatus = true;
+                    res1[i].status = 0;
                   }else{
                     res1[i].serviceablestatus = false;
                     res1[i].status = 1;
                   }
                 }
-                ////////////////////////////////////// 
+              }else{
+                if (res1[i].serviceablestatus !== false) {
+                  if (res1[i].distance <= radiuslimit) {
+                    res1[i].serviceablestatus = true;
+                    res1[i].status = 0;
+                  }else{
+                    res1[i].serviceablestatus = false;
+                    res1[i].status = 1;
+                  }
+                }
               }
   
                 if (tunnelkitchenliststatus == false) {
@@ -1521,9 +1541,9 @@ Collection.get_all_collection_by_cid_v2_infinity_screen  = async function get_al
               var getzone = await ZoneModel.check_boundaries({lat:req.lat,lon:req.lon});
               var userzoneid ='';
               var zonename ='';
-              var zonemakeitsrrsy = 0;
+              var zonemakeitsrrsy = [];
 
-              if(getzone){
+              if(getzone.zone_id){
                 userzoneid = getzone.zone_id;
                 zonename   = getzone.zone_name;
                 
