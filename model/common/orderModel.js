@@ -1987,7 +1987,7 @@ Order.getUnassignorders =async function getUnassignorders(req,result) {
       result(err, null);
     } 
   }else if(req.id == 5){
-    var res = await query("Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors join Orders_queue oq on oq.orderid=ors.orderid left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and ors.payment_status < 2 and ors.orderstatus < 6 and oq.status=0 order by ors.ordertime ASC");
+    var res = await query("Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,ors.moveit_user_id,mv.name as moveit_name,mk.lat as makeit_lat,mk.lon as makeit_lon,mv.phoneno as moveit_phoneno from Orders ors join Orders_queue oq on oq.orderid=ors.orderid left join MakeitUser as mk on mk.userid=ors.makeit_user_id left join User as us on ors.userid=us.userid left join MoveitUser as mv on mv.userid=ors.moveit_user_id  where DATE(ors.created_at) = CURDATE() and ors.payment_status < 2 and ors.orderstatus < 6 and oq.status!=1 order by ors.ordertime ASC");
     if (res.err) {
       result(err, null);
     } 
