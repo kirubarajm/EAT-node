@@ -532,7 +532,7 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
           var  productquery = '';
           var  groupbyquery = " GROUP BY pt.makeit_userid";
         //  var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,distance asc";
-        var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,mk.unservicable = 0 desc";
+          var  orderbyquery = " GROUP BY pt.productid ORDER BY mk.rating desc,mk.unservicable = 0 desc";
         
         
           var breatfastcycle = constant.breatfastcycle;
@@ -569,19 +569,20 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
         // }
             
         if (res[0].category == 1) {
+       
           var productlist = res[0].query + productquery  + groupbyquery + " ORDER BY mk.unservicable = 0 desc";
         }else if(res[0].category == 2) {    ///kitchen
+         
           var productlist = res[0].query + productquery  + orderbyquery;
         }
   
-        // console.log(productlist);
+      //   console.log(productlist);
         await sql.query(productlist,[req.lat,req.lon,req.lat,req.eatuserid,req.eatuserid],async function(err, res1) {
           if (err) {
             result(err, null);
           } else {            
             if (res1.length !=0) {
-                  
-                
+                                  
             ////Zone Condition////
             if(constant.zone_control){
               ////Get User Zone////
@@ -672,8 +673,12 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
                   
                 }
   
-                if (res[0].category == 1) {
+                if (req.cid !=11 && req.cid !=23) {
+                  
                   res1.sort((a, b) => parseFloat(a.status) - parseFloat(b.status));
+                }else{
+                 
+                  res1.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
                 }
   
               

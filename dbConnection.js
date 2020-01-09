@@ -7,10 +7,11 @@ authentication = {
   host: "eatinstance.crelormihi5z.ap-south-1.rds.amazonaws.com",
   user: "eattovo",
   password: "eattv2020",
-  database: "eatdev",
+  database: "eatprod",
   timezone: "IST",
   multipleStatements: true
 };
+
 
 // const authentication = {
 //   host: "localhost",
