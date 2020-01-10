@@ -1096,3 +1096,27 @@ exports.averageordervalue_report = function(req, res) {
     res.json(result);
   });
 };
+
+//cancel orders follow up report
+exports.cancelled_report_follow_up = function(req, res) {
+  Order.cancelled_report_follow_up(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+//unclosed orders report
+exports.unclosed_orders = function(req, res) {
+  Order.unclosed_orders(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+//unclosed orders report
+exports.customerexperience = function(req, res) {
+  Order.customerexperience(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
