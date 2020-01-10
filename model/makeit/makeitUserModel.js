@@ -1013,6 +1013,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var day = moment().format("YYYY-MM-DD HH:mm:ss");;
   var currenthour  = moment(day).format("HH");
   var productquery="breakfast";
+  var convenience_charge = 0;
+  var first_tunnel_status = false;
+  var product_cost_limit_status = true;
+ 
   //  if (currenthour <= 12) {
   //    productquery = " breakfast";
   //  }else
@@ -1027,7 +1031,13 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var userdetails = await query("Select * From User where userid = '" +req.userid +"'");
 
   if (userdetails.length !==0) {   
-    if (userdetails[0].first_tunnel == 0) {
+   // if (userdetails[0].first_tunnel == 0) {
+      if (userdetails[0].first_tunnel == 0) {
+        first_tunnel_status=true;
+      }
+  
+   
+
       for (let i = 0; i < orderitems.length; i++) {
         const res1 = await query("Select pt.*,cu.cuisinename From Product pt left join Cuisine cu on cu.cuisineid = pt.cuisine where pt.productid = '" +orderitems[i].productid +"'  ");
       
@@ -1061,6 +1071,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
         ///get amount each product
         amount = res1[0].price * orderitems[i].quantity;
+      
         ///get makeit earning each product
         var order_makeit_earnings = res1[0].original_price * orderitems[i].quantity;
         ///single product commission cost
@@ -1074,6 +1085,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
         res1[0].cartquantity = orderitems[i].quantity;
         //total product cost
         totalamount = totalamount + amount;
+        
         makeit_earnings = makeit_earnings + order_makeit_earnings;
         productdetails.push(res1[0]);
       }
@@ -1090,7 +1102,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
           console.log("error: ", err);
           result(err, null);
         } else {
-          console.log(res2);
+         
           if (res2[0].makeituserid === null) {
             let resobj = {
               success: true,
@@ -1130,294 +1142,124 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               //15min Food Preparation time , 3min 1 km
             }
             res2[0].isAvaliablekitchen = isAvaliablekitchen;
-            for (let i = 0; i < res2.length; i++) {
-              if (res2[i].cuisines) {
-                res2[i].cuisines = JSON.parse(res2[i].cuisines);
-              }
-            }
-            product_orginal_price = totalamount;
-
-            //offer coupon amount detection algorithm
-            if (req.cid) {
-              var couponlist = await query("Select * From Coupon where cid = '" +req.cid +"' and active_status = 1 and expiry_date >= CURDATE()" );
-          
-              if (couponlist.length != 0) {
-                var maxdiscount = couponlist[0].maxdiscount;
-                var numberoftimes = couponlist[0].numberoftimes;
-                var discount_percent = couponlist[0].discount_percent;
-                var minprice_limit = couponlist[0].minprice_limit
-                var CouponsUsedlist = await query("Select * From CouponsUsed where cid = '" +req.cid +"' and userid = '" +req.userid +"' and active_status = 1");
-                var couponusedcount = CouponsUsedlist.length;
-
-                if (totalamount >=minprice_limit) {                
-                  minprice_limit_status = true
-                  if (couponusedcount < numberoftimes) {                
-                    var discount_amount = (totalamount / 100) * discount_percent;
-                    discount_amount = Math.round(discount_amount);                            
-                    if (discount_amount >= maxdiscount) {
-                      discount_amount = maxdiscount;
-                    }
-
-                    if (totalamount >= discount_amount) {                  
-                      totalamount = totalamount - discount_amount;
-                      coupon_discount_amount = discount_amount;
-                    }else{
-                      couponstatus = false;
-                      coupon__error_message = "coupon amount is too high";
-                    }
-                  }else{
-                    couponstatus = false;
-                    coupon__error_message = "coupon has been expired";
-                  }
-                }else{
-                  couponstatus = false;
-                  coupon__error_message = "Product value should be "+ minprice_limit+" to apply this coupons " ;
-                }
-              }else{
-                couponstatus = false;
-                coupon__error_message = "Coupon is not available";
-              }
-            }
-          //  var gstcharge = (totalamount / 100) * gst;  // this code commanded due to gst percentage modifications 06/09/2019
-          //*this code is commaned due to business  23-09-2019
-          // var foodgstcharge = (totalamount / 100) * constant.food_gst;
-          // var total_commission_delivery_cost = total_commission_cost + delivery_charge;
-          // var food_commission_gst = (total_commission_delivery_cost / 100) * constant.food_commission_cost;
-          // var gstcharge = foodgstcharge + food_commission_gst;
-          // gstcharge = Math.round(gstcharge);
-          // var original_price = gstcharge+product_orginal_price+delivery_charge;
-          // var grandtotal = gstcharge+totalamount+delivery_charge;
-          //*this code is commaned due to business
-
-          var gstcharge = (totalamount / 100) * constant.gst;
-          gstcharge = Math.round(gstcharge);
-          var original_price = gstcharge + product_orginal_price + delivery_charge;
-          var grandtotal = gstcharge + totalamount +delivery_charge;
-
-          //refund coupon amount detection algorithm 
-          if (req.rcid) {
-            refundlist = await query(
-              "Select * From Refund_Coupon where rcid = '" +
-                req.rcid +
-                "' and active_status = 1"
-            );
-            if (refundlist.length !== 0) {          
-              // get refund amount
-              if (grandtotal >= refundlist[0].refundamount) {
-                refund_coupon_adjustment = refundlist[0].refundamount;
-              } else if (grandtotal < refundlist[0].refundamount) {
-                refund_balance = refundlist[0].refundamount - grandtotal;
-                refund_coupon_adjustment = grandtotal;
-              }
-    
-              //get price
-              grandtotal = grandtotal - refundlist[0].refundamount;
-              //if grandtotal is lesser then 0 define grandtotal is 0
-              if (grandtotal < 0) grandtotal = 0;
-              calculationdetails.refundamount = refundlist[0].refundamount;
+            if (first_tunnel_status ==false) {
+              res2[0].first_tunnel = 1;
             }else{
-              refundcouponstatus = false;
-              refundcoupon__error_message = "refundcoupon is not available";
+
+              res2[0].first_tunnel = 0;
             }
-          }
-          
-          calculationdetails.grandtotaltitle = "Grand Total";
-          calculationdetails.grandtotal = grandtotal;
-          calculationdetails.original_price = original_price;
-          calculationdetails.refund_balance = refund_balance;
-          calculationdetails.gstcharge = gstcharge;
-          calculationdetails.delivery_charge = delivery_charge;
-          calculationdetails.refund_coupon_adjustment = refund_coupon_adjustment;
-          calculationdetails.product_orginal_price = product_orginal_price;
-          calculationdetails.makeit_earnings = makeit_earnings;
-          calculationdetails.totalamount = totalamount;
-          calculationdetails.coupon_discount_amount = coupon_discount_amount;
-          calculationdetails.total_commission_cost = total_commission_cost;
-          calculationdetails.couponstatus = false;
-          calculationdetails.refundcouponstatus = false;        
-
-          if (req.cid && couponstatus) {
-            calculationdetails.couponstatus = couponstatus;
-            calculationdetails.cid = req.cid;
-          }
-          if (req.rcid && refundcouponstatus) {
-            calculationdetails.refundcouponstatus = refundcouponstatus;
-          }
-
-          var cartdetails = [];
-          var totalamountinfo = {};
-          var couponinfo = {};
-          var gstinfo = {};
-          var deliverychargeinfo = {};
-          var refundinfo = {};
-          //var grandtotalinfo = {};
-          totalamountinfo.title = "Total Amount";
-          totalamountinfo.charges = product_orginal_price;
-          totalamountinfo.status = true;
-          cartdetails.push(totalamountinfo);
-
-          if (req.cid && couponstatus) {
-            couponinfo.title = "Coupon adjustment (-)";
-            couponinfo.charges = coupon_discount_amount;
-            couponinfo.status = true;
-            cartdetails.push(couponinfo);
-          }
-
-          gstinfo.title = "GST ";
-          gstinfo.charges = gstcharge;
-          gstinfo.status = true;
-          cartdetails.push(gstinfo);
             
-          //this code is modified 23-09-2019
-          if (delivery_charge !==0) {
-           
-            deliverychargeinfo.title = "Handling charge";
-            deliverychargeinfo.charges = delivery_charge;
-            deliverychargeinfo.status = true;
-            cartdetails.push(deliverychargeinfo);
-          }       
-
-          if (req.rcid && refundcouponstatus) {
-            refundinfo.title = "Refund adjustment (-)";
-            refundinfo.charges = refund_coupon_adjustment;
-            refundinfo.status = true;
-            cartdetails.push(refundinfo);
-          }
-
-          // grandtotalinfo.title = "Grand total";
-          // grandtotalinfo.grandtotal = grandtotal;
-          // grandtotalinfo.status = true;
-          // cartdetails.push(grandtotalinfo);        
-          res2[0].amountdetails = calculationdetails;
-          res2[0].item = productdetails;
-          res2[0].ordercount = ordercount;
-          res2[0].cartdetails = cartdetails;
-          res2[0].first_tunnel = userdetails[0].first_tunnel;
-          let resobj = {
-            success: true,
-            status: isAvaliableItem,
-            zoneId:userzoneid,
-            zoneName:zoneName,
-            distance:distance,
-          };
-    
-          if (!refundcouponstatus){
-            resobj.message = refundcoupon__error_message;
-            resobj.status = refundcouponstatus
-          }
-      
-          if (!couponstatus){
-            resobj.message = coupon__error_message;
-            resobj.status = couponstatus
-          }
-
-          if (!isAvaliableItem){
-            resobj.message = tempmessage.slice(0, -1) + " is not avaliable.Change quantity/product";
-            resobj.status = isAvaliableItem
-          }
-
-          if (!isAvaliablekitchen){
-            resobj.message = makeit_error_message.slice(0, -1) + " kitchen service is not available! for your following address";
-            resobj.status = isAvaliablekitchen
-          }
-
-          resobj.result = res2; 
-          result(null, resobj);
-        } 
-        }
-      });
-    }else if (userdetails[0].first_tunnel == 1 || userdetails[0].first_tunnel == 2) { 
-        console.log("tunnel flow");
-        for (let i = 0; i < orderitems.length; i++) {
-          const res1 = await query("Select pt.*,cu.cuisinename From Product pt left join Cuisine cu on cu.cuisineid = pt.cuisine where pt.productid = '" +orderitems[i].productid +"'  ");     
-        
-          res1[0].availablity = true;
-          ///get amount each product
-          amount = res1[0].price * orderitems[i].quantity;
-          ///get makeit earning each product
-          var order_makeit_earnings = res1[0].original_price * orderitems[i].quantity;
-          ///single product commission cost
-          var commission_cost = amount - order_makeit_earnings;
-          ///get total commission cost
-          total_commission_cost = total_commission_cost + commission_cost;
-          //console.log(total_commission_cost);
-          // console.log(res1[0].total_commission_cost);
-          res1[0].amount = amount;
-          res1[0].makeit_earnings = order_makeit_earnings;
-          res1[0].cartquantity = orderitems[i].quantity;
-          //total product cost
-          totalamount = totalamount + amount;
-          makeit_earnings = makeit_earnings + order_makeit_earnings;
-          productdetails.push(res1[0]);
-        }
-
-        var query1 =
-        "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.unservicable,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
-        req.userid +
-        " left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +
-        req.makeit_user_id;
-
-        // var query1 = 'call cart_makeituser_details(?,?)';
-
-        sql.query(query1,async function(err,res2) {
-          if (err) {
-            console.log("error: ", err);
-            result(err, null);
-          } else {      
-            res2[0].first_tunnel = 1;
-            res2[0].isAvaliablekitchen = isAvaliablekitchen;
             for (let i = 0; i < res2.length; i++) {
               if (res2[i].cuisines) {
                 res2[i].cuisines = JSON.parse(res2[i].cuisines);
               }
             }
             product_orginal_price = totalamount;
-            //offer coupon amount detection algorithm
-            if (req.cid) {
-              var couponlist = await query("Select * From Coupon where cid = '" +req.cid +"' and active_status = 1 and expiry_date >= CURDATE()");
-              if (couponlist.length != 0) {       
-                var maxdiscount = couponlist[0].maxdiscount;
-                var numberoftimes = couponlist[0].numberoftimes;
-                var discount_percent = couponlist[0].discount_percent;
-                var minprice_limit = couponlist[0].minprice_limit
-                var CouponsUsedlist = await query("Select * From CouponsUsed where cid = '" +req.cid +"' and userid = '" +req.userid +"' and active_status = 1");
-                var couponusedcount = CouponsUsedlist.length;
 
-                if (totalamount >=minprice_limit) {            
-                  minprice_limit_status = true;
-                  if (couponusedcount < numberoftimes) {             
-                    var discount_amount = (totalamount / 100) * discount_percent;
-                    discount_amount = Math.round(discount_amount);                         
-                    if (discount_amount >= maxdiscount) {
-                      discount_amount = maxdiscount;
-                    }
-                    if (totalamount >= discount_amount) {
-                     
-                      totalamount = totalamount - discount_amount;
-                      coupon_discount_amount = discount_amount;
+
+            ///convenience charge algrorithm
+            if (constant.convenience_charge_status) {
+              if (totalamount < 30) {
+                product_cost_limit_status = false;
+                convenience_charge = constant.convenience_charge;
+              }else if(totalamount >= 30 && totalamount < 40 ) {
+                convenience_charge = constant.cart_demand_value - (delivery_charge + totalamount);
+  
+              }else if(totalamount >= 40 && totalamount < 50){
+                console.log(totalamount);
+                convenience_charge = constant.convenience_charge;
+              }else if(totalamount >= 50 && totalamount < 70){
+                convenience_charge = 0;
+              }else{
+                delivery_charge=0;
+              }
+            }
+              
+  
+              //offer coupon amount detection algorithm
+              if (req.cid) {
+                var couponlist = await query("Select * From Coupon where cid = '" +req.cid +"' and active_status = 1 and expiry_date >= CURDATE()" );
+            
+                if (couponlist.length != 0) {
+                  var maxdiscount = couponlist[0].maxdiscount;
+                  var numberoftimes = couponlist[0].numberoftimes;
+                  var discount_percent = couponlist[0].discount_percent;
+                  var minprice_limit = couponlist[0].minprice_limit
+                  var CouponsUsedlist = await query("Select * From CouponsUsed where cid = '" +req.cid +"' and userid = '" +req.userid +"' and active_status = 1");
+                  var couponusedcount = CouponsUsedlist.length;
+  
+                  if (totalamount >=minprice_limit) {                
+                    minprice_limit_status = true
+                    if (couponusedcount < numberoftimes) {                
+                      var discount_amount = (totalamount / 100) * discount_percent;
+                      discount_amount = Math.round(discount_amount);                            
+                      if (discount_amount >= maxdiscount) {
+                        discount_amount = maxdiscount;
+                      }
+  
+                      if (totalamount >= discount_amount) {                  
+                        totalamount = totalamount - discount_amount;
+                        coupon_discount_amount = discount_amount;
+                      }else{
+                        couponstatus = false;
+                        coupon__error_message = "coupon amount is too high";
+                      }
                     }else{
                       couponstatus = false;
-                      coupon__error_message = "coupon amount is too high";
+                      coupon__error_message = "coupon has been expired";
                     }
                   }else{
                     couponstatus = false;
-                    coupon__error_message = "coupon has been expired";
+                    coupon__error_message = "Product value should be "+ minprice_limit+" to apply this coupons " ;
                   }
                 }else{
                   couponstatus = false;
-                  coupon__error_message = "Product value should be "+ minprice_limit+" to apply this coupons " ;
+                  coupon__error_message = "Coupon is not available";
                 }
-              }else{
-                couponstatus = false;
-                coupon__error_message = "Coupon is not available";
               }
-            }      
-            
+            //  var gstcharge = (totalamount / 100) * gst;  // this code commanded due to gst percentage modifications 06/09/2019
+            //*this code is commaned due to business  23-09-2019
+            // var foodgstcharge = (totalamount / 100) * constant.food_gst;
+            // var total_commission_delivery_cost = total_commission_cost + delivery_charge;
+            // var food_commission_gst = (total_commission_delivery_cost / 100) * constant.food_commission_cost;
+            // var gstcharge = foodgstcharge + food_commission_gst;
+            // gstcharge = Math.round(gstcharge);
+            // var original_price = gstcharge+product_orginal_price+delivery_charge;
+            // var grandtotal = gstcharge+totalamount+delivery_charge;
+            //*this code is commaned due to business
+  
             var gstcharge = (totalamount / 100) * constant.gst;
             gstcharge = Math.round(gstcharge);
-            var original_price = gstcharge + product_orginal_price + delivery_charge;
-            var grandtotal = gstcharge + totalamount +delivery_charge;
-            //refund coupon amount detection algorithm           
+            var original_price = gstcharge + product_orginal_price + delivery_charge;//this is real amount of this orders
+            var grandtotal = gstcharge + totalamount + delivery_charge +convenience_charge;
+  
+            //refund coupon amount detection algorithm 
+            if (req.rcid) {
+              refundlist = await query(
+                "Select * From Refund_Coupon where rcid = '" +
+                  req.rcid +
+                  "' and active_status = 1"
+              );
+              if (refundlist.length !== 0) {          
+                // get refund amount
+                if (grandtotal >= refundlist[0].refundamount) {
+                  refund_coupon_adjustment = refundlist[0].refundamount;
+                } else if (grandtotal < refundlist[0].refundamount) {
+                  refund_balance = refundlist[0].refundamount - grandtotal;
+                  refund_coupon_adjustment = grandtotal;
+                }
+      
+                //get price
+                grandtotal = grandtotal - refundlist[0].refundamount;
+                //if grandtotal is lesser then 0 define grandtotal is 0
+                if (grandtotal < 0) grandtotal = 0;
+                calculationdetails.refundamount = refundlist[0].refundamount;
+              }else{
+                refundcouponstatus = false;
+                refundcoupon__error_message = "refundcoupon is not available";
+              }
+            }
+            
             calculationdetails.grandtotaltitle = "Grand Total";
             calculationdetails.grandtotal = grandtotal;
             calculationdetails.original_price = original_price;
@@ -1431,35 +1273,39 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             calculationdetails.coupon_discount_amount = coupon_discount_amount;
             calculationdetails.total_commission_cost = total_commission_cost;
             calculationdetails.couponstatus = false;
-            calculationdetails.refundcouponstatus = false;          
-
+            calculationdetails.refundcouponstatus = false;     
+            calculationdetails.convenience_charge = convenience_charge;
+            calculationdetails.product_cost_limit_status = product_cost_limit_status;
+     
+  
             if (req.cid && couponstatus) {
               calculationdetails.couponstatus = couponstatus;
               calculationdetails.cid = req.cid;
             }
-            // if (req.rcid && refundcouponstatus) {
-            // calculationdetails.refundcouponstatus = refundcouponstatus;
-            // }
+            if (req.rcid && refundcouponstatus) {
+              calculationdetails.refundcouponstatus = refundcouponstatus;
+            }
+  
             var cartdetails = [];
             var totalamountinfo = {};
             var couponinfo = {};
             var gstinfo = {};
             var deliverychargeinfo = {};
             var refundinfo = {};
+            var convenience_chargeinfo  = {};
             //var grandtotalinfo = {};
-
             totalamountinfo.title = "Total Amount";
             totalamountinfo.charges = product_orginal_price;
             totalamountinfo.status = true;
             cartdetails.push(totalamountinfo);
-
+  
             if (req.cid && couponstatus) {
               couponinfo.title = "Coupon adjustment (-)";
               couponinfo.charges = coupon_discount_amount;
               couponinfo.status = true;
               cartdetails.push(couponinfo);
             }
-
+  
             gstinfo.title = "GST ";
             gstinfo.charges = gstcharge;
             gstinfo.status = true;
@@ -1467,43 +1313,254 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               
             //this code is modified 23-09-2019
             if (delivery_charge !==0) {
+             
               deliverychargeinfo.title = "Handling charge";
               deliverychargeinfo.charges = delivery_charge;
               deliverychargeinfo.status = true;
               cartdetails.push(deliverychargeinfo);
-            }        
-
-            // if (req.rcid && refundcouponstatus) {
-            //   refundinfo.title = "Refund adjustment (-)";
-            //   refundinfo.charges = refund_coupon_adjustment;
-            //   refundinfo.status = true;
-            //   cartdetails.push(refundinfo);
-            // }
+            }       
+  
+                //this code is modified 23-09-2019
+            if (convenience_charge !==0) {           
+              convenience_chargeinfo.title = "convenience_charge";
+              convenience_chargeinfo.charges = convenience_charge;
+              convenience_chargeinfo.status = true;
+                  cartdetails.push(convenience_chargeinfo);
+                }
+  
+            if (req.rcid && refundcouponstatus) {
+              refundinfo.title = "Refund adjustment (-)";
+              refundinfo.charges = refund_coupon_adjustment;
+              refundinfo.status = true;
+              cartdetails.push(refundinfo);
+            }
+  
             // grandtotalinfo.title = "Grand total";
             // grandtotalinfo.grandtotal = grandtotal;
             // grandtotalinfo.status = true;
-            // cartdetails.push(grandtotalinfo);          
+            // cartdetails.push(grandtotalinfo);        
             res2[0].amountdetails = calculationdetails;
             res2[0].item = productdetails;
             res2[0].ordercount = ordercount;
             res2[0].cartdetails = cartdetails;
-            
+            res2[0].first_tunnel = userdetails[0].first_tunnel;
             let resobj = {
               success: true,
-              status: isAvaliableItem
-            };  
+              status: isAvaliableItem,
+              zoneId:userzoneid,
+              zoneName:zoneName,
+              distance:distance,
+            };
+      
+            if (!refundcouponstatus){
+              resobj.message = refundcoupon__error_message;
+              resobj.status = refundcouponstatus
+            }
         
             if (!couponstatus){
               resobj.message = coupon__error_message;
               resobj.status = couponstatus
-            }  
+            }
+  
+            if (!isAvaliableItem){
+              resobj.message = tempmessage.slice(0, -1) + " is not avaliable.Change quantity/product";
+              resobj.status = isAvaliableItem
+            }
+  
+            if (!isAvaliablekitchen){
+              resobj.message = makeit_error_message.slice(0, -1) + " kitchen service is not available! for your following address";
+              resobj.status = isAvaliablekitchen
+            }
+            if (!product_cost_limit_status){
+              resobj.message = "Sorry! your cart value is too low";
+              resobj.status = product_cost_limit_status
+            }
+  
             resobj.result = res2; 
             result(null, resobj);
-          // } 
+            //}
+            
+        } 
         }
       });
+    // }else if (userdetails[0].first_tunnel == 1 || userdetails[0].first_tunnel == 2) { 
+    //     console.log("tunnel flow");
+    //     for (let i = 0; i < orderitems.length; i++) {
+    //       const res1 = await query("Select pt.*,cu.cuisinename From Product pt left join Cuisine cu on cu.cuisineid = pt.cuisine where pt.productid = '" +orderitems[i].productid +"'  ");     
+        
+    //       res1[0].availablity = true;
+    //       ///get amount each product
+    //       amount = res1[0].price * orderitems[i].quantity;
+    //       ///get makeit earning each product
+    //       var order_makeit_earnings = res1[0].original_price * orderitems[i].quantity;
+    //       ///single product commission cost
+    //       var commission_cost = amount - order_makeit_earnings;
+    //       ///get total commission cost
+    //       total_commission_cost = total_commission_cost + commission_cost;
+    //       //console.log(total_commission_cost);
+    //       // console.log(res1[0].total_commission_cost);
+    //       res1[0].amount = amount;
+    //       res1[0].makeit_earnings = order_makeit_earnings;
+    //       res1[0].cartquantity = orderitems[i].quantity;
+    //       //total product cost
+    //       totalamount = totalamount + amount;
+    //       makeit_earnings = makeit_earnings + order_makeit_earnings;
+    //       productdetails.push(res1[0]);
+    //     }
 
-    }
+    //     var query1 =
+    //     "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.unservicable,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
+    //     req.userid +
+    //     " left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +
+    //     req.makeit_user_id;
+
+    //     // var query1 = 'call cart_makeituser_details(?,?)';
+
+    //     sql.query(query1,async function(err,res2) {
+    //       if (err) {
+    //         console.log("error: ", err);
+    //         result(err, null);
+    //       } else {      
+    //         res2[0].first_tunnel = 1;
+    //         res2[0].isAvaliablekitchen = isAvaliablekitchen;
+    //         for (let i = 0; i < res2.length; i++) {
+    //           if (res2[i].cuisines) {
+    //             res2[i].cuisines = JSON.parse(res2[i].cuisines);
+    //           }
+    //         }
+    //         product_orginal_price = totalamount;
+    //         //offer coupon amount detection algorithm
+    //         if (req.cid) {
+    //           var couponlist = await query("Select * From Coupon where cid = '" +req.cid +"' and active_status = 1 and expiry_date >= CURDATE()");
+    //           if (couponlist.length != 0) {       
+    //             var maxdiscount = couponlist[0].maxdiscount;
+    //             var numberoftimes = couponlist[0].numberoftimes;
+    //             var discount_percent = couponlist[0].discount_percent;
+    //             var minprice_limit = couponlist[0].minprice_limit
+    //             var CouponsUsedlist = await query("Select * From CouponsUsed where cid = '" +req.cid +"' and userid = '" +req.userid +"' and active_status = 1");
+    //             var couponusedcount = CouponsUsedlist.length;
+
+    //             if (totalamount >=minprice_limit) {            
+    //               minprice_limit_status = true;
+    //               if (couponusedcount < numberoftimes) {             
+    //                 var discount_amount = (totalamount / 100) * discount_percent;
+    //                 discount_amount = Math.round(discount_amount);                         
+    //                 if (discount_amount >= maxdiscount) {
+    //                   discount_amount = maxdiscount;
+    //                 }
+    //                 if (totalamount >= discount_amount) {
+                     
+    //                   totalamount = totalamount - discount_amount;
+    //                   coupon_discount_amount = discount_amount;
+    //                 }else{
+    //                   couponstatus = false;
+    //                   coupon__error_message = "coupon amount is too high";
+    //                 }
+    //               }else{
+    //                 couponstatus = false;
+    //                 coupon__error_message = "coupon has been expired";
+    //               }
+    //             }else{
+    //               couponstatus = false;
+    //               coupon__error_message = "Product value should be "+ minprice_limit+" to apply this coupons " ;
+    //             }
+    //           }else{
+    //             couponstatus = false;
+    //             coupon__error_message = "Coupon is not available";
+    //           }
+    //         }      
+            
+    //         var gstcharge = (totalamount / 100) * constant.gst;
+    //         gstcharge = Math.round(gstcharge);
+    //         var original_price = gstcharge + product_orginal_price + delivery_charge;
+    //         var grandtotal = gstcharge + totalamount +delivery_charge;
+    //         //refund coupon amount detection algorithm           
+    //         calculationdetails.grandtotaltitle = "Grand Total";
+    //         calculationdetails.grandtotal = grandtotal;
+    //         calculationdetails.original_price = original_price;
+    //         calculationdetails.refund_balance = refund_balance;
+    //         calculationdetails.gstcharge = gstcharge;
+    //         calculationdetails.delivery_charge = delivery_charge;
+    //         calculationdetails.refund_coupon_adjustment = refund_coupon_adjustment;
+    //         calculationdetails.product_orginal_price = product_orginal_price;
+    //         calculationdetails.makeit_earnings = makeit_earnings;
+    //         calculationdetails.totalamount = totalamount;
+    //         calculationdetails.coupon_discount_amount = coupon_discount_amount;
+    //         calculationdetails.total_commission_cost = total_commission_cost;
+    //         calculationdetails.couponstatus = false;
+    //         calculationdetails.refundcouponstatus = false;          
+
+    //         if (req.cid && couponstatus) {
+    //           calculationdetails.couponstatus = couponstatus;
+    //           calculationdetails.cid = req.cid;
+    //         }
+    //         // if (req.rcid && refundcouponstatus) {
+    //         // calculationdetails.refundcouponstatus = refundcouponstatus;
+    //         // }
+    //         var cartdetails = [];
+    //         var totalamountinfo = {};
+    //         var couponinfo = {};
+    //         var gstinfo = {};
+    //         var deliverychargeinfo = {};
+    //         var refundinfo = {};
+    //         //var grandtotalinfo = {};
+
+    //         totalamountinfo.title = "Total Amount";
+    //         totalamountinfo.charges = product_orginal_price;
+    //         totalamountinfo.status = true;
+    //         cartdetails.push(totalamountinfo);
+
+    //         if (req.cid && couponstatus) {
+    //           couponinfo.title = "Coupon adjustment (-)";
+    //           couponinfo.charges = coupon_discount_amount;
+    //           couponinfo.status = true;
+    //           cartdetails.push(couponinfo);
+    //         }
+
+    //         gstinfo.title = "GST ";
+    //         gstinfo.charges = gstcharge;
+    //         gstinfo.status = true;
+    //         cartdetails.push(gstinfo);
+              
+    //         //this code is modified 23-09-2019
+    //         if (delivery_charge !==0) {
+    //           deliverychargeinfo.title = "Handling charge";
+    //           deliverychargeinfo.charges = delivery_charge;
+    //           deliverychargeinfo.status = true;
+    //           cartdetails.push(deliverychargeinfo);
+    //         }        
+
+    //         // if (req.rcid && refundcouponstatus) {
+    //         //   refundinfo.title = "Refund adjustment (-)";
+    //         //   refundinfo.charges = refund_coupon_adjustment;
+    //         //   refundinfo.status = true;
+    //         //   cartdetails.push(refundinfo);
+    //         // }
+    //         // grandtotalinfo.title = "Grand total";
+    //         // grandtotalinfo.grandtotal = grandtotal;
+    //         // grandtotalinfo.status = true;
+    //         // cartdetails.push(grandtotalinfo);          
+    //         res2[0].amountdetails = calculationdetails;
+    //         res2[0].item = productdetails;
+    //         res2[0].ordercount = ordercount;
+    //         res2[0].cartdetails = cartdetails;
+            
+    //         let resobj = {
+    //           success: true,
+    //           status: isAvaliableItem
+    //         };  
+        
+    //         if (!couponstatus){
+    //           resobj.message = coupon__error_message;
+    //           resobj.status = couponstatus
+    //         }  
+    //         resobj.result = res2; 
+    //         result(null, resobj);
+    //       // } 
+    //     }
+    //     });
+
+    // }
   }else{
     let resobj = {
       success: true,

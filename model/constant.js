@@ -5,7 +5,7 @@ const calculate = {
   gst: 5, // percentage
   food_gst: 5, // percentage
   food_commission_cost: 18,
-  deliverycharge: 0, // cost
+  deliverycharge: 20, // cost made changes 10-jan-2020
   applink: "http://bit.ly/2ZcGL95",
   iosapplink: "https://apple.co/2lna3n9",
   refferalcontent:"Welcome to EAT. Click the link to download the EAT app from play store",
@@ -109,7 +109,9 @@ const calculate = {
     infinity_kitchen_page_limit:5,
     infinity_repeat_switch_loop:2,    
     infinity_first_collection_details_cid:24,
-
+    cart_demand_value:71, /// ruppes
+    convenience_charge:10,
+    convenience_charge_status:true
 }
 
 

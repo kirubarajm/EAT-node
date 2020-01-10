@@ -89,6 +89,7 @@ var Order = function(order) {
   this.cancel_status = order.cancel_status ||0;
   this.delivery_vendor=order.delivery_vendor ||0;
   this.cus_pincode = order.cus_pincode ||0;
+  this.convenience_charge = order.convenience_charge || 0;
 };
 
 
@@ -127,6 +128,7 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
             req.gst = amountdata.gstcharge;
             req.price = amountdata.grandtotal;
             req.makeit_earnings = amountdata.makeit_earnings;
+            req.convenience_charge = amountdata.convenience_charge;
             
            Order.OrderInsert(req, res3.result[0].item,false,false,async function(err,res){
             if (err) {
@@ -242,7 +244,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
               req.landmark = address_data[0].landmark;
               req.cus_pincode = address_data[0].pincode;
               req.coupon = req.cid
-              console.log(req.cus_pincode);
+              req.convenience_charge = amountdata.convenience_charge;
+
               if (req.payment_type == 0 || req.payment_type == 3) {
                 Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                   if (err) {
@@ -319,8 +322,10 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
       //Dunzo or moveit flow
       var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
       console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
+      console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].zone);
       console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
       console.log("xfactorValue-->",Math.round(xfactorValue));
+      console.log("get_orders_queue_based_on_hub[0].no_of_orders_count-->",get_orders_queue_based_on_hub[0].no_of_orders_count);
       var fValue= Math.round(xfactorValue);
       if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){      
     
@@ -366,6 +371,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                     req.landmark = address_data[0].landmark;
                     req.cus_pincode = address_data[0].pincode;
                     req.coupon = req.cid
+                    req.convenience_charge = amountdata.convenience_charge;
+
                     if (req.payment_type == 0) {
                         Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                           if (err) {
@@ -479,7 +486,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                 req.landmark = address_data[0].landmark;
                 req.cus_pincode = address_data[0].pincode;
                 req.coupon = req.cid
-               
+                req.convenience_charge = amountdata.convenience_charge;
+
                 if (req.payment_type == 0 ) {
                   Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                     if (err) {
@@ -753,6 +761,8 @@ Order.read_a_proceed_to_pay_xfactore = async function read_a_proceed_to_pay_xfac
                     req.flatno = address_data[0].flatno;
                     req.landmark = address_data[0].landmark;
                     req.coupon = req.cid
+                    req.convenience_charge = amountdata.convenience_charge;
+
                       if (req.payment_type == 0 || req.payment_type == 3) {
                         Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                           if (err) {
@@ -804,8 +814,7 @@ Order.read_a_proceed_to_pay_xfactore = async function read_a_proceed_to_pay_xfac
       result(null, resobj);
     }
     }else{
-  
-    
+ 
     let resobj = {
       success: true,
       status: false,
@@ -3934,7 +3943,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           let response = {
             success: true,
             status: true,
-            message: "Your order canceled successfully."
+            message: "Your order cancelled successfully."
           };
           ////Insert Order History////
           
