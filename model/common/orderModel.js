@@ -27,6 +27,7 @@ var Dunzo = require("../../model/webhooks/dunzoModel.js");
 var requestpromise = require('request-promise');
 var dunzoconst = require('../../model/dunzo_constant');
 var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTrackingModel');
+var sendsms =  require("../common/smsModel");
 
 
 
@@ -389,7 +390,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                           }
                         });
                         //ordercreatecashondelivery(req, res3.result[0].item);
-                    } else if (req.payment_type == 1) {
+                    }else if (req.payment_type == 1) {
                         Order.OrderOnline(req, res3.result[0].item,function(err,res){
                           if (err) {
                             result(err, null);
@@ -929,6 +930,9 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
        
         }
 
+        if (req.payment_type==0) {
+          sendsms.send_sms_makeit(orderid);
+        }
         let resobj = {
           success: true,
           status: true,
@@ -1186,7 +1190,7 @@ if(order_place.payment_status === 1){
               null,
               PushConstant.pageidMakeit_Order_Post
             );
-
+            sendsms.send_sms_makeit(order_place.orderid);
             let resobj = {
               success: true,
               status: true,
@@ -8223,4 +8227,6 @@ Order.update_moveit_lat_long= async function update_moveit_lat_long(req, result)
             }
           })
 };
+
+
 module.exports = Order;

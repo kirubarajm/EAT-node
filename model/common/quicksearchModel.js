@@ -833,7 +833,7 @@ const Package_tracking = new CronJob("0 0 7,0 * * * ", async function() {
 //Package_tracking.start();
 
 ///// KPI Product History CRON ///////////
-const kpidashboardproducthistory = new CronJob("0 */10 * * * *", async function(req, result) {
+const kpidashboardproducthistory = new CronJob("* */1 7-23 * * * ", async function(req, result) {
   var breatfastcycle    = constant.breatfastcycle;
   var lunchcycle        = constant.lunchcycle;
   var dinnercyclestart  = constant.dinnercycle;

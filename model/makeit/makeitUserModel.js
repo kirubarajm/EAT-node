@@ -1016,6 +1016,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var convenience_charge = 0;
   var first_tunnel_status = false;
   var product_cost_limit_status = true;
+  
  
   //  if (currenthour <= 12) {
   //    productquery = " breakfast";
@@ -1166,7 +1167,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                 convenience_charge = constant.cart_demand_value - (delivery_charge + totalamount);
   
               }else if(totalamount >= 40 && totalamount < 50){
-                console.log(totalamount);
+            
                 convenience_charge = constant.convenience_charge;
               }else if(totalamount >= 50 && totalamount < 70){
                 convenience_charge = 0;
@@ -1293,45 +1294,87 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             var deliverychargeinfo = {};
             var refundinfo = {};
             var convenience_chargeinfo  = {};
+            var other_charges_info = {};
+            var tax_charges_info = {};
+            var infodetails =[];
             //var grandtotalinfo = {};
             totalamountinfo.title = "Total Amount";
             totalamountinfo.charges = product_orginal_price;
             totalamountinfo.status = true;
+            totalamountinfo.infostatus = false;
+            totalamountinfo.color_code = "#ff444444";
+            totalamountinfo.infodetails = [];            
             cartdetails.push(totalamountinfo);
   
             if (req.cid && couponstatus) {
               couponinfo.title = "Coupon adjustment (-)";
               couponinfo.charges = coupon_discount_amount;
               couponinfo.status = true;
+              couponinfo.infostatus = false;
+              couponinfo.color_code_status = "#129612";
+              couponinfo.infodetails = [];
               cartdetails.push(couponinfo);
             }
   
-            gstinfo.title = "GST ";
+            gstinfo.title = "Taxes ";//gst modified taxes 13-jan-2020
             gstinfo.charges = gstcharge;
             gstinfo.status = true;
+            gstinfo.infostatus = false;
+            gstinfo.color_code = "#ff444444";
+            gstinfo.infodetails = [];
             cartdetails.push(gstinfo);
-              
-            //this code is modified 23-09-2019
-            if (delivery_charge !==0) {
+            
+           // tax_charges_info.gstcharge=gstcharge;
+            // //this code is modified 23-09-2019
+            // if (delivery_charge !==0) {
              
-              deliverychargeinfo.title = "Handling charge";
-              deliverychargeinfo.charges = delivery_charge;
+            //   deliverychargeinfo.title = "Handling charge";
+            //   deliverychargeinfo.charges = delivery_charge;
+            //   deliverychargeinfo.status = true;
+            //   cartdetails.push(deliverychargeinfo);
+            // }       
+  
+            //     //this code is modified 23-09-2019
+            // if (convenience_charge !==0) {           
+            //   convenience_chargeinfo.title = "convenience_charge";
+            //   convenience_chargeinfo.charges = convenience_charge;
+            //   convenience_chargeinfo.status = true;
+            //       cartdetails.push(convenience_chargeinfo);
+            // }
+  
+
+
+            //cart changes
+
+             //this code is modified 23-09-2019
+             if (delivery_charge !=0 || convenience_charge !=0) {             
+              deliverychargeinfo.title = "Other charges";
+              deliverychargeinfo.charges = delivery_charge + convenience_charge;
               deliverychargeinfo.status = true;
+              deliverychargeinfo.infostatus = true;
+              deliverychargeinfo.color_code = "#ff444444";
+              deliverychargeinfo.infodetails = [];
               cartdetails.push(deliverychargeinfo);
             }       
-  
-                //this code is modified 23-09-2019
-            if (convenience_charge !==0) {           
-              convenience_chargeinfo.title = "convenience_charge";
-              convenience_chargeinfo.charges = convenience_charge;
-              convenience_chargeinfo.status = true;
-                  cartdetails.push(convenience_chargeinfo);
-                }
-  
+            
+            if (delivery_charge) {            
+              other_charges_info.delivery_charge=delivery_charge;
+            }
+            
+            if (convenience_charge) {
+              other_charges_info.convenience_charge=convenience_charge;            
+            }
+           
+            if (other_charges_info.delivery_charge || other_charges_info.convenience_charge) {
+              deliverychargeinfo.infodetails.push(other_charges_info);
+            }
+           
             if (req.rcid && refundcouponstatus) {
               refundinfo.title = "Refund adjustment (-)";
               refundinfo.charges = refund_coupon_adjustment;
               refundinfo.status = true;
+              refundinfo.infostatus = false;
+              refundinfo.color_code = "#ff444444";
               cartdetails.push(refundinfo);
             }
   
@@ -1344,6 +1387,9 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             res2[0].ordercount = ordercount;
             res2[0].cartdetails = cartdetails;
             res2[0].first_tunnel = userdetails[0].first_tunnel;
+            // res2[0].other_charges_info = other_charges_info;
+            // res2[0].tax_charges_info=tax_charges_info;
+
             let resobj = {
               success: true,
               status: isAvaliableItem,
@@ -1352,12 +1398,12 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               distance:distance,
             };
       
-            if (!refundcouponstatus){
+            if(!refundcouponstatus){
               resobj.message = refundcoupon__error_message;
               resobj.status = refundcouponstatus
             }
         
-            if (!couponstatus){
+            if(!couponstatus){
               resobj.message = coupon__error_message;
               resobj.status = couponstatus
             }
