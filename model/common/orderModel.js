@@ -6317,7 +6317,7 @@ Order.real_orders_report = function real_orders_report(req, result) {
 
 //Daywise Virtual Makeit Earnings report
 Order.virtual_makeit_earnings = function virtual_makeit_earnings(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -6344,7 +6344,7 @@ Order.virtual_makeit_earnings = function virtual_makeit_earnings(req, result) {
 
 //Daywise Real Makeit Earnings report
 Order.real_makeit_earnings = function real_makeit_earnings(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -6645,7 +6645,7 @@ Order.orders_rating = function orders_rating(req, result) {
 
 //Makeit Earnings Virtual Kitchen Prepare After Cancel Report
 Order.virtual_after_cancel = function virtual_after_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -6672,7 +6672,7 @@ Order.virtual_after_cancel = function virtual_after_cancel(req, result) {
 
 //Makeit Earnings Real Kitchen Prepare After Cancel Report
 Order.real_after_cancel = function real_after_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o left join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o left join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -6699,7 +6699,7 @@ Order.real_after_cancel = function real_after_cancel(req, result) {
 
 //Makeit Earnings Virtual Kitchen Prepare Before Cancel Report
 Order.virtual_before_cancel = function virtual_before_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) THEN makeit_earnings ELSE 0 END) as BeforeCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) THEN makeit_earnings ELSE 0 END) as BeforeCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -6726,7 +6726,7 @@ Order.virtual_before_cancel = function virtual_before_cancel(req, result) {
 
 //Makeit Earnings Real Kitchen Prepare Before Cancel Report
 Order.real_before_cancel = function real_before_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) THEN makeit_earnings ELSE 0 END) as BeforeCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) THEN makeit_earnings ELSE 0 END) as BeforeCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -8214,4 +8214,91 @@ Order.update_moveit_lat_long= async function update_moveit_lat_long(req, result)
             }
           })
 };
+
+
+//////////Cancel order report follow up/////////////
+Order.cancelled_report_follow_up= function cancelled_report_follow_up(req, result) {
+  var query="Select ors.orderid,ors.created_at as ordertime,u.name, u.phoneno, ors.cancel_by, ors.cancel_reason,ors.cancel_time,ors.order_assigned_time as moveit_order_assignedtime, ors.moveit_reached_time, ors.moveit_pickup_time, ors.moveit_notification_time, ors.makeit_accept_time,ors.moveit_accept_time,ors.makeit_expected_preparing_time,ors.makeit_actual_preparing_time from Orders as ors join User as u on u.userid=ors.userid where ors.orderstatus=7 and Date(ors.created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
+//console.log("query-->",query);
+sql.query(query,function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      if (res.length !== 0) {
+        let resobj = {
+          success: true,
+          status:true,
+          result:res
+        };
+        result(null, resobj);
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status:false
+        };
+        result(null, resobj);
+      }
+    }
+  }
+);
+};
+
+//////////Cancel order report follow up/////////////
+Order.unclosed_orders= function unclosed_orders(req, result) {
+  var query="Select Date(ors.created_at),ors.orderstatus,ors.payment_type,ors.orderid, Time(ors.created_at) as ordertime ,ors.order_assigned_time as moveit_order_assignedtime, ors.moveit_reached_time, ors.moveit_pickup_time, ors.moveit_notification_time, ors.makeit_accept_time,ors.moveit_accept_time,ors.makeit_expected_preparing_time,ors.makeit_actual_preparing_time from Orders as ors where (ors.orderstatus<6 and ors.payment_status=1) or (ors.orderstatus<6 and ors.payment_status=0 and ors.payment_type=0 ) and Date(ors.created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
+//console.log("query-->",query);
+sql.query(query,function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      if (res.length !== 0) {
+        let resobj = {
+          success: true,
+          status:true,
+          result:res
+        };
+        result(null, resobj);
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status:false
+        };
+        result(null, resobj);
+      }
+    }
+  }
+);
+};
+
+//////////Cancel order report follow up/////////////
+Order.customerexperience= function customerexperience(req, result) {
+  var query="select orderid,date(ordertime) as date, CASE WHEN (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:45:00')) THEN  '5' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:45:00')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:47:50'))) THEN  '4'  WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:47:50')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:50:50'))) THEN  '3' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:50:50')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:55:00'))) THEN  '2' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:55:00')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('01:00:00'))) THEN  '1' WHEN (TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('01:00:00')) THEN  '0' END as user_experience, u.name, u.phoneno, Time(ors.created_at) as ordertime ,ors.order_assigned_time as moveit_order_assignedtime, ors.moveit_reached_time, ors.moveit_pickup_time, ors.moveit_notification_time, ors.makeit_accept_time,ors.moveit_accept_time,ors.makeit_expected_preparing_time,ors.makeit_actual_preparing_time,ors.moveit_actual_delivered_time from Orders  as ors join User as u on u.userid=ors.userid where moveit_actual_delivered_time IS NOT NULL and ordertime Is NOT NULL and orderstatus=6 and Date(ors.created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
+//console.log("query-->",query);
+sql.query(query,function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      if (res.length !== 0) {
+        let resobj = {
+          success: true,
+          status:true,
+          result:res
+        };
+        result(null, resobj);
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status:false
+        };
+        result(null, resobj);
+      }
+    }
+  }
+);
+};
+
+
 module.exports = Order;
