@@ -109,7 +109,7 @@ const calculate = {
     infinity_kitchen_page_limit:5,
     infinity_repeat_switch_loop:2,    
     infinity_first_collection_details_cid:24,
-    cart_demand_value:71, /// ruppes
+    cart_demand_value:70, /// ruppes
     convenience_charge:10,
     convenience_charge_status:true
 }

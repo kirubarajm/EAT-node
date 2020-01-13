@@ -19,7 +19,7 @@ SMS.send_sms_makeit =async function send_sms_makeit(orderid, result) {
     var phonenumber = '';
     var get_phone_number =await query("select mk.phoneno,mk.virtualkey,mh.phone_number from Orders ors join MakeitUser mk on mk.userid=ors.makeit_user_id join Makeit_hubs mh on mh.makeithub_id=mk.makeithub_id  where orderid="+orderid+" ");
     
-    if (get_phone_number[0].virtualkey=0) {
+    if (get_phone_number[0].virtualkey==0) {
       phonenumber= get_phone_number[0].phoneno;
     }else{
       phonenumber= get_phone_number[0].phone_number;

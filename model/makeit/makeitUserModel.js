@@ -1092,7 +1092,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
       }
       // console.log(productdetails);
       // This query is to get the makeit details and cuisine details
-      var query1 ="Select mk.userid as makeituserid,mk.zone as makeitzone,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.unservicable,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
+      var query1 ="Select mk.makeit_type,mk.userid as makeituserid,mk.zone as makeitzone,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.regionid,mk.unservicable,re.regionname,ly.localityname,mk.img1 as makeitimg,fa.favid,IF(fa.favid,'1','0') as isfav,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename,'cid',cm.cid)) AS cuisines from MakeitUser mk left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid=" +
     req.userid +
     " left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid join Cuisine_makeit cm on cm.makeit_userid=mk.userid  join Cuisine cu on cu.cuisineid=cm.cuisineid where mk.userid =" +
     req.makeit_user_id;
@@ -1232,7 +1232,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             var gstcharge = (totalamount / 100) * constant.gst;
             gstcharge = Math.round(gstcharge);
             var original_price = gstcharge + product_orginal_price + delivery_charge;//this is real amount of this orders
-            var grandtotal = gstcharge + totalamount + delivery_charge +convenience_charge;
+            var grandtotal = gstcharge + totalamount + delivery_charge + convenience_charge;
   
             //refund coupon amount detection algorithm 
             if (req.rcid) {
@@ -1295,8 +1295,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             var refundinfo = {};
             var convenience_chargeinfo  = {};
             var other_charges_info = {};
-            var tax_charges_info = {};
-            var infodetails =[];
+            var convenience_other_charges_info = {};;
             //var grandtotalinfo = {};
             totalamountinfo.title = "Total Amount";
             totalamountinfo.charges = product_orginal_price;
@@ -1358,17 +1357,22 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             }       
             
             if (delivery_charge) {            
-              other_charges_info.delivery_charge=delivery_charge;
+              other_charges_info.name="Delivery charge";
+              other_charges_info.price=delivery_charge;
+              deliverychargeinfo.infodetails.push(other_charges_info);
             }
             
             if (convenience_charge) {
-              other_charges_info.convenience_charge=convenience_charge;            
+              convenience_other_charges_info.name="Convenience charge";
+              convenience_other_charges_info.price=convenience_charge;      
+              deliverychargeinfo.infodetails.push(convenience_other_charges_info);    
             }
            
-            if (other_charges_info.delivery_charge || other_charges_info.convenience_charge) {
-              deliverychargeinfo.infodetails.push(other_charges_info);
-            }
+            // if (other_charges_info.delivery_charge || other_charges_info.convenience_charge) {
+            //   deliverychargeinfo.infodetails.push(other_charges_info);
+            // }
            
+
             if (req.rcid && refundcouponstatus) {
               refundinfo.title = "Refund adjustment (-)";
               refundinfo.charges = refund_coupon_adjustment;
