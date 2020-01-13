@@ -8214,4 +8214,80 @@ Order.update_moveit_lat_long= async function update_moveit_lat_long(req, result)
             }
           })
 };
+
+///Moveit Succession Report////
+Order.moveit_daywise_report= async function moveit_daywise_report(req, result) {  
+  //console.log("req ======>",req);
+  var moveitorders = await Order.moveit_order_count(req);
+  var moveitlog = await Order.moveit_logtime(req);
+  console.log("getzone ======>",moveitlog);
+
+  result(moveitlog);
+ 
+};
+
+////Moveit Order Count///////
+Order.moveit_order_count = async function moveit_order_count(req) {
+  var ordercountquery = "select date(created_at) as date,moveit_user_id,count(orderid) as order_count, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' THEN orderid END) as breakfast, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' THEN orderid END) as lunch, COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN orderid END) as dinner from Orders where date(created_at) between '"+req.fromdate+"' and '"+req.todate+"' and orderstatus=6 and moveit_user_id!=0 group by moveit_user_id,date(created_at) order by date(created_at)";
+  var ordercount = await query(ordercountquery);
+  return ordercount;
+};
+
+////Moveit Logtime///////////
+Order.moveit_logtime = async function moveit_logtime(req) {
+  ///Get Moveit Log Dates///////
+  var moveitlogusersdatesquery = "select date(created_at) as log_date from Moveit_Timelog where date(created_at) between '"+req.fromdate+"' and '"+req.todate+"' group by date(created_at) order by date(created_at)";
+  var moveitlogusersdates = await query(moveitlogusersdatesquery);
+  ///Get Moveit Users list///////
+  var moveitlogusersquery = "select moveit_userid from Moveit_Timelog where date(created_at) between '"+req.fromdate+"' and '"+req.todate+"' group by moveit_userid order by moveit_userid";
+  var moveitlogusers = await query(moveitlogusersquery);
+  ///Get Moveit Logs///////
+  var moveitlogquery = "select date(logtime) as log_date,time(logtime) as logtime,type,moveit_userid from Moveit_Timelog where date(created_at) between '"+req.fromdate+"' and '"+req.todate+"' order by date(created_at),moveit_userid";
+  var moveitlog = await query(moveitlogquery);
+
+  var moveitavg = [];
+  for (let i = 0; i < moveitlogusersdates.length; i++) {
+    for (let j = 0; j < moveitlogusers.length; j++) {
+      for (let k = 0; k < moveitlog.length; k++) {
+        if(moveitlogusersdates[i].log_date == moveitlog[k].log_date){          
+          if(moveitlogusers[j].moveit_userid == moveitlog[k].moveit_userid){            
+            if(moveitlog[k].type==1){
+              starttime = moveitlog[k].logtime;
+            }else if(moveitlog[k].type==0){
+              endtime = moveitlog[k].logtime;
+            }
+
+            if(starttime !='' && endtime !=''){
+              var avgtimediff = moment.utc(moment(endtime, "HH:mm:ss").diff(moment(starttime, "HH:mm:ss"))).format("HH:mm:ss");
+              console.log("starttime ===========>",starttime);
+              console.log("endtime ===========>", endtime);
+              console.log("avgtimediff ===========>", avgtimediff);
+              
+              var avgtimediffsec = avgtimediff.split(':'); 
+              let seconds = (+avgtimediffsec[0]) * 60 * 60 + (+avgtimediffsec[1]) * 60 + (+avgtimediffsec[2]); 
+              console.log("seconds ===========>", seconds);
+              var t1 = moment(avgtimediff,"HH:mm:ss").add(seconds,'s').format("HH:mm:ss");
+              console.log("t1 ===========>", t1);
+              
+              starttime='';
+              endtime ='';
+            }
+            //console.log("starttime ===========>",starttime,"moveit_userid",moveitlog[k].moveit_userid);
+            //console.log("endtime ===========>", endtime,"moveit_userid",moveitlog[k].moveit_userid);
+          }else{
+            moveitavg.push({"date":moveitlogusersdates[i].log_date,"moveit_userid":moveitlog[k].moveit_userid,"moveit_time":avgtime});
+            var avgtime    = '';
+            var starttime  = '';
+            var endtime    = '';
+          }
+
+          
+        }        
+      }      
+    }    
+  }
+  
+  return moveitavg;
+};
+
 module.exports = Order;

@@ -16,6 +16,7 @@ var Dunzo = require("../../model/webhooks/dunzoModel.js");
 var dunzoconst = require('../../model/dunzo_constant');
 var PackageStockInventory = require('../makeit/packageStockModel');
 var kpiproducthistory = require("../makeit/kpiproducthistoryModel.js");
+var Moveituser = require("../moveit/moveitUserModel.js");
 
 
 
@@ -359,6 +360,12 @@ const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
           ""
       );
 
+      /////////Insert Moveit-Time log/////////////////
+      var req={};
+      req.type  = 0;
+      req.moveit_userid = res[i].userid;
+      await Moveituser.create_createMoveitTimelog(req);
+
       //  var today = moment();
       //  var ordertime = moment(res[i].ordertime);
       //  var diffMs  = (today - ordertime);
@@ -368,7 +375,7 @@ const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
     }
   }
 });
-//job1moveitlogout.start();
+job1moveitlogout.start();
 
 // const order_auto_assign = new CronJob("1 7-23 * * * ", async function() {
 //   console.log("order_auto_assign");
@@ -833,7 +840,8 @@ const Package_tracking = new CronJob("0 0 7,0 * * * ", async function() {
 //Package_tracking.start();
 
 ///// KPI Product History CRON ///////////
-const kpidashboardproducthistory = new CronJob("0 */10 * * * *", async function(req, result) {
+const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async function(req, result) {
+  console.log("run cron kpidashboardproducthistory");
   var breatfastcycle    = constant.breatfastcycle;
   var lunchcycle        = constant.lunchcycle;
   var dinnercyclestart  = constant.dinnercycle;
@@ -865,10 +873,6 @@ const kpidashboardproducthistory = new CronJob("0 */10 * * * *", async function(
     }
   }
 });
-var currentday  = moment().format("YYYY-MM-DD HH:mm:ss");
-var currenthr   = moment(currentday).format("HH");
-if(currenthr >= 8 && currenthr <= 23){
- // kpidashboardproducthistory.start();
-}
+//kpidashboardproducthistory.start();
 
 module.exports = QuickSearch;
