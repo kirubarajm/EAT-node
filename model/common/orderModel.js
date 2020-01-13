@@ -27,6 +27,7 @@ var Dunzo = require("../../model/webhooks/dunzoModel.js");
 var requestpromise = require('request-promise');
 var dunzoconst = require('../../model/dunzo_constant');
 var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTrackingModel');
+var sendsms =  require("../common/smsModel");
 
 
 
@@ -920,6 +921,9 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
        
         }
 
+        if (req.payment_type==0) {
+          sendsms.send_sms_makeit(orderid);
+        }
         let resobj = {
           success: true,
           status: true,
@@ -1177,7 +1181,7 @@ if(order_place.payment_status === 1){
               null,
               PushConstant.pageidMakeit_Order_Post
             );
-
+            sendsms.send_sms_makeit(order_place.orderid);
             let resobj = {
               success: true,
               status: true,
@@ -3934,7 +3938,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           let response = {
             success: true,
             status: true,
-            message: "Your order canceled successfully."
+            message: "Your order cancelled successfully."
           };
           ////Insert Order History////
           
