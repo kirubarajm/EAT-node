@@ -4670,11 +4670,11 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
             PushConstant.Pageid_eat_order_cancel
           );
 
-          await Notification.orderMakeItPushNotification(
-            req.orderid,
-            null,
-            PushConstant.pageidMakeit_Order_Cancel
-          );
+          // await Notification.orderMakeItPushNotification(
+          //   req.orderid,
+          //   null,
+          //   PushConstant.pageidMakeit_Order_Cancel
+          // );
           
           if (orderdetails[0].delivery_vendor=0) {
             if(orderdetails[0]&&orderdetails[0].moveit_user_id){
