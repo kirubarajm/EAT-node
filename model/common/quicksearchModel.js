@@ -833,7 +833,7 @@ const Package_tracking = new CronJob("0 0 7,0 * * * ", async function() {
 //Package_tracking.start();
 
 ///// KPI Product History CRON ///////////
-const kpidashboardproducthistory = new CronJob("0 */10 * * * *", async function(req, result) {
+const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async function(req, result) {
   var breatfastcycle    = constant.breatfastcycle;
   var lunchcycle        = constant.lunchcycle;
   var dinnercyclestart  = constant.dinnercycle;
@@ -865,10 +865,6 @@ const kpidashboardproducthistory = new CronJob("0 */10 * * * *", async function(
     }
   }
 });
-var currentday  = moment().format("YYYY-MM-DD HH:mm:ss");
-var currenthr   = moment(currentday).format("HH");
-if(currenthr >= 8 && currenthr <= 23){
- // kpidashboardproducthistory.start();
-}
+kpidashboardproducthistory.start();
 
 module.exports = QuickSearch;
