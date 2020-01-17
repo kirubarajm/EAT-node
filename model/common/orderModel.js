@@ -6614,9 +6614,17 @@ Order.orders_rating = function orders_rating(req, result) {
   var page = req.page || 1;
   var date = req.date;
   var startlimit = (page - 1) * pagelimt;
-  var ratingquery="Select * from Order_rating"
+  var ratingquery="Select * from Order_rating orr"
+  var searchquery = "(orderid LIKE  '%" + req.search + "%')";
+  
   if(date) ratingquery=ratingquery+" where Date(created_at) = "+date;
-  var limtquery=ratingquery+" order by orid desc limit "+startlimit+"," +pagelimt;
+
+  if(req.search){
+    if(ratingquery.toLowerCase().includes('where')) ratingquery = ratingquery + " and "+searchquery
+    else ratingquery = ratingquery + " where "+searchquery
+  }
+
+  var limtquery=ratingquery+" order by created_at desc limit "+startlimit+"," +pagelimt;
   sql.query(limtquery,async function(err, res) {
       if (err) {
         result(err, null);

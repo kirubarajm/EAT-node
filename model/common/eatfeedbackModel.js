@@ -74,4 +74,36 @@ Eatfeedback.getAllfeedback = function getAllfeedback(result) {
   );
 };
 
+Eatfeedback.getAllfeedbackWithFilter = function getAllfeedbackWithFilter(req,result) {
+  var limit = 20;
+  var page = req.page || 1;
+  var startlimit = (page - 1) * limit;
+  var searchquery = "(us.name LIKE  '%" + req.search + "%')";
+  var query ="Select ef.fid,ef.rating,ef.content,ef.userid,ef.created_at,us.name,us.userid,us.phoneno from Eat_Feedback ef join User us on ef.userid=us.userid";
+  if(req.search){
+    query = query + " where "+searchquery;
+  }
+
+  query = query + " order by created_at DESC";
+
+  var limitquery = query +" limit " +startlimit +"," +limit;
+  
+  sql.query(query+";"+limitquery,
+    function(err, res) {
+      if (err) {
+        result(null, err);
+      } else {
+        let resobj = {
+          success: true,
+          status:true,
+          page_limit:limit,
+          totalpagecount:res[0].length,
+          result: res[1]
+        };
+        result(null, resobj);
+      }
+    }
+  );
+};
+
 module.exports = Eatfeedback;

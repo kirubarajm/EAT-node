@@ -116,9 +116,7 @@ QueryQuestions.get_user_list_by_type = function get_user_list_by_type(type, resu
     var query =  "Select us.name,us.email,us.phoneno,us.userid,SUM(qqs.admin_read = 0 or (qqa.admin_read = 0 and qqa.adminid=0)) as count ,(SELECT substring_index(GROUP_CONCAT(DISTINCT CONCAT(ors.orderid)ORDER BY ors.orderid desc SEPARATOR ','), ',', 5) as last_orderids from Orders ors WHERE ors.userid = qqs.userid) AS last_orderids from Query_questions AS qqs left JOIN User AS us ON qqs.userid= us.userid left JOIN Query_answers AS qqa ON qqa.qid = qqs.qid where qqs.type='"+type+"'";
   }
  
-    query = query + "group by qqs.userid ORDER BY count desc,qqs.created_at desc,qqs.admin_read";
-
-  console.log(query);
+  query = query + "group by qqs.userid ORDER BY count desc,qqs.created_at desc,qqs.admin_read";
 
   sql.query(query,async function(err, res) {
     if (err) {
@@ -128,7 +126,67 @@ QueryQuestions.get_user_list_by_type = function get_user_list_by_type(type, resu
       let resobj = {
         success: true,
         status:true,
-        result: res}
+        result: res
+      }
+      result(null, resobj);
+    }
+  });
+}else{
+  let resobj = {
+    success: true,
+    status:false,
+    message:"Sorry there is no user type is exist!"
+  }
+  result(null, resobj);
+}
+}
+
+
+QueryQuestions.get_user_list_by_type_filter = function get_user_list_by_type_filter(req, result) {
+ 
+  var limit = 20;
+  var page =  req.page || 1;
+  var startlimit = (page - 1) * limit;
+  var type =req.type;
+  if (type < 5) {
+ var type  = parseInt(type)
+//var searchquery = "(mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE  '%" + req.search + "%' or mk.userid LIKE  '%" + req.search + "%')";
+  if (type === 1) {
+   var query =  "Select  mk.name, mk.email, mk.phoneno, mk.brandname,qqs.userid,SUM(qqs.admin_read = 0 or (qqa.admin_read = 0 and qqa.adminid=0)) as count from Query_questions AS qqs left JOIN MakeitUser AS mk ON qqs.userid = mk.userid left JOIN Query_answers AS qqa ON qqa.qid = qqs.qid where qqs.type='"+type+"' ";
+   if(req.search){
+    query = query + " and (mk.name LIKE  '%" + req.search + "%' or mk.brandname LIKE '%" + req.search +"%' or mk.phoneno LIKE '%" + req.search + "%')";
+   }
+  } else if (type === 2) {
+    var query =  "Select mu.name,mu.email,mu.phoneno,qqs.userid,SUM(qqs.admin_read = 0 or (qqa.admin_read = 0 and qqa.adminid=0)) as count from Query_questions AS qqs left JOIN MoveitUser AS mu ON qqs.userid = mu.userid left JOIN Query_answers AS qqa ON qqa.qid = qqs.qid where qqs.type ='"+type+"' ";
+    if(req.search){
+      query = query + " and (mu.name LIKE  '%" + req.search + "%' or mu.phoneno LIKE '%" + req.search + "%')";
+    }
+  }else if (type === 3) {
+    var query =  "Select se.name,se.email,se.phoneno,se.id,SUM(qqs.admin_read = 0) as count from Query_questions AS qqs left JOIN Sales_QA_employees AS se ON qqs.userid = se.id where qqs.type ='"+type+"' ";
+  }else if (type === 4) {
+    var query =  "Select us.name,us.email,us.phoneno,us.userid,SUM(qqs.admin_read = 0 or (qqa.admin_read = 0 and qqa.adminid=0)) as count ,(SELECT substring_index(GROUP_CONCAT(DISTINCT CONCAT(ors.orderid)ORDER BY ors.orderid desc SEPARATOR ','), ',', 5) as last_orderids from Orders ors WHERE ors.userid = qqs.userid) AS last_orderids from Query_questions AS qqs left JOIN User AS us ON qqs.userid= us.userid left JOIN Query_answers AS qqa ON qqa.qid = qqs.qid where qqs.type='"+type+"'";
+    if(req.search){
+      query = query + " and (us.name LIKE  '%" + req.search + "%' or us.phoneno LIKE '%" + req.search + "%')";
+    }
+  }
+ 
+  query = query + "group by qqs.userid ORDER BY count desc,qqs.created_at desc,qqs.admin_read";
+
+  var limitquery = query +" limit " +startlimit +"," +limit;
+  //console.log(limitquery);
+
+  sql.query(query+";"+limitquery,async function(err, res) {
+    if (err) {
+      //console.log("error: ", err);
+      result(err, null);
+    } else {
+      let resobj = {
+        success: true,
+        status:true,
+        page_limit:limit,
+        totalpagecount:res[0].length,
+        result: res[1]
+      }
       result(null, resobj);
     }
   });

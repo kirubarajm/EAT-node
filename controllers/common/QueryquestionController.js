@@ -75,8 +75,16 @@ exports.get_user_list_by_type = function(req, res) {
   });
 };
 
+exports.get_user_list_by_type_filter = function(req, res) {
+  //console.log(req.body);
+  QueryQuestions.get_user_list_by_type_filter(req.body, function(err, faq) {
+    if (err) res.send(err);
+    res.json(faq);
+  });
+};
+
 exports.get_user_by_type = function(req, res) {
-  console.log(req.body);
+  //console.log(req.body);
   QueryQuestions.get_user_by_type(req.body, function(err, faq) {
     if (err) res.send(err);
     res.json(faq);

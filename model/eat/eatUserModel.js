@@ -177,36 +177,32 @@ Eatuser.getAllVirtualUser = function getAllVirtualUser(req, result) {
   if (req.virtualkey !== "all" && req.search) {
     query =
       query +
-      " and (phoneno LIKE  '%" +
-      req.search +
-      "%' OR email LIKE  '%" +
+      " and (name LIKE  '%" +
       req.search +
       "%' OR phoneno LIKE  '%" +
       req.search +
       "%' OR userid LIKE  '%" +
       req.search +
-      "%' or name LIKE  '%" +
+      "%' or email LIKE  '%" +
       req.search +
-      "% ') ";
+      "%') ";
   } else if (req.search) {
     query =
       query +
-      " where (phoneno LIKE  '%" +
-      req.search +
-      "%' OR email LIKE  '%" +
+      " where (name LIKE  '%" +
       req.search +
       "%' OR phoneno LIKE  '%" +
       req.search +
       "%' OR userid LIKE  '%" +
       req.search +
-      "%' or name LIKE  '%" +
+      "%' or email LIKE  '%" +
       req.search +
-      "% ' )";
+      "%' )";
   }
 
   var limitquery =
     query + " order by userid desc limit " + startlimit + "," + userlimit + " ";
-
+  //console.log(limitquery);
   sql.query(limitquery, function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -220,6 +216,7 @@ Eatuser.getAllVirtualUser = function getAllVirtualUser(req, result) {
         let sucobj = true;
         let resobj = {
           success: sucobj,
+          page_limt:userlimit,
           totalcount: totalcount,
           result: res
         };

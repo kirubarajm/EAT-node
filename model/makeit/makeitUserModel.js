@@ -887,25 +887,39 @@ Makeituser.get_admin_list_all_makeitusers = function(req, result) {
 };
 
 Makeituser.admin_get_unapproved_makeitlist = function(req, result) {
+  var limit = 20;
+  var page =  req.page || 1;
+  var startlimit = (page - 1) * limit;
+
   var query = "select * from MakeitUser where ka_status=1";
   var searchquery =
     " and (name LIKE  '%" +
     req.search +
-    "%' OR us.brandname LIKE '%" +
+    "%' OR brandname LIKE '%" +
+    req.search +
+    "%' OR phoneno LIKE '%" +
     req.search +
     "%')";
   if (req.search) {
     query = query + searchquery;
   }
-  console.log(query);
-  sql.query(query, function(err, res) {
+
+  if (req.ktype==0 || req.ktype==1) {
+    query = query + " and virtualkey = "+req.ktype;
+  }
+
+  var limitquery = query +" order by created_at asc limit " +startlimit +"," +limit;
+  //console.log(limitquery);
+  sql.query(query+";"+limitquery, function(err, res) {
     if (err) {
       result(err, null);
     } else {
       let resobj = {
         success: true,
         status: true,
-        result: res
+        page_limit:limit,
+        totalpagecount:res[0].length,
+        result: res[1]
       };
 
       result(null, resobj);

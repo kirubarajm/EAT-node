@@ -11,6 +11,15 @@ exports.list_all_feedback = function(req, res) {
   });
 };
 
+exports.list_all_feedback_filter = function(req, res) {
+  Eatfeedback.getAllfeedbackWithFilter(req.body,function(err, faq) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", faq);
+    res.send(faq);
+  });
+};
+
 exports.list_all_feedbackbytype = function(req, res) {
   Eatfeedback.getfeedbackByType(req.params.id, function(err, faq) {
     if (err) res.send(err);

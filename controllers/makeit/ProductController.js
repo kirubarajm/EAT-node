@@ -188,19 +188,15 @@ exports.edit_product_by_makeit_userid = function(req, res) {
 
 exports.admin_unapproval_approve_list = function(req, res) {
   Product.admin_list_all__unapproval_product(req.body, function(err, product) {
-    console.log("controller");
     if (err) res.send(err);
-    console.log("res", product);
-    res.send(product);
+    else res.send(product);
   });
 };
 
 exports.list_all_product_makeit_userid = function(req, res) {
   Product.getAllProductbymakeituserid(req.params, function(err, product) {
-    console.log("controller");
     if (err) res.send(err);
-    console.log("res", product);
-    res.send(product);
+    else res.send(product);
   });
 };
 
@@ -209,7 +205,6 @@ exports.live_product_status = function(req, res) {
   //console.log(req.params);
   Product.getliveProductstatus(req.params, function(err, product) {
     if (err) res.send(err);
-    //console.log("res", product);
     res.send(product);
   });
 };

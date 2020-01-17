@@ -216,7 +216,7 @@ exports.admin_list_all_badges = function(req, res) {
 };
 
 exports.admin_makeit_unapproved_list = function(req, res) {
-  console.log(req.body);
+ // console.log(req.body);
   Makeituser.admin_get_unapproved_makeitlist(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);

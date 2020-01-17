@@ -76,13 +76,14 @@ app.route("/admin/queryreplies/:qid").get(routesVersioning({"1.0.0":queryanswer.
 app.route("/admin/queryanswer").post(routesVersioning({"1.0.0":queryanswer.create_a_answer}));
 app.route("/admin/queryread").put(routesVersioning({"1.0.0":queryquestion.update_read_query_by_admin}));
 app.route("/admin/query/userlist/:type").get(routesVersioning({"1.0.0":queryquestion.get_user_list_by_type}));
+app.route("/admin/query/userlist").post(routesVersioning({"1.0.0":queryquestion.get_user_list_by_type_filter}));
 app.route("/admin/orderpickupstatus").put(routesVersioning({"1.0.0":orders.order_pickup_status}));
 app.route("/admin/qualitychecklist").post(routesVersioning({"1.0.0":moveituser.moveit_quality_checklist}));
 app.route("/admin/addresslist").get(routesVersioning({"1.0.0":eatuseraddress.get_a_admin_address}));
 app.route("/admin/faq").get(routesVersioning({"1.0.0":faq.list_all_faq})).post(routesVersioning({"1.0.0":faq.create_a_faq}));
 app.route("/admin/faq/:id").get(routesVersioning({"1.0.0":faq.read_a_faq})).put(routesVersioning({"1.0.0":faq.update_a_faq})).delete(routesVersioning({"1.0.0":faq.delete_a_faq}));
 app.route("/admin/faqs/:id").get(routesVersioning({"1.0.0":faq.list_all_faqbytype}));
-app.route("/admin/feedback").get(routesVersioning({"1.0.0":feedback.list_all_feedback}));
+app.route("/admin/feedback").get(routesVersioning({"1.0.0":feedback.list_all_feedback})).post(routesVersioning({"1.0.0":feedback.list_all_feedback_filter}));
 app.route("/admin/productdelete").put(routesVersioning({"1.0.0":product.delete_status_product}));
 app.route("/admin/product/approvestatus").put(routesVersioning({"1.0.0":product.approve_status_product}));
 app.route("/admin/product/unapprove").post(routesVersioning({"1.0.0":product.admin_unapproval_approve_list}));
@@ -92,7 +93,7 @@ app.route("/admin/menuitem/:itemid").delete(routesVersioning({"1.0.0":menuitem.d
 app.route("/admin/menuitem/approve").put(routesVersioning({"1.0.0":menuitem.approve_status_menuitem}));
 app.route("/admin/makeit/documentstore").post(routesVersioning({"1.0.0":makeituser.makeit_document_store}));
 app.route("/admin/makeit/approved").put(routesVersioning({"1.0.0":salesuser.admin_makeit_approved}));
-app.route("/admin/refundlist").get(routesVersioning({"1.0.0":refundOnline.get_all_refund_list}));
+app.route("/admin/refundlist").get(routesVersioning({"1.0.0":refundOnline.get_all_refund_list})).post(routesVersioning({"1.0.0":refundOnline.get_all_refund_list_filter}));
 app.route("/admin/order/cancel").put(routesVersioning({"1.0.0":orders.admin_order_cancel}));
 app.route("/admin/order/refundcreate").put(routesVersioning({"1.0.0":orders.eat_order_item_missing}));
 app.route("/admin/dashboard").get(routesVersioning({"1.0.0":admindashboard.get_all_dashboard_count}));
