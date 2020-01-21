@@ -1167,7 +1167,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
                 delivery_charge=0;
               }else if(totalamount >= 30 && totalamount < 40 ) {
                 convenience_charge = constant.cart_demand_value - (delivery_charge + totalamount);
-  
+            
               }else if(totalamount >= 40 && totalamount < 50){
             
                 convenience_charge = 10;
@@ -1237,13 +1237,13 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               var othercharges = delivery_charge + convenience_charge ;
               var home_gst= (othercharges * constant.home_gst)/100;
         
-              console.log(res2[0].makeit_type);
+       
               if (res2[0].makeit_type !=0) {
                 var cater_gst = (totalamount / 100) * constant.gst;
                 var gstcharge= Math.round(home_gst + cater_gst);
-                console.log("home_gst + cater_gst",gstcharge);
+             
               }else{
-                console.log("home_gst",home_gst);
+           
                 var gstcharge=Math.round(home_gst);
                 
               }
@@ -1321,11 +1321,15 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             deliverychargeinfo.low_cost_status=false//show low cost 30
             deliverychargeinfo.default_cost_status = false;//default cost 30
             deliverychargeinfo.infostatus = true;
+            deliverychargeinfo.infodetails = [];
             var refundinfo = {};
             var convenience_chargeinfo  = {};
             var other_charges_info = {};
             var convenience_other_charges_info = {};;
             //var grandtotalinfo = {};
+
+
+
             totalamountinfo.title = "Total Amount";
             totalamountinfo.charges = product_orginal_price;
             totalamountinfo.status = true;
@@ -1339,11 +1343,11 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             cartdetails.push(totalamountinfo);
   
             if (req.cid && couponstatus) {
-              couponinfo.title = "Coupon adjustment (-)";
+              couponinfo.title = "Discount (-)";
               couponinfo.charges = coupon_discount_amount;
               couponinfo.status = true;
               couponinfo.infostatus = false;
-              couponinfo.color_code_status = "#129612";
+              couponinfo.color_code = "#129612";
               couponinfo.low_cost_status = false;
               couponinfo.low_cost_note = "No delivery charges for order values of more than Rs.70";
               couponinfo.default_cost=constant.convenience_charge;
@@ -1390,26 +1394,33 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             //cart changes
 
              //this code is modified 23-09-2019
-             if (product_orginal_price > constant.minimum_cart_value) {             
-              deliverychargeinfo.title = "Other charges";
-              deliverychargeinfo.charges = delivery_charge + convenience_charge;
-              deliverychargeinfo.status = true;
-              deliverychargeinfo.infostatus = true;
-              deliverychargeinfo.color_code = "#ff444444";
+             if (product_orginal_price >= constant.minimum_cart_value) {             
+               deliverychargeinfo.title = "Other charges";
+               deliverychargeinfo.charges = delivery_charge + convenience_charge;
+               deliverychargeinfo.status = true;
+               deliverychargeinfo.infostatus = true;
+               deliverychargeinfo.color_code = "#ff444444";
+
               if (product_orginal_price < constant.cart_demand_value) {
                 deliverychargeinfo.low_cost_status = true;//status showing message
               }
+
+
               deliverychargeinfo.low_cost_note = "No delivery charges for order values of more than Rs.70";
               if (product_orginal_price > constant.cart_demand_value) {
                 deliverychargeinfo.default_cost_status = true;
                 deliverychargeinfo.infostatus = false;
               }
+
               deliverychargeinfo.default_cost=constant.convenience_charge;
-              deliverychargeinfo.infodetails = [];
               cartdetails.push(deliverychargeinfo);
-            }       
+             }       
             
-            if (delivery_charge) {            
+
+
+
+             
+            if (delivery_charge) {      
               other_charges_info.name="Delivery charge";
               other_charges_info.price=delivery_charge;
               deliverychargeinfo.infodetails.push(other_charges_info);
@@ -1417,7 +1428,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             
             if (convenience_charge) {
               convenience_other_charges_info.name="Convenience charge";
-              convenience_other_charges_info.price=convenience_charge;      
+              convenience_other_charges_info.price=convenience_charge; 
               deliverychargeinfo.infodetails.push(convenience_other_charges_info);    
             }
            
@@ -1479,7 +1490,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               resobj.status = isAvaliablekitchen
             }
             if (!product_cost_limit_status){
-              resobj.message = "Sorry! your cart value is too low";
+              resobj.message = constant.product_cost_limit_short_message+constant.minimum_cart_value;
               resobj.status = product_cost_limit_status
             }
   
