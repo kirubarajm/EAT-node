@@ -200,8 +200,6 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
 
           break; 
       case dunzoconst.pickup_complete:
-          
-
           console.log("pickup_complete");
           console.log(orderdetails[0].orderid);
          // Order.order_pickup_status_by_moveituser = function order_pickup_status_by_moveituser( req,kitchenqualitylist,result) {

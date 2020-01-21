@@ -1017,6 +1017,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
   var first_tunnel_status = false;
   var product_cost_limit_status = true;
   
+  
  
   //  if (currenthour <= 12) {
   //    productquery = " breakfast";
@@ -1161,14 +1162,15 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             ///convenience charge algrorithm
             if (constant.convenience_charge_status) {
               if (totalamount < 30) {
-                product_cost_limit_status = false;
-                convenience_charge = constant.convenience_charge;
+                product_cost_limit_status = false;//if false don't show message an eat app
+                convenience_charge = 0;
+                delivery_charge=0;
               }else if(totalamount >= 30 && totalamount < 40 ) {
                 convenience_charge = constant.cart_demand_value - (delivery_charge + totalamount);
   
               }else if(totalamount >= 40 && totalamount < 50){
             
-                convenience_charge = constant.convenience_charge;
+                convenience_charge = 10;
               }else if(totalamount >= 50 && totalamount < 70){
                 convenience_charge = 0;
               }else{
@@ -1229,10 +1231,32 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             // var grandtotal = gstcharge+totalamount+delivery_charge;
             //*this code is commaned due to business
   
-            var gstcharge = (totalamount / 100) * constant.gst;
-            gstcharge = Math.round(gstcharge);
+            //new gst implemented 14-jan-2019
+      
+           
+              var othercharges = delivery_charge + convenience_charge ;
+              var home_gst= (othercharges * constant.home_gst)/100;
+        
+              console.log(res2[0].makeit_type);
+              if (res2[0].makeit_type !=0) {
+                var cater_gst = (totalamount / 100) * constant.gst;
+                var gstcharge= Math.round(home_gst + cater_gst);
+                console.log("home_gst + cater_gst",gstcharge);
+              }else{
+                console.log("home_gst",home_gst);
+                var gstcharge=Math.round(home_gst);
+                
+              }
+
+           // var gstcharge = (totalamount / 100) * constant.gst;
+          //  gstcharge = Math.round(gstcharge);
             var original_price = gstcharge + product_orginal_price + delivery_charge;//this is real amount of this orders
             var grandtotal = gstcharge + totalamount + delivery_charge + convenience_charge;
+
+
+            
+            
+
   
             //refund coupon amount detection algorithm 
             if (req.rcid) {
@@ -1261,7 +1285,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               }
             }
             
-            calculationdetails.grandtotaltitle = "Grand Total";
+            calculationdetails.grandtotaltitle = "To Pay";
             calculationdetails.grandtotal = grandtotal;
             calculationdetails.original_price = original_price;
             calculationdetails.refund_balance = refund_balance;
@@ -1277,6 +1301,8 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             calculationdetails.refundcouponstatus = false;     
             calculationdetails.convenience_charge = convenience_charge;
             calculationdetails.product_cost_limit_status = product_cost_limit_status;
+            calculationdetails.product_cost_limit_message = constant.product_cost_limit_message;
+            calculationdetails.product_cost_limit_short_message = constant.product_cost_limit_short_message+constant.minimum_cart_value;
      
   
             if (req.cid && couponstatus) {
@@ -1292,6 +1318,9 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             var couponinfo = {};
             var gstinfo = {};
             var deliverychargeinfo = {};
+            deliverychargeinfo.low_cost_status=false//show low cost 30
+            deliverychargeinfo.default_cost_status = false;//default cost 30
+            deliverychargeinfo.infostatus = true;
             var refundinfo = {};
             var convenience_chargeinfo  = {};
             var other_charges_info = {};
@@ -1302,6 +1331,10 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             totalamountinfo.status = true;
             totalamountinfo.infostatus = false;
             totalamountinfo.color_code = "#ff444444";
+            totalamountinfo.low_cost_status = false;
+            totalamountinfo.low_cost_note = "No delivery charges for order values of more than Rs.70";
+            totalamountinfo.default_cost=constant.convenience_charge;
+            totalamountinfo.default_cost_status=false;
             totalamountinfo.infodetails = [];            
             cartdetails.push(totalamountinfo);
   
@@ -1311,17 +1344,28 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               couponinfo.status = true;
               couponinfo.infostatus = false;
               couponinfo.color_code_status = "#129612";
+              couponinfo.low_cost_status = false;
+              couponinfo.low_cost_note = "No delivery charges for order values of more than Rs.70";
+              couponinfo.default_cost=constant.convenience_charge;
+              couponinfo.default_cost_status=false;
               couponinfo.infodetails = [];
               cartdetails.push(couponinfo);
             }
   
-            gstinfo.title = "Taxes ";//gst modified taxes 13-jan-2020
+            if (gstcharge !==0) {
+              gstinfo.title = "Taxes ";//gst modified taxes 13-jan-2020
             gstinfo.charges = gstcharge;
             gstinfo.status = true;
             gstinfo.infostatus = false;
             gstinfo.color_code = "#ff444444";
+            gstinfo.low_cost_status = false;
+            gstinfo.low_cost_note = "No delivery charges for order values of more than Rs.70";
+            gstinfo.default_cost=constant.convenience_charge;
+            gstinfo.default_cost_status=false;
             gstinfo.infodetails = [];
             cartdetails.push(gstinfo);
+            }
+            
             
            // tax_charges_info.gstcharge=gstcharge;
             // //this code is modified 23-09-2019
@@ -1346,12 +1390,21 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             //cart changes
 
              //this code is modified 23-09-2019
-             if (delivery_charge !=0 || convenience_charge !=0) {             
+             if (product_orginal_price > constant.minimum_cart_value) {             
               deliverychargeinfo.title = "Other charges";
               deliverychargeinfo.charges = delivery_charge + convenience_charge;
               deliverychargeinfo.status = true;
               deliverychargeinfo.infostatus = true;
               deliverychargeinfo.color_code = "#ff444444";
+              if (product_orginal_price < constant.cart_demand_value) {
+                deliverychargeinfo.low_cost_status = true;//status showing message
+              }
+              deliverychargeinfo.low_cost_note = "No delivery charges for order values of more than Rs.70";
+              if (product_orginal_price > constant.cart_demand_value) {
+                deliverychargeinfo.default_cost_status = true;
+                deliverychargeinfo.infostatus = false;
+              }
+              deliverychargeinfo.default_cost=constant.convenience_charge;
               deliverychargeinfo.infodetails = [];
               cartdetails.push(deliverychargeinfo);
             }       
@@ -1378,7 +1431,11 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               refundinfo.charges = refund_coupon_adjustment;
               refundinfo.status = true;
               refundinfo.infostatus = false;
+              refundinfo.low_cost_status = false;
+              refundinfo.low_cost_note = "Np delivery charges for order values of more than Rs.70";
               refundinfo.color_code = "#ff444444";
+              refundinfo.default_cost=constant.convenience_charge;
+              refundinfo.default_cost_status = false;
               cartdetails.push(refundinfo);
             }
   

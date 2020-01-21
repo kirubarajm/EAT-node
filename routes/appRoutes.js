@@ -24,13 +24,9 @@ module.exports = function(app) {
   app.route("/masters/radiuslimit").post(routesVersioning({"1.0.0":region.create_a_radius_limit}));
   app.route("/masters/region/search").post(routesVersioning({"1.0.0":region.search_a_search_region}));
   
-
-
   //Stories
   app.route("/masters/storieslist").post(routesVersioning({"1.0.0":stories.list_all_Stories}));
   app.route("/masters/storiescreate").post(routesVersioning({"1.0.0":stories.createnewstory}));
-
-
 
   app.route("/masters/homedownlist").get(routesVersioning({"1.0.0":homedown.list_all_homedown}));
   app.route("/masters/makeithub").get(routesVersioning({"1.0.0":makeithub.list_all_makeithubs}));

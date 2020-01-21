@@ -489,29 +489,27 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                 req.coupon = req.cid
                 req.convenience_charge = amountdata.convenience_charge;
 
-                //THIS CODE IS COMMANDED ON 13-JAN-2020
-                // if (req.payment_type == 0 ) {
-                //   Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
-                //     if (err) {
-                //       result(err, null);
-                //     } else {
-                //       if (req.payment_type == 0) {
-                //         await Notification.orderMakeItPushNotification(
-                //           res.orderid,
-                //           req.makeit_user_id,
-                //           PushConstant.pageidMakeit_Order_Post
-                //         );
-                //       }
-                //       ////Insert Order History////
+                if (req.payment_type == 0 ) {
+                  console.log("log for cart",req);
+                  Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
+                    if (err) {
+                      result(err, null);
+                    } else {
+                      if (req.payment_type == 0) {
+                        await Notification.orderMakeItPushNotification(
+                          res.orderid,
+                          req.makeit_user_id,
+                          PushConstant.pageidMakeit_Order_Post
+                        );
+                      }
+                      ////Insert Order History////
                               
-                //       ////////////////////////////
-                //       result(null, res);
-                //     }
-                //   });
-                //   //ordercreatecashondelivery(req, res3.result[0].item);
-                // }else 
-                
-                if (req.payment_type == 1) {
+                      ////////////////////////////
+                      result(null, res);
+                    }
+                  });
+                  //ordercreatecashondelivery(req, res3.result[0].item);
+                }else if (req.payment_type == 1) {
                   Order.OrderOnline(req, res3.result[0].item,function(err,res){
                     if (err) {
                       result(err, null);
@@ -2825,19 +2823,21 @@ Order.orderviewbyeatuser = function(req, result) {
                     cartdetails.push(couponinfo);
                   }
         
-                  gstinfo.title = "GST";
+                  gstinfo.title = "Taxes";
                   gstinfo.charges = res1[0].gst;
                   gstinfo.status = true;
                   cartdetails.push(gstinfo);
 
 
                   if (res1[0].delivery_charge != 0) {
-                    deliverychargeinfo.title = "Handling charge";
-                    deliverychargeinfo.charges = res1[0].delivery_charge;
+                    deliverychargeinfo.title = "other charges";
+                    deliverychargeinfo.charges = Math.round(parseInt(res1[0].delivery_charge) + res1[0].convenience_charge);
+                   
                     deliverychargeinfo.status = true;
                     cartdetails.push(deliverychargeinfo);
                   }
                  
+
         
                   if (res1[0].refund_amount) {
                     refundinfo.title = "Refund adjustment (-)";

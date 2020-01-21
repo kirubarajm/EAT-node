@@ -3247,6 +3247,24 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
   var genderstatus = false;
   var otptemp = 0;
 
+  //   if (newUser.otpcode) {
+//     var otpurl =
+//     "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
+//     newUser.phoneno +
+//     "&senderId=EATHOM&message=<%23>Your EAT App OTP is " +
+//     OTP +
+//     ". Note: Please DO NOT SHARE this OTP with anyone. " +
+//     newUser.otpcode +
+//     " ";
+//   }else{
+
+//     var otpurl =
+//     "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
+//     newUser.phoneno +
+//     "&senderId=EATHOM&message=Your EAT App OTP is " +
+//     OTP +
+//     ". Note: Please DO NOT SHARE this OTP with anyone. ";
+//   }
 
    if (newUser.otpcode) {
    var otpurl =
