@@ -865,6 +865,6 @@ const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async funct
     }
   }
 });
-kpidashboardproducthistory.start();
+//kpidashboardproducthistory.start();
 
 module.exports = QuickSearch;

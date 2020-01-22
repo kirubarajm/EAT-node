@@ -490,7 +490,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                 req.convenience_charge = amountdata.convenience_charge;
 
                 if (req.payment_type == 0 ) {
-                  console.log("log for cart",req);
+                
                   Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                     if (err) {
                       result(err, null);

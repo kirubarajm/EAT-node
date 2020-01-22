@@ -1357,7 +1357,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             }
   
             if (gstcharge !==0) {
-              gstinfo.title = "Taxes ";//gst modified taxes 13-jan-2020
+            gstinfo.title = "Taxes ";//gst modified taxes 13-jan-2020
             gstinfo.charges = gstcharge;
             gstinfo.status = true;
             gstinfo.infostatus = false;
@@ -1407,7 +1407,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
 
               deliverychargeinfo.low_cost_note = "No delivery charges for order values of more than Rs.70";
-              if (product_orginal_price > constant.cart_demand_value) {
+              if (product_orginal_price >= constant.cart_demand_value) {
                 deliverychargeinfo.default_cost_status = true;
                 deliverychargeinfo.infostatus = false;
               }
