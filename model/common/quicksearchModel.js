@@ -690,7 +690,6 @@ const Package_tracking = new CronJob("0 0 7,0 * * * ", async function() {
 
 ///// KPI Product History CRON ///////////
 const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async function(req, result) {
-  console.log("run cron kpidashboardproducthistory");
   var breatfastcycle    = constant.breatfastcycle;
   var lunchcycle        = constant.lunchcycle;
   var dinnercyclestart  = constant.dinnercycle;

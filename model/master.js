@@ -805,6 +805,16 @@ const master = [
                 "description": "user with order list"
             }
         ]
+    },{
+        'makeit_type': [{
+                "type": 0,
+                "description": "Home"
+            },
+            {
+                "type": 1,
+                "description": "Caters"
+            }
+        ]
     }
 
 

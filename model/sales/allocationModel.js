@@ -15,35 +15,49 @@ var Allocation = function(allocation) {
   this.booking_date_time = allocation.booking_date_time;
 };
 
-Allocation.createAllocation = function createAllocation(req, result) {
-  sql.query("INSERT INTO Allocation set ?", req, function(err, res) {
-    if (err) {
-      console.log("error: ", err);
-      result(err, null);
-    } else {
-      console.log(res.insertId);
+Allocation.createAllocation =async function createAllocation(req, result) {
 
-      sql.query(
-        "UPDATE MakeitUser SET appointment_status = 1 WHERE userid = ?",
-        req.makeit_userid,
-        function(err, res) {
-          if (err) {
-            console.log("error: ", err);
-            result(err, null);
+  var getlist = await query("select * from Allocation where makeit_userid='"+req.makeit_userid+"'");
+  if (getlist.length==0) {
+    sql.query("INSERT INTO Allocation set ?", req, function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+        console.log(res.insertId);
+  
+        sql.query(
+          "UPDATE MakeitUser SET appointment_status = 1 WHERE userid = ?",
+          req.makeit_userid,
+          function(err, res) {
+            if (err) {
+              console.log("error: ", err);
+              result(err, null);
+            }
           }
-        }
-      );
-
-      let sucobj = true;
-      let message = "Booking time updated successfully";
-      let resobj = {
-        success: sucobj,
-        message: message,
-        result: res.insertId
-      };
-      result(null, resobj);
-    }
-  });
+        );
+  
+        // let sucobj = true;
+        // let message = "Booking time updated successfully";
+        let resobj = {
+          success: true,
+          status:true,
+          message: "Booking time updated successfully",
+          result: res.insertId
+        };
+        result(null, resobj);
+      }
+    });
+  }else{
+    let resobj = {
+      success: true,
+      status:false,
+      message: "Sorry appointment already exist! "
+     
+    };
+    result(null, resobj);
+  }
+ 
 };
 
 Allocation.updateAllocation = async function updateAllocation(req, result) {

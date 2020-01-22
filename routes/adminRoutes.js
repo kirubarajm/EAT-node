@@ -285,6 +285,10 @@ app.route("/admin/zone/xfactorupdate").post(routesVersioning({"1.0.0":zone.updat
 app.route("/admin/reports/loglivekitchenavgcount").post(routesVersioning({"1.0.0":orders.log_livekitchenavgcount_report}));
 app.route("/admin/reports/loghublivekitchenavgcount").post(routesVersioning({"1.0.0":orders.log_hub_livekitchenavgcount_report}));
 
+app.route("/admin/reports/cancelled_report_follow_up").post(routesVersioning({"1.0.0":orders.cancelled_report_follow_up}));
+app.route("/admin/reports/unclosed_orders").post(routesVersioning({"1.0.0":orders.unclosed_orders}));
+app.route("/admin/reports/customerexperience").post(routesVersioning({"1.0.0":orders.customerexperience}));
+
 ///Moveit Succession Report////
 app.route("/admin/reports/moveitdaywisereport").post(routesVersioning({"1.0.0":orders.moveit_daywise_report}));
 

@@ -816,10 +816,11 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
   var currenthour  = moment(day).format("HH");
   var tunnelkitchenliststatus = true;
   const userdetails = await query("select * from User where userid = "+req.eatuserid+" ");
-
+  //console.log('userdetails-->',userdetails);
   if (userdetails[0].first_tunnel == 1 ) {    
     tunnelkitchenliststatus = false;
   }
+
 
   var breatfastcycle = constant.breatfastcycle;
   var dinnercycle = constant.dinnercycle;
@@ -860,30 +861,14 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
     nextthirdcyclecycle ="Next available \n"+ constant.lunchcycle + ' PM,Tomorrow';
     where_condition_query = where_condition_query + "and (pt.dinner = 1 OR  pt.breakfast = 1)";
   }
-
-
-    // var productquery =
-    //   "Select mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,mk.locality as localityname ,re.regionname,mk.costfortwo,mk.virutal_rating_count as rating_count,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
-    //   req.lat +
-    //   "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
-    //   req.lon +
-    //   "') ) + sin( radians('" +
-    //   req.lat +
-    //   "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid', pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc,'next_available',IF("+ifconditionquery+",false,true),'next_available_time',IF("+ifconditionquery+",'"+cycle+"','"+nextcycle+"'),'breakfast',pt.breakfast,'lunch',pt.lunch,'dinner',pt.dinner)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
-    //   req.eatuserid +
-    //   "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
-    //   req.eatuserid +
-    //   "'  where mk.userid = " +
-    //   req.makeit_userid +
-    //   " and mk.ka_status = 2 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1 ";
-  
+    
   var productquery = " Select mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,mk.locality as localityname ,re.regionname,mk.costfortwo,mk.virutal_rating_count as rating_count,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,mk.unservicable,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
     req.lat +
     "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
     req.lon +
     "') ) + sin( radians('" +
     req.lat +
-    "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid', pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc,'next_available',IF("+ifconditionquery+",false,true),'next_available_time',IF("+scondcycle+",'"+nextcycle+"',IF("+thirdcycle+",'"+nextthirdcyclecycle+"','Available')),'breakfast',pt.breakfast,'lunch',pt.lunch,'dinner',pt.dinner)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+    "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(pt.productid) as plistid,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid', pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc,'next_available',IF("+ifconditionquery+",false,true),'next_available_time',IF("+scondcycle+",'"+nextcycle+"',IF("+thirdcycle+",'"+nextthirdcyclecycle+"','Available')),'breakfast',pt.breakfast,'lunch',pt.lunch,'dinner',pt.dinner)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
     req.eatuserid +
     "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
     req.eatuserid +
@@ -904,6 +889,15 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
       result(err, null);
     } else {  
       ////Zone Condition Make Array////
+
+      var productIds=JSON.parse(res[0].plistid);
+      var productlistArray=[];
+      if(productIds && productIds.length>0){
+        productIds=productIds.toString();
+        var ptQuary = "Select pt.makeit_userid,pt.productid,pt.price,pt.product_name,pt.image as productimage,pt.image,pt.quantity,pt.vegtype,pt.prod_desc,pt.prod_desc,pt.breakfast,pt.lunch,pt.dinner,IF(faa.favid,1,0) as isfav,faa.favid, cu.cuisinename,IF("+ifconditionquery+",false,true) as next_available,IF("+scondcycle+",'"+nextcycle+"',IF("+thirdcycle+",'"+nextthirdcyclecycle+"','Available')) as next_available_time,IF("+ifconditionquery+"!=1,4,IF((pt.image IS NOT NULL AND pt.image!='null' AND pt.image!=''),0,IF(sum(1)>1,1,2))) as orderpro from Product pt left join Productitem pi on pi.productid=pt.productid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Fav faa on faa.productid = pt.productid and faa.eatuserid = " +req.eatuserid +" where pt.delete_status = 0 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1 and pt.productid in ("+productIds+") group by pt.productid order by orderpro asc,pt.price desc"
+        //console.log('ptQuary-->',ptQuary);
+        productlistArray = await query(ptQuary);
+      }
       if(constant.zone_control){
         ////Get User Zone////
         var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
@@ -1019,6 +1013,17 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
             res[0].eta = Math.round(eta) + " mins";
           }
           //  res[i].eta = Math.round(eta) + " mins";    
+        }
+
+        if(productlistArray&&productlistArray.length>0){
+          if ( tunnelkitchenliststatus == false) {      
+            res[0].serviceablestatus = true;            
+            productlistArray.map(function(x) { 
+              x.next_available = 0; 
+              return x
+            });
+          }
+           res[0].productlist = productlistArray;
         }
       //   }
 

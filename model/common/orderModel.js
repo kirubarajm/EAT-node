@@ -27,6 +27,7 @@ var Dunzo = require("../../model/webhooks/dunzoModel.js");
 var requestpromise = require('request-promise');
 var dunzoconst = require('../../model/dunzo_constant');
 var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTrackingModel');
+var sendsms =  require("../common/smsModel");
 
 
 
@@ -89,6 +90,7 @@ var Order = function(order) {
   this.cancel_status = order.cancel_status ||0;
   this.delivery_vendor=order.delivery_vendor ||0;
   this.cus_pincode = order.cus_pincode ||0;
+  this.convenience_charge = order.convenience_charge || 0;
 };
 
 
@@ -127,6 +129,7 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
             req.gst = amountdata.gstcharge;
             req.price = amountdata.grandtotal;
             req.makeit_earnings = amountdata.makeit_earnings;
+            req.convenience_charge = amountdata.convenience_charge;
             
            Order.OrderInsert(req, res3.result[0].item,false,false,async function(err,res){
             if (err) {
@@ -242,7 +245,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
               req.landmark = address_data[0].landmark;
               req.cus_pincode = address_data[0].pincode;
               req.coupon = req.cid
-              console.log(req.cus_pincode);
+              req.convenience_charge = amountdata.convenience_charge;
+
               if (req.payment_type == 0 || req.payment_type == 3) {
                 Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                   if (err) {
@@ -319,8 +323,10 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
       //Dunzo or moveit flow
       var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
       console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].makeithub_id);
+      console.log("get_hub_id_from_orders-->",get_hub_id_from_orders[0].zone);
       console.log("get_moveit_cound_based_on_hub-->",get_moveit_list_based_on_hub[0].no_of_move_it_count);
       console.log("xfactorValue-->",Math.round(xfactorValue));
+      console.log("get_orders_queue_based_on_hub[0].no_of_orders_count-->",get_orders_queue_based_on_hub[0].no_of_orders_count);
       var fValue= Math.round(xfactorValue);
       if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){      
     
@@ -366,6 +372,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                     req.landmark = address_data[0].landmark;
                     req.cus_pincode = address_data[0].pincode;
                     req.coupon = req.cid
+                    req.convenience_charge = amountdata.convenience_charge;
+
                     if (req.payment_type == 0) {
                         Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                           if (err) {
@@ -479,8 +487,10 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                 req.landmark = address_data[0].landmark;
                 req.cus_pincode = address_data[0].pincode;
                 req.coupon = req.cid
-               
+                req.convenience_charge = amountdata.convenience_charge;
+
                 if (req.payment_type == 0 ) {
+                  console.log("log for cart",req);
                   Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                     if (err) {
                       result(err, null);
@@ -547,142 +557,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
         };
         result(null, resobj);
       }
-      // }else{  
-      //   let resobj = {
-      //     success: true,
-      //     status: false,
-      //     message: "Sorry Currently we are not receiving orders!"
-      //   };
-      //   result(null, resobj);
-      // }
-    //  } else {
-    //   console.log("req.payment_type=1");
-
-    //   var queuecount = await query("select count(*)as count from Orders_queue where zoneid='"+get_hub_id_from_orders[0].zone+"' and status !=1 "); //and created_at > (NOW() - INTERVAL 10 MINUTE
-    //   console.log(queuecount);
-    //   if (queuecount[0].count <= constant.Dunzo_zone_order_limit) {
-       
-    //    // if (currenthour >= breatfastcycle && currenthour <= dinnerend) {
-    //       const res = await query("select * from Orders where userid ='" +req.userid +"' and orderstatus < 6  and payment_status !=2");
-    //       if (res.length === 0 ) {
-    //         //get address 
-    //         const address_data = await query("Select * from Address where aid = '" +req.aid +"' and userid = '" +req.userid +"'");
-    //         //console.log("address_data-->",address_data);
-    //         if(address_data.length === 0) {
-    //           let resobj = {
-    //             success: true,
-    //             status: false,
-    //             message: "Sorry your selected address wrong.Please select correct address."
-    //           };
-    //           result(null, resobj);
-    //         }else{
-    //           req.lat = address_data[0].lat;
-    //           req.lon = address_data[0].lon;
-    //           Makeituser.read_a_cartdetails_makeitid(req, orderitems,true,async function(err,res3) {
-    //             if (err) {
-    //               result(err, null);
-    //             } else {
-    //               if (res3.status != true) {
-    //                 result(null, res3);
-    //               } else {
-                  
-    //                 var amountdata = res3.result[0].amountdetails;                     
-    //                 req.original_price = amountdata.original_price;
-    //                 req.refund_balance = amountdata.refund_balance;
-    //                 req.refund_amount = amountdata.refundamount;
-    //                 req.discount_amount = amountdata.coupon_discount_amount;
-    //                 req.after_discount_cost = amountdata.grandtotal;
-    //                 req.order_cost   = amountdata.original_price;
-    //                 req.gst = amountdata.gstcharge;
-    //                 req.price = amountdata.grandtotal;
-    //                 req.makeit_earnings = amountdata.makeit_earnings;                   
-    //                 req.cus_address = address_data[0].address;
-    //                 req.locality = address_data[0].locality;
-    //                 req.cus_lat = address_data[0].lat;
-    //                 req.cus_lon = address_data[0].lon;
-    //                 req.address_title = address_data[0].address_title;
-    //                 req.locality_name = address_data[0].locality;
-    //                 req.flatno = address_data[0].flatno;
-    //                 req.landmark = address_data[0].landmark;
-    //                 req.cus_pincode = address_data[0].pincode;
-    //                 req.coupon = req.cid
-    //                 if (req.payment_type == 0 || req.payment_type == 3) {
-    //                     Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
-    //                       if (err) {
-    //                         result(err, null);
-    //                       } else {
-    //                         if (req.payment_type == 0) {
-    //                           await Notification.orderMakeItPushNotification(
-    //                             res.orderid,
-    //                             req.makeit_user_id,
-    //                             PushConstant.pageidMakeit_Order_Post
-    //                           );
-    //                         }                             
-    //                         result(null, res);
-    //                       }
-    //                     });
-    //                     //ordercreatecashondelivery(req, res3.result[0].item);
-    //                 } else if (req.payment_type == 1) {
-    //                     Order.OrderOnline(req, res3.result[0].item,function(err,res){
-    //                       if (err) {
-    //                         result(err, null);
-    //                       } else {
-    //                         result(null, res);
-    //                       }
-    //                     });
-    //                     //ordercreateonline(req, res3.result[0].item);
-    //                 }
-    //               }
-    //             }
-    //           });
-    //         }
-    //       }else if(res[0].payment_type === 1 || res[0].lock_status === 1){ 
-    //         let resobj = {
-    //           success: true,
-    //           status: false,
-    //           message: "Please complete your payment for yor order",
-    //           result : res
-    //         };
-    //         result(null, resobj);
-    //       }else {       
-    //         let resobj = {
-    //           success: true,
-    //           status: false,
-    //           message: "Already you have one order, So please try once delivered exiting order"        
-    //         };
-    //         result(null, resobj);
-    //       }
-    //     // }else{     
-    //     //   let resobj = {
-    //     //     success: true,
-    //     //     status: false,
-    //     //     message: "Sorry Currently we are not receiving orders!"
-    //     //   };
-    //     //   result(null, resobj);
-    //     // } 
-
-    //   } else {
-    //     req.payment_type=3;
-    //     req.payment_status=3;
-    //     req.orderstatus = 11;
-    //     Order.read_a_proceed_to_pay_xfactore(req, orderitems,async function(err,res){
-    //       if (err) {
-    //         result(err, null);
-    //       } else {       
-    //         console.log(res);
-    //         let resobj = {
-    //           success: true,
-    //           status:false,
-    //           order_queue:1,
-    //           title:"IN HIGH DEMAND",
-    //           message:'We are facing high demand. We will let you know when we are back to our best!'
-    //         };
-    //         result(null, resobj);      
-    //       }
-    //     });
-    //   }
-   
-    //  }
+    
     }
   }
   }else{  
@@ -753,6 +628,8 @@ Order.read_a_proceed_to_pay_xfactore = async function read_a_proceed_to_pay_xfac
                     req.flatno = address_data[0].flatno;
                     req.landmark = address_data[0].landmark;
                     req.coupon = req.cid
+                    req.convenience_charge = amountdata.convenience_charge;
+
                       if (req.payment_type == 0 || req.payment_type == 3) {
                         Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                           if (err) {
@@ -920,6 +797,9 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
        
         }
 
+        if (req.payment_type==0) {
+          sendsms.send_sms_makeit(orderid);
+        }
         let resobj = {
           success: true,
           status: true,
@@ -1177,7 +1057,7 @@ if(order_place.payment_status === 1){
               null,
               PushConstant.pageidMakeit_Order_Post
             );
-
+            sendsms.send_sms_makeit(order_place.orderid);
             let resobj = {
               success: true,
               status: true,
@@ -2944,15 +2824,16 @@ Order.orderviewbyeatuser = function(req, result) {
                     cartdetails.push(couponinfo);
                   }
         
-                  gstinfo.title = "GST";
+                  gstinfo.title = "Taxes";
                   gstinfo.charges = res1[0].gst;
                   gstinfo.status = true;
                   cartdetails.push(gstinfo);
 
 
                   if (res1[0].delivery_charge != 0) {
-                    deliverychargeinfo.title = "Handling charge";
-                    deliverychargeinfo.charges = res1[0].delivery_charge;
+                    deliverychargeinfo.title = "other charges";
+                    deliverychargeinfo.charges = Math.round(parseInt(res1[0].delivery_charge) + res1[0].convenience_charge);
+                   
                     deliverychargeinfo.status = true;
                     cartdetails.push(deliverychargeinfo);
                   }
@@ -3934,7 +3815,7 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
           let response = {
             success: true,
             status: true,
-            message: "Your order canceled successfully."
+            message: "Your order cancelled successfully."
           };
           ////Insert Order History////
           
@@ -6317,7 +6198,7 @@ Order.real_orders_report = function real_orders_report(req, result) {
 
 //Daywise Virtual Makeit Earnings report
 Order.virtual_makeit_earnings = function virtual_makeit_earnings(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -6344,7 +6225,7 @@ Order.virtual_makeit_earnings = function virtual_makeit_earnings(req, result) {
 
 //Daywise Real Makeit Earnings report
 Order.real_makeit_earnings = function real_makeit_earnings(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, sum(makeit_earnings) as MakeitEarnings, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and orderstatus=6 and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
   sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -6645,7 +6526,7 @@ Order.orders_rating = function orders_rating(req, result) {
 
 //Makeit Earnings Virtual Kitchen Prepare After Cancel Report
 Order.virtual_after_cancel = function virtual_after_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -6672,7 +6553,7 @@ Order.virtual_after_cancel = function virtual_after_cancel(req, result) {
 
 //Makeit Earnings Real Kitchen Prepare After Cancel Report
 Order.real_after_cancel = function real_after_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o left join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) THEN makeit_earnings ELSE 0 END) as AfterCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o left join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -6699,7 +6580,7 @@ Order.real_after_cancel = function real_after_cancel(req, result) {
 
 //Makeit Earnings Virtual Kitchen Prepare Before Cancel Report
 Order.virtual_before_cancel = function virtual_before_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) THEN makeit_earnings ELSE 0 END) as BeforeCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) THEN makeit_earnings ELSE 0 END) as BeforeCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=1 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -6726,7 +6607,7 @@ Order.virtual_before_cancel = function virtual_before_cancel(req, result) {
 
 //Makeit Earnings Real Kitchen Prepare Before Cancel Report
 Order.real_before_cancel = function real_before_cancel(req, result) {
-  var query="Select Date(o.created_at) as Todaysdate,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) THEN makeit_earnings ELSE 0 END) as BeforeCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
+  var query="Select Date(o.created_at) as Todaysdate,mu.userid as kitchen_id,mu.brandname, SUM(CASE WHEN orderstatus=6 THEN makeit_earnings ELSE 0 END) as MakeitEarnings, SUM(CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) THEN makeit_earnings ELSE 0 END) as BeforeCancelAmount, sum(original_price-gst) as Sellingprice,mu.commission from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS NULL)) and mu.virtualkey=0 group by Date(o.created_at),makeit_user_id";
     sql.query(query,async function(err, res) {
       if (err) {
         result(err, null);
@@ -7556,7 +7437,7 @@ Order.onlinerefunded_couponreport= function onlinerefunded_couponreport(req, res
 //////////order_report_byadmin/////////////
 Order.order_report_byadmin= function order_report_byadmin(req, result) {
   
-  var query="Select o.created_at as Orderdate ,o.orderid, o.orderstatus,CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) then 'AfterCancel' WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) then 'BeforeCancel' END as order_cancel_status,u.name as Customername,u.userid as Eatuserid,o.address_title,o.locality_name,o.delivery_charge,o.price, o.original_price,o.refund_amount,o.gst,o.makeit_user_id,o.makeit_earnings as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_accept_time,o.moveit_pickup_time,o.moveit_expected_delivered_time,o.makeit_expected_preparing_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,ma.address as hub_location,CASE WHEN o.ordertype=1 then 'Virtual' WHEN o.ordertype=0 then 'Real' END as order_type,o.moveit_user_id as moveit_id,mu.name from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join User as u on o.userid=u.userid left join MoveitUser as mu on mu.userid = o.moveit_user_id where (o.orderstatus=6 or o.orderstatus=7  or  o.orderstatus=8 or o.orderstatus=9 or o.orderstatus=10 or o.orderstatus=11) and  (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.created_at as Orderdate ,o.orderid, o.orderstatus,CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) then 'AfterCancel' WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) then 'BeforeCancel' END as order_cancel_status,u.name as Customername,u.userid as Eatuserid,o.address_title,o.locality_name,o.delivery_charge,o.price, o.original_price,o.refund_amount,o.gst,o.makeit_user_id,o.makeit_earnings as MakeitEarnings,o.discount_amount,if(o.payment_type=1,'Online','Cash') as payment_type,o.order_assigned_time,o.makeit_accept_time,o.makeit_actual_preparing_time,o.moveit_accept_time,o.moveit_pickup_time,o.moveit_expected_delivered_time,o.makeit_expected_preparing_time,o.moveit_actual_delivered_time,o.created_at,ma.brandname as kitchen_name,if(ma.virtualkey=1,'Virtual','Real') as kitchen_type,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product,ma.address as hub_location,CASE WHEN o.ordertype=1 then 'Virtual' WHEN o.ordertype=0 then 'Real' END as order_type,o.moveit_user_id as moveit_id,mu.name from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join User as u on o.userid=u.userid left join MoveitUser as mu on mu.userid = o.moveit_user_id where (o.orderstatus=6 or o.orderstatus=7  or  o.orderstatus=8 or o.orderstatus=9 or o.orderstatus=10 or o.orderstatus=11) and  (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -8213,6 +8094,91 @@ Order.update_moveit_lat_long= async function update_moveit_lat_long(req, result)
              
             }
           })
+};
+
+
+//////////Cancel order report follow up/////////////
+Order.cancelled_report_follow_up= function cancelled_report_follow_up(req, result) {
+  var query="Select ors.orderid,ors.created_at as ordertime,u.name, u.phoneno, ors.cancel_by, ors.cancel_reason,ors.cancel_time,ors.order_assigned_time as moveit_order_assignedtime, ors.moveit_reached_time, ors.moveit_pickup_time, ors.moveit_notification_time, ors.makeit_accept_time,ors.moveit_accept_time,ors.makeit_expected_preparing_time,ors.makeit_actual_preparing_time from Orders as ors join User as u on u.userid=ors.userid where ors.orderstatus=7 and Date(ors.created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
+//console.log("query-->",query);
+sql.query(query,function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      if (res.length !== 0) {
+        let resobj = {
+          success: true,
+          status:true,
+          result:res
+        };
+        result(null, resobj);
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status:false
+        };
+        result(null, resobj);
+      }
+    }
+  }
+);
+};
+
+//////////Cancel order report follow up/////////////
+Order.unclosed_orders= function unclosed_orders(req, result) {
+  var query="Select Date(ors.created_at),ors.orderstatus,ors.payment_type,ors.orderid, Time(ors.created_at) as ordertime ,ors.order_assigned_time as moveit_order_assignedtime, ors.moveit_reached_time, ors.moveit_pickup_time, ors.moveit_notification_time, ors.makeit_accept_time,ors.moveit_accept_time,ors.makeit_expected_preparing_time,ors.makeit_actual_preparing_time from Orders as ors where (ors.orderstatus<6 and ors.payment_status=1) or (ors.orderstatus<6 and ors.payment_status=0 and ors.payment_type=0 ) and Date(ors.created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
+//console.log("query-->",query);
+sql.query(query,function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      if (res.length !== 0) {
+        let resobj = {
+          success: true,
+          status:true,
+          result:res
+        };
+        result(null, resobj);
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status:false
+        };
+        result(null, resobj);
+      }
+    }
+  }
+);
+};
+
+//////////Cancel order report follow up/////////////
+Order.customerexperience= function customerexperience(req, result) {
+  var query="select orderid,date(ordertime) as date, CASE WHEN (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:45:00')) THEN  '5' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:45:00')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:47:50'))) THEN  '4'  WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:47:50')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:50:50'))) THEN  '3' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:50:50')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('00:55:00'))) THEN  '2' WHEN ((TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('00:55:00')) and (TIMEDIFF(moveit_actual_delivered_time,ordertime) <= time('01:00:00'))) THEN  '1' WHEN (TIMEDIFF(moveit_actual_delivered_time,ordertime) >= time('01:00:00')) THEN  '0' END as user_experience, u.name, u.phoneno, Time(ors.created_at) as ordertime ,ors.order_assigned_time as moveit_order_assignedtime, ors.moveit_reached_time, ors.moveit_pickup_time, ors.moveit_notification_time, ors.makeit_accept_time,ors.moveit_accept_time,ors.makeit_expected_preparing_time,ors.makeit_actual_preparing_time,ors.moveit_actual_delivered_time from Orders  as ors join User as u on u.userid=ors.userid where moveit_actual_delivered_time IS NOT NULL and ordertime Is NOT NULL and orderstatus=6 and Date(ors.created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
+//console.log("query-->",query);
+sql.query(query,function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      if (res.length !== 0) {
+        let resobj = {
+          success: true,
+          status:true,
+          result:res
+        };
+        result(null, resobj);
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status:false
+        };
+        result(null, resobj);
+      }
+    }
+  }
+);
 };
 
 ///Moveit Succession Report////
