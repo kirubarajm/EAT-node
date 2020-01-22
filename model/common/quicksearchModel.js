@@ -752,7 +752,7 @@ const moveitlog_everyday = new CronJob("0 0 1 * * *", async function() {
   // console.log("moveit_daywise_data",moveit_daywise_data);
   await MoveitDayWise.createmoveitdaywise(moveit_daywise_data);
 });
-moveitlog_everyday.start();
+//moveitlog_everyday.start();
 
 
 module.exports = QuickSearch;
