@@ -236,6 +236,8 @@ QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(req, re
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle Start and End ///////////
 const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {
+//const liveproducthistory = new CronJob("10 * * * * *", async function(req, result) {
+  console.log("testing cron");
   var breatfastcycle = constant.breatfastcycle;
   var lunchcycle = constant.lunchcycle;
   var dinnercyclestart = constant.dinnercycle;
@@ -288,10 +290,9 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(re
         console.log(getproductdetailscs.err);
       } else {
         for (var i = 0; i < getproductdetailscs.length; i++) {
-          var inserthistory = await producthistory.createProducthistory(
-            getproductdetailscs[i]
-          );
+          //var inserthistory = await producthistory.createProducthistory(getproductdetailscs[i]);
         }
+        console.log("getproductdetailscs ============>",getproductdetailscs);
       }
     }
     if (cycleend == 1) {
@@ -307,15 +308,14 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(re
         console.log(getproductdetailsce.err);
       } else {
         for (var i = 0; i < getproductdetailsce.length; i++) {
-          var inserthistory = await producthistory.createProducthistory(
-            getproductdetailsce[i]
-          );
+          //var inserthistory = await producthistory.createProducthistory(getproductdetailsce[i]);
         }
+        console.log("getproductdetailscs ============>",getproductdetailscs);
       }
     }
   }
 });
-//liveproducthistory.start();
+liveproducthistory.start();
 
 //cron run by moveit user offline every night 2 AM.
 const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
