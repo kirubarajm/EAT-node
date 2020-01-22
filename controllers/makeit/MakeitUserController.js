@@ -604,3 +604,27 @@ exports.makeit_delete = function(req, res) {
     res.json(user);
   });
 };
+
+////Makeit Earnings report/////////////
+exports.makeit_earnings_report = function(req, res) {
+  Makeituser.makeit_earnings_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Makeit Cancellations report/////////////
+exports.makeit_cancellation_report = function(req, res) {
+  Makeituser.makeit_cancellation_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Makeit Cancellations report/////////////
+exports.makeit_avg_preparation_report = function(req, res) {
+  Makeituser.makeit_avg_preparation_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

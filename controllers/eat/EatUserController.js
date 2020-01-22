@@ -722,3 +722,11 @@ exports.user_based_notification = function(req, res) {
     res.json(user);
   });
 };
+
+/////user based growth report
+exports.user_growth_order_report = function(req, res) {
+  Eatuser.user_growth_order_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

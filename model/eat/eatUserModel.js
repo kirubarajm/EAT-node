@@ -5222,54 +5222,90 @@ Eatuser.user_based_notification = async function user_based_notification(req, re
 
 };
 
+/////user growth report based on orderid
+Eatuser.user_growth_order_report = async function user_growth_order_report(req, result) {
+  var getuserorderquery ="select eu.userid as customer_id,eu.name as customer_name,eu.created_at as registered_date,sum(if(o.orderstatus=6,1,0)) as delivered_order_count,sum(if(o.orderstatus=6,o.price,0)) as delivered_order_price,sum(if(o.orderstatus=7,1,0)) as cancel_order_count,sum(if(o.orderstatus=7,o.price,0)) as cancel_order_price,JSON_ARRAYAGG(JSON_OBJECT('orderid', o.orderid,'orderstatus', o.orderstatus,'price', o.price,'ordertime',o.ordertime)) AS orderlist   from User eu  left join Orders o on o.userid=eu.userid where date(eu.created_at)='"+req.date+"' group by eu.userid";
+ // var userlist = req.userlist;
+  sql.query(getuserorderquery,async function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      
+      for (let i = 0; i < res.length; i++) {
+        res[i].orderlist = JSON.parse(res[i].orderlist);
+        var orderlist = res[i].orderlist;
+        var isSuccesslist=false;
+        var isFalierlist=false;
+        if(orderlist.length>0){
+            orderlist.sort((a, b) => parseFloat(a.ordertime) - parseFloat(b.ordertime));
+            var successOrderlist = orderlist.filter(re => re.orderstatus === 6);
+            var cancelOrderlist = orderlist.filter(re => re.orderstatus === 7);
+            if(successOrderlist.length>0){
+              isSuccesslist=true;
+              var last_id=successOrderlist.length-1;
+              res[i].first_success_order_id=successOrderlist[0].orderid;
+              res[i].last_success_order_id=successOrderlist[last_id].orderid;
+              res[i].first_success_order_date=successOrderlist[0].ordertime;
+              res[i].last_success_order_date=successOrderlist[last_id].ordertime;
+              res[i].first_success_order_price=successOrderlist[0].price;
+              res[i].last_success_order_price=successOrderlist[last_id].price;
+            }
 
-/////user_based_notification
-// Eatuser.user_based_notification = async function user_based_notification(req, result) {
- 
-// //   var getuserquery ="select u.userid,u.name,u.email,u.phoneno,ord.orderid,u.pushid_android,u.pushid_ios,u.Locality,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(),INTERVAL 7 DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid join MakeitUser as mk on mk.userid=ord.makeit_user_id  join Makeit_hubs as mh on mh.makeithub_id=mk.makeithub_id where u.userid!='' and mh.makeithub_id="+req.makeithub_id+"  group by u.userid order by ord.orderid desc";
-// //  // var userlist = req.userlist;
-// //   sql.query(getuserquery,async function(err, res) {
-// //     if (err) {
-// //       console.log("error: ", err);
-// //       result(err, null);
-// //     } else {
-   
-// //       const userlist = res.filter(re => re.with7day===0);
+            if(cancelOrderlist.length>0){
+              isFalierlist=true;
+              var last_id=cancelOrderlist.length-1;
+              res[i].first_cancel_order_id=cancelOrderlist[0].orderid;
+              res[i].last_cancel_order_id=cancelOrderlist[last_id].orderid;
+              res[i].first_cancel_order_date=cancelOrderlist[0].ordertime;
+              res[i].last_cancel_order_date=cancelOrderlist[last_id].ordertime;
+              res[i].first_cancel_order_price=cancelOrderlist[0].price;
+              res[i].last_cancel_order_price=cancelOrderlist[last_id].price;
+            }
+            
+        }
 
-//       const userlist = req.userlist;
-//       for (let i = 0; i < userlist.length; i++) {
-//      //   console.log(userlist[i]);
-//         user={};
-//         user.userid=userlist[i];
-//         user.user_message = req.user_message;
-//         user.title = req.title;
-    
-//         await Notification.orderEatPushNotification(
-//           null,
-//           user,
-//           PushConstant.Pageid_eat_send_notification
-//         );
+        if(!isSuccesslist){
+             res[i].first_success_order_id=0;
+              res[i].last_success_order_id=0;
+              res[i].first_success_order_date=0;
+              res[i].last_success_order_date=0;
+              res[i].first_success_order_price=0;
+              res[i].last_success_order_price=0;
+        }
+
+        if(!isFalierlist){
+          res[i].first_cancel_order_id=0;
+          res[i].last_cancel_order_id=0;
+          res[i].first_cancel_order_date=0;
+          res[i].last_cancel_order_date=0;
+          res[i].first_cancel_order_price=0;
+          res[i].last_cancel_order_price=0;
+        }
+
+        delete res[i].orderlist;
+          
         
-//       } 
+      } 
      
-//   let resobj = {
-//     success: true,
-//     status: true,
-//     message: "notification sent successfully"
-//   };
+  let resobj = {
+    success: true,
+    status: true,
+    result: res
+  };
 
-//   result(null, resobj);
-//   //  }
-//   // });
+  result(null, resobj);
+   }
+  });
   
 
-//   // let resobj = {
-//   //   success: true,
-//   //   status: true,
-//   //   message: "notification sent successfully"
-//   // };
+  // let resobj = {
+  //   success: true,
+  //   status: true,
+  //   message: "notification sent successfully"
+  // };
 
-//   // result(null, resobj);
+  // result(null, resobj);
 
-// };
+};
+
 module.exports = Eatuser;
