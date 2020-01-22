@@ -106,7 +106,7 @@ Eatuser.createUser = function createUser(newUser, result) {
 
 Eatuser.getUserById = function getUserById(userId, result) {
   sql.query(
-    "Select us.userid,us.name,us.email,us.phoneno,us.Locality,us.created_at,us.virtualkey,us.gender,re.regionname,us.regionid,us.razer_customerid,us.other_region from User us left join Region re on re.regionid = us.regionid  where us.userid = ? ",
+    "Select us.userid,us.name,us.email,us.phoneno,us.Locality,us.created_at,us.virtualkey,us.gender,re.regionname,us.regionid,us.razer_customerid,us.other_region,us.other_hometown,us.hometownid,ht.hometownname from User us left join Region re on re.regionid = us.regionid left join Hometown ht on ht.hometownid=us.hometownid where us.userid = ? ",
     userId,
     function(err, res) {
       if (err) {
@@ -3654,9 +3654,21 @@ Eatuser.eatuser_otpverification =async function eatuser_otpverification(req,resu
 }
 };
 
-Eatuser.edit_eat_users =async function(req, result) {
+//
+Eatuser.edit_eat_users = async function edit_eat_users(req, result) {
  
- // var userdetails = await query ("");
+//  var userdetails = await query ("select regionid from Hometown where hometownid=35");
+//  console.log("userdetails==>",userdetails);
+ 
+ if (req.hometownid !=0 && req.hometownid) {
+
+  var regioniddata = await query("select regionid from Hometown where hometownid="+req.hometownid+"");
+  req.regionid=regioniddata[0].regionid;
+}else if (req.hometownid ==0) {
+  req.regionid=0;
+}
+
+
   var staticquery = "UPDATE User SET updated_at = ?, ";
   var column = "";
   req.referalcode = "EATWELL" + req.userid;
@@ -3671,15 +3683,14 @@ Eatuser.edit_eat_users =async function(req, result) {
   }
   column=column.slice(0, -1)
   values.push(req.userid);
-  var query = staticquery + column  + " where userid = ?";
-  //console.log("query--->",query)
-  //console.log("value--->",values)
-  sql.query(query, values, function(err, res) {
+  var query1 = staticquery + column  + " where userid = ?";
+console.log(query1);
+  sql.query(query1, values, function(err, res) {
     if (err) {
       result(err, null);
     } else {
 
-      sql.query("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid,other_region from User where userid = '"+req.userid+"' ", function(err, userdetails) {
+      sql.query("Select userid,name,email,phoneno,referalcode,Locality,gender,virtualkey,regionid,other_region,hometownid from User where userid = '"+req.userid+"' ", function(err, userdetails) {
         if (err) {
           result(err, null);
         } else {

@@ -143,7 +143,7 @@ app.route("/eatusers").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser})
 app.route("/eatusers/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":eatuser.read_a_user})).put(routesVersioning({"1.0.0":eatuser.update_a_user}));
 app.route("/favforeatusers/:id").get(middleware.checkToken,routesVersioning({"1.0.0":fav.list_all_fav_eatusers}));
 app
-    .route("/fav")
+.route("/fav")
     .get(middleware.checkToken,routesVersioning({"1.0.0":fav.list_all_fav}))
     .post(middleware.checkToken,routesVersioning({"1.0.0":fav.create_a_fav}));
 
