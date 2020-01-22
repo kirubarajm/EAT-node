@@ -17,22 +17,16 @@ var dunzoconst = require('../../model/dunzo_constant');
 var PackageStockInventory = require('../makeit/packageStockModel');
 var kpiproducthistory = require("../makeit/kpiproducthistoryModel.js");
 var Moveituser = require("../moveit/moveitUserModel.js");
-
-
+var MoveitDayWise = require("../../model/common/moveitdaywiseModel.js");
 
 const query = util.promisify(sql.query).bind(sql);
-var QuickSearch = function(QuickSearch) {
-  this.eatuserid = QuickSearch.eatuserid;
-  this.productid = QuickSearch.productid || 0;
-  //this.created_at = new Date();
+var QuickSearch   = function(QuickSearch) {
+  this.eatuserid  = QuickSearch.eatuserid;
+  this.productid  = QuickSearch.productid || 0;
   this.makeit_userid = QuickSearch.makeit_userid || 0;
 };
 
-QuickSearch.eat_explore_store_data_by_cron = async function eat_explore_store_data_by_cron(
-  search,
-  result
-) {
-  // try {
+QuickSearch.eat_explore_store_data_by_cron = async function eat_explore_store_data_by_cron(search, result) {
   const quicksearchquery = await query("Select * from QuickSearch");
   if (quicksearchquery.err) {
     let resobj = {
@@ -62,13 +56,10 @@ QuickSearch.eat_explore_store_data_by_cron = async function eat_explore_store_da
     var cyclequery = "";
     if (currenthour < lunchcycle) {
       cyclequery = cyclequery + " and pt.breakfast = 1";
-      //  console.log("breakfast");
     } else if (currenthour >= lunchcycle && currenthour <= dinnercycle) {
       cyclequery = cyclequery + " and pt.lunch = 1";
-      //  console.log("lunch");
     } else if (currenthour >= dinnercycle) {
       cyclequery = cyclequery + " and pt.dinner = 1";
-      //  console.log("dinner");
     }
 
     //  const productquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct product_name as name,productid as id, 1 from Product where product_name IS NOT NULL group by product_name");
@@ -125,18 +116,10 @@ QuickSearch.eat_explore_store_data_by_cron = async function eat_explore_store_da
       }
     }
   }
-  // } catch (error) {
-  //    let sucobj = true;
-  //    let resobj = {
-  //      success : sucobj,
-  //      result  : res
-  //     };
-  //     result(null, resobj);
-  // }
 };
 
-// This cron is to running all region and product and makeit to quick search
-//console.log('Before job instantiation');
+
+// This cron is to running all region and product and makeit to quick search  console.log('Before job instantiation');
 const job = new CronJob("0 */1 * * * *", async function(search, result) {
   sql.query("Select * from QuickSearch", function(err, res) {
     if (err) {
@@ -156,13 +139,10 @@ const job = new CronJob("0 */1 * * * *", async function(search, result) {
           var cyclequery = "";
           if (currenthour < lunchcycle) {
             cyclequery = cyclequery + " and pt.breakfast = 1";
-            //  console.log("breakfast");
           } else if (currenthour >= lunchcycle && currenthour <= dinnercycle) {
             cyclequery = cyclequery + " and pt.lunch = 1";
-            //  console.log("lunch");
           } else if (currenthour >= dinnercycle) {
             cyclequery = cyclequery + " and pt.dinner = 1";
-            //  console.log("dinner");
           }
           const proquery = await query(
             "INSERT INTO QuickSearch (name,id, type) SELECT distinct pt.product_name as name,pt.productid as id, 1 from Product pt join MakeitUser mk on mk.userid = pt.makeit_userid where (pt.product_name IS NOT NULL and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1)and(mk.appointment_status = 3 and mk.verified_status = 1 and ka_status = 2)  group by pt.product_name"
@@ -183,6 +163,7 @@ const job = new CronJob("0 */1 * * * *", async function(search, result) {
   });
 });
 //job.start();
+
 
 //incomplete online and release product quantity and order release by user.
 const job1 = new CronJob("*/3 * * * *", async function() {
@@ -218,8 +199,7 @@ const job1 = new CronJob("*/3 * * * *", async function() {
                 res[i].orderid +
                 "'"
             );
-            ////Insert Order History////
-            
+            ////Insert Order History////            
             ////////////////////////////
           }
         }
@@ -229,10 +209,7 @@ const job1 = new CronJob("*/3 * * * *", async function() {
 });
 //job1.start();
 
-QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(
-  req,
-  result
-) {
+QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(req, result) {
   // var searchquery = "select *, IF(type<3, IF(type=2, 'Kitchan', 'Product'), 'Region') as typename from QuickSearch where name LIKE  '%"+req.search+"%'";
   var searchquery =
     "select searchid,id,name,type, IF(type<3, IF(type=2, 'Kitchan', 'Product'), 'Region') as typename from QuickSearch where name LIKE  '%" +
@@ -258,10 +235,7 @@ QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(
 };
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle Start and End ///////////
-const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
-  req,
-  result
-) {
+const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {
   var breatfastcycle = constant.breatfastcycle;
   var lunchcycle = constant.lunchcycle;
   var dinnercyclestart = constant.dinnercycle;
@@ -375,132 +349,7 @@ const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
     }
   }
 });
-job1moveitlogout.start();
-
-// const order_auto_assign = new CronJob("1 7-23 * * * ", async function() {
-//   console.log("order_auto_assign");
-//   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
-//   var res = await query(
-//     "select oq.*,mk.makeithub_id,mk.userid,mk.lat,mk.lon from Orders_queue as oq join Orders as ors on ors.orderid=oq.orderid join MakeitUser as mk on mk.userid = ors.makeit_user_id where status = 0  order by oq.orderid desc"
-//   ); //and created_at > (NOW() - INTERVAL 10 MINUTE
-
-//   // console.log("cron for product revert online orders in-complete orders"+res);
-//   if (res.length !== 0) {
-//     for (let i = 0; i < res.length; i++) {
-//       var geoLocation = [];
-//       geoLocation.push(res[i].lat);
-//       geoLocation.push(res[i].lon);
-//       MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(
-//         geoLocation,
-//         constant.nearby_moveit_radius,
-//         async function(err, move_it_id_list) {
-//           if (err) {
-//             let error = {
-//               success: true,
-//               status: false,
-//               message: "No Move-it found,please after some time"
-//             };
-//             result(error, null);
-//           } else {
-//             var moveitlist = move_it_id_list.moveitid;
-
-//             if (moveitlist.length > 0) {
-//               //  console.log("moveitlist"+moveitlist.length);
-//               var moveitlistquery =
-//                 "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-//                 move_it_id_list.moveitid +
-//                 ") and mu.online_status = 1 and login_status=1 group by mu.userid";
-
-//               var nearbymoveit = await query(moveitlistquery);
-
-//               if (nearbymoveit.length !== 0) {
-//                 nearbymoveit.sort(
-//                   (a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout)
-//                 );
-
-//                 sql.query(
-//                   "UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",
-//                   [nearbymoveit[0].userid, assign_time, res[i].orderid],
-//                   async function(err, res2) {
-//                     if (err) {
-//                       result(err, null);
-//                     } else {
-//                       var moveit_offline_query = await query(
-//                         "update Orders_queue set status = 1 where orderid =" +
-//                           res[i].orderid +
-//                           ""
-//                       );
-
-//                       await Notification.orderMoveItPushNotification(
-//                         res[i].orderid,
-//                         PushConstant.pageidMoveit_Order_Assigned
-//                       );
-
-//                       // let resobj = {
-//                       //   success: true,
-//                       //   status:true,
-//                       //   message: "Order Assign Successfully",
-
-//                       // };
-//                       // result(null, resobj);
-//                     }
-//                   }
-//                 );
-//               }
-//               // else{
-
-//               // var new_Ordersqueue = new Ordersqueue(req);
-//               // new_Ordersqueue.status = 0;
-//               // Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
-//               //   if (err) {
-//               //     result(err, null);
-//               //   }else{
-
-//               //   //   let resobj = {
-//               //   //     success: true,
-//               //   //     status: true,
-//               //   //     message: "Order moved to Queue"
-//               //   // };
-
-//               //   // result(null, resobj);
-//               //   }
-//               // });
-//               // }
-//             }
-//             // else{
-
-//             //   var new_Ordersqueue = new Ordersqueue(req);
-//             //   new_Ordersqueue.status = 0;
-//             //   Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
-//             //     if (err) {
-//             //       result(err, null);
-//             //     }else{
-
-//             //     //   let resobj = {
-//             //     //     success: true,
-//             //     //     status: true,
-//             //     //     message: "Order moved to Queue"
-//             //     // };
-
-//             //     // result(null, resobj);
-//             //     }
-//             //   });
-
-//             // }
-//           }
-//         }
-//       );
-
-//       //  var today = moment();
-//       //  var ordertime = moment(res[i].ordertime);
-//       //  var diffMs  = (today - ordertime);
-//       //  var diffDays = Math.floor(diffMs / 86400000);
-//       //  var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
-//       //  var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
-//     }
-//   }
-// });
-
+//job1moveitlogout.start();
 
 //dunzo_task_create
 QuickSearch.dunzo_task_create = function dunzo_task_create(orderid) {
@@ -874,5 +723,36 @@ const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async funct
   }
 });
 //kpidashboardproducthistory.start();
+
+////cron run by moveit user offline every cycle end.
+const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
+  console.log("moveit offline & online");
+  var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1"); 
+  if (res.length !== 0) {
+    for (let i = 0; i < res.length; i++) {
+      /////////logout Moveit-Time log/////////////////
+      var req={};
+      req.type  = 0;
+      req.moveit_userid = res[i].userid;
+      await Moveituser.create_createMoveitTimelog(req);
+      /////////login Moveit-Time log/////////////////
+      var req={};
+      req.type  = 1;
+      req.moveit_userid = res[i].userid;
+      await Moveituser.create_createMoveitTimelog(req);
+    }
+  }
+});
+//moveitlog_outin.start();
+
+////CRON For Every day Moveit Log with Order///////
+const moveitlog_everyday = new CronJob("0 0 1 * * *", async function() {
+  var moveit_daywise_data = await Order.moveit_daywise_report();
+  console.log("10 sec");
+  // console.log("moveit_daywise_data",moveit_daywise_data);
+  await MoveitDayWise.createmoveitdaywise(moveit_daywise_data);
+});
+moveitlog_everyday.start();
+
 
 module.exports = QuickSearch;
