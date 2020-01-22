@@ -3,6 +3,7 @@ var sql = require("../db.js");
 var Productitem = require("../../model/makeit/productitemsModel.js");
 var Packageitem = require("../../model/makeit/packageitemsModel.js");
 var producthistory = require("../../model/makeit/liveproducthistoryModel.js");
+var Makeituser = require("../../model/makeit/makeitUserModel.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 var constant = require("../constant.js");
@@ -487,7 +488,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
           //     }
           //   }
           // );
-         } else if (res[0].approved_status == 0) {
+        } else if (res[0].approved_status == 0) {
           console.log("product live");
           let resobj = {
             success: true,
@@ -503,10 +504,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
   );
 };
 
-Product.update_quantity_product_byid = function update_quantity_product_byid(
-  req,
-  result
-) {
+Product.update_quantity_product_byid = function update_quantity_product_byid(req,result) {
   //console.log(req);
 
   const active_status = parseInt(req.active_status)
@@ -521,6 +519,8 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
           result(null, err);
         } else {
           //{"productid":136,"quantity":"10","active_status":1,"makeit_userid":"184"}
+
+          Makeituser.makeit_quantity_check(req);
           let resobj = {
             success: true,
             status: true,
