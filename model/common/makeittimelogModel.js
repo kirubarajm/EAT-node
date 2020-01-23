@@ -3,8 +3,8 @@ var sql = require("../db.js");
 
 //Task object constructor
 var Makeittimelog = function(makeittimelog) {
-  this.type         = makeittimelog.type;
-  this.makeit_id = makeittimelog.makeit_id;  
+  this.type       = makeittimelog.type;
+  this.makeit_id  = makeittimelog.makeit_id;  
 };
 
 Makeittimelog.createmakeittimelog = function createmakeittimelog(req) {

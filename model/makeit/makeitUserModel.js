@@ -15,6 +15,7 @@ var PushConstant = require("../../push/PushConstant.js");
 var Notification = require("../../model/common/notificationModel.js");
 var ZoneModel    = require("../../model/common/zoneModel.js");
 var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTrackingModel');
+var Makeittimelog    = require("../../model/common/makeittimelogModel");
 
 //Task object constructor
 var Makeituser = function(makeituser) {
@@ -912,8 +913,9 @@ Makeituser.admin_get_unapproved_makeitlist = function(req, result) {
     }
   });
 };
+
 Makeituser.updatemakeit_user_approval = function(req, result) {
-  console.log("updatemakeit_user_approval-->" + req);
+
   req.ka_status = parseInt(req.ka_status);
   var appointment_status = req.ka_status === 1 ? 3 : 2;
   sql.query(
@@ -3476,4 +3478,42 @@ Makeituser.makeit_delete= async function makeit_delete(req,result) {
   }
   
 };
+
+////Get Package Makeit User/////////////
+Makeituser.makeit_quantity_check= async function makeit_quantity_check(req,result) {
+
+        var breatfastcycle = constant.breatfastcycle;
+        var dinnercycle = constant.dinnercycle;
+        var lunchcycle = constant.lunchcycle;                              
+        var day = moment().format("YYYY-MM-DD HH:mm:ss");
+        var currenthour  = moment(day).format("HH");
+        var productquery = '';
+
+        if (currenthour < lunchcycle) {
+          productquery = productquery + "breakfast = 1";
+        }else if(currenthour >= lunchcycle && currenthour < dinnercycle){        
+          productquery = productquery + "lunch = 1";        
+        }else if( currenthour >= dinnercycle){        
+          productquery = productquery + "dinner = 1";
+        }
+
+
+  var makeitproductlist = await query("select * from Product where active_status = 1 and makeit_userid="+req.makeit_userid+" and "+productquery+" ");
+  if(makeitproductlist.length===0){
+    if (req.active_status=0) {
+      req.type=0;
+    }else{
+      req.type=1;
+    }
+    
+    Makeittimelog.createmakeittimelog(req);
+  }else{
+    
+  }
+  
+};
+
+
+
+
 module.exports = Makeituser;
