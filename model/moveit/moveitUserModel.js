@@ -1293,14 +1293,6 @@ Moveituser.firstmile_orderwise_moveitreport = async function firstmile_orderwise
 
 ////////////Orders Wise Moveit Report
 Moveituser.orderwise_moveitreport = async function orderwise_moveitreport(req, result) {
- 
-  
-  
-  
-  
-
-  
-
   
   if(req.fromdate && req.todate){
     var OrderMoveitReportQuery ="select mu.userid,mu.name,ord.orderid,ord.ordertime,time(ord.order_assigned_time) as order_assigned_time,time(ord.moveit_notification_time) as moveit_notification_time,time(ord.moveit_accept_time) as moveit_accept_time, time(ord.moveit_reached_time) as moveit_reached_time,time(ord.moveit_pickup_time) as moveit_pickup_time,time(ord.moveit_expected_delivered_time) as moveit_expected_delivered_time, time(ord.moveit_customerlocation_reached_time) as moveit_customerlocation_reached_time,time(ord.moveit_actual_delivered_time) as moveit_actual_delivered_time,ord.moveit_status,  CASE WHEN ord.orderstatus=0 then 'Order put' WHEN ord.orderstatus=1 then 'Order Accept' WHEN ord.orderstatus=2 then 'Order Preparing' WHEN ord.orderstatus=3 then 'Order Prepared' WHEN ord.orderstatus=4 then 'Kitchen reached' WHEN ord.orderstatus=5 then 'Order Pickedup' WHEN ord.orderstatus=6 then 'Order Delivered' WHEN ord.orderstatus=7 then 'Order Cancel' WHEN ord.orderstatus=8 then 'Order missed by kitchen' WHEN ord.orderstatus=9 then 'Incomplete online order reject' END as status,ord.orderstatus,TIMEDIFF(time(ord.moveit_accept_time), time(ord.order_assigned_time)) as accept_time,TIMEDIFF(time(ord.moveit_actual_delivered_time),time(ord.moveit_pickup_time)) as delivery_time,TIMEDIFF(time(ord.moveit_reached_time),      time(ord.moveit_accept_time)) as kitchen_reach_time,TIMEDIFF(time(IFNULL(ord.moveit_actual_delivered_time,0)),time(IFNULL(ord.created_at,0))) as order_time,ord.cus_lat,ord.cus_lon,mau.lat,mau.lon,ord.moveit_assign_lat,ord.moveit_assign_long, ord.moveit_accept_lat,ord.moveit_accept_long,ord.moveit_kitchen_reached_lat,ord.moveit_kitchen_reached_long,ord.moveit_Pickup_lat,ord.moveit_Pickup_long,ord.moveit_customer_location_reached_lat,ord.moveit_customer_location_reached_long,ord.moveit_delivery_lat,ord.moveit_delivery_long from MoveitUser as mu left join Orders as ord on ord.moveit_user_id=mu.userid left join MakeitUser as mau on mau.userid=ord.makeit_user_id where ord.ordertime IS NOT NULL and ord.moveit_actual_delivered_time IS NOT NULL and ord.orderid NOT IN (select orderid from Force_delivery_logs) and date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' order by ord.orderid desc";

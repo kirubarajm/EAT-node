@@ -3312,8 +3312,6 @@ Makeituser.makeit_earnings_report= async function makeit_earnings_report(req,res
 
   makeit=makeit + ' group by o.makeit_user_id order by MakeitEarnings';
 
-  console.log("makeit-->",makeit);
-
   sql.query(makeit, async function(err, res) {
     if(err){
       result(null, err);
