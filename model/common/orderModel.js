@@ -8304,5 +8304,33 @@ sql.query(query,function(err, res) {
 );
 };
 
+//////////Cancel order report follow up/////////////
+Order.xfactor_order_count= function xfactor_order_count(req, result) {
+  var query="SELECT date(xfact.created_at) as date,count(xfact.userid) as order_count FROM (SELECT t.product, t.created_at,t.userid FROM (Select o.orderid,o.created_at,o.userid,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on ma.userid=o.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id=ma.makeithub_id where o.orderstatus=11 and o.ordertype=0 and (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"') GROUP BY o.orderid) t GROUP BY date(t.created_at),t.userid,t.product) xfact GROUP BY date(xfact.created_at)";
+//console.log("query-->",query);
+sql.query(query,function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      if (res.length !== 0) {
+        let resobj = {
+          success: true,
+          status:true,
+          result:res
+        };
+        result(null, resobj);
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status:false
+        };
+        result(null, resobj);
+      }
+    }
+  }
+);
+};
+
 
 module.exports = Order;
