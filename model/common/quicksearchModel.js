@@ -18,6 +18,7 @@ var PackageStockInventory = require('../makeit/packageStockModel');
 var kpiproducthistory = require("../makeit/kpiproducthistoryModel.js");
 var Moveituser = require("../moveit/moveitUserModel.js");
 var MoveitDayWise = require("../../model/common/moveitdaywiseModel.js");
+var Makeitlog =require("../../model/common/makeittimelogModel.js");
 
 const query = util.promisify(sql.query).bind(sql);
 var QuickSearch   = function(QuickSearch) {
@@ -278,21 +279,31 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(re
 
   if (breatfastcycle && lunchcycle && dinnercycle) {
     if (cyclestart == 1) {
-      const getproductdetailscs = await query(
-        "select" +
-          CSselectquery +
-          " prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN IFNULL(oi.quantity,0) ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 and payment_status<2 THEN IFNULL(oi.quantity,0) ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 " +
-          CSwherequery +
-          " group by prd.productid"
-      );
+      const getproductdetailscs = await query("select" + CSselectquery +" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN IFNULL(oi.quantity,0) ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 and payment_status<2 THEN IFNULL(oi.quantity,0) ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 " + CSwherequery + " group by prd.productid");
       if (getproductdetailscs.err) {
         //result(err, null);
-        console.log(getproductdetailscs.err);
+        console.log("error",getproductdetailscs.err);
       } else {
         for (var i = 0; i < getproductdetailscs.length; i++) {
-          //var inserthistory = await producthistory.createProducthistory(getproductdetailscs[i]);
+          var inserthistory = await producthistory.createProducthistory(getproductdetailscs[i]);
         }
-        console.log("getproductdetailscs ============>",getproductdetailscs);
+        const getmakeitlistcs = await query("select distinct prd.makeit_userid as makeit_id from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 "+CSwherequery +" group by prd.productid");
+        for(let j=0; j<getmakeitlistcs.length; j++){
+          getmakeitlistcs[j].type=0;
+          for (let k = 0; k<getproductdetailscs.length; k++) {
+            if(getmakeitlistcs[j].makeit_id == getproductdetailscs[k].makeit_id){
+              if(getproductdetailscs[k].actual_quantity>0){
+                if(getmakeitlistcs[j].type==0){
+                  getmakeitlistcs[j].type=1;
+                }                
+              }
+            }
+          }
+        }
+        var makeitlogcs = getmakeitlistcs.filter(log => log.type===1);
+        for (var i=0; i<makeitlogcs.length; i++) {
+          var insertlog = await Makeitlog.createmakeittimelog(makeitlogcs[i]);
+        }
       }
     }
     if (cycleend == 1) {
@@ -308,9 +319,25 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(re
         console.log(getproductdetailsce.err);
       } else {
         for (var i = 0; i < getproductdetailsce.length; i++) {
-          //var inserthistory = await producthistory.createProducthistory(getproductdetailsce[i]);
+          var inserthistory = await producthistory.createProducthistory(getproductdetailsce[i]);
         }
-        console.log("getproductdetailscs ============>",getproductdetailscs);
+        const getmakeitlistce = await query("select distinct prd.makeit_userid as makeit_id from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 " +CEwherequery +" group by prd.productid");
+        for(let j=0; j<getmakeitlistce.length; j++){
+          getmakeitlistce[j].type=1;
+          for (let k = 0; k<getproductdetailsce.length; k++) {
+            if(getmakeitlistce[j].makeit_id == getproductdetailsce[k].makeit_id){
+              if(getproductdetailsce[k].actual_quantity>0){
+                if(getmakeitlistce[j].type==1){
+                  getmakeitlistce[j].type=0;
+                }                
+              }
+            }
+          }
+        }
+        var makeitlogce = getmakeitlistce.filter(log => log.type===0);
+        for (var i=0; i<makeitlogce.length; i++) {
+          var insertlog = await makeitlog.createmakeittimelog(makeitlogce[i]);
+        }
       }
     }
   }
