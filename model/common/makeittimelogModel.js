@@ -4,7 +4,7 @@ var sql = require("../db.js");
 //Task object constructor
 var Makeittimelog = function(makeittimelog) {
   this.type         = makeittimelog.type;
-  this.moveit_userid = makeittimelog.makeit_userid;  
+  this.makeit_id = makeittimelog.makeit_id;  
 };
 
 Makeittimelog.createmakeittimelog = function createmakeittimelog(req) {
