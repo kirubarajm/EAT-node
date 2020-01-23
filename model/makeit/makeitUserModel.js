@@ -3500,7 +3500,7 @@ Makeituser.makeit_quantity_check= async function makeit_quantity_check(req,resul
         }
 
 
-  var makeitproductlist = await query("select pt.productid,pt.active_status from Product pt left join MakeitUser mk on mk.userid=pt.makeit_userid where pt.active_status = 1 and pt.quantity =0 and mk.unservicable = 0 and pt.makeit_userid="+req.makeit_userid+" and "+productquery+" ");
+  var makeitproductlist = await query("select pt.productid,pt.active_status from Product pt left join MakeitUser mk on mk.userid=pt.makeit_userid where pt.active_status = 1 and pt.quantity !=0 and mk.unservicable = 0 and pt.makeit_userid="+req.makeit_userid+" and "+productquery+" ");
   if(makeitproductlist.length===0){
     var new_Makeittimelog = {};
     new_Makeittimelog.type=0;

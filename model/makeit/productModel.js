@@ -450,6 +450,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
               if (err) {
                 result(null, err);
               } else {
+               
                   var isEdit=true;
                   req.active_status=res1[0].active_status;
                   // if(res1[0].makeit_type===0){
@@ -603,6 +604,8 @@ Product.update_quantity_valid_package=function(req,isEdit,result){
         result(null, err);
       } else {
         /////=Edit Live Product History =//////////
+        req.makeit_id = req.makeit_userid;
+        Makeituser.makeit_quantity_check(req);
         let message='';
         if(isEdit){
           req.action=2;
@@ -621,6 +624,7 @@ Product.update_quantity_valid_package=function(req,isEdit,result){
               }
         });
         
+
         let resobj = {
           success: true,
           message: message,

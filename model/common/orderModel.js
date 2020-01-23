@@ -1186,10 +1186,13 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
       updatequery =
         "Update Orders set orderstatus = ?,makeit_expected_preparing_time= ?,makeit_accept_time=?,makeit_status=1 where orderid = ? ";
     } else if (req.orderstatus === PushConstant.masteridOrder_Prepared) {
+
+      req.makeit_userid=orderdetails[0].makeit_user_id;
+      Makeituser.makeit_quantity_check(req);
+
       var transaction_time = moment().format("YYYY-MM-DD HH:mm:ss");
       values = [req.orderstatus, transaction_time, req.orderid];
-      updatequery =
-        "Update Orders set orderstatus = ?,makeit_actual_preparing_time= ? where orderid = ? ";
+      updatequery ="Update Orders set orderstatus = ?,makeit_actual_preparing_time= ? where orderid = ? ";
     }
 
     sql.query(updatequery, values, async function(err, res) {
@@ -3713,6 +3716,8 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             payment_id: orderdetails[0].transactionid
           };
 
+          req.makeit_id = orderdetails[0].makeit_user_id;
+          Makeituser.makeit_quantity_check(req);
           var totalrefund = orderdetails[0].price + orderdetails[0].refund_amount;
           //var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
