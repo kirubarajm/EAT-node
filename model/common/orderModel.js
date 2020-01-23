@@ -719,7 +719,7 @@ Order.OrderOnline = async function OrderOnline(req, orderitems,result) {
 
 Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnlineOrder,result) {
   var new_Order = new Order(req);
-  console.log(new_Order);
+
   new_Order.delivery_charge = constant.deliverycharge;
   sql.beginTransaction(function(err) {
     if (err) { 
