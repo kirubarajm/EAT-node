@@ -759,6 +759,8 @@ Makeituser.orderstatusbyorderid = async function(req, result) {
           null,
           PushConstant.masteridOrder_Prepared
         );
+        req.makeit_userid=orderdetails[0].makeit_user_id;
+        Makeituser.makeit_quantity_check(req);
         await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Prepared,null);
         let sucobj = true;
         let mesobj = "Status Updated Successfully";
@@ -3490,25 +3492,25 @@ Makeituser.makeit_quantity_check= async function makeit_quantity_check(req,resul
         var productquery = '';
 
         if (currenthour < lunchcycle) {
-          productquery = productquery + "breakfast = 1";
+          productquery = productquery + "pt.breakfast = 1";
         }else if(currenthour >= lunchcycle && currenthour < dinnercycle){        
-          productquery = productquery + "lunch = 1";        
+          productquery = productquery + "pt.lunch = 1";        
         }else if( currenthour >= dinnercycle){        
-          productquery = productquery + "dinner = 1";
+          productquery = productquery + "pt.dinner = 1";
         }
 
 
-  var makeitproductlist = await query("select * from Product where active_status = 1 and makeit_userid="+req.makeit_userid+" and "+productquery+" ");
+  var makeitproductlist = await query("select pt.productid,pt.active_status from Product pt left join MakeitUser mk on mk.userid=pt.makeit_userid where pt.active_status = 1 and pt.quantity =0 and mk.unservicable = 0 and pt.makeit_userid="+req.makeit_userid+" and "+productquery+" ");
   if(makeitproductlist.length===0){
-    if (req.active_status=0) {
-      req.type=0;
-    }else{
-      req.type=1;
-    }
-    
-    Makeittimelog.createmakeittimelog(req);
+    var new_Makeittimelog = {};
+    new_Makeittimelog.type=0;
+    new_Makeittimelog.makeit_id=req.makeit_userid;
+    Makeittimelog.createmakeittimelog(new_Makeittimelog);
   }else{
-    
+    var new_Makeittimelog = {};
+    new_Makeittimelog.type=1;
+    new_Makeittimelog.makeit_id=req.makeit_userid;
+    Makeittimelog.createmakeittimelog(new_Makeittimelog);
   }
   
 };
