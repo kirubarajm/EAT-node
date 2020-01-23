@@ -3882,7 +3882,15 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
       };
       result(null, response);
 
-  } else {
+  }else if(orderdetails[0].orderstatus === 6){
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! This order is already delivered."
+    };
+    result(null, response);
+
+} else {
     sql.query("UPDATE Orders SET makeit_status=0,orderstatus = 7,cancel_by = 2 ,cancel_time = '" +ordercanceltime+"',cancel_reason='" +cancel_reason+"' WHERE orderid ='" +req.orderid +"'",
     async function(err, res) {
         if (err) {
@@ -8187,25 +8195,27 @@ sql.query(query,function(err, res) {
 };
 
 ///Moveit Succession Report////
-Order.moveit_daywise_report= async function moveit_daywise_report(req) {  
- var moveitlog = await Order.moveit_logtime(req);
+Order.moveit_daywise_report= async function moveit_daywise_report(req) { 
+  var moveitlog = await Order.moveit_logtime(req);
   var moveitloguser = [];
-  for (let i = 0; i < moveitlog.length; i++) {
-    moveitloguser.push(moveitlog[i].moveit_userid);
-  }
-  var moveitorders = await Order.moveit_order_count(req,moveitloguser);
-  for (let i = 0; i < moveitlog.length; i++) {
-    for (let j = 0; j < moveitorders.length; j++) {
-      if(moveitlog[i].date == moveitorders[j].date && moveitlog[i].moveit_userid == moveitorders[j].moveit_user_id){
-        if(moveitlog[i].order_count==0){
-          moveitlog[i].order_count= moveitorders[j].order_count;
-          moveitlog[i].breakfast  = moveitorders[j].breakfast;
-          moveitlog[i].lunch      = moveitorders[j].lunch;
-          moveitlog[i].dinner     = moveitorders[j].dinner;
-        }        
-      }
-    }    
-  } 
+  if(moveitlog.length>0){
+    for (let i = 0; i < moveitlog.length; i++) {
+      moveitloguser.push(moveitlog[i].moveit_userid);
+    }
+    var moveitorders = await Order.moveit_order_count(req,moveitloguser);
+    for (let i = 0; i < moveitlog.length; i++) {
+      for (let j = 0; j < moveitorders.length; j++) {
+        if(moveitlog[i].date == moveitorders[j].date && moveitlog[i].moveit_userid == moveitorders[j].moveit_user_id){
+          if(moveitlog[i].order_count==0){
+            moveitlog[i].order_count= moveitorders[j].order_count;
+            moveitlog[i].breakfast  = moveitorders[j].breakfast;
+            moveitlog[i].lunch      = moveitorders[j].lunch;
+            moveitlog[i].dinner     = moveitorders[j].dinner;
+          }        
+        }
+      }    
+    } 
+  }  
   return moveitlog; 
 };
 
@@ -8337,6 +8347,152 @@ Order.moveit_logtime = async function moveit_logtime(req) {
     moveitavg[k].dinner =0;
   } 
   return moveitavg;
+};
+
+///Makeit Succession Report////
+Order.makeit_daywise_report= async function makeit_daywise_report(req) { 
+  var makeitlog = await Order.makeit_logtime(req);
+  var makeitloguser = [];
+  if(makeitlog.length>0){
+    for (let i = 0; i < makeitlog.length; i++) {
+      makeitloguser.push(makeitlog[i].makeit_id);
+    }
+    var makeitorders = await Order.makeit_order_count(req,makeitloguser);
+    for (let i = 0; i < moveitlog.length; i++) {
+      for (let j = 0; j < makeitorders.length; j++) {
+        if(makeitlog[i].log_date == makeitorders[j].log_date && makeitlog[i].makeit_id == makeitorders[j].makeit_id){
+          if(makeitlog[i].order_count==0){
+            makeitlog[i].order_count= makeitorders[j].order_count;
+            makeitlog[i].breakfast  = makeitorders[j].breakfast;
+            makeitlog[i].lunch      = makeitorders[j].lunch;
+            makeitlog[i].dinner     = makeitorders[j].dinner;
+          }        
+        }
+      }    
+    } 
+  }  
+  return makeitlog; 
+};
+
+////Makeit Order Count///////
+Order.makeit_order_count = async function makeit_order_count(req,moveitloguser) {
+  var ordercountquery = "select date(created_at) as date,moveit_user_id,count(orderid) as order_count, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' THEN orderid END) as breakfast, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' THEN orderid END) as lunch, COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN orderid END) as dinner from Orders where moveit_user_id IN("+moveitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 and orderstatus=6 and moveit_user_id!=0 group by moveit_user_id,date(created_at) order by moveit_user_id,date(created_at)";
+  var ordercount = await query(ordercountquery);
+  return ordercount;
+};
+
+////Makeit Logtime perday///////////
+Order.makeit_logtime = async function makeit_logtime(req) {  
+  ///Get Moveit Users list///////
+  var makeitlogusersquery = "select makeit_id,date(created_at) as log_date from Makeit_Timelog where date(created_at) between CURDATE() and CURDATE() group by makeit_id order by makeit_id";
+  var makeitlogusers = await query(makeitlogusersquery);
+  ///Get Moveit Logs///////
+  var makeitlogquery = "select date(created_at) as log_date,time(created_at) as logtime,type,makeit_id from Makeit_Timelog where date(created_at) between CURDATE() and CURDATE() order by date(created_at),makeit_id";
+  var makeitlog = await query(makeitlogquery);
+  
+  
+  ///console.log("Kloop ==>",makeitlog);
+  for (let k = 0; k < makeitlogusers.length; k++) {
+    var starttime  = '';
+    var endtime    = '';
+
+    ///////cycle-1/////////
+    var starttimecycle1  = '';
+    var endtimecycle1    = '';
+    var avgtimediffcycle1    = '';
+    var avgtimediffseccycle1 = '';
+    var secondscycle1    = '';
+    var avgtimecycle1    = '00:00:00';
+    ///////cycle-2/////////
+    var starttimecycle2  = '';
+    var endtimecycle2   = '';
+    var avgtimediffcycle2    = '';
+    var avgtimediffseccycle2 = '';
+    var secondscycle2    = '';
+    var avgtimecycle2    = '00:00:00';
+    ///////cycle-3/////////
+    var starttimecycle3  = '';
+    var endtimecycle3   = '';
+    var avgtimediffcycle3    = '';
+    var avgtimediffseccycle3 = '';
+    var secondscycle3    = '';
+    var avgtimecycle3    = '00:00:00';    
+
+    for (let l = 0; l < makeitlog.length; l++) { 
+      if(makeitlogusers[k].makeit_id == makeitlog[l].makeit_id && makeitlogusers[k].log_date == makeitlog[l].log_date){ 
+        if(makeitlog[l].type==1){
+          starttime = makeitlog[l].logtime;  
+          if(starttime >= "08:00:00" && starttime < "12:00:00"){
+            starttimecycle1 = starttime;
+          }else if(starttime >= "12:00:00" && starttime < "16:00:00"){
+            starttimecycle2 = starttime;
+          }else if(starttime >= "16:00:00" && starttime < "23:00:00"){
+            starttimecycle3 = starttime;
+          } 
+        }else if(makeitlog[l].type==0){
+          endtime = makeitlog[l].logtime;
+          if(endtime >= "08:00:00" && endtime < "12:00:00"){
+            endtimecycle1 = endtime;
+          }else if(endtime >= "12:00:00" && endtime < "16:00:00"){
+            endtimecycle2 = endtime;
+          }else if(endtime >= "16:00:00" && endtime < "23:00:00"){
+            endtimecycle3 = endtime;
+          } 
+        }
+        
+        if(starttimecycle1 !='' && endtimecycle1 !=''){
+          var avgtimediffcycle1    = moment.utc(moment(endtimecycle1, "HH:mm:ss").diff(moment(starttimecycle1, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffseccycle1 = avgtimediffcycle1.split(':'); 
+          var secondscycle1        = (+avgtimediffseccycle1[0]) * 60 * 60 + (+avgtimediffseccycle1[1]) * 60 + (+avgtimediffseccycle1[2]); 
+          avgtimecycle1        = moment(avgtimecycle1,"HH:mm:ss").add(secondscycle1,'s').format("HH:mm:ss");
+          starttimecycle1 = '';
+          endtimecycle1   = '';
+        }
+
+        if(starttimecycle2 !='' && endtimecycle2 !=''){
+          var avgtimediffcycle2    = moment.utc(moment(endtimecycle2, "HH:mm:ss").diff(moment(starttimecycle2, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffseccycle2 = avgtimediffcycle2.split(':'); 
+          var secondscycle2        = (+avgtimediffseccycle2[0]) * 60 * 60 + (+avgtimediffseccycle2[1]) * 60 + (+avgtimediffseccycle2[2]); 
+          avgtimecycle2        = moment(avgtimecycle2,"HH:mm:ss").add(secondscycle2,'s').format("HH:mm:ss");
+          starttimecycle2   = '';
+          endtimecycle1e2   = '';
+        }
+
+        if(starttimecycle3 !='' && endtimecycle3 !=''){
+         var avgtimediffcycle3    = moment.utc(moment(endtimecycle3, "HH:mm:ss").diff(moment(starttimecycle3, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffseccycle3 = avgtimediffcycle3.split(':'); 
+          var secondscycle3        = (+avgtimediffseccycle3[0]) * 60 * 60 + (+avgtimediffseccycle3[1]) * 60 + (+avgtimediffseccycle3[2]); 
+          avgtimecycle3        = moment(avgtimecycle3,"HH:mm:ss").add(secondscycle3,'s').format("HH:mm:ss");
+          starttimecycle3 = '';
+          endtimecycle3   = '';
+        }
+        starttime ='';
+        endtime ='';
+      } 
+    }     
+    makeitlogusers[k].cycle1 = avgtimecycle1;
+    makeitlogusers[k].cycle2 = avgtimecycle2;
+    makeitlogusers[k].cycle3 = avgtimecycle3;
+    makeitlogusers[k].logtime ='00:00:00';
+    var cycle1 = makeitlogusers[k].cycle1.split(':'); 
+    var cycle1sec  = (+cycle1[0]) * 60 * 60 + (+cycle1[1]) * 60 + (+cycle1[2]); 
+    makeitlogusers[k].logtime =  moment(makeitlogusers[k].logtime,"HH:mm:ss").add(cycle1sec,'s').format("HH:mm:ss");
+
+    var cycle2 = makeitlogusers[k].cycle2.split(':'); 
+    var cycle2sec  = (+cycle2[0]) * 60 * 60 + (+cycle2[1]) * 60 + (+cycle2[2]); 
+    makeitlogusers[k].logtime =  moment(makeitlogusers[k].logtime,"HH:mm:ss").add(cycle2sec,'s').format("HH:mm:ss");
+
+    var cycle3 = makeitlogusers[k].cycle3.split(':'); 
+    var cycle3sec  = (+cycle3[0]) * 60 * 60 + (+cycle3[1]) * 60 + (+cycle3[2]); 
+    makeitlogusers[k].logtime =  moment(makeitlogusers[k].logtime,"HH:mm:ss").add(cycle3sec,'s').format("HH:mm:ss");
+
+    ///////////////////
+    makeitlogusers[k].order_count =0;
+    makeitlogusers[k].breakfast =0;
+    makeitlogusers[k].lunch =0;
+    makeitlogusers[k].dinner =0;
+  } 
+  return makeitlogusers;
 };
 
 module.exports = Order;

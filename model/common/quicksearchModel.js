@@ -773,12 +773,21 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
 
 ////CRON For Every day Moveit Log with Order///////
 const moveitlog_everyday = new CronJob("0 0 1 * * *", async function() {
-  var moveit_daywise_data = await Order.moveit_daywise_report();
   console.log("10 sec");
-  // console.log("moveit_daywise_data",moveit_daywise_data);
+  var moveit_daywise_data = await Order.moveit_daywise_report();
+  //console.log("moveit_daywise_data ===>",moveit_daywise_data);
   await MoveitDayWise.createmoveitdaywise(moveit_daywise_data);
 });
-//moveitlog_everyday.start();
+moveitlog_everyday.start();
+
+////CRON For Every day Makeit Log with Order///////
+const makeitlog_everyday = new CronJob("0 0 1 * * *", async function() {
+  console.log("10 sec");
+  var makeit_daywise_data = await Order.makeit_daywise_report();
+  //console.log("moveit_daywise_data ===>",moveit_daywise_data);
+  await MoveitDayWise.createmoveitdaywise(moveit_daywise_data);
+});
+makeitlog_everyday.start();
 
 
 module.exports = QuickSearch;
