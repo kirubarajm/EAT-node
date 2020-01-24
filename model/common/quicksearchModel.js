@@ -662,7 +662,7 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
 //moveitlog_outin.start();
 
 ////CRON For Every day Moveit Log with Order///////
-const moveitlog_everyday = new CronJob("0 0 1 * * *", async function() {
+const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
   console.log("Moveit Daywise Report");
   var moveit_daywise_data = await Order.moveit_daywise_report();
   await MoveitDayWise.createmoveitdaywise(moveit_daywise_data);
@@ -670,7 +670,7 @@ const moveitlog_everyday = new CronJob("0 0 1 * * *", async function() {
 //moveitlog_everyday.start();
 
 ////CRON For Every day Makeit Log with Order///////
-const makeitlog_everyday = new CronJob("0 0 16 * * *", async function() {
+const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
   console.log("Makeit Daywise Report");
   var makeit_daywise_data = await Order.makeit_daywise_report();
   if (makeit_daywise_data.length !=0) {    
@@ -680,7 +680,7 @@ const makeitlog_everyday = new CronJob("0 0 16 * * *", async function() {
     }
   } 
 });
-makeitlog_everyday.start();
+//makeitlog_everyday.start();
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
 const liveproducthistory_cyclestart = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {
