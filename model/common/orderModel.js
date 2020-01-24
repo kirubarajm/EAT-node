@@ -8358,7 +8358,7 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
       makeitloguser.push(makeitlog[i].makeit_id);
     }
     var makeitorders = await Order.makeit_order_count(req,makeitloguser);
-    for (let i = 0; i < moveitlog.length; i++) {
+    for (let i = 0; i < makeitlog.length; i++) {
       for (let j = 0; j < makeitorders.length; j++) {
         if(makeitlog[i].log_date == makeitorders[j].log_date && makeitlog[i].makeit_id == makeitorders[j].makeit_id){
           if(makeitlog[i].order_count==0){
