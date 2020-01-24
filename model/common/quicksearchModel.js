@@ -18,6 +18,7 @@ var PackageStockInventory = require('../makeit/packageStockModel');
 var kpiproducthistory = require("../makeit/kpiproducthistoryModel.js");
 var Moveituser = require("../moveit/moveitUserModel.js");
 var MoveitDayWise = require("../../model/common/moveitdaywiseModel.js");
+var MakeitDayWise = require("../../model/common/makeitdaywiseModel.js");
 var Makeitlog =require("../../model/common/makeittimelogModel.js");
 
 const query = util.promisify(sql.query).bind(sql);
@@ -119,7 +120,6 @@ QuickSearch.eat_explore_store_data_by_cron = async function eat_explore_store_da
   }
 };
 
-
 // This cron is to running all region and product and makeit to quick search  console.log('Before job instantiation');
 const job = new CronJob("0 */1 * * * *", async function(search, result) {
   sql.query("Select * from QuickSearch", function(err, res) {
@@ -164,7 +164,6 @@ const job = new CronJob("0 */1 * * * *", async function(search, result) {
   });
 });
 //job.start();
-
 
 //incomplete online and release product quantity and order release by user.
 const job1 = new CronJob("*/3 * * * *", async function() {
@@ -664,33 +663,38 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
 
 ////CRON For Every day Moveit Log with Order///////
 const moveitlog_everyday = new CronJob("0 0 1 * * *", async function() {
-  console.log("10 sec");
+  console.log("Moveit Daywise Report");
   var moveit_daywise_data = await Order.moveit_daywise_report();
-  //console.log("moveit_daywise_data ===>",moveit_daywise_data);
   await MoveitDayWise.createmoveitdaywise(moveit_daywise_data);
 });
-moveitlog_everyday.start();
+//moveitlog_everyday.start();
 
 ////CRON For Every day Makeit Log with Order///////
-const makeitlog_everyday = new CronJob("0 0 1 * * *", async function() {
-  console.log("10 sec");
+const makeitlog_everyday = new CronJob("0 0 16 * * *", async function() {
+  console.log("Makeit Daywise Report");
   var makeit_daywise_data = await Order.makeit_daywise_report();
-  //console.log("moveit_daywise_data ===>",moveit_daywise_data);
-  await MoveitDayWise.createmoveitdaywise(moveit_daywise_data);
+  if (makeit_daywise_data.length !=0) {    
+    for (let i = 0; i < makeit_daywise_data.length; i++) {
+      var new_makeit_daywise_data = new MakeitDayWise(makeit_daywise_data[i]);
+      await MakeitDayWise.createmakeitdaywise(new_makeit_daywise_data);
+    }
+  } 
 });
 makeitlog_everyday.start();
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
 const liveproducthistory_cyclestart = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {
+  console.log("Live Product History Cycle Start");
   await QuickSearch.liveproducthistorycyclestart();
 });
-liveproducthistory_cyclestart.start();
+//liveproducthistory_cyclestart.start();
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle End ///////////
 const liveproducthistory_cycleend = new CronJob("0 55 11,15,22 * * *", async function(req, result) {
+  console.log("Live Product History Cycle End");
   await QuickSearch.liveproducthistorycycleend();
 });
-liveproducthistory_cycleend.start();
+//liveproducthistory_cycleend.start();
 
 //////////Live Product History Cycle Start Cron Function//////////////
 QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycyclestart(){

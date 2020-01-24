@@ -7872,7 +7872,6 @@ Order.dunzo_order_delivery_by_admin = function dunzo_order_delivery_by_admin(req
   );
 };
 
-
 ////Average Order Value////
 Order.averageordervalue_report= async function averageordervalue_report(req, result) {  
   var virtuallist = await query("select date(ord.created_at) as date,count(ord.orderid) as order_count,sum(ord.price) as price,( sum(ord.price)/count(ord.orderid)) as avg_price  from Orders as ord left join MakeitUser as mu on mu.userid=ord.makeit_user_id where mu.virtualkey=1 and ord.ordertype=0 and ord.orderstatus=6 and date(ord.created_at)  BETWEEN CURDATE()-6 AND  CURDATE() GROUP BY date(ord.created_at) Order BY date(ord.created_at)");
@@ -8109,7 +8108,6 @@ Order.update_moveit_lat_long= async function update_moveit_lat_long(req, result)
           })
 };
 
-
 //////////Cancel order report follow up/////////////
 Order.cancelled_report_follow_up= function cancelled_report_follow_up(req, result) {
   var query="Select ors.orderid,ors.created_at as ordertime,u.name, u.phoneno, ors.cancel_by, ors.cancel_reason,ors.cancel_time,ors.order_assigned_time as moveit_order_assignedtime, ors.moveit_reached_time, ors.moveit_pickup_time, ors.moveit_notification_time, ors.makeit_accept_time,ors.moveit_accept_time,ors.makeit_expected_preparing_time,ors.makeit_actual_preparing_time from Orders as ors join User as u on u.userid=ors.userid where ors.orderstatus=7 and Date(ors.created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"'";
@@ -8249,7 +8247,6 @@ Order.moveit_logtime = async function moveit_logtime(req) {
   for (let k = 0; k < moveitavg.length; k++) {
     var starttime  = '';
     var endtime    = '';
-
     ///////cycle-1/////////
     var starttimecycle1  = '';
     var endtimecycle1    = '';
@@ -8353,30 +8350,47 @@ Order.moveit_logtime = async function moveit_logtime(req) {
 Order.makeit_daywise_report= async function makeit_daywise_report(req) { 
   var makeitlog = await Order.makeit_logtime(req);
   var makeitloguser = [];
-  if(makeitlog.length>0){
+  if(makeitlog.length>0){ 
     for (let i = 0; i < makeitlog.length; i++) {
       makeitloguser.push(makeitlog[i].makeit_id);
     }
     var makeitorders = await Order.makeit_order_count(req,makeitloguser);
-    for (let i = 0; i < makeitlog.length; i++) {
-      for (let j = 0; j < makeitorders.length; j++) {
-        if(makeitlog[i].log_date == makeitorders[j].log_date && makeitlog[i].makeit_id == makeitorders[j].makeit_id){
-          if(makeitlog[i].order_count==0){
-            makeitlog[i].order_count= makeitorders[j].order_count;
-            makeitlog[i].breakfast  = makeitorders[j].breakfast;
-            makeitlog[i].lunch      = makeitorders[j].lunch;
-            makeitlog[i].dinner     = makeitorders[j].dinner;
-          }        
-        }
-      }    
-    } 
-  }  
+    if(makeitlog.length > 0 && makeitorders.length > 0){
+      for (let i = 0; i < makeitlog.length; i++) {
+        for (let j = 0; j < makeitorders.length; j++) {
+          if(makeitlog[i].log_date == makeitorders[j].log_date && makeitlog[i].makeit_id == makeitorders[j].makeit_id){
+            if(makeitlog[i].order_count==0){
+              makeitlog[i].order_count= makeitorders[j].order_count;
+              makeitlog[i].breakfast_completed = makeitorders[j].breakfast_completed;
+              makeitlog[i].lunch_completed     = makeitorders[j].lunch_completed;
+              makeitlog[i].dinner_completed    = makeitorders[j].dinner_completed;
+              makeitlog[i].breakfast_canceled  = makeitorders[j].breakfast_canceled;
+              makeitlog[i].lunch_canceled      = makeitorders[j].lunch_canceled;
+              makeitlog[i].dinner_canceled     = makeitorders[j].dinner_canceled;
+            }        
+          }
+        }    
+      } 
+    }
+    var liveproducts = await Order.makeit_cycle_product_count(req,makeitloguser);
+    if(makeitlog.length > 0 && liveproducts.length > 0){
+      for (let i = 0; i < makeitlog.length; i++) {
+        for (let j = 0; j < liveproducts.length; j++) {
+          if(makeitlog[i].log_date == liveproducts[j].log_date && makeitlog[i].makeit_id == liveproducts[j].makeit_id){
+            makeitlog[i].breakfast_count  = liveproducts[j].breakfast_count;
+            makeitlog[i].lunch_count      = liveproducts[j].lunch_count;
+            makeitlog[i].dinner_count     = liveproducts[j].dinner_count;                 
+          }
+        }   
+      }
+    }
+  } 
   return makeitlog; 
 };
 
 ////Makeit Order Count///////
-Order.makeit_order_count = async function makeit_order_count(req,moveitloguser) {
-  var ordercountquery = "select date(created_at) as date,moveit_user_id,count(orderid) as order_count, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' THEN orderid END) as breakfast, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' THEN orderid END) as lunch, COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN orderid END) as dinner from Orders where moveit_user_id IN("+moveitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 and orderstatus=6 and moveit_user_id!=0 group by moveit_user_id,date(created_at) order by moveit_user_id,date(created_at)";
+Order.makeit_order_count = async function makeit_order_count(req,makeitloguser) {
+  var ordercountquery = "select date(created_at) as date,makeit_user_id, count(orderid) as order_count, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=6 THEN orderid END) as breakfast_completed, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=6 THEN orderid END) as lunch_completed, COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN orderid END) as dinner_completed, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as breakfast_canceled, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as lunch_canceled, COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as dinner_canceled from Orders where makeit_user_id IN("+makeitloguser+") and date(created_at) between CURDATE() and CURDATE() and orderstatus=6 and makeit_user_id!=0 group by makeit_user_id,date(created_at) order by makeit_user_id,date(created_at)";
   var ordercount = await query(ordercountquery);
   return ordercount;
 };
@@ -8388,14 +8402,13 @@ Order.makeit_logtime = async function makeit_logtime(req) {
   var makeitlogusers = await query(makeitlogusersquery);
   ///Get Moveit Logs///////
   var makeitlogquery = "select date(created_at) as log_date,time(created_at) as logtime,type,makeit_id from Makeit_Timelog where date(created_at) between CURDATE() and CURDATE() order by date(created_at),makeit_id";
-  var makeitlog = await query(makeitlogquery);
-  
+  var makeitlog = await query(makeitlogquery);  
   
   ///console.log("Kloop ==>",makeitlog);
   for (let k = 0; k < makeitlogusers.length; k++) {
     var starttime  = '';
     var endtime    = '';
-
+    var cycle_count = 0;
     ///////cycle-1/////////
     var starttimecycle1  = '';
     var endtimecycle1    = '';
@@ -8473,6 +8486,18 @@ Order.makeit_logtime = async function makeit_logtime(req) {
     makeitlogusers[k].cycle1 = avgtimecycle1;
     makeitlogusers[k].cycle2 = avgtimecycle2;
     makeitlogusers[k].cycle3 = avgtimecycle3;
+
+    if(avgtimecycle1 != '00:00:00'){
+      cycle_count++;
+    }
+    if(avgtimecycle2 != '00:00:00'){
+      cycle_count++;
+    }
+    if(avgtimecycle3 != '00:00:00'){
+      cycle_count++;
+    }
+    makeitlogusers[k].cycle_count = cycle_count;
+
     makeitlogusers[k].logtime ='00:00:00';
     var cycle1 = makeitlogusers[k].cycle1.split(':'); 
     var cycle1sec  = (+cycle1[0]) * 60 * 60 + (+cycle1[1]) * 60 + (+cycle1[2]); 
@@ -8487,12 +8512,26 @@ Order.makeit_logtime = async function makeit_logtime(req) {
     makeitlogusers[k].logtime =  moment(makeitlogusers[k].logtime,"HH:mm:ss").add(cycle3sec,'s').format("HH:mm:ss");
 
     ///////////////////
-    makeitlogusers[k].order_count =0;
-    makeitlogusers[k].breakfast =0;
-    makeitlogusers[k].lunch =0;
-    makeitlogusers[k].dinner =0;
+    makeitlogusers[k].order_count         = 0;
+    makeitlogusers[k].breakfast_completed = 0;
+    makeitlogusers[k].lunch_completed     = 0;
+    makeitlogusers[k].dinner_completed    = 0;
+    makeitlogusers[k].breakfast_canceled  = 0;
+    makeitlogusers[k].lunch_canceled      = 0;
+    makeitlogusers[k].dinner_canceled     = 0;
+    makeitlogusers[k].breakfast_count     = 0;
+    makeitlogusers[k].lunch_count         = 0;
+    makeitlogusers[k].dinner_count        = 0;
   } 
   return makeitlogusers;
+};
+
+////Makeit Cycle Based Product Count///////
+Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req,makeitloguser) {
+  var liveproductcountquery = "select date(created_at) as log_date,makeit_id, COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' THEN (product_id) END) as breakfast_count, COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' THEN (product_id) END) as lunch_count, COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN (product_id) END) as dinner_count from Live_Product_History where makeit_id IN("+makeitloguser+") and date(created_at) between CURDATE() and CURDATE() group by makeit_id";
+
+  var productcount = await query(liveproductcountquery);
+  return productcount;
 };
 
 module.exports = Order;

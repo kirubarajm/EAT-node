@@ -270,7 +270,7 @@ Moveituser.getAllmoveitSearch = function getAllmoveitSearch(req, result) {
 
 ////Moveit Time Log//////////////
 Moveituser.create_createMoveitTimelog = function create_createMoveitTimelog(req) {
-  console.log("create_createMoveitTimelog ===============>",req);
+  //console.log("create_createMoveitTimelog ===============>",req);
   var new_MoveitTimelog = new MoveitTimelog(req);
   MoveitTimelog.createMoveitTimelog(new_MoveitTimelog, function(err, new_MoveitTimelog) {
     if (err) return err;
