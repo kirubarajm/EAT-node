@@ -8354,12 +8354,19 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
     for (let i = 0; i < makeitlog.length; i++) {
       makeitloguser.push(makeitlog[i].makeit_id);
     }
+
+  
     var makeitorders = await Order.makeit_order_count(req,makeitloguser);
     if(makeitlog.length > 0 && makeitorders.length > 0){
       for (let i = 0; i < makeitlog.length; i++) {
         for (let j = 0; j < makeitorders.length; j++) {
+          console.log("makeitlog[i].log_date------------------->",makeitlog[i].log_date);
+          console.log("makeitorders[j].log_date------------------->",makeitorders[j].log_date);
+    
           if(makeitlog[i].log_date == makeitorders[j].log_date && makeitlog[i].makeit_id == makeitorders[j].makeit_id){
+            
             if(makeitlog[i].order_count==0){
+             
               makeitlog[i].order_count= makeitorders[j].order_count;
               makeitlog[i].breakfast_completed = makeitorders[j].breakfast_completed;
               makeitlog[i].lunch_completed     = makeitorders[j].lunch_completed;
@@ -8367,6 +8374,10 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
               makeitlog[i].breakfast_canceled  = makeitorders[j].breakfast_canceled;
               makeitlog[i].lunch_canceled      = makeitorders[j].lunch_canceled;
               makeitlog[i].dinner_canceled     = makeitorders[j].dinner_canceled;
+              makeitlog[i].total_makeit_earnings = makeitorders[j].total_makeit_earnings || 0;
+              makeitlog[i].breakfast_total_makeit_earnings = makeitorders[j].breakfast_total_makeit_earnings || 0;
+              makeitlog[i].lunch_total_makeit_earnings = makeitorders[j].lunch_total_makeit_earnings || 0;
+              makeitlog[i].dinner_total_makeit_earnings = makeitorders[j].dinner_total_makeit_earnings || 0;
             }        
           }
         }    
@@ -8390,7 +8401,9 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
 
 ////Makeit Order Count///////
 Order.makeit_order_count = async function makeit_order_count(req,makeitloguser) {
-  var ordercountquery = "select date(created_at) as date,makeit_user_id, count(orderid) as order_count, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=6 THEN orderid END) as breakfast_completed, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=6 THEN orderid END) as lunch_completed, COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN orderid END) as dinner_completed, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as breakfast_canceled, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as lunch_canceled, COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as dinner_canceled from Orders where makeit_user_id IN("+makeitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 and orderstatus=6 and makeit_user_id!=0 group by makeit_user_id,date(created_at) order by makeit_user_id,date(created_at)";
+ 
+  var ordercountquery = "select date(created_at) as log_date,makeit_user_id as makeit_id, count(orderid) as order_count,SUM(makeit_earnings) AS total_makeit_earnings, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=6 THEN orderid END) as breakfast_completed, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=6 THEN orderid END) as lunch_completed,  COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN orderid END) as dinner_completed,   SUM(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=6 THEN makeit_earnings END) as breakfast_total_makeit_earnings, SUM(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=6 THEN makeit_earnings END) as lunch_total_makeit_earnings,  SUM(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN makeit_earnings END) as dinner_total_makeit_earnings,   COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as breakfast_canceled,    COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as lunch_canceled,     COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as dinner_canceled  from Orders where makeit_user_id IN("+makeitloguser+") and date(created_at) between CURDATE() and CURDATE() and orderstatus=6 and makeit_user_id!=0  group by makeit_user_id,  date(created_at) order by makeit_user_id,date(created_at)";
+  console.log("--------------->",ordercountquery);
   var ordercount = await query(ordercountquery);
   return ordercount;
 };
@@ -8398,10 +8411,10 @@ Order.makeit_order_count = async function makeit_order_count(req,makeitloguser) 
 ////Makeit Logtime perday///////////
 Order.makeit_logtime = async function makeit_logtime(req) {  
   ///Get Moveit Users list///////
-  var makeitlogusersquery = "select makeit_id,date(created_at) as log_date from Makeit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 group by makeit_id order by makeit_id";
+  var makeitlogusersquery = "select makeit_id,date(created_at) as log_date from Makeit_Timelog where date(created_at) between CURDATE() and CURDATE() group by makeit_id order by makeit_id";
   var makeitlogusers = await query(makeitlogusersquery);
   ///Get Moveit Logs///////
-  var makeitlogquery = "select date(created_at) as log_date,time(created_at) as logtime,type,makeit_id from Makeit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 order by date(created_at),makeit_id";
+  var makeitlogquery = "select date(created_at) as log_date,time(created_at) as logtime,type,makeit_id from Makeit_Timelog where date(created_at) between CURDATE() and CURDATE() order by date(created_at),makeit_id";
   var makeitlog = await query(makeitlogquery);  
   
   ///console.log("Kloop ==>",makeitlog);
@@ -8522,6 +8535,10 @@ Order.makeit_logtime = async function makeit_logtime(req) {
     makeitlogusers[k].breakfast_count     = 0;
     makeitlogusers[k].lunch_count         = 0;
     makeitlogusers[k].dinner_count        = 0;
+    makeitlogusers[k].total_makeit_earnings = 0;
+    makeitlogusers[k].breakfast_total_makeit_earnings = 0;
+    makeitlogusers[k].lunch_total_makeit_earnings = 0;
+    makeitlogusers[k].dinner_total_makeit_earnings = 0;
   } 
   return makeitlogusers;
 };
