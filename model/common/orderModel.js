@@ -8233,7 +8233,7 @@ Order.moveit_logtime = async function moveit_logtime(req) {
   var moveitlogusersquery = "select moveit_userid from Moveit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 group by moveit_userid order by moveit_userid";
   var moveitlogusers = await query(moveitlogusersquery);
   ///Get Moveit Logs///////
-  var moveitlogquery = "select date(logtime) as log_date,time(logtime) as logtime,type,moveit_userid from Moveit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 order by date(created_at),moveit_userid";
+  var moveitlogquery = "select date(logtime) as log_date,time(logtime) as logtime,type,moveit_userid from Moveit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 and action order by date(created_at),moveit_userid";
   var moveitlog = await query(moveitlogquery);
 
   var moveitavg = [];
@@ -8402,7 +8402,7 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
 ////Makeit Order Count///////
 Order.makeit_order_count = async function makeit_order_count(req,makeitloguser) {
  
-  var ordercountquery = "select date(created_at) as log_date,makeit_user_id as makeit_id, count(orderid) as order_count,SUM(makeit_earnings) AS total_makeit_earnings, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=6 THEN orderid END) as breakfast_completed, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=6 THEN orderid END) as lunch_completed,  COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN orderid END) as dinner_completed,   SUM(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=6 THEN makeit_earnings END) as breakfast_total_makeit_earnings, SUM(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=6 THEN makeit_earnings END) as lunch_total_makeit_earnings,  SUM(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN makeit_earnings END) as dinner_total_makeit_earnings,   COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as breakfast_canceled,    COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as lunch_canceled,     COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as dinner_canceled  from Orders where makeit_user_id IN("+makeitloguser+") and date(created_at) between CURDATE() and CURDATE() and orderstatus=6 and makeit_user_id!=0  group by makeit_user_id,  date(created_at) order by makeit_user_id,date(created_at)";
+  var ordercountquery = "select date(created_at) as log_date,makeit_user_id as makeit_id, count(orderid) as order_count,SUM(makeit_earnings) AS total_makeit_earnings, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=6 THEN orderid END) as breakfast_completed, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=6 THEN orderid END) as lunch_completed,  COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN orderid END) as dinner_completed,   SUM(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=6 THEN makeit_earnings END) as breakfast_total_makeit_earnings, SUM(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=6 THEN makeit_earnings END) as lunch_total_makeit_earnings,  SUM(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN makeit_earnings END) as dinner_total_makeit_earnings,   COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as breakfast_canceled,    COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as lunch_canceled,     COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as dinner_canceled  from Orders where makeit_user_id IN("+makeitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 and orderstatus=6 and makeit_user_id!=0  group by makeit_user_id,  date(created_at) order by makeit_user_id,date(created_at)";
   console.log("--------------->",ordercountquery);
   var ordercount = await query(ordercountquery);
   return ordercount;
@@ -8411,10 +8411,10 @@ Order.makeit_order_count = async function makeit_order_count(req,makeitloguser) 
 ////Makeit Logtime perday///////////
 Order.makeit_logtime = async function makeit_logtime(req) {  
   ///Get Moveit Users list///////
-  var makeitlogusersquery = "select makeit_id,date(created_at) as log_date from Makeit_Timelog where date(created_at) between CURDATE() and CURDATE() group by makeit_id order by makeit_id";
+  var makeitlogusersquery = "select makeit_id,date(created_at) as log_date from Makeit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 group by makeit_id order by makeit_id";
   var makeitlogusers = await query(makeitlogusersquery);
   ///Get Moveit Logs///////
-  var makeitlogquery = "select date(created_at) as log_date,time(created_at) as logtime,type,makeit_id from Makeit_Timelog where date(created_at) between CURDATE() and CURDATE() order by date(created_at),makeit_id";
+  var makeitlogquery = "select date(created_at) as log_date,time(created_at) as logtime,type,makeit_id from Makeit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 order by date(created_at),makeit_id";
   var makeitlog = await query(makeitlogquery);  
   
   ///console.log("Kloop ==>",makeitlog);

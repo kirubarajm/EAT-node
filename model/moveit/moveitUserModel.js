@@ -311,8 +311,9 @@ Moveituser.update_online_status =async function (req, result) {
                 key = "Moved offline";
                 key1 = false;                
               }
-              req.type  = req.online_status;
+              req.type    = req.online_status;
               req.moveit_userid = req.userid;
+              req.action  = 1;              
               await Moveituser.create_createMoveitTimelog(req);
               
               let resobj = {
@@ -776,7 +777,6 @@ Moveituser.update_pushid = function(req, result) {
 
   //////////Moveit Logout///////////////////
   Moveituser.Moveituser_logout = async function Moveituser_logout(req, result) {
-    console.log("Admin force logout 11111111111111");
     var orderdetails = await query("select * from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE() and moveit_user_id = "+req.userid+"");
     if (orderdetails.length == 0) {      
       sql.query("select * from MoveitUser where userid = "+req.userid+" ",async function(err,userdetails) {
@@ -784,15 +784,35 @@ Moveituser.update_pushid = function(req, result) {
           console.log("error: ", err);
           result(null, err);
         } else {   
-          if (userdetails.length !==0) {    
-            var logouttime =  moment().format("YYYY-MM-DD HH:mm:ss");
-            updatequery = await query("Update MoveitUser set online_status = 0,pushid_android = 'null',login_status = 2,logout_time='"+logouttime+"'  where userid = '"+req.userid+"'");              
-            let resobj = {
-              success : true,
-              status  : true,
-              message : 'Logout Successfully!'  
-            };      
-            result(null, resobj);            
+          console.log("userdetails =========>",userdetails);
+          if (userdetails.length !==0) { 
+            if(userdetails[0].login_status!=2){
+              var logouttime =  moment().format("YYYY-MM-DD HH:mm:ss");
+              updatequery = await query("Update MoveitUser set online_status = 0,pushid_android = 'null',login_status = 2,logout_time='"+logouttime+"'  where userid = '"+req.userid+"'");
+              
+              ///////Moveit Log History/////////
+              moveit_last_log = await query("select distinct moveit_userid,type  from Moveit_Timelog where moveit_userid="+req.userid+" order by mt_id desc limit 1");
+              if(moveit_last_log[0].type==1){
+                req.type    = 0;
+                req.moveit_userid = req.userid;
+                req.action  = 1;              
+                await Moveituser.create_createMoveitTimelog(req);  
+              }
+              /////////////////////////////////
+              let resobj = {
+                success : true,
+                status  : true,
+                message : 'Logout Successfully!'  
+              };      
+              result(null, resobj);  
+            }else{
+              let resobj = {
+                success : true,
+                status  : true,
+                message : 'user are already in Logout!'  
+              };      
+              result(null, resobj); 
+            }                      
           }else{    
             let resobj = {
               success : true,
@@ -824,17 +844,36 @@ Moveituser.update_pushid = function(req, result) {
           result(null, err);
         } else {            
           if (userdetails.length !==0) {
-            var logouttime =  moment().format("YYYY-MM-DD HH:mm:ss");
-            updatequery = await query("Update MoveitUser set online_status = 0,pushid_android = 'null',login_status = "+req.login_status+",logout_time='"+logouttime+"'  where userid = '"+req.userid+"'");
-            var logoutstatusMessage='Force logout and disable Successfully!'
-            if(req.login_status===3) logoutstatusMessage= 'Enable Successfully.Please login after use.'
-    
-            let resobj = {
-              success: true,
-              status: true,
-              message: logoutstatusMessage  
-            };      
-            result(null, resobj);
+            if(userdetails[0].login_status!=2){
+              var logouttime =  moment().format("YYYY-MM-DD HH:mm:ss");
+              updatequery = await query("Update MoveitUser set online_status = 0,pushid_android = 'null',login_status = "+req.login_status+",logout_time='"+logouttime+"'  where userid = '"+req.userid+"'");
+              var logoutstatusMessage='Force logout and disable Successfully!'
+              if(req.login_status===3) logoutstatusMessage= 'Enable Successfully.Please login after use.'
+              
+              ///////Moveit Log History/////////
+              moveit_last_log = await query("select distinct moveit_userid,type  from Moveit_Timelog where moveit_userid="+req.userid+" order by mt_id desc limit 1");
+              if(moveit_last_log[0].type==1){
+                req.type    = 0;
+                req.moveit_userid = req.userid;
+                req.action  = 1;              
+                await Moveituser.create_createMoveitTimelog(req);  
+              }
+              /////////////////////////////////
+
+              let resobj = {
+                success: true,
+                status: true,
+                message: logoutstatusMessage  
+              };      
+              result(null, resobj);
+            }else{
+              let resobj = {
+                success : true,
+                status  : true,
+                message : 'user are already in Logout!'  
+              };      
+              result(null, resobj); 
+            }
           }else{    
             let resobj = {
               success: true,
