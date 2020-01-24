@@ -130,6 +130,7 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
             req.price = amountdata.grandtotal;
             req.makeit_earnings = amountdata.makeit_earnings;
             req.convenience_charge = amountdata.convenience_charge;
+            req.delivery_charge = amountdata.delivery_charge;
             
            Order.OrderInsert(req, res3.result[0].item,false,false,async function(err,res){
             if (err) {
@@ -246,6 +247,8 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
               req.cus_pincode = address_data[0].pincode;
               req.coupon = req.cid
               req.convenience_charge = amountdata.convenience_charge;
+              req.delivery_charge = amountdata.delivery_charge;
+        
 
               if (req.payment_type == 0 || req.payment_type == 3) {
                 Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
@@ -373,7 +376,9 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                     req.cus_pincode = address_data[0].pincode;
                     req.coupon = req.cid
                     req.convenience_charge = amountdata.convenience_charge;
-
+                    req.delivery_charge = amountdata.delivery_charge;
+                    console.log(req);
+                    console.log(req11111);
                     if (req.payment_type == 0) {
                         Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                           if (err) {
@@ -488,7 +493,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                 req.cus_pincode = address_data[0].pincode;
                 req.coupon = req.cid
                 req.convenience_charge = amountdata.convenience_charge;
-
+                req.delivery_charge = amountdata.delivery_charge;
                 if (req.payment_type == 0 ) {
                 
                   Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
@@ -629,7 +634,7 @@ Order.read_a_proceed_to_pay_xfactore = async function read_a_proceed_to_pay_xfac
                     req.landmark = address_data[0].landmark;
                     req.coupon = req.cid
                     req.convenience_charge = amountdata.convenience_charge;
-
+                    req.delivery_charge = amountdata.delivery_charge;
                       if (req.payment_type == 0 || req.payment_type == 3) {
                         Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                           if (err) {
@@ -720,7 +725,7 @@ Order.OrderOnline = async function OrderOnline(req, orderitems,result) {
 Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnlineOrder,result) {
   var new_Order = new Order(req);
   console.log(new_Order);
-  new_Order.delivery_charge = constant.deliverycharge;
+
   sql.beginTransaction(function(err) {
     if (err) { 
       sql.rollback(function() {
