@@ -643,19 +643,27 @@ const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async funct
 ////cron run by moveit user offline every cycle end.
 const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
   console.log("moveit offline & online");
-  var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1"); 
+  var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
+  
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");
+  var currenthour = moment(day).format("HH");
+
   if (res.length !== 0) {
     for (let i = 0; i < res.length; i++) {
       /////////logout Moveit-Time log/////////////////
       var req={};
-      req.type  = 0;
+      req.type    = 0;
       req.moveit_userid = res[i].userid;
+      req.action  = 2;
       await Moveituser.create_createMoveitTimelog(req);
       /////////login Moveit-Time log/////////////////
-      var req={};
-      req.type  = 1;
-      req.moveit_userid = res[i].userid;
-      await Moveituser.create_createMoveitTimelog(req);
+      if(currenthour!=23){
+        var req={};
+        req.type    = 1;
+        req.moveit_userid = res[i].userid;
+        req.action  = 2;
+        await Moveituser.create_createMoveitTimelog(req);
+      }      
     }
   }
 });
