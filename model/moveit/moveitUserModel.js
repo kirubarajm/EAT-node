@@ -1369,4 +1369,50 @@ Moveituser.moveit_zone_data =async function moveit_zone_data(req, result) {
     }
   };
 
+
+  //Moveit zone data
+
+Moveituser.driver_utilisation =async function driver_utilisation(req, result) {
+
+  var userdetails = await query("select * from MoveitUser where userid = "+req.userid+"");
+  var zone_id=0;
+  var zone_name="";
+  var boundaries="";
+  var iszone=false;
+    if (userdetails.length !==0) {
+      if(constant.zone_control){
+  
+        var zoneDetail = await query("select * from Zone where id = "+userdetails[0].zone+"");
+        console.log(zoneDetail);
+        if(zoneDetail&&zoneDetail.length>0&&zoneDetail[0].boundaries){
+          zone_id=zoneDetail[0].id;
+          zone_name=zoneDetail[0].Zonename;
+          boundaries=JSON.parse(zoneDetail[0].boundaries);
+          iszone=true;
+        }
+      }
+              
+        let resobj = {
+          success: true,
+          status:iszone,
+          zone_id:zone_id,
+          zone_name:zone_name,
+          boundaries:boundaries ||null,
+          iszone:iszone
+      };
+
+      result(null, resobj);
+      
+    }else{
+      
+      let resobj = {
+          success: true,
+          status: false,
+          message: "User not found!"
+      };
+  
+      result(null, resobj);
+    }
+  };
+
 module.exports = Moveituser;

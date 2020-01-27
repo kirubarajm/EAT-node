@@ -346,3 +346,16 @@ exports.moveit_zone_data = function(req, res) {
   });
   }
 };
+
+//moveit zone details
+
+exports.driver_utilisation = function(req, res) {
+  if (!req.body.userid) {
+    res.status(400).send({ error: true,status:false, message: "Please provide userid" });
+  } else {
+  Moveituser.driver_utilisation(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+  }
+};

@@ -293,4 +293,5 @@ app.route("/admin/report/makeit_earnings").post(routesVersioning({"1.0.0":makeit
 app.route("/admin/report/makeit_cancellation").post(routesVersioning({"1.0.0":makeituser.makeit_cancellation_report}));
 app.route("/admin/report/makeit_avg_preparation").post(routesVersioning({"1.0.0":makeituser.makeit_avg_preparation_report}));
 app.route("/admin/report/xfactor_order_count").post(routesVersioning({"1.0.0":orders.xfactor_order_count}));
+app.route("/admin/report/driver_utilisation").post(routesVersioning({"1.0.0":moveituser.driver_utilisation}));
 }
