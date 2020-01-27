@@ -688,7 +688,7 @@ const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
     }
   } 
 });
-//makeitlog_everyday.start();
+makeitlog_everyday.start();
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
 const liveproducthistory_cyclestart = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {

@@ -20,9 +20,15 @@ var Makeitdaywise = function(makeitdaywise) {
   this.breakfast_count  = makeitdaywise.breakfast_count;
   this.lunch_count      = makeitdaywise.lunch_count;
   this.dinner_count     = makeitdaywise.dinner_count; 
+  this.total_makeit_earnings = makeitdaywise.total_makeit_earnings;
+  this.breakfast_total_makeit_earnings = makeitdaywise.breakfast_total_makeit_earnings;
+  this.lunch_total_makeit_earnings = makeitdaywise.lunch_total_makeit_earnings;
+  this.dinner_total_makeit_earnings = makeitdaywise.dinner_total_makeit_earnings;
 };
 
 Makeitdaywise.createmakeitdaywise = function createmakeitdaywise(req,result) {
+
+  console.log("report------------------>",req);
   sql.query("INSERT INTO Makeit_daywise_report  set ?", req, function(err, res) {
     if (err) {
       //result(err, null);
