@@ -44,6 +44,12 @@ admindashboardModel.get_all_dashboard_count_by_admin = async function get_all_da
         var  refund_user_count = await query("Select count(rs_id) as count from Refund_Online where active_status=1");
         countlist.refund_user_count  = refund_user_count[0].count;
 
+
+        var  Real_lived_kitchens = await query("Select p.makeit_userid,count(p.productid) as count from MakeitUser mu left join Product p on p.makeit_userid=mu.userid where p.active_status=1 and mu.virtualkey=0 group by p.makeit_userid");
+        countlist.real_lived_kitchen  = Real_lived_kitchens.length;
+        var  Virtual_lived_kitchens = await query("Select p.makeit_userid,count(p.productid) as count from MakeitUser mu left join Product p on p.makeit_userid=mu.userid where p.active_status=1 and mu.virtualkey=1 group by p.makeit_userid");
+        countlist.virtual_lived_kitchen  = Virtual_lived_kitchens.length;
+
         let resobj = {  
             success: true,
             status:true,
