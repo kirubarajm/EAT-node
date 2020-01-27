@@ -3304,14 +3304,22 @@ Makeituser.makeit_delete= async function makeit_delete(req,result) {
 
 ////Makeit Earnings report/////////////
 Makeituser.makeit_earnings_report= async function makeit_earnings_report(req,result) {
-  var makeit = "Select DATE_FORMAT(o.created_at,'%M %Y') as date ,mu.userid as kitchen_id,mu.brandname as kitchen_name,SUM(makeit_earnings) as MakeitEarnings from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where MONTH(o.created_at) = MONTH('"+req.date+"') AND YEAR(o.created_at) = YEAR('"+req.date+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS Not NULL))";
+  //var date=new Date("2019-07");
+  var date=new Date(req.monthandyear+" 04");
+  var curr_date = date.getDate();
+  var curr_month = date.getMonth()+1;
+  var curr_year = date.getFullYear();
+  var reqDate =curr_year+"-"+curr_month+"-"+curr_date;
+  reqDate=reqDate.toString();
+  
+  var makeit = "Select DATE_FORMAT(o.created_at,'%M %Y') as monthandyear ,mu.userid as kitchen_id,mu.brandname as kitchen_name,SUM(makeit_earnings) as MakeitEarnings from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where MONTH(o.created_at) = MONTH('"+reqDate+"') AND YEAR(o.created_at) = YEAR('"+reqDate+"') and (orderstatus=6 or (orderstatus=7 and makeit_actual_preparing_time IS Not NULL))";
 
   if(req.virtualkey==0 || req.virtualkey==1){
     makeit=makeit +" and mu.virtualkey= "+req.virtualkey
   }
 
   makeit=makeit + ' group by o.makeit_user_id order by MakeitEarnings';
-
+  console.log("makeit-->>>",makeit);
   sql.query(makeit, async function(err, res) {
     if(err){
       result(null, err);
