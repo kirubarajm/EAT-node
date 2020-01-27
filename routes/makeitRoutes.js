@@ -70,5 +70,7 @@ app.route("/makeit/weeklyearnings").post(middleware.checkToken,routesVersioning(
 app.route("/makeit/daywiseearnings").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_daywise_earnings}));
 app.route("/makeit/getfirstorder/:makeit_userid").get(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_get_firstorder}));
 app.route("/makeit/packageitem/:productid").get(middleware.checkToken,routesVersioning({"1.0.0":PackageItems.packageitemlist}));
+app.route("/makeit/makeitrevenuelost").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.total_lost_revenue}));
+
 
 }
