@@ -8192,7 +8192,7 @@ sql.query(query,function(err, res) {
 );
 };
 
-///Moveit Succession Report////
+///Moveit Day wise Report////
 Order.moveit_daywise_report= async function moveit_daywise_report(req) { 
   var moveitlog = await Order.moveit_logtime(req);
   var moveitloguser = [];
@@ -8219,7 +8219,7 @@ Order.moveit_daywise_report= async function moveit_daywise_report(req) {
 
 ////Moveit Order Count///////
 Order.moveit_order_count = async function moveit_order_count(req,moveitloguser) {
-  var ordercountquery = "select date(created_at) as date,moveit_user_id,count(orderid) as order_count, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<='12:00:00' THEN orderid END) as breakfast, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<='16:00:00' THEN orderid END) as lunch, COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN orderid END) as dinner from Orders where moveit_user_id IN("+moveitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 and orderstatus=6 and moveit_user_id!=0 group by moveit_user_id,date(created_at) order by moveit_user_id,date(created_at)";
+  var ordercountquery = "select date(created_at) as date,moveit_user_id,count(orderid) as order_count, COUNT(CASE WHEN time(order_assigned_time)>='08:00:00' AND time(order_assigned_time)<='12:00:00' THEN orderid END) as breakfast, COUNT(CASE WHEN time(order_assigned_time)>='12:00:00' AND time(order_assigned_time)<='16:00:00' THEN orderid END) as lunch, COUNT(CASE WHEN time(order_assigned_time)>='16:00:00' AND time(order_assigned_time)<='23:59:59' THEN orderid END) as dinner from Orders where moveit_user_id IN("+moveitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 and orderstatus=6 and moveit_user_id!=0 group by moveit_user_id,date(created_at) order by moveit_user_id,date(created_at)";
   var ordercount = await query(ordercountquery);
   return ordercount;
 };
@@ -8532,6 +8532,34 @@ Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req
 
   var productcount = await query(liveproductcountquery);
   return productcount;
+};
+
+///Moveit Succession Report////
+Order.moveit_daywise_cycle_report= async function moveit_daywise_cycle_report(req,result) { 
+  //console.log("model");
+  var query="select date,moveit_userid,cycle1,cycle2,cycle3,logtime,order_count,breakfast,lunch,dinner from Moveit_daywise_report where date(date) between'"+req.fromdate+"' and '"+req.todate+"'";
+  console.log("query-->",query);
+  sql.query(query,function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      if (res.length !== 0) {
+        let resobj = {
+          success: true,
+          status:true,
+          result:res
+        };
+        result(null, resobj);
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status:false
+        };
+        result(null, resobj);
+      }
+    }
+  });
 };
 
 module.exports = Order;

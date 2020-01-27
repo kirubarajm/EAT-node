@@ -290,6 +290,6 @@ app.route("/admin/reports/unclosed_orders").post(routesVersioning({"1.0.0":order
 app.route("/admin/reports/customerexperience").post(routesVersioning({"1.0.0":orders.customerexperience}));
 
 ///Moveit Succession Report////
-app.route("/admin/reports/moveitdaywisereport").post(routesVersioning({"1.0.0":orders.moveit_daywise_report}));
+app.route("/admin/reports/moveitdaywisecyclereport").post(routesVersioning({"1.0.0":orders.moveit_daywise_cycle_report}));
 
 }

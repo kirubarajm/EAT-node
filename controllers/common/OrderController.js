@@ -1123,8 +1123,9 @@ exports.customerexperience = function(req, res) {
 };
 
 ///Moveit Succession Report////
-exports.moveit_daywise_report = function(req, res) {
-  Order.moveit_daywise_report(req.body, function(err, result) {
+exports.moveit_daywise_cycle_report = function(req, res) {
+  console.log("moveitdaywisecyclereport");
+  Order.moveit_daywise_cycle_report(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });
