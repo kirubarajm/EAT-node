@@ -1322,4 +1322,8 @@ Product.croncreateliveproductstatushistory = async function(req, result) {
   } 
 };
 
+
+
+
+
 module.exports = Product;

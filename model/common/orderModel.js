@@ -8551,4 +8551,37 @@ Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req
   return productcount;
 };
 
+
+////Makeit lost revenue report///////
+Order.Makeit_lost_revenue_report = async function Makeit_lost_revenue_report(req,result) {
+  var Makeit_lost_revenue_report = "SELECT a.makeit_id,sum(a.expected_revenue) FROM( select pth.makeit_id,pth.product_id,Max(pth.actual_quantity+pth.pending_quantity+pth.ordered_quantity) as maxvalues, (Max(pth.actual_quantity+pth.pending_quantity+pth.ordered_quantity) * pt.original_price) as expected_revenue from Live_Product_History  pth left outer join Product pt on t.productid=pth.product_id   where date(pth.created_at)=CURDATE()  group by pth.product_id )a GROUP by a.makeit_id";
+
+  var makeitlist = await query(Makeit_lost_revenue_report);
+  
+  if (makeitlist) {
+    for (let i = 0; i < makeitlist.length; i++) {
+      
+    var makeit_earning = await query("select id,makeit_id,total_makeit_earnings from Makeit_daywise_report where  makeit_id ='"+makeitlist[i].makeit_id+"' and date(created_at)=CURDATE() order by id desc limit 1");
+      
+    if (makeit_earning) {
+
+
+      makeitlist[i].total_makeit_earnings=makeit_earning[0].total_makeit_earnings;
+
+      if (makeitlist[i].expected_revenue = makeit_earning[0].total_makeit_earnings) {
+        makeitlist[i].status=0;
+      } else if (makeitlist[i].expected_revenue > makeit_earning[0].total_makeit_earnings) {
+        makeitlist[i].status=1;
+      }else{
+        makeitlist[i].status=2;
+      }
+    }
+    }
+  }
+
+  return makeitlist;
+};
+
+
+
 module.exports = Order;
