@@ -291,5 +291,7 @@ app.route("/admin/reports/customerexperience").post(routesVersioning({"1.0.0":or
 
 ///Moveit Succession Report////
 app.route("/admin/reports/moveitdaywisecyclereport").post(routesVersioning({"1.0.0":orders.moveit_daywise_cycle_report}));
+///makeit_shutdown_report////
+app.route("/admin/reports/makeitshutdownreport").post(routesVersioning({"1.0.0":orders.makeit_shutdown_report}));
 
 }

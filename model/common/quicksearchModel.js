@@ -647,6 +647,7 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
   
   var day = moment().format("YYYY-MM-DD HH:mm:ss");
   var currenthour = moment(day).format("HH");
+  var currentminus = currenthour-1;
 
   if (res.length !== 0) {
     for (let i = 0; i < res.length; i++) {
@@ -655,6 +656,8 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
       req.type    = 0;
       req.moveit_userid = res[i].userid;
       req.action  = 2;
+      req.created_at = moment().format("YYYY-MM-DD "+currentminus+":59:59");
+      req.logtime = moment().format("YYYY-MM-DD "+currentminus+":59:59");
       await Moveituser.create_createMoveitTimelog(req);
       /////////login Moveit-Time log/////////////////
       if(currenthour!=23){
@@ -663,7 +666,7 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
         req.moveit_userid = res[i].userid;
         req.action  = 2;
         await Moveituser.create_createMoveitTimelog(req);
-      }      
+      }     
     }
   }
 });
@@ -688,7 +691,7 @@ const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
     }
   } 
 });
-makeitlog_everyday.start();
+//makeitlog_everyday.start();
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
 const liveproducthistory_cyclestart = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {
@@ -765,7 +768,6 @@ QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycycl
 
 //////////Live Product History Cycle End Cron Function//////////////
 QuickSearch.liveproducthistorycycleend = async function liveproducthistorycycleend(){
-  console.log("step-1 ==========>");
   var day           = moment().format("YYYY-MM-DD HH:mm:ss");
   var currenthour   = moment(day).format("HH:mm");
   var CEselectquery = "";
@@ -787,13 +789,11 @@ QuickSearch.liveproducthistorycycleend = async function liveproducthistorycyclee
   } 
 
   if (cycleend == 1) {
-    console.log("step-2 ==========>");
-      const getproductdetailsce = await query("select" + CEselectquery + " prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN IFNULL(oi.quantity,0) ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 and payment_status<2 THEN IFNULL(oi.quantity,0) ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) left join MakeitUser as mu on mu.userid = prd.makeit_userid where mu.unservicable=0 and prd.active_status = 1 and prd.delete_status !=1 " + CEwherequery + " group by prd.productid");
+    const getproductdetailsce = await query("select" + CEselectquery + " prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN IFNULL(oi.quantity,0) ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 and payment_status<2 THEN IFNULL(oi.quantity,0) ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) left join MakeitUser as mu on mu.userid = prd.makeit_userid where mu.unservicable=0 and prd.active_status = 1 and prd.delete_status !=1 " + CEwherequery + " group by prd.productid");
       if (getproductdetailsce.err) {
         //return(err, null);
         //console.log(getproductdetailsce.err);
       } else {
-        console.log("step-3 ==========>");
         for (var i = 0; i < getproductdetailsce.length; i++) {
           var inserthistory = await producthistory.createProducthistory(getproductdetailsce[i]);
         }
@@ -810,15 +810,25 @@ QuickSearch.liveproducthistorycycleend = async function liveproducthistorycyclee
             }
           }
         }
-        console.log("step-4 ==========>");
         var makeitlogce = getmakeitlistce.filter(log => log.type===0);
-        console.log("step-5 ==========>makeitlogce",makeitlogce);
         for (var i=0; i<makeitlogce.length; i++) {
           var insertlog = await Makeitlog.createmakeittimelog(makeitlogce[i]);
         }
       }
     }  
   return insertlog;
+}
+
+/////////Homemaker Tiering///////////////////////
+const homemakertiering = new CronJob("0 0 1 * * *", async function() {
+  //console.log("Homemaker Tiering");
+  var makeit_incentive = await Order.makeit_incentive_report();
+});
+
+var currentdatecheck = new Date();
+var currentday = currentdatecheck.getDay()
+if(currentday ==2 ){
+  homemakertiering.start();
 }
 
 
