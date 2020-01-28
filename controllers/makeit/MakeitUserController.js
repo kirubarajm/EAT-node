@@ -604,3 +604,12 @@ exports.makeit_delete = function(req, res) {
     res.json(user);
   });
 };
+
+
+////Makeit lost revenue by day wise/////////////
+exports.total_lost_revenue = function(req, res) {
+  Makeituser.total_lost_revenue(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

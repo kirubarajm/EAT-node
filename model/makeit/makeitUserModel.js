@@ -3516,6 +3516,26 @@ Makeituser.makeit_quantity_check= async function makeit_quantity_check(req,resul
 };
 
 
+Makeituser.total_lost_revenue= function get_otp(req, result) {
 
+  staticquery ="select mtv.*,mk.name from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id where date(mtv.created_at)= '"+req.date+"' group by mtv.makeit_id";
+
+    sql.query(staticquery, function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+  
+        let resobj = {
+          success: true,
+          status: true,
+          result: res
+        };
+
+        result(null, resobj);
+      }
+    });
+
+};
 
 module.exports = Makeituser;

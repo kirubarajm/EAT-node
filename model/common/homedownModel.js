@@ -59,7 +59,7 @@ Hometown.getRegionByType = function getRegionByType(id, result) {
 };
 
 Hometown.getAllHometown = function getAllHometown(result) {
-  sql.query("Select hometownid,hometownname,regionid from Hometown", function(err, res) {
+  sql.query("Select hometownid,hometownname,regionid from Hometown delete_status=0", function(err, res) {
     if (err) {
       result(err, null);
     } else {
