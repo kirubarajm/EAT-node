@@ -7254,8 +7254,7 @@ Order.zone_moveit_order_auto_assign = async function zone_moveit_order_auto_assi
             });
             
           }else{
-            console.log("req.zone_status",req.zone_status);
-            console.log("req.payment_type",req.payment_type);
+         
             if ((req.zone_status ==2 || req.zone_status ==1) && req.payment_type ==1) {
               var new_Ordersqueue = new Ordersqueue(req);
               new_Ordersqueue.status = 0;
@@ -8024,7 +8023,6 @@ Order.log_hub_livekitchenavgcount_report= async function log_hub_livekitchenavgc
 ////update moveit lat long////
 Order.update_moveit_lat_long= async function update_moveit_lat_long(req, result) { 
  
- console.log("Order update moveit lat long",req);
  MoveitFireBase.get_moveit_lat_long(req.moveit_user_id,async function(err, moveit_info) {
             if (err) {
               let error = {
@@ -8038,7 +8036,6 @@ Order.update_moveit_lat_long= async function update_moveit_lat_long(req, result)
               switch(req.state) {
                 case 1:
 
-                console.log("order assign",req);
                   update_assign_query = await query("UPDATE Orders SET moveit_assign_lat=?,moveit_assign_long=? WHERE orderid = ?",[moveit_info.lat,moveit_info.long,req.orderid]);
                   
                   break;
