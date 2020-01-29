@@ -613,3 +613,11 @@ exports.total_lost_revenue = function(req, res) {
     res.json(user);
   });
 };
+
+////Makeit Succession rate wise/////////////
+exports.total_makesuccessionrate = function(req, res) {
+  Makeituser.total_makesuccessionrate(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
