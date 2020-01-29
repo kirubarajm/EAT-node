@@ -3516,7 +3516,7 @@ Makeituser.makeit_quantity_check= async function makeit_quantity_check(req,resul
 };
 
 
-Makeituser.total_lost_revenue= function get_otp(req, result) {
+Makeituser.total_lost_revenue= function total_lost_revenue(req, result) {
 
   staticquery ="select mtv.*,mk.name from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id where date(mtv.created_at)= '"+req.date+"' group by mtv.makeit_id";
 
@@ -3537,5 +3537,38 @@ Makeituser.total_lost_revenue= function get_otp(req, result) {
     });
 
 };
+
+Makeituser.total_makesuccessionrate= function total_makesuccessionrate(req, result) {
+
+  staticquery ="select mtv.makeit_id,sum(total_makeit_earnings) as monthly_makeit_earnings,mk.name from Makeit_daywise_report mtv join MakeitUser mk on mk.userid=mtv.makeit_id where MONTH(mtv.created_at)= MONTH('"+req.date+"') group by mtv.makeit_id";
+
+    sql.query(staticquery, function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+  
+        if (res.length!=0) {
+          
+        for (let i = 0; i < res.length; i++) {
+       
+          var get_percetage = res[i].monthly_makeit_earnings / constant.Makeit_monthly_expect_earning*100;
+          
+          res[i].monthly_makeit_percetage= get_percetage;
+        }
+          
+        }
+        let resobj = {
+          success: true,
+          status: true,
+          result: res
+        };
+
+        result(null, resobj);
+      }
+    });
+
+};
+
 
 module.exports = Makeituser;

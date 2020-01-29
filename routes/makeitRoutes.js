@@ -61,7 +61,6 @@ app.route("/makeit/versioncheck").post(routesVersioning({"1.0.0": makeituser.mak
 app.route("/makeit/loginstatus").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.makeituser_online_status}));
 app.route("/makeit/liveproductstatus/:makeit_userid").get(middleware.checkToken,routesVersioning({"1.0.0":product.live_product_status}));
 app.route("/makeit/createliveproducthistory").post(middleware.checkToken,routesVersioning({"1.0.0":product.create_live_product_status_history}));
-
 app.route("/makeit/cronliveproducthistory").post(routesVersioning({"1.0.0":product.cron_create_live_product_status_history}));
 app.route("/makeit/customersupport").post(routesVersioning({"1.0.0": makeituser.makeit_customer_support}));
 
@@ -71,6 +70,7 @@ app.route("/makeit/daywiseearnings").post(middleware.checkToken,routesVersioning
 app.route("/makeit/getfirstorder/:makeit_userid").get(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_get_firstorder}));
 app.route("/makeit/packageitem/:productid").get(middleware.checkToken,routesVersioning({"1.0.0":PackageItems.packageitemlist}));
 app.route("/makeit/makeitrevenuelost").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.total_lost_revenue}));
+app.route("/makeit/makesuccessionrate").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.total_makesuccessionrate}));
 
 
 }
