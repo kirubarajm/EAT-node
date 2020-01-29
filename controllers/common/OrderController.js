@@ -1120,3 +1120,11 @@ exports.customerexperience = function(req, res) {
     res.json(user);
   });
 };
+
+//xfactor order count reports
+exports.xfactor_order_count = function(req, res) {
+  Order.xfactor_order_count(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

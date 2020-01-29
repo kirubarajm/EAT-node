@@ -5288,4 +5288,83 @@ Eatuser.user_based_notification = async function user_based_notification(req, re
 //   // result(null, resobj);
 
 // };
+
+
+///user growth report based on orderid
+Eatuser.user_growth_order_report = async function user_growth_order_report(req, result) {
+  var getuserorderquery ="select eu.userid as customer_id,eu.name as customer_name,date(eu.created_at) as registered_date,sum(if(o.orderstatus=6,1,0)) as delivered_order_count,sum(if(o.orderstatus=6,o.price,0)) as delivered_order_price,sum(if(o.orderstatus=7,1,0)) as cancel_order_count,sum(if(o.orderstatus=7,o.price,0)) as cancel_order_price,JSON_ARRAYAGG(JSON_OBJECT('orderid', o.orderid,'orderstatus', o.orderstatus,'price', o.price,'ordertime',date(o.ordertime))) AS orderlist   from User eu  left join Orders o on o.userid=eu.userid where date(eu.created_at)='"+req.date+"' group by eu.userid";
+  
+  sql.query(getuserorderquery,async function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      
+      for (let i = 0; i < res.length; i++) {
+        res[i].orderlist = JSON.parse(res[i].orderlist);
+        var orderlist = res[i].orderlist;
+        var isSuccesslist=false;
+        var isFalierlist=false;
+        if(orderlist.length>0){
+            orderlist.sort((a, b) => parseFloat(a.ordertime) - parseFloat(b.ordertime));
+            var successOrderlist = orderlist.filter(re => re.orderstatus === 6);
+            var cancelOrderlist = orderlist.filter(re => re.orderstatus === 7);
+            if(successOrderlist.length>0){
+              isSuccesslist=true;
+              var last_id=successOrderlist.length-1;
+              res[i].first_success_order_id=successOrderlist[0].orderid;
+              res[i].last_success_order_id=successOrderlist[last_id].orderid;
+              res[i].first_success_order_date=successOrderlist[0].ordertime;
+              res[i].last_success_order_date=successOrderlist[last_id].ordertime;
+              res[i].first_success_order_price=successOrderlist[0].price;
+              res[i].last_success_order_price=successOrderlist[last_id].price;
+            }
+
+            if(cancelOrderlist.length>0){
+              isFalierlist=true;
+              var last_id=cancelOrderlist.length-1;
+              res[i].first_cancel_order_id=cancelOrderlist[0].orderid;
+              res[i].last_cancel_order_id=cancelOrderlist[last_id].orderid;
+              res[i].first_cancel_order_date=cancelOrderlist[0].ordertime;
+              res[i].last_cancel_order_date=cancelOrderlist[last_id].ordertime;
+              res[i].first_cancel_order_price=cancelOrderlist[0].price;
+              res[i].last_cancel_order_price=cancelOrderlist[last_id].price;
+            }
+            
+        }
+
+        if(!isSuccesslist){
+             res[i].first_success_order_id=0;
+              res[i].last_success_order_id=0;
+              res[i].first_success_order_date=0;
+              res[i].last_success_order_date=0;
+              res[i].first_success_order_price=0;
+              res[i].last_success_order_price=0;
+        }
+
+        if(!isFalierlist){
+          res[i].first_cancel_order_id=0;
+          res[i].last_cancel_order_id=0;
+          res[i].first_cancel_order_date=0;
+          res[i].last_cancel_order_date=0;
+          res[i].first_cancel_order_price=0;
+          res[i].last_cancel_order_price=0;
+        }
+
+        delete res[i].orderlist;
+          
+        
+      } 
+     
+  let resobj = {
+    success: true,
+    status: true,
+    result: res
+  };
+
+  result(null, resobj);
+   }
+  });
+
+};
+
 module.exports = Eatuser;
