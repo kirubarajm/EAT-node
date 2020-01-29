@@ -3476,4 +3476,86 @@ Makeituser.makeit_delete= async function makeit_delete(req,result) {
   }
   
 };
+
+////Makeit Earnings report/////////////
+Makeituser.makeit_earnings_report= async function makeit_earnings_report(req,result) {
+  
+  var date=new Date(req.monthandyear+" 04");
+  var curr_date = date.getDate();
+  var curr_month = date.getMonth()+1;
+  var curr_year = date.getFullYear();
+  var reqDate =curr_year+"-"+curr_month+"-"+curr_date;
+  reqDate=reqDate.toString();
+  
+  var makeit = "Select DATE_FORMAT(o.created_at,'%M %Y') as monthandyear ,mu.userid as kitchen_id,mu.brandname as kitchen_name,SUM(o.makeit_earnings) as MakeitEarnings,SUM(if(o.orderstatus=6,o.makeit_earnings,0)) as MakeitEarnings_Success_orders,SUM(if(o.orderstatus=7,o.makeit_earnings,0)) as MakeitEarnings_preparing_after_cancel from Orders as o join MakeitUser as mu on  mu.userid=o.makeit_user_id where MONTH(o.created_at) = MONTH('"+reqDate+"') AND YEAR(o.created_at) = YEAR('"+reqDate+"') and (o.orderstatus=6 or (o.orderstatus=7 and o.makeit_actual_preparing_time IS Not NULL))";
+
+  if(req.virtualkey==0 || req.virtualkey==1){
+    makeit=makeit +" and mu.virtualkey= "+req.virtualkey
+  }
+
+  makeit=makeit + ' group by o.makeit_user_id order by MakeitEarnings';
+
+  sql.query(makeit, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  });
+  
+};
+
+
+////Makeit Cancellation report/////////////
+Makeituser.makeit_cancellation_report= async function makeit_cancellation_report(req,result) {
+  var makeit = "Select o.makeit_user_id,mu.brandname,count(orderid) as total_cancel_order_count from Orders as o join MakeitUser as mu on mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (o.orderstatus=7) and o.cancel_by=2";
+  if(req.virtualkey==0 || req.virtualkey==1){
+    makeit=makeit +" and mu.virtualkey= "+req.virtualkey
+  }
+  makeit=makeit + ' group by o.makeit_user_id order by total_cancel_order_count';
+
+  sql.query(makeit, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  });
+};
+
+////Makeit avg preparation report/////////////
+Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_report(req,result) {
+  var makeit = "Select o.makeit_user_id,mu.brandname,count(*) as total_orders,sum(if(o.orderstatus=6,1,0)) as success_orders_count,sum(if(o.orderstatus!=6,1,0)) as cancel_orders_count,TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))), '%T') as success_order_preparation_time, TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))/sum(if(o.orderstatus=6,1,0))), '%T') as success_order_avg_preparation_time, TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus!=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))), '%T') as cancel_order_preparation_time,TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus!=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))/sum(if(o.orderstatus!=6,1,0))), '%T') as cancel_order_avg_preparation_time from Orders as o join MakeitUser as mu on mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and o.makeit_actual_preparing_time is Not NULL";
+  
+  if(req.virtualkey==0 || req.virtualkey==1){
+    makeit=makeit +" and mu.virtualkey= "+req.virtualkey
+  }
+  makeit=makeit + ' group by o.makeit_user_id order by o.makeit_user_id';
+
+  sql.query(makeit, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  });
+    
+  
+};
+
 module.exports = Makeituser;
