@@ -119,11 +119,16 @@ const calculate = {
     product_cost_limit_short_message:"Minimum cart value is Rs.",
 
 
-    /////////////
+    /////////////Makit Incentive///////////////
     logtime_percentage :75,
     makeit_tier1:500,
     makeit_tier2:750,
     makeit_tier3:1000,
+
+    ////////////////Moveit Cycle time//////////
+    cycle1:4,
+    cycle2:4,
+    cycle3:7,
 
 }
 

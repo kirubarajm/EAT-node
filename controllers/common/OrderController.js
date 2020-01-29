@@ -1139,3 +1139,12 @@ exports.makeit_shutdown_report = function(req, res) {
     res.json(result);
   });
 };
+
+////Moveit Driver Utilization  Report///
+exports.moveit_utilization_report = function(req, res) {
+  //console.log("moveit_utilisation_report");
+  Order.moveit_utilization_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
