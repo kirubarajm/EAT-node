@@ -24,6 +24,8 @@ var Makeitdaywise = function(makeitdaywise) {
   this.breakfast_total_makeit_earnings = makeitdaywise.breakfast_total_makeit_earnings;
   this.lunch_total_makeit_earnings = makeitdaywise.lunch_total_makeit_earnings;
   this.dinner_total_makeit_earnings = makeitdaywise.dinner_total_makeit_earnings;
+  this.complete_succession_count = makeitdaywise.complete_succession_count;
+  this.cancel_order_count = makeitdaywise.cancel_order_count;
 };
 
 Makeitdaywise.createmakeitdaywise = function createmakeitdaywise(req,result) {

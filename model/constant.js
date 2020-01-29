@@ -117,7 +117,14 @@ const calculate = {
     convenience_charge_status:true,
     product_cost_limit_message:"We are sorry. We can't process this order. Kindly order above the minimun cart value of Rs.30 to proceed.",
     product_cost_limit_short_message:"Minimum cart value is Rs.",
-    Makeit_monthly_expect_earning :10000
+    Makeit_monthly_expect_earning :10000,
+
+
+    /////////////
+    logtime_percentage :75,
+    makeit_tier1:500,
+    makeit_tier2:750,
+    makeit_tier3:1000,
 
 }
 

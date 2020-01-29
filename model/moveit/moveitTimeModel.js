@@ -17,7 +17,8 @@ var MoveitTimelog = function (moveittimelog) {
     this.lon      = moveittimelog.lon;
     this.moveit_userid = moveittimelog.moveit_userid;
     this.action   = moveittimelog.action;
-  //  this.created_at = new Date();   
+    this.created_at = moveittimelog.created_at || new Date();   
+    this.logtime  = moveittimelog.logtime || new Date();
 };
 
 MoveitTimelog.createMoveitTimelog = function createMoveitTimelog(newMoveitTimelog, result) {
