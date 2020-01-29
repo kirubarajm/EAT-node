@@ -2829,10 +2829,13 @@ Order.orderviewbyeatuser = function(req, result) {
                     cartdetails.push(couponinfo);
                   }
         
+                  if (res1[0].gst !=0) {
                   gstinfo.title = "Taxes";
                   gstinfo.charges = res1[0].gst;
                   gstinfo.status = true;
                   cartdetails.push(gstinfo);
+                  }
+                  
 
 
                   if (res1[0].delivery_charge != 0) {
