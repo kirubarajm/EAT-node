@@ -621,3 +621,11 @@ exports.total_makesuccessionrate = function(req, res) {
     res.json(user);
   });
 };
+
+////Makeit Succession rate wise/////////////
+exports.total_makefinancedisplay = function(req, res) {
+  Makeituser.total_makefinancedisplay(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

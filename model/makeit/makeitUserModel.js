@@ -3571,4 +3571,38 @@ Makeituser.total_makesuccessionrate= function total_makesuccessionrate(req, resu
 };
 
 
+
+Makeituser.total_makefinancedisplay= function total_makefinancedisplay(req, result) {
+
+  staticquery ="select mtv.makeit_id,sum(mtv.total_makeit_earnings) as monthly_makeit_earnings,mk.name,sum(mi.incentive_amount) as  incentive_amount from Makeit_daywise_report mtv join MakeitUser mk on mk.userid=mtv.makeit_id left join Makeit_incentive mi on mi.makeit_id=mtv.makeit_id  where MONTH(mtv.created_at)= MONTH('"+req.date+"') group by mtv.makeit_id";
+
+    sql.query(staticquery, function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+  
+        if (res.length!=0) {
+          
+        for (let i = 0; i < res.length; i++) {
+       
+          var get_percetage = res[i].monthly_makeit_earnings / constant.Makeit_monthly_expect_earning*100;
+          
+          res[i].monthly_makeit_percetage= get_percetage;
+        }
+          
+        }
+        let resobj = {
+          success: true,
+          status: true,
+          result: res
+        };
+
+        result(null, resobj);
+      }
+    });
+
+};
+
+
 module.exports = Makeituser;
