@@ -631,3 +631,26 @@ exports.makeit_avg_preparation_report = function(req, res) {
   });
 };
 
+////Makeit lost revenue by day wise/////////////
+exports.total_lost_revenue = function(req, res) {
+  Makeituser.total_lost_revenue(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Makeit Succession rate wise/////////////
+exports.total_makesuccessionrate = function(req, res) {
+  Makeituser.total_makesuccessionrate(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Makeit Makeit Finance Display/////////////
+exports.total_makefinancedisplay = function(req, res) {
+  Makeituser.total_makefinancedisplay(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
