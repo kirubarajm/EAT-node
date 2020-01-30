@@ -3385,4 +3385,30 @@ Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_
   
 };
 
+////Makeit session wise activity report/////////////
+Makeituser.makeit_session_wise_activity_report= async function makeit_session_wise_activity_report(req,result) {
+
+  var makeit = "select mdr.makeit_id,mdr.date,mu.brandname,(TIME_TO_SEC(mdr.cycle1)/TIME_TO_SEC('"+constant.cycle1+"')*100) as breakfast ,(TIME_TO_SEC(mdr.cycle2)/TIME_TO_SEC('"+constant.cycle2+"')*100) as lunch,(TIME_TO_SEC(mdr.cycle3)/TIME_TO_SEC('"+constant.cycle3+"')*100) as dinner from Makeit_daywise_report mdr left join MakeitUser as mu on mu.userid=mdr.makeit_id where (Date(mdr.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') ";
+  
+  if(req.virtualkey==0 || req.virtualkey==1){
+    makeit=makeit +" and mu.virtualkey= "+req.virtualkey
+  }
+  makeit=makeit + ' group by Date(mdr.created_at),makeit_id';
+
+  sql.query(makeit, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  });
+    
+  
+};
+
 module.exports = Makeituser;

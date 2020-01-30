@@ -628,3 +628,11 @@ exports.makeit_avg_preparation_report = function(req, res) {
     res.json(user);
   });
 };
+
+////Makeit Cancellations report/////////////
+exports.makeit_session_wise_activity_report = function(req, res) {
+  Makeituser.makeit_session_wise_activity_report(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

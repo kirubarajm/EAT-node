@@ -8338,16 +8338,16 @@ Order.moveit_utilization_report= async function moveit_utilization_report(req,re
   var orderscountquery = "select date(created_at) as date,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'12:00:00' THEN orderid END) as cycle1_orders, COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'12:00:00' THEN orderid END) as cycle2_orders, COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'12:00:00' THEN orderid END) as cycle3_orders from Orders where date(created_at) between '"+req.fromdate+"' AND '"+req.todate+"' and orderstatus=6 and moveit_user_id!=0 group by date(created_at)";
   var orderscount = await query(orderscountquery);
 
-  var logcountquery = "select date(logtime) as date,COUNT(distinct CASE WHEN time(logtime)>='08:00:00' and time(logtime)<'12:00:00' THEN (moveit_userid) END) as cycle1_users, COUNT(distinct CASE WHEN time(logtime)>='12:00:00' and time(logtime)<'16:00:00' THEN (moveit_userid) END) as cycle2_users, COUNT(distinct CASE WHEN time(logtime)>='16:00:00' and time(logtime)<'23:59:59' THEN (moveit_userid) END) as cycle3_users,0 as 'cycle1_utiltiy',0 as 'cycle2_utiltiy',0 as 'cycle3_utiltiy' from Moveit_Timelog where date(logtime) between '"+req.fromdate+"' AND '"+req.todate+"' group by date(logtime)";
+  var logcountquery = "select date(logtime) as date,COUNT(distinct CASE WHEN time(logtime)>='08:00:00' and time(logtime)<'12:00:00' THEN (moveit_userid) END) as cycle1_users, COUNT(distinct CASE WHEN time(logtime)>='12:00:00' and time(logtime)<'16:00:00' THEN (moveit_userid) END) as cycle2_users, COUNT(distinct CASE WHEN time(logtime)>='16:00:00' and time(logtime)<'23:59:59' THEN (moveit_userid) END) as cycle3_users,0 as 'breakfast_utiltiy',0 as 'lunch_utiltiy',0 as 'dinner_utiltiy' from Moveit_Timelog where date(logtime) between '"+req.fromdate+"' AND '"+req.todate+"' group by date(logtime)";
   var logcount = await query(logcountquery);
   
   if(orderscount.length != 0 && logcount !=0){
     for (let i = 0; i < logcount.length; i++) {
       for (let j = 0; j < orderscount.length; j++) {
         if(logcount[i].date == orderscount[j].date){
-          logcount[i].cycle1_utiltiy = (orderscount[j].cycle1_orders)/(logcount[i].cycle1_users * constant.cycle1) || 0;
-          logcount[i].cycle2_utiltiy = (orderscount[j].cycle2_orders)/(logcount[i].cycle2_users * constant.cycle2) || 0;
-          logcount[i].cycle3_utiltiy = (orderscount[j].cycle3_orders)/(logcount[i].cycle3_users * constant.cycle3) || 0;
+          logcount[i].breakfast_utiltiy = (orderscount[j].cycle1_orders)/(logcount[i].cycle1_users * constant.cycle1) || 0;
+          logcount[i].lunch_utiltiy = (orderscount[j].cycle2_orders)/(logcount[i].cycle2_users * constant.cycle2) || 0;
+          logcount[i].dinner_utiltiy = (orderscount[j].cycle3_orders)/(logcount[i].cycle3_users * constant.cycle3) || 0;
         }
       }      
     }

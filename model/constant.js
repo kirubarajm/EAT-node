@@ -110,6 +110,10 @@ const calculate = {
     infinity_repeat_switch_loop:2,    
     infinity_first_collection_details_cid:24,
 
+    cycle1:"04:00:00",
+    cycle2:"04:00:00",
+    cycle3:"07:00:00",
+
 }
 
 

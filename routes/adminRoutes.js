@@ -288,14 +288,15 @@ app.route("/admin/reports/loghublivekitchenavgcount").post(routesVersioning({"1.
 app.route("/admin/reports/cancelled_report_follow_up").post(routesVersioning({"1.0.0":orders.cancelled_report_follow_up}));
 app.route("/admin/reports/unclosed_orders").post(routesVersioning({"1.0.0":orders.unclosed_orders}));
 app.route("/admin/reports/customerexperience").post(routesVersioning({"1.0.0":orders.customerexperience}));
-app.route("/admin/report/eatusergrowth").post(routesVersioning({"1.0.0":eatuser.user_growth_order_report}));
-app.route("/admin/report/makeit_earnings").post(routesVersioning({"1.0.0":makeituser.makeit_earnings_report}));
-app.route("/admin/report/makeit_cancellation").post(routesVersioning({"1.0.0":makeituser.makeit_cancellation_report}));
-app.route("/admin/report/makeit_avg_preparation").post(routesVersioning({"1.0.0":makeituser.makeit_avg_preparation_report}));
-app.route("/admin/report/xfactor_order_count").post(routesVersioning({"1.0.0":orders.xfactor_order_count}));
-app.route("/admin/report/driver_utilisation").post(routesVersioning({"1.0.0":moveituser.driver_utilisation}));
+app.route("/admin/reports/eatusergrowth").post(routesVersioning({"1.0.0":eatuser.user_growth_order_report}));
+app.route("/admin/reports/makeit_earnings").post(routesVersioning({"1.0.0":makeituser.makeit_earnings_report}));
+app.route("/admin/reports/makeit_cancellation").post(routesVersioning({"1.0.0":makeituser.makeit_cancellation_report}));
+app.route("/admin/reports/makeit_avg_preparation").post(routesVersioning({"1.0.0":makeituser.makeit_avg_preparation_report}));
+app.route("/admin/reports/xfactor_order_count").post(routesVersioning({"1.0.0":orders.xfactor_order_count}));
+app.route("/admin/reports/driver_utilisation").post(routesVersioning({"1.0.0":moveituser.driver_utilisation}));
 
 ////Moveit Driver Utilization  Report///
 app.route("/admin/reports/moveitutilizationreport").post(routesVersioning({"1.0.0":orders.moveit_utilization_report}));
+app.route("/admin/reports/homemaker_activity_per_session").post(routesVersioning({"1.0.0":makeituser.makeit_session_wise_activity_report}));
 
 }
