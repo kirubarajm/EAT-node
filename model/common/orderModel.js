@@ -377,8 +377,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
                     req.coupon = req.cid
                     req.convenience_charge = amountdata.convenience_charge;
                     req.delivery_charge = amountdata.delivery_charge;
-                    console.log(req);
-                    console.log(req11111);
+               
                     if (req.payment_type == 0) {
                         Order.OrderInsert(req, res3.result[0].item,true,false,async function(err,res){
                           if (err) {
