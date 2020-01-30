@@ -3479,8 +3479,10 @@ Makeituser.makeit_delete= async function makeit_delete(req,result) {
 
 ////Makeit Earnings report/////////////
 Makeituser.makeit_earnings_report= async function makeit_earnings_report(req,result) {
-  
-  var date=new Date(req.monthandyear+" 04");
+  var date = new Date();
+  if(req.monthandyear){
+    date=new Date(req.monthandyear+" 04");
+  }
   var curr_date = date.getDate();
   var curr_month = date.getMonth()+1;
   var curr_year = date.getFullYear();
@@ -3513,7 +3515,17 @@ Makeituser.makeit_earnings_report= async function makeit_earnings_report(req,res
 
 ////Makeit Cancellation report/////////////
 Makeituser.makeit_cancellation_report= async function makeit_cancellation_report(req,result) {
-  var makeit = "Select o.makeit_user_id,mu.brandname,count(orderid) as total_cancel_order_count from Orders as o join MakeitUser as mu on mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and (o.orderstatus=7) and o.cancel_by=2";
+  var curDate=new Date();
+  curDate.setDate(curDate.getDate()-7);
+  var todate =moment().format("YYYY-MM-DD");
+  var fromdate=moment(curDate).format("YYYY-MM-DD");
+
+  if(req.fromdate) fromdate=req.fromdate;
+  if(req.todate) todate=req.todate;
+
+  console.log(fromdate+","+todate);
+
+  var makeit = "Select o.makeit_user_id,mu.brandname,count(orderid) as total_cancel_order_count from Orders as o join MakeitUser as mu on mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+fromdate+"' AND  '"+todate+"') and (o.orderstatus=7) and o.cancel_by=2";
   if(req.virtualkey==0 || req.virtualkey==1){
     makeit=makeit +" and mu.virtualkey= "+req.virtualkey
   }
@@ -3535,7 +3547,17 @@ Makeituser.makeit_cancellation_report= async function makeit_cancellation_report
 
 ////Makeit avg preparation report/////////////
 Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_report(req,result) {
-  var makeit = "Select o.makeit_user_id,mu.brandname,count(*) as total_orders,sum(if(o.orderstatus=6,1,0)) as success_orders_count,sum(if(o.orderstatus!=6,1,0)) as cancel_orders_count,TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))), '%T') as success_order_preparation_time, TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))/sum(if(o.orderstatus=6,1,0))), '%T') as success_order_avg_preparation_time, TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus!=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))), '%T') as cancel_order_preparation_time,TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus!=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))/sum(if(o.orderstatus!=6,1,0))), '%T') as cancel_order_avg_preparation_time from Orders as o join MakeitUser as mu on mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and o.makeit_actual_preparing_time is Not NULL";
+  var curDate=new Date();
+  curDate.setDate(curDate.getDate()-7);
+  var todate =moment().format("YYYY-MM-DD");
+  var fromdate=moment(curDate).format("YYYY-MM-DD");
+
+  if(req.fromdate) fromdate=req.fromdate;
+  if(req.todate) todate=req.todate;
+  
+  console.log(fromdate+","+todate);
+
+  var makeit = "Select o.makeit_user_id,mu.brandname,count(*) as total_orders,sum(if(o.orderstatus=6,1,0)) as success_orders_count,sum(if(o.orderstatus!=6,1,0)) as cancel_orders_count,TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))), '%T') as success_order_preparation_time, TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))/sum(if(o.orderstatus=6,1,0))), '%T') as success_order_avg_preparation_time, TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus!=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))), '%T') as cancel_order_preparation_time,TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus!=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))/sum(if(o.orderstatus!=6,1,0))), '%T') as cancel_order_avg_preparation_time from Orders as o join MakeitUser as mu on mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+fromdate+"' AND  '"+todate+"') and o.makeit_actual_preparing_time is Not NULL";
   
   if(req.virtualkey==0 || req.virtualkey==1){
     makeit=makeit +" and mu.virtualkey= "+req.virtualkey
