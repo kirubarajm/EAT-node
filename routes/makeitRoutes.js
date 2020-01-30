@@ -10,6 +10,7 @@ var orders = require("../controllers/common/OrderController");
 let middleware = require('../model/middleware.js');
 var makeitbadges = require("../controllers/makeit/MakeitBadgesController");
 var PackageItems = require("../controllers/makeit/PackageItemsController.js");
+
 // Makeit
 app.route("/makeit/orders").get(middleware.checkToken,routesVersioning({"1.0.0":makeituser.all_order_list}));
 app.route("/makeit/orders/listbydate").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.all_order_list_bydate}));
@@ -70,4 +71,6 @@ app.route("/makeit/daywiseearnings").post(middleware.checkToken,routesVersioning
 app.route("/makeit/getfirstorder/:makeit_userid").get(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_get_firstorder}));
 app.route("/makeit/packageitem/:productid").get(middleware.checkToken,routesVersioning({"1.0.0":PackageItems.packageitemlist}));
 
+
+app.route("/makeit/incentives").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_incentives}));
 }

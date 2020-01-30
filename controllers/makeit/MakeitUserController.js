@@ -628,3 +628,12 @@ exports.makeit_avg_preparation_report = function(req, res) {
     res.json(user);
   });
 };
+
+
+////Weekly Makeit incentives/////////////
+exports.makeit_incentives = function(req, res) {
+  Makeituser.makeit_incentives(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

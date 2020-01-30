@@ -3192,6 +3192,7 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
   var CurrentDate = new Date();
   var timeDiff    = ToDate-FromDate;
   var daysDiff    = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+  var makeit_incentives = 0;
 
   if(req.makeit_id && req.fromdate && req.todate){
     /////Get First Order Date
@@ -3199,7 +3200,18 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
     var FirstOrder = new Date(getfirstmakeitorder[0].firstorder);
     if(((FromDate < CurrentDate) && (ToDate < CurrentDate)) && (parseInt(daysDiff) <=7) && ((FromDate >= FirstOrder) && (ToDate >= FirstOrder))){
       var getweeklyearnings = await query("select ordertime,IFNULL(SUM(makeit_earnings),0) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
-      var Newarray = [];
+
+
+      var get_incentives = await query("select makeit_id,sum(incentive_amount) as incentive_amount from Makeit_incentive where date(created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_id="+req.makeit_id+" ")
+      
+      if (get_incentives.length !=0) {
+        if (get_incentives[0].incentive_amount !=null) {
+          makeit_incentives = get_incentives[0].incentive_amount;
+        }
+        
+      }
+      
+      var Newarray = [];      
         if(getweeklyearnings.length>0){
           var weekly_earnings=0;
           for(var i=0; i<getweeklyearnings.length; i++){
@@ -3223,6 +3235,7 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
               status : true,
               First_Order_date:getfirstmakeitorder[0].firstorder,
               weekly_earnings:weekly_earnings,
+              makeit_incentives:makeit_incentives ,
               result : Newarray
             };
             result(null, resobj);
@@ -3557,5 +3570,32 @@ Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_
     
   
 };
+
+
+////Makeit avg preparation report/////////////
+Makeituser.makeit_incentives= async function makeit_incentives(req,result) {
+  var makeit = "";
+  
+  if(req.virtualkey==0 || req.virtualkey==1){
+    makeit=makeit +" and mu.virtualkey= "+req.virtualkey
+  }
+  makeit=makeit + ' group by o.makeit_user_id order by o.makeit_user_id';
+
+  sql.query(makeit, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  });
+    
+  
+};
+
 
 module.exports = Makeituser;
