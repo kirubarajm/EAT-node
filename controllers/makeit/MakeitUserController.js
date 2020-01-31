@@ -637,3 +637,11 @@ exports.makeit_incentives = function(req, res) {
     res.json(user);
   });
 };
+
+//makeit_order_cancellist
+exports.makeit_order_cancellist = function(req, res) {
+  Makeituser.makeit_order_cancellist(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

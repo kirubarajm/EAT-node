@@ -1128,3 +1128,12 @@ exports.xfactor_order_count = function(req, res) {
     res.json(user);
   });
 };
+
+
+//xfactor order count reports
+exports.makeit_order_cancellist = function(req, res) {
+  Order.makeit_order_cancellist(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

@@ -3593,4 +3593,35 @@ Makeituser.makeit_incentives= async function makeit_incentives(req,result) {
 };
 
 
+////Makeit cancel list/////////////
+Makeituser.makeit_order_cancellist= async function makeit_order_cancellist(req,result) {
+  var makeit_avg_list = "SELECT ors.*,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where orderstatus = 7 and makeit_user_id='"+req.makeit_id+"' and (Date(ors.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"') group by ors.orderid order by ors.orderid desc";
+ 
+  sql.query(makeit_avg_list, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+
+      for (let i = 0; i < res.length; i++) {
+       
+        if (res[i].items) {
+          var items = JSON.parse(res[i].items);
+          res[i].items = items;
+        }
+      }
+      
+
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  });
+    
+  
+};
+
+
 module.exports = Makeituser;

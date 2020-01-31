@@ -73,4 +73,6 @@ app.route("/makeit/packageitem/:productid").get(middleware.checkToken,routesVers
 
 
 app.route("/makeit/incentives").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_incentives}));
+app.route("/makeit/order/cancellist").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.makeit_order_cancellist}));
+
 }
