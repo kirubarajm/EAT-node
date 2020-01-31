@@ -822,14 +822,14 @@ QuickSearch.liveproducthistorycycleend = async function liveproducthistorycyclee
 }
 
 /////////Homemaker Tiering///////////////////////
-const homemakertiering = new CronJob("0 0 1 * * *", async function() {
+const homemakertiering = new CronJob("0 0 3 * * *", async function() {
   //console.log("Homemaker Tiering");
   var makeit_incentive = await Order.makeit_incentive_report();
 });
 
 var currentdatecheck = new Date();
 var currentday = currentdatecheck.getDay()
-if(currentday ==2 ){
+if(currentday ==1 ){
   homemakertiering.start();
 }
 
