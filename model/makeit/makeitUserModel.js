@@ -3574,14 +3574,9 @@ Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_
 
 ////Makeit avg preparation report/////////////
 Makeituser.makeit_incentives= async function makeit_incentives(req,result) {
-  var makeit = "";
-  
-  if(req.virtualkey==0 || req.virtualkey==1){
-    makeit=makeit +" and mu.virtualkey= "+req.virtualkey
-  }
-  makeit=makeit + ' group by o.makeit_user_id order by o.makeit_user_id';
-
-  sql.query(makeit, async function(err, res) {
+  var makeit_avg_list = "select SUM(complete_succession_count) as complete_succession_count,SUM(cancel_order_count) as cancel_order_count,SUM(dinner_count+lunch_count+breakfast_count) AS totalproduct from Makeit_daywise_report where (Date(created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  AND makeit_id = '"+req.makeit_id+"'";
+ 
+  sql.query(makeit_avg_list, async function(err, res) {
     if(err){
       result(null, err);
     }else{
