@@ -723,8 +723,8 @@ Order.OrderOnline = async function OrderOnline(req, orderitems,result) {
 
 Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnlineOrder,result) {
   var new_Order = new Order(req);
-  console.log(new_Order);
 
+  //snew_Order.delivery_charge = constant.deliverycharge;
   sql.beginTransaction(function(err) {
     if (err) { 
       sql.rollback(function() {
@@ -3884,7 +3884,15 @@ Order.makeit_order_cancel = async function makeit_order_cancel(req, result) {
       };
       result(null, response);
 
-  } else {
+  }else if(orderdetails[0].orderstatus === 6){
+    let response = {
+      success: true,
+      status: false,
+      message: "Sorry! This order is already delivered."
+    };
+    result(null, response);
+
+} else {
     sql.query("UPDATE Orders SET makeit_status=0,orderstatus = 7,cancel_by = 2 ,cancel_time = '" +ordercanceltime+"',cancel_reason='" +cancel_reason+"' WHERE orderid ='" +req.orderid +"'",
     async function(err, res) {
         if (err) {

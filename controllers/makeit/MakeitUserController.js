@@ -605,6 +605,8 @@ exports.makeit_delete = function(req, res) {
   });
 };
 
+
+
 ////Makeit Earnings report/////////////
 exports.makeit_earnings_report = function(req, res) {
   Makeituser.makeit_earnings_report(req.body, function(err, user) {
@@ -628,3 +630,4 @@ exports.makeit_avg_preparation_report = function(req, res) {
     res.json(user);
   });
 };
+
