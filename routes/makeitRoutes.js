@@ -71,6 +71,8 @@ app.route("/makeit/daywiseearnings").post(middleware.checkToken,routesVersioning
 app.route("/makeit/getfirstorder/:makeit_userid").get(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_get_firstorder}));
 app.route("/makeit/packageitem/:productid").get(middleware.checkToken,routesVersioning({"1.0.0":PackageItems.packageitemlist}));
 
-
+////////Makeit Incentive///////////
 app.route("/makeit/incentives").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_incentives}));
+////Makeit Live Session/////////////
+app.route("/makeit/makeitlivesession").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_live_session}));
 }
