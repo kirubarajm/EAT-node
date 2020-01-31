@@ -96,7 +96,8 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
   }).then((data) => {
     console.log(data);
     // success
-    updatequery = "update Refund_Online set active_status= 0,refund_amt = '"+refund_amt+"',payment_id='"+data.id+"',cancellation_charges='"+servicecharge+"' where rs_id ='" + req.rs_id + "'"
+    var refunded_by=req.refunded_by ||0;
+    updatequery = "update Refund_Online set active_status= 0,refund_amt = '"+refund_amt+"',payment_id='"+data.id+"',refunded_by = '"+refunded_by+"',cancellation_charges='"+servicecharge+"' where rs_id ='" + req.rs_id + "'"
     
     sql.query(updatequery, function (err, res) {
         if(err) {

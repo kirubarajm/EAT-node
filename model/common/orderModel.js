@@ -4624,13 +4624,11 @@ Order.eat_order_item_missing_byuserid = async function eat_order_item_missing_by
       ///minimum 24 hours for item missing or 1 day
       console.log(diffDays);  
       if (diffDays < 3) {
-
-       
-      sql.query("UPDATE Orders SET item_missing = 1,item_missing_reason='" +req.item_missing_reason +"' WHERE orderid ='" +req.orderid +"'",async function(err, res1) {
-          if (err) {
+        var item_missing_by=req.item_missing_by || 0 ;
+        sql.query("UPDATE Orders SET item_missing = 1,item_missing_reason='" +req.item_missing_reason +"',item_missing_by='" +item_missing_by +"' WHERE orderid ='" +req.orderid +"'",async function(err, res1) {
+            if (err) {
             result(err, null);
           } else {
-
 
             var refundDetail = {
               orderid : req.orderid,
@@ -4639,7 +4637,6 @@ Order.eat_order_item_missing_byuserid = async function eat_order_item_missing_by
               userid : orderdetails[0].userid,
               payment_id : orderdetails[0].transactionid
             };
-           
 
             if (orderdetails[0].payment_type === "0" || orderdetails[0].payment_type === 0) {
 
