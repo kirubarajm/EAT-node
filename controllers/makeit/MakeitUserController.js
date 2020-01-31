@@ -645,3 +645,11 @@ exports.makeit_order_cancellist = function(req, res) {
     res.json(user);
   });
 };
+
+////Makeit Live Session/////////////
+exports.makeit_live_session = function(req, res) {
+  Makeituser.makeit_live_session(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
