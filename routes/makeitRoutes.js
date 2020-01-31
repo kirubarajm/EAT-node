@@ -73,8 +73,9 @@ app.route("/makeit/packageitem/:productid").get(middleware.checkToken,routesVers
 
 ////////Makeit Incentive///////////
 app.route("/makeit/incentives").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_incentives}));
+////////Makeit cancellist///////////
+app.route("/makeit/order/cancellist").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.makeit_order_cancellist}));
 ////Makeit Live Session/////////////
 app.route("/makeit/makeitlivesession").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_live_session}));
-////Makeit Live Session/////////////
-app.route("/makeit/makeitlivesession").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_live_session}));
+
 }
