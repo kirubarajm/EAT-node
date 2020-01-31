@@ -110,9 +110,15 @@ const calculate = {
     infinity_repeat_switch_loop:2,    
     infinity_first_collection_details_cid:24,
 
-    cycle1:"04:00:00",
-    cycle2:"04:00:00",
-    cycle3:"07:00:00",
+    ////////////////Moveit Cycle time//////////
+    cycle1:4,
+    cycle2:4,
+    cycle3:7,
+
+    ////////////////Makeit Cycle time//////////
+    cycle1_diff_hours:"04:00:00",
+    cycle2_diff_hours:"04:00:00",
+    cycle3_diff_hours:"07:00:00", 
 
 }
 
