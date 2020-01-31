@@ -1128,3 +1128,30 @@ exports.xfactor_order_count = function(req, res) {
     res.json(user);
   });
 };
+
+///Moveit Succession Report////
+exports.moveit_daywise_cycle_report = function(req, res) {
+  console.log("moveitdaywisecyclereport");
+  Order.moveit_daywise_cycle_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+///makeit_shutdown_report////
+exports.makeit_shutdown_report = function(req, res) {
+  //console.log("moveitdaywisecyclereport");
+  Order.makeit_shutdown_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+////Moveit Driver Utilization  Report///
+exports.moveit_utilization_report = function(req, res) {
+  //console.log("moveit_utilisation_report");
+  Order.moveit_utilization_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

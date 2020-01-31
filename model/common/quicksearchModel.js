@@ -16,22 +16,21 @@ var Dunzo = require("../../model/webhooks/dunzoModel.js");
 var dunzoconst = require('../../model/dunzo_constant');
 var PackageStockInventory = require('../makeit/packageStockModel');
 var kpiproducthistory = require("../makeit/kpiproducthistoryModel.js");
-
+var Moveituser = require("../moveit/moveitUserModel.js");
+var MoveitDayWise = require("../../model/common/moveitdaywiseModel.js");
+var MakeitDayWise = require("../../model/common/makeitdaywiseModel.js");
+var Makeitlog =require("../../model/common/makeittimelogModel.js");
+var Makeittotalrevenue = require("../../model/common/MakeittotalrevenueModel");
 
 
 const query = util.promisify(sql.query).bind(sql);
-var QuickSearch = function(QuickSearch) {
-  this.eatuserid = QuickSearch.eatuserid;
-  this.productid = QuickSearch.productid || 0;
-  //this.created_at = new Date();
+var QuickSearch   = function(QuickSearch) {
+  this.eatuserid  = QuickSearch.eatuserid;
+  this.productid  = QuickSearch.productid || 0;
   this.makeit_userid = QuickSearch.makeit_userid || 0;
 };
 
-QuickSearch.eat_explore_store_data_by_cron = async function eat_explore_store_data_by_cron(
-  search,
-  result
-) {
-  // try {
+QuickSearch.eat_explore_store_data_by_cron = async function eat_explore_store_data_by_cron(search, result) {
   const quicksearchquery = await query("Select * from QuickSearch");
   if (quicksearchquery.err) {
     let resobj = {
@@ -61,13 +60,10 @@ QuickSearch.eat_explore_store_data_by_cron = async function eat_explore_store_da
     var cyclequery = "";
     if (currenthour < lunchcycle) {
       cyclequery = cyclequery + " and pt.breakfast = 1";
-      //  console.log("breakfast");
     } else if (currenthour >= lunchcycle && currenthour <= dinnercycle) {
       cyclequery = cyclequery + " and pt.lunch = 1";
-      //  console.log("lunch");
     } else if (currenthour >= dinnercycle) {
       cyclequery = cyclequery + " and pt.dinner = 1";
-      //  console.log("dinner");
     }
 
     //  const productquery = await query("INSERT INTO QuickSearch (name,id, type) SELECT distinct product_name as name,productid as id, 1 from Product where product_name IS NOT NULL group by product_name");
@@ -124,19 +120,10 @@ QuickSearch.eat_explore_store_data_by_cron = async function eat_explore_store_da
       }
     }
   }
-  // } catch (error) {
-  //    let sucobj = true;
-  //    let resobj = {
-  //      success : sucobj,
-  //      result  : res
-  //     };
-  //     result(null, resobj);
-  // }
 };
 
-// This cron is to running all region and product and makeit to quick search
-//console.log('Before job instantiation');
-const job = new CronJob("0 */1 * * * *", async function(search, result) {
+// This cron is to running all region and product and makeit to quick search  console.log('Before job instantiation');
+const job = new CronJob("0 */10 * * * *", async function(search, result) {
   sql.query("Select * from QuickSearch", function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -155,13 +142,10 @@ const job = new CronJob("0 */1 * * * *", async function(search, result) {
           var cyclequery = "";
           if (currenthour < lunchcycle) {
             cyclequery = cyclequery + " and pt.breakfast = 1";
-            //  console.log("breakfast");
           } else if (currenthour >= lunchcycle && currenthour <= dinnercycle) {
             cyclequery = cyclequery + " and pt.lunch = 1";
-            //  console.log("lunch");
           } else if (currenthour >= dinnercycle) {
             cyclequery = cyclequery + " and pt.dinner = 1";
-            //  console.log("dinner");
           }
           const proquery = await query(
             "INSERT INTO QuickSearch (name,id, type) SELECT distinct pt.product_name as name,pt.productid as id, 1 from Product pt join MakeitUser mk on mk.userid = pt.makeit_userid where (pt.product_name IS NOT NULL and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1)and(mk.appointment_status = 3 and mk.verified_status = 1 and ka_status = 2)  group by pt.product_name"
@@ -217,8 +201,7 @@ const job1 = new CronJob("*/3 * * * *", async function() {
                 res[i].orderid +
                 "'"
             );
-            ////Insert Order History////
-            
+            ////Insert Order History////            
             ////////////////////////////
           }
         }
@@ -228,10 +211,7 @@ const job1 = new CronJob("*/3 * * * *", async function() {
 });
 //job1.start();
 
-QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(
-  req,
-  result
-) {
+QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(req, result) {
   // var searchquery = "select *, IF(type<3, IF(type=2, 'Kitchan', 'Product'), 'Region') as typename from QuickSearch where name LIKE  '%"+req.search+"%'";
   var searchquery =
     "select searchid,id,name,type, IF(type<3, IF(type=2, 'Kitchan', 'Product'), 'Region') as typename from QuickSearch where name LIKE  '%" +
@@ -358,6 +338,12 @@ const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
           res[i].userid +
           ""
       );
+
+      /////////Insert Moveit-Time log/////////////////
+      var req={};
+      req.type  = 0;
+      req.moveit_userid = res[i].userid;
+      await Moveituser.create_createMoveitTimelog(req);
 
       //  var today = moment();
       //  var ordertime = moment(res[i].ordertime);
@@ -866,5 +852,250 @@ const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async funct
   }
 });
 //kpidashboardproducthistory.start();
+
+////cron run by moveit user offline every cycle end.
+const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
+  console.log("moveit offline & online");
+  var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
+  
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");
+  var currenthour = moment(day).format("HH");
+  var currentminus = currenthour-1;
+
+  if (res.length !== 0) {
+    for (let i = 0; i < res.length; i++) {
+      /////////logout Moveit-Time log/////////////////
+      var req={};
+      req.type    = 0;
+      req.moveit_userid = res[i].userid;
+      req.action  = 2;
+      req.created_at = moment().format("YYYY-MM-DD "+currentminus+":59:59");
+      req.logtime = moment().format("YYYY-MM-DD "+currentminus+":59:59");
+      await Moveituser.create_createMoveitTimelog(req);
+      /////////login Moveit-Time log/////////////////
+      if(currenthour!=23){
+        var req={};
+        req.type    = 1;
+        req.moveit_userid = res[i].userid;
+        req.action  = 2;
+        await Moveituser.create_createMoveitTimelog(req);
+      }     
+    }
+  }
+});
+//moveitlog_outin.start();
+
+////CRON For Every day Moveit Log with Order///////
+const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
+  console.log("Moveit Daywise Report");
+  var moveit_daywise_data = await Order.moveit_daywise_report();
+  await MoveitDayWise.createmoveitdaywise(moveit_daywise_data);
+});
+//moveitlog_everyday.start();
+
+////CRON For Every day Makeit Log with Order///////
+const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
+  console.log("Makeit Daywise Report");
+  var makeit_daywise_data = await Order.makeit_daywise_report();
+  if (makeit_daywise_data.length !=0) {    
+    for (let i = 0; i < makeit_daywise_data.length; i++) {
+      var new_makeit_daywise_data = new MakeitDayWise(makeit_daywise_data[i]);
+      await MakeitDayWise.createmakeitdaywise(new_makeit_daywise_data);
+    }
+  } 
+});
+//makeitlog_everyday.start();
+
+///// Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
+const liveproducthistory_cyclestart = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {
+  console.log("Live Product History Cycle Start");
+  await QuickSearch.liveproducthistorycyclestart();
+});
+//liveproducthistory_cyclestart.start();
+
+///// Cron For BreakFast, Lunch, Dinner Every Cycle End ///////////
+const liveproducthistory_cycleend = new CronJob("0 55 11,15,22 * * *", async function(req, result) {
+  console.log("Live Product History Cycle End");
+  await QuickSearch.liveproducthistorycycleend();
+});
+//liveproducthistory_cycleend.start();
+
+//////////Live Product History Cycle Start Cron Function//////////////
+QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycyclestart(){
+  var breatfastcycle = constant.breatfastcycle;
+  var lunchcycle = constant.lunchcycle;
+  var dinnercyclestart = constant.dinnercycle;
+  var dinnercycle = constant.dinnerend + 1; //22+1
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");
+  var currenthour = moment(day).format("HH");
+  var CSselectquery = "";
+  var CSwherequery = "";
+  var cyclestart = 0;
+  
+  if (currenthour == breatfastcycle) {
+    cyclestart = 1;
+    CSselectquery = " 3 as action,"; /////// Cycle Start ////
+    CSwherequery = " and prd.breakfast=1";
+  } else if (currenthour == lunchcycle) {    
+    cyclestart = 1;    
+    CSselectquery = " 3 as action,"; ////// Cycle Start ////
+    CSwherequery = " and prd.lunch=1";
+  } else if (currenthour == dinnercyclestart) {
+    cyclestart = 1;    
+    CSselectquery = " 3 as action,"; ////// Cycle Start ////
+    CSwherequery = " and prd.dinner=1";
+  } 
+
+  if (breatfastcycle && lunchcycle && dinnercycle) {
+    if (cyclestart == 1) {
+      const getproductdetailscs = await query("select" + CSselectquery +" prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN IFNULL(oi.quantity,0) ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 and payment_status<2 THEN IFNULL(oi.quantity,0) ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) left join MakeitUser as mu on mu.userid = prd.makeit_userid where mu.unservicable=0 and prd.active_status = 1 and prd.delete_status !=1 " + CSwherequery + " group by prd.productid");
+      if (getproductdetailscs.err) {
+        //return(err, null);
+        //console.log("error",getproductdetailscs.err);
+      } else {
+        for (var i = 0; i < getproductdetailscs.length; i++) {
+          var inserthistory = await producthistory.createProducthistory(getproductdetailscs[i]);
+        }
+        const getmakeitlistcs = await query("select distinct prd.makeit_userid as makeit_id from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) left join MakeitUser as mu on mu.userid = prd.makeit_userid where mu.unservicable=0 and prd.active_status = 1 and prd.delete_status !=1 "+CSwherequery +" group by prd.productid");
+        for(let j=0; j<getmakeitlistcs.length; j++){
+          getmakeitlistcs[j].type=0;
+          for (let k = 0; k<getproductdetailscs.length; k++) {
+            if(getmakeitlistcs[j].makeit_id == getproductdetailscs[k].makeit_id){
+              if(getproductdetailscs[k].actual_quantity>0){
+                if(getmakeitlistcs[j].type==0){
+                  getmakeitlistcs[j].type = 1;
+                }                
+              }
+            }
+          }
+        }
+        var makeitlogcs = getmakeitlistcs.filter(log => log.type===1);
+        for (var i=0; i<makeitlogcs.length; i++) {
+          var insertlog = await Makeitlog.createmakeittimelog(makeitlogcs[i]);
+        }
+      }
+    }    
+  }
+  return insertlog;
+}
+
+//////////Live Product History Cycle End Cron Function//////////////
+QuickSearch.liveproducthistorycycleend = async function liveproducthistorycycleend(){
+  var day           = moment().format("YYYY-MM-DD HH:mm:ss");
+  var currenthour   = moment(day).format("HH:mm");
+  var CEselectquery = "";
+  var CEwherequery  = "";
+  var cycleend      = 0;
+
+  if (currenthour == "11:55") {
+    cycleend = 1;
+    CEselectquery = " 4 as action,"; ////// Cycle End ////
+    CEwherequery  = " and prd.breakfast=1";
+  } else if (currenthour == "15:55") {
+    cycleend = 1;
+    CEselectquery = " 4 as action,"; ////// Cycle End ////
+    CEwherequery  = " and prd.lunch=1";
+  } else if (currenthour == "22:55") {
+    cycleend = 1;
+    CEselectquery = " 4 as action,"; ////// Cycle End ////
+    CEwherequery  = " and prd.dinner=1";
+  } 
+
+  if (cycleend == 1) {
+    const getproductdetailsce = await query("select" + CEselectquery + " prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN IFNULL(oi.quantity,0) ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 and payment_status<2 THEN IFNULL(oi.quantity,0) ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) left join MakeitUser as mu on mu.userid = prd.makeit_userid where mu.unservicable=0 and prd.active_status = 1 and prd.delete_status !=1 " + CEwherequery + " group by prd.productid");
+      if (getproductdetailsce.err) {
+        //return(err, null);
+        //console.log(getproductdetailsce.err);
+      } else {
+        for (var i = 0; i < getproductdetailsce.length; i++) {
+          var inserthistory = await producthistory.createProducthistory(getproductdetailsce[i]);
+        }
+        const getmakeitlistce = await query("select distinct prd.makeit_userid as makeit_id from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) left join MakeitUser as mu on mu.userid = prd.makeit_userid where mu.unservicable=0 and prd.active_status = 1 and prd.delete_status !=1 " +CEwherequery +" group by prd.productid");
+        for(let j=0; j<getmakeitlistce.length; j++){
+          getmakeitlistce[j].type = 1;
+          for (let k = 0; k<getproductdetailsce.length; k++) {
+            if(getmakeitlistce[j].makeit_id == getproductdetailsce[k].makeit_id){
+              if(getproductdetailsce[k].actual_quantity>0){
+                if(getmakeitlistce[j].type==1){
+                  getmakeitlistce[j].type = 0;
+                }                
+              }
+            }
+          }
+        }
+        var makeitlogce = getmakeitlistce.filter(log => log.type===0);
+        for (var i=0; i<makeitlogce.length; i++) {
+          var insertlog = await Makeitlog.createmakeittimelog(makeitlogce[i]);
+        }
+      }
+    }  
+  return insertlog;
+}
+
+/////////Homemaker Tiering///////////////////////
+const homemakertiering = new CronJob("0 0 3 * * *", async function() {
+  console.log("Homemaker Tiering");
+  var makeit_incentive = await Order.makeit_incentive_report();
+});
+
+var currentdatecheck = new Date();
+var currentday = currentdatecheck.getDay()
+if(currentday ==1 ){
+  homemakertiering.start();
+}
+
+
+//const Makeit_lost_revenue_report = new CronJob("0 0 2 * * *", async function() {
+const Makeit_lost_revenue_report = new CronJob("0 0 4 * * *", async function(req, result) {
+  console.log("Makeit_lost_revenue ------------------------->");
+  var Makeit_lost_revenue = "SELECT a.makeit_id,sum(a.expected_revenue)as expected_revenue FROM( select pth.makeit_id,pth.product_id,Max(pth.actual_quantity+pth.pending_quantity+pth.ordered_quantity) as maxvalues, (Max(pth.actual_quantity+pth.pending_quantity+pth.ordered_quantity) * pt.original_price) as expected_revenue from Live_Product_History  pth left outer join Product pt on pt.productid=pth.product_id   where date(pth.created_at)=CURDATE()-1  group by pth.product_id )a GROUP by a.makeit_id";
+
+  var Makeit_lost_revenue_list = await query(Makeit_lost_revenue);
+  //console.log("---------------------------->,",Makeit_lost_revenue_list);
+  if (Makeit_lost_revenue_list) {
+    for (let i = 0; i < Makeit_lost_revenue_list.length; i++) {
+      
+    var makeit_earning = await query("select id,makeit_id,total_makeit_earnings from Makeit_daywise_report where  makeit_id ='"+Makeit_lost_revenue_list[i].makeit_id+"' and date(created_at)=CURDATE()-1 order by id desc limit 1");
+      
+    //console.log("makeit_earning",makeit_earning);
+    if (makeit_earning.length !=0) {
+
+      //console.log("Makeit_lost_revenue_list[i].total_makeit_earnings",Makeit_lost_revenue_list[i].expected_revenue);
+     
+      if (makeit_earning[0].total_makeit_earnings !=0) {
+        Makeit_lost_revenue_list[i].total_makeit_earnings=makeit_earning[0].total_makeit_earnings;
+
+        if (Makeit_lost_revenue_list[i].expected_revenue = makeit_earning[0].total_makeit_earnings) {
+          Makeit_lost_revenue_list[i].status=0;
+          Makeit_lost_revenue_list[i].total_lost_revenue=0;
+        } else if (Makeit_lost_revenue_list[i].expected_revenue > makeit_earning[0].total_makeit_earnings) {
+          Makeit_lost_revenue_list[i].status=1;
+          Makeit_lost_revenue_list[i].total_lost_revenue=Makeit_lost_revenue_list[i].expected_revenue - makeit_earning[0].total_makeit_earnings;
+        }else{
+          Makeit_lost_revenue_list[i].status=2;
+          Makeit_lost_revenue_list[i].total_lost_revenue=0
+        }
+      }else{
+        Makeit_lost_revenue_list[i].total_makeit_earnings=0;
+        Makeit_lost_revenue_list[i].status=1;
+        Makeit_lost_revenue_list[i].total_lost_revenue=Makeit_lost_revenue_list[i].expected_revenue;
+      }
+      
+
+
+    }else{
+      Makeit_lost_revenue_list[i].total_makeit_earnings=0;
+      Makeit_lost_revenue_list[i].status=2;
+      Makeit_lost_revenue_list[i].total_lost_revenue=Makeit_lost_revenue_list[i].expected_revenue;
+    }
+
+    var new_Makeittotalrevenue= new Makeittotalrevenue(Makeit_lost_revenue_list[i]);
+    Makeittotalrevenue.createMakeittotalrevenue(new_Makeittotalrevenue);
+
+    }
+  }
+ 
+});
+//Makeit_lost_revenue_report.start();
 
 module.exports = QuickSearch;

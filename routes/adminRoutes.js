@@ -295,4 +295,12 @@ app.route("/admin/reports/makeit_cancellation").post(routesVersioning({"1.0.0":m
 app.route("/admin/reports/makeit_avg_preparation").post(routesVersioning({"1.0.0":makeituser.makeit_avg_preparation_report}));
 app.route("/admin/reports/xfactor_order_count").post(routesVersioning({"1.0.0":orders.xfactor_order_count}));
 
+///Moveit Succession Report////
+app.route("/admin/reports/moveitdaywisecyclereport").post(routesVersioning({"1.0.0":orders.moveit_daywise_cycle_report}));
+///makeit_shutdown_report////
+app.route("/admin/reports/makeitshutdownreport").post(routesVersioning({"1.0.0":orders.makeit_shutdown_report}));
+////Moveit Driver Utilization  Report///
+//app.route("/admin/reports/moveitutilizationreport").post(routesVersioning({"1.0.0":orders.moveit_utilization_report}));
+
+
 }

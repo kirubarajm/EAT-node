@@ -15,6 +15,7 @@ var PushConstant = require("../../push/PushConstant.js");
 var Notification = require("../../model/common/notificationModel.js");
 var ZoneModel    = require("../../model/common/zoneModel.js");
 var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTrackingModel');
+var Makeittimelog    = require("../../model/common/makeittimelogModel");
 
 //Task object constructor
 var Makeituser = function(makeituser) {
@@ -758,6 +759,8 @@ Makeituser.orderstatusbyorderid = async function(req, result) {
           null,
           PushConstant.masteridOrder_Prepared
         );
+        req.makeit_userid=orderdetails[0].makeit_user_id;
+        Makeituser.makeit_quantity_check(req);
         await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Prepared,null);
         let sucobj = true;
         let mesobj = "Status Updated Successfully";
@@ -912,8 +915,9 @@ Makeituser.admin_get_unapproved_makeitlist = function(req, result) {
     }
   });
 };
+
 Makeituser.updatemakeit_user_approval = function(req, result) {
-  console.log("updatemakeit_user_approval-->" + req);
+
   req.ka_status = parseInt(req.ka_status);
   var appointment_status = req.ka_status === 1 ? 3 : 2;
   sql.query(
@@ -1357,7 +1361,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             }
   
             if (gstcharge !==0) {
-            gstinfo.title = "Taxes ";//gst modified taxes 13-jan-2020
+              gstinfo.title = "Taxes ";//gst modified taxes 13-jan-2020
             gstinfo.charges = gstcharge;
             gstinfo.status = true;
             gstinfo.infostatus = false;
@@ -3580,4 +3584,127 @@ Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_
   
 };
 
+
+////Get Quantity Check /////////////
+Makeituser.makeit_quantity_check= async function makeit_quantity_check(req,result) {
+
+        var breatfastcycle = constant.breatfastcycle;
+        var dinnercycle = constant.dinnercycle;
+        var lunchcycle = constant.lunchcycle;                              
+        var day = moment().format("YYYY-MM-DD HH:mm:ss");
+        var currenthour  = moment(day).format("HH");
+        var productquery = '';
+
+        if (currenthour < lunchcycle) {
+          productquery = productquery + "pt.breakfast = 1";
+        }else if(currenthour >= lunchcycle && currenthour < dinnercycle){        
+          productquery = productquery + "pt.lunch = 1";        
+        }else if( currenthour >= dinnercycle){        
+          productquery = productquery + "pt.dinner = 1";
+        }
+
+
+  var makeitproductlist = await query("select pt.productid,pt.active_status from Product pt left join MakeitUser mk on mk.userid=pt.makeit_userid where pt.active_status = 1 and pt.quantity !=0 and mk.unservicable = 0 and pt.makeit_userid="+req.makeit_userid+" and "+productquery+" ");
+  if(makeitproductlist.length===0){
+    var new_Makeittimelog = {};
+    new_Makeittimelog.type=0;
+    new_Makeittimelog.makeit_id=req.makeit_userid;
+    Makeittimelog.createmakeittimelog(new_Makeittimelog);
+  }else{
+    var new_Makeittimelog = {};
+    new_Makeittimelog.type=1;
+    new_Makeittimelog.makeit_id=req.makeit_userid;
+    Makeittimelog.createmakeittimelog(new_Makeittimelog);
+  }
+  
+};
+
+
+Makeituser.total_lost_revenue= function total_lost_revenue(req, result) {
+
+  staticquery ="select mtv.*,mk.name from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id where date(mtv.created_at)= '"+req.date+"' group by mtv.makeit_id";
+
+    sql.query(staticquery, function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+  
+        let resobj = {
+          success: true,
+          status: true,
+          result: res
+        };
+
+        result(null, resobj);
+      }
+    });
+
+};
+
+Makeituser.total_makesuccessionrate= function total_makesuccessionrate(req, result) {
+
+  staticquery ="select mtv.makeit_id,sum(total_makeit_earnings) as monthly_makeit_earnings,mk.name from Makeit_daywise_report mtv join MakeitUser mk on mk.userid=mtv.makeit_id where MONTH(mtv.created_at)= MONTH('"+req.date+"') group by mtv.makeit_id";
+
+    sql.query(staticquery, function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+  
+        if (res.length!=0) {
+          
+        for (let i = 0; i < res.length; i++) {
+       
+          var get_percetage = res[i].monthly_makeit_earnings / constant.Makeit_monthly_expect_earning*100;
+          
+          res[i].monthly_makeit_percetage= get_percetage;
+        }
+          
+        }
+        let resobj = {
+          success: true,
+          status: true,
+          result: res
+        };
+
+        result(null, resobj);
+      }
+    });
+
+};
+
+
+
+Makeituser.total_makefinancedisplay= function total_makefinancedisplay(req, result) {
+
+  staticquery ="select mtv.makeit_id,sum(mtv.total_makeit_earnings) as monthly_makeit_earnings,mk.name,sum(mi.incentive_amount) as  incentive_amount,sum(total_lost_revenue) as total_lost_revenue from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id left join Makeit_incentive mi on mi.makeit_id=mtv.makeit_id where MONTH(mtv.created_at)= MONTH('"+req.date+"') group by mtv.makeit_id";
+
+    sql.query(staticquery, function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+  
+        if (res.length!=0) {
+          
+        for (let i = 0; i < res.length; i++) {
+       
+          var get_percetage = res[i].monthly_makeit_earnings / constant.Makeit_monthly_expect_earning*100;
+          
+          res[i].monthly_makeit_percetage= get_percetage;
+        }
+          
+        }
+        let resobj = {
+          success: true,
+          status: true,
+          result: res
+        };
+
+        result(null, resobj);
+      }
+    });
+
+};
 module.exports = Makeituser;

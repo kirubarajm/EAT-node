@@ -3,6 +3,7 @@ var sql = require("../db.js");
 var Productitem = require("../../model/makeit/productitemsModel.js");
 var Packageitem = require("../../model/makeit/packageitemsModel.js");
 var producthistory = require("../../model/makeit/liveproducthistoryModel.js");
+var Makeituser = require("../../model/makeit/makeitUserModel.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
 var constant = require("../constant.js");
@@ -449,6 +450,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
               if (err) {
                 result(null, err);
               } else {
+               
                   var isEdit=true;
                   req.active_status=res1[0].active_status;
                   // if(res1[0].makeit_type===0){
@@ -487,7 +489,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
           //     }
           //   }
           // );
-         } else if (res[0].approved_status == 0) {
+        } else if (res[0].approved_status == 0) {
           console.log("product live");
           let resobj = {
             success: true,
@@ -503,10 +505,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
   );
 };
 
-Product.update_quantity_product_byid = function update_quantity_product_byid(
-  req,
-  result
-) {
+Product.update_quantity_product_byid = function update_quantity_product_byid(req,result) {
   //console.log(req);
 
   const active_status = parseInt(req.active_status)
@@ -521,6 +520,8 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
           result(null, err);
         } else {
           //{"productid":136,"quantity":"10","active_status":1,"makeit_userid":"184"}
+
+          Makeituser.makeit_quantity_check(req);
           let resobj = {
             success: true,
             status: true,
@@ -603,6 +604,8 @@ Product.update_quantity_valid_package=function(req,isEdit,result){
         result(null, err);
       } else {
         /////=Edit Live Product History =//////////
+        req.makeit_id = req.makeit_userid;
+        Makeituser.makeit_quantity_check(req);
         let message='';
         if(isEdit){
           req.action=2;
@@ -621,6 +624,7 @@ Product.update_quantity_valid_package=function(req,isEdit,result){
               }
         });
         
+
         let resobj = {
           success: true,
           message: message,
@@ -1317,5 +1321,9 @@ Product.croncreateliveproductstatushistory = async function(req, result) {
     result(err, null);
   } 
 };
+
+
+
+
 
 module.exports = Product;
