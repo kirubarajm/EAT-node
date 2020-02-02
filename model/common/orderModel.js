@@ -8724,10 +8724,10 @@ Order.moveit_daywise_cycle_report= async function moveit_daywise_cycle_report(re
 
 ///Makeit Incentive Report////
 Order.makeit_incentive_report= async function makeit_incentive_report(req,inc_fromdate,inc_todate) {
-  var inc_fromdate = moment().subtract(1, "days").format("YYYY-MM-DD");
-  var inc_todate = moment().subtract(7, "days").format("YYYY-MM-DD");
+  var inc_todate    = moment().subtract(1, "days").format("YYYY-MM-DD");
+  var inc_fromdate  = moment().subtract(7, "days").format("YYYY-MM-DD");
 
-  var query="select makeit_id,if(SUM(complete_succession_count),SUM(complete_succession_count),0) as complete_succession_count, if(SUM(cancel_order_count),SUM(cancel_order_count),0) as cancel_count  from Makeit_daywise_report where date(date) between '"+inc_todate+"' and '"+inc_fromdate+"' group by makeit_id";
+  var query="select makeit_id,if(SUM(complete_succession_count),SUM(complete_succession_count),0) as complete_succession_count, if(SUM(cancel_order_count),SUM(cancel_order_count),0) as cancel_count  from Makeit_daywise_report where date(date) between '"+inc_fromdate+"' and '"+inc_todate+"' group by makeit_id";
   //console.log("query---------->",query);
   sql.query(query,async function(err, res) {
     if (err) {
