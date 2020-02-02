@@ -8728,13 +8728,15 @@ Order.makeit_incentive_report= async function makeit_incentive_report(req,inc_fr
   var inc_todate = moment().subtract(7, "days").format("YYYY-MM-DD");
 
   var query="select makeit_id,if(SUM(complete_succession_count),SUM(complete_succession_count),0) as complete_succession_count, if(SUM(cancel_order_count),SUM(cancel_order_count),0) as cancel_count  from Makeit_daywise_report where date(date) between '"+inc_todate+"' and '"+inc_fromdate+"' group by makeit_id";
-  console.log("query---------->",query);
+  //console.log("query---------->",query);
   sql.query(query,async function(err, res) {
     if (err) {
       //result(err, null);
-    } else {
+    } else {      
       if (res.length !== 0) {
         for (let i = 0; i < res.length; i++) {
+          res[i].from_date  = inc_fromdate;
+          res[i].to_date    = inc_todate;
           if(res[i].com_ses_count >= 18 && res[i].cancel_count <=3 ){
             res[i].eligibility = 1;
             res[i].incentive_amount = constant.makeit_tier3;
@@ -8829,7 +8831,7 @@ Order.moveit_utilization_report= async function moveit_utilization_report(req,re
   
 };
 
-///makeit_incentive_report////
+///Show makeit_incentive_report////
 Order.show_makeit_incentive_report= async function show_makeit_incentive_report(req,result) {   
   if(req.eligibility && req.eligibility!=''){
     var makeitincentivequery ="select makeit_id,eligibility,complete_succession_count,cancel_count,incentive_amount from Makeit_incentive where date(created_at)='"+req.date+"' and eligibility="+req.eligibility;
