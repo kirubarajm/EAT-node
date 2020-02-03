@@ -8825,4 +8825,107 @@ Order.moveit_utilization_report= async function moveit_utilization_report(req,re
   
 };
 
+
+////OPE METRICS Report///
+Order.ope_metrics_report= async function ope_metrics_report(req,result) { 
+  var orderscountquery = "Select sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY) And o.orderstatus=6 and mk.virtualkey=0),o.price,0)) as real_lastweek_day_value,sum(if((date(o.created_at)=CURDATE() And o.orderstatus=6 and mk.virtualkey=0),price,0)) as real_today_value,sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY) And o.orderstatus=6 and mk.virtualkey=1),o.price,0)) as dark_lastweek_day_value,sum(if((date(o.created_at)=CURDATE() And o.orderstatus=6 and mk.virtualkey=1),price,0)) as dark_today_value,sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY) And o.orderstatus=6 and mk.virtualkey=0),1,0)) as real_lastweek_day_count,sum(if((date(o.created_at)=CURDATE() And o.orderstatus=6 and mk.virtualkey=0),1,0)) as real_today_count,sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY) And o.orderstatus=6 and mk.virtualkey=1),1,0)) as dark_lastweek_day_count,sum(if((date(o.created_at)=CURDATE() And o.orderstatus=6 and mk.virtualkey=1),1,0)) as dark_today_count,sum(if((date(o.created_at)=CURDATE() And o.orderstatus=7 and mk.virtualkey=0),1,0)) as real_today_cancel_count,sum(if((date(o.created_at)=CURDATE() And o.orderstatus=7 and mk.virtualkey=1),1,0)) as dark_today_cancel_count from Orders o left join MakeitUser as mk on mk.userid=o.makeit_user_id Where date(o.created_at) between DATE_SUB(CURDATE(), INTERVAL 7 DAY) AND CURDATE()";
+  var orderscount = await query(orderscountquery);
+  
+  
+  if(orderscount.length != 0){
+
+    for (let i = 0; i < orderscount.length; i++) {
+
+      var real_today_value =parseInt(orderscount[i].real_today_value);
+      var dark_today_value =parseInt(orderscount[i].dark_today_value);
+
+      var real_lastweek_day_value = parseInt(orderscount[i].real_lastweek_day_value);
+      var dark_lastweek_day_value = parseInt(orderscount[i].dark_lastweek_day_value);
+
+      var real_today_count=parseInt(orderscount[i].real_today_count);
+      var dark_today_count=parseInt(orderscount[i].dark_today_count);
+
+      var real_lastweek_day_count = parseInt(orderscount[i].real_lastweek_day_count);
+      var dark_lastweek_day_count = parseInt(orderscount[i].dark_lastweek_day_count);
+
+      var real_today_cancel_count=parseInt(orderscount[i].real_today_cancel_count);
+      var dark_today_cancel_count=parseInt(orderscount[i].dark_today_cancel_count);
+
+
+      orderscount[i].real_order_revenue=0;
+      orderscount[i].dark_order_revenue=0;
+
+
+      orderscount[i].real_avg_orders=0;
+      orderscount[i].dark_avg_orders=0;
+
+      orderscount[i].real_order_aov=0;
+      orderscount[i].dark_order_aov=0;
+      
+      orderscount[i].real_order_cancellation_avg=0;
+      orderscount[i].dark_order_cancellation_avg=0;
+
+
+      if(real_today_value && real_today_count)
+      orderscount[i].real_order_aov=(real_today_value/real_today_count);
+
+      if(dark_today_value && dark_today_count)
+      orderscount[i].dark_order_aov=(dark_today_value/dark_today_count);
+
+      if(real_today_cancel_count && real_today_count)
+      orderscount[i].real_order_cancellation_avg=(real_today_cancel_count/real_today_count)*100;
+
+      if(dark_today_cancel_count && dark_today_count)
+      orderscount[i].dark_order_cancellation_avg=(dark_today_cancel_count/dark_today_count)*100;
+
+      if(real_lastweek_day_value && real_today_value){
+        var diffvalue=parseInt(real_today_value) - parseInt(real_lastweek_day_value);
+        var diviedvalue=diffvalue/parseInt(real_lastweek_day_value);
+        var avgvalue=diviedvalue * 100;
+        orderscount[i].real_order_revenue=avgvalue;
+      }
+
+      if(dark_lastweek_day_value &&dark_today_value){
+        var diffvalue=parseInt(dark_today_value) - parseInt(dark_lastweek_day_value);
+        var diviedvalue=diffvalue/parseInt(dark_lastweek_day_value);
+        var avgvalue=diviedvalue * 100;
+        orderscount[i].dark_order_revenue=avgvalue;
+      }
+
+
+      if(real_lastweek_day_count && real_today_count){
+        var diffvalue=parseInt(real_today_count) - parseInt(real_lastweek_day_count);
+        var diviedvalue=diffvalue/parseInt(real_lastweek_day_count);
+        var avgvalue=diviedvalue * 100;
+        orderscount[i].real_avg_orders=avgvalue;
+      }
+
+
+      if(dark_lastweek_day_count && dark_today_count){
+        var diffvalue=parseInt(dark_today_count) - parseInt(dark_lastweek_day_count);
+        var diviedvalue=diffvalue/parseInt(dark_lastweek_day_count);
+        var avgvalue=diviedvalue * 100;
+        orderscount[i].dark_avg_orders=avgvalue;
+      }
+
+
+
+    }
+    let resobj = {
+      success: true,
+      status:true,
+      result: orderscount      
+    };
+    result(null, resobj);
+  }else{
+    let resobj = {
+      success: true,
+      message: "Sorry! no data found.",
+      status:false
+    };
+    result(null, resobj);
+  }
+  
+};
+
 module.exports = Order;

@@ -1155,3 +1155,11 @@ exports.moveit_utilization_report = function(req, res) {
     res.json(result);
   });
 };
+
+////OPE METRICS Report///
+exports.ope_metrics_report = function(req, res) {
+  Order.ope_metrics_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
