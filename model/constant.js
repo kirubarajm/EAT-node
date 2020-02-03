@@ -5,7 +5,7 @@ const calculate = {
   gst: 5, // percentage
   food_gst: 5, // percentage
   food_commission_cost: 18,
-  deliverycharge: 20, // cost made changes 10-jan-2020
+  deliverycharge: 0, // cost made changes 10-jan-2020
   applink: "http://bit.ly/2ZcGL95",
   iosapplink: "https://apple.co/2lna3n9",
   refferalcontent:"Welcome to EAT. Click the link to download the EAT app from play store",
@@ -114,7 +114,7 @@ const calculate = {
     home_gst:18,//%
     cater_gst:5,
     convenience_charge:20,
-    convenience_charge_status:true,
+    convenience_charge_status:false,
     product_cost_limit_message:"We are sorry. We can't process this order. Kindly order above the minimun cart value of Rs.30 to proceed.",
     product_cost_limit_short_message:"Minimum cart value is Rs.",
     Makeit_monthly_expect_earning :10000,
