@@ -116,7 +116,15 @@ const calculate = {
     convenience_charge:20,
     convenience_charge_status:true,
     product_cost_limit_message:"We are sorry. We can't process this order. Kindly order above the minimun cart value of Rs.30 to proceed.",
-    product_cost_limit_short_message:"Minimum cart value is Rs."
+    product_cost_limit_short_message:"Minimum cart value is Rs.",
+
+    ////////////////Moveit Cycle time//////////
+    cycle1:4,
+    cycle2:4,
+    cycle3:7,
+    cycle1totaltime : "03:00:00",
+    cycle2totaltime : "03:00:00",
+    cycle3totaltime : "05:25:00",
 
 }
 
