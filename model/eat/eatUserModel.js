@@ -2103,7 +2103,6 @@ if ( headers.apptype ==1) {
         //res[i].distance = res[i].distance * constant.onemile;
         res[i].distance = res[i].distance.toFixed(2) ;
 
-        console.log(res[i].distance);
         var eta = foodpreparationtime + (onekm * res[i].distance);
         //15min Food Preparation time , 3min 1 km
        

@@ -1241,13 +1241,11 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               var othercharges = delivery_charge + convenience_charge ;
               var home_gst= (othercharges * constant.home_gst)/100;
         
-       
               if (res2[0].makeit_type !=0) {
                 var cater_gst = (totalamount / 100) * constant.gst;
                 var gstcharge= Math.round(home_gst + cater_gst);
              
               }else{
-           
                 var gstcharge=Math.round(home_gst);
                 
               }
@@ -1398,6 +1396,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             //cart changes
 
              //this code is modified 23-09-2019
+             if (constant.convenience_charge_status) {
              if (product_orginal_price >= constant.minimum_cart_value) {             
                deliverychargeinfo.title = "Other charges";
                deliverychargeinfo.charges = delivery_charge + convenience_charge;
@@ -1419,11 +1418,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               deliverychargeinfo.default_cost=constant.convenience_charge;
               cartdetails.push(deliverychargeinfo);
              }       
-            
-
-
-
-             
+                        
             if (delivery_charge) {      
               other_charges_info.name="Delivery charge";
               other_charges_info.price=delivery_charge;
@@ -1435,7 +1430,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               convenience_other_charges_info.price=convenience_charge; 
               deliverychargeinfo.infodetails.push(convenience_other_charges_info);    
             }
-           
+          }
             // if (other_charges_info.delivery_charge || other_charges_info.convenience_charge) {
             //   deliverychargeinfo.infodetails.push(other_charges_info);
             // }
