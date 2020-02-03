@@ -8,6 +8,7 @@ var Makeittotalrevenue = function(makeittotalrevenue) {
   this.total_makeit_earnings   = makeittotalrevenue.total_makeit_earnings||0;
   this.status   = makeittotalrevenue.status;
   this.total_lost_revenue=makeittotalrevenue.total_lost_revenue;
+  this.logtime=makeittotalrevenue.logtime;
 
 };
 
