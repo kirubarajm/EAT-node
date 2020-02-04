@@ -591,10 +591,11 @@ QuickSearch.order_assign=async function order_assign(res,i){
       
   }else{
 
+        var radius = constant.order_assign_first_radius + constant.order_assign_second_radius;
         var geoLocation = [];
         geoLocation.push(res[i].lat);
         geoLocation.push(res[i].lon);
-        MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,constant.nearby_moveit_radius,async function(err, move_it_id_list) {
+        MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,radius,async function(err, move_it_id_list) {
             if (err) {
               let error = {
                 success: true,
@@ -606,18 +607,46 @@ QuickSearch.order_assign=async function order_assign(res,i){
               order_assign(res,i);
             } else {
               var moveitlist = move_it_id_list.moveitid;
-              console.log('moveitlist.length->',moveitlist.length);
-              if (moveitlist.length > 0) {
-                var moveitlistquery =
-                  "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-                  move_it_id_list.moveitid +
-                  ") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount";
+
+            
+              
+              if (moveitlist > 0) {
+
+                var first_moveit_list =  move_it_id_list.sort(
+                  (a, b) => a.distance <= constant.order_assign_first_radius
+                );
+
+                var second_moveit_list =  move_it_id_list.sort(
+                  (a, b) => a.distance > constant.order_assign_first_radius
+                );
+
+
+                
+              console.log(first_moveit_list);
+              console.log(second_moveit_list);
+
+                if (first_moveit_list.length) {
+            
+                  var moveitlistquery =
+                    "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+                    first_moveit_list.moveitid +
+                    ") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount";
+             
+                }else if(second_moveit_list.length){
+  
+                  var moveitlistquery =
+                    "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+                    second_moveit_list.moveitid +
+                    ") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount";
+  
+                }
+  
+  
                 var nearbymoveit = await query(moveitlistquery);
+
                  console.log('nearbymoveit.length->',nearbymoveit.length);
                 if (nearbymoveit.length !== 0) {
-                  // nearbymoveit.sort(
-                  //   (a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout)
-                  // );
+                 
                   console.log('nearbymoveit id-->',nearbymoveit[0].userid);
                   sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, res[i].orderid],async function(err, res2) {
                       if (err) {
@@ -630,7 +659,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
                             res[i].orderid +
                             ""
                         );
-                         var req={};
+                        var req={};
                         req.state=1;
                         req.moveit_user_id=nearbymoveit[0].userid;
                          Order.update_moveit_lat_long(req);
@@ -667,7 +696,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
 }
 
 };
-//order_auto_assign_Change.start();
+order_auto_assign_Change.start();
 
 ////Zone Based Moveit 
 QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
@@ -1041,7 +1070,7 @@ const homemakertiering = new CronJob("0 0 3 * * *", async function() {
 var currentdatecheck = new Date();
 var currentday = currentdatecheck.getDay()
 if(currentday ==1 ){
-  homemakertiering.start();
+ /// homemakertiering.start();
 }
 
 
