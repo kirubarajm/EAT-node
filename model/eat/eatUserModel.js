@@ -5366,4 +5366,25 @@ Eatuser.user_growth_order_report = async function user_growth_order_report(req, 
 
 };
 
+
+Eatuser.promotion_homescreen = async function promotion_homescreen(req, result) {
+
+
+  var res = {};
+  res.show_status=true,
+  res.content_type= 0,
+  res.full_screen = false,
+  res.url = "https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1580808257672-Infinity%20regions-%20free%20delivery-04.png"
+    
+
+  let resobj = {
+    success: true,
+    status: true,
+    result: res
+  };
+
+  result(null, resobj);
+
+};
+
 module.exports = Eatuser;
