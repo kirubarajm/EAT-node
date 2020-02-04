@@ -3573,7 +3573,7 @@ Makeituser.total_makesuccessionrate= function total_makesuccessionrate(req, resu
 
 Makeituser.total_makefinancedisplay= function total_makefinancedisplay(req, result) {
 
-  staticquery ="select mtv.makeit_id,sum(mtv.total_makeit_earnings) as monthly_makeit_earnings,mk.name,sum(mi.incentive_amount) as  incentive_amount,sum(total_lost_revenue) as total_lost_revenue from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id left join Makeit_incentive mi on mi.makeit_id=mtv.makeit_id where MONTH(mtv.created_at)= MONTH('"+req.date+"') group by mtv.makeit_id";
+  staticquery ="select mtv.makeit_id,sum(mtv.total_makeit_earnings) as monthly_makeit_earnings,mk.name,sum(mi.incentive_amount) as  incentive_amount,sum(total_lost_revenue) as total_lost_revenue from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id left join Makeit_incentive mi on mi.makeit_id=mtv.makeit_id where (Date(mtv.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"') group by mtv.makeit_id";
 
     sql.query(staticquery, function(err, res) {
       if (err) {
