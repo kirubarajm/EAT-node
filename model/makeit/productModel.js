@@ -285,27 +285,35 @@ Product.moveliveproduct = function(req, result) {
   console.log(req);
   var active_status = parseInt(req.active_status);
   if (active_status === 0) {
-    sql.query(
-      "UPDATE Product SET active_status = ? WHERE productid = ?",
-      [req.active_status, req.productid],
-      function(err, res) {
-        if (err) {
-          console.log("error: ", err);
-          result(null, err);
-        } else {
-          var mesobj = {};
-          let sucobj = true;
-          mesobj = "Product removed from live successfully";
-          let resobj = {
-            success: sucobj,
-            status: true,
-            message: mesobj
-          };
-
-          result(null, resobj);
-        }
+    req.action=5;
+    Product.createliveproductstatushistory(req, function(err,result2){
+      if (err) {
+        result(err, null);
+      } else{
+        console.log("result--->",result2);
+        sql.query(
+          "UPDATE Product SET active_status = ? WHERE productid = ?",
+          [req.active_status, req.productid],
+          function(err, res) {
+            if (err) {
+              console.log("error: ", err);
+              result(null, err);
+            } else {              
+              var mesobj = {};
+              let sucobj = true;
+              mesobj = "Product removed from live successfully";
+              let resobj = {
+                success: sucobj,
+                status: true,
+                message: mesobj
+              };    
+              result(null, resobj);
+            }
+          }
+        );
       }
-    );
+    });
+    //////////////////////////////////////////    
   } else {
     sql.query(
       "select pt.approved_status,pt.active_status,mu.ka_status from Product pt left join MakeitUser mu on mu.userid = pt.makeit_userid where productid = '" + req.productid + "'",
@@ -512,25 +520,30 @@ Product.update_quantity_product_byid = function update_quantity_product_byid(
   const active_status = parseInt(req.active_status)
   
   if (active_status === 0) {
-    sql.query(
-      "UPDATE Product SET active_status = ?,quantity = 0 WHERE productid = ?",
-      [req.active_status, req.productid],
-      function(err, res) {
-        if (err) {
-          console.log("error: ", err);
-          result(null, err);
-        } else {
-          //{"productid":136,"quantity":"10","active_status":1,"makeit_userid":"184"}
-          let resobj = {
-            success: true,
-            status: true,
-            message: "Product removed from live successfully"
-          };
-
-          result(null, resobj);
-        }
+    req.action=5;
+    Product.createliveproductstatushistory(req, function(err,result2){
+      if (err) {
+        result(err, null);
+      } else{
+        //console.log("result--->",result2);
+        sql.query("UPDATE Product SET active_status = ?,quantity = 0 WHERE productid = ?", [req.active_status, req.productid],
+          function(err, res) {
+            if (err) {
+              console.log("error: ", err);
+              result(null, err);
+            } else {
+              //{"productid":136,"quantity":"10","active_status":1,"makeit_userid":"184"}
+              let resobj = {
+                success: true,
+                status: true,
+                message: "Product removed from live successfully"
+              };
+              result(null, resobj);
+            }
+          }
+        );
       }
-    );
+    });    
   } else{
     sql.query(
       "select pt.approved_status,pt.active_status,mu.ka_status,mu.makeit_type,mu.virtualkey from Product pt left join MakeitUser mu on mu.userid = pt.makeit_userid where productid = '" + req.productid + "'",
@@ -1196,13 +1209,13 @@ Product.getliveProductstatus = function getliveProductstatus(liveproductid, resu
 
 ///////////// Log History add and edit /////////////////////////
 Product.createliveproductstatushistory = async function(req, result) {
-  //console.log(req);
+  console.log("Log History add and edit--->",req);
   if(req.productid && req.action){
     const getproductdetails = await query("select "+req.action+" as action,prd.makeit_userid as makeit_id,prd.productid as product_id,prd.quantity as actual_quantity, SUM(CASE WHEN ord.orderstatus=6 THEN oi.quantity ELSE 0 END) as ordered_quantity, SUM(CASE WHEN ord.orderstatus<=5 and payment_status<2 THEN oi.quantity ELSE 0 END) as pending_quantity from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) where prd.active_status = 1 and prd.delete_status !=1 and prd.productid="+req.productid+" group by prd.productid");
     if (getproductdetails.err) {
       result(err, null);
     }else{
-     
+      console.log("getproductdetails==>",getproductdetails);
       if(getproductdetails.length>0){
         var inserthistory = await producthistory.createProducthistory(getproductdetails);
         let resobj = {
