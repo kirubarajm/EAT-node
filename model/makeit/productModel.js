@@ -282,31 +282,51 @@ Product.getAllliveProduct = function getAllliveProduct(liveproductid, result) {
   );
 };
 
-Product.moveliveproduct = function(req, result) {
+Product.moveliveproduct = async function(req, result) {
   console.log(req);
   var active_status = parseInt(req.active_status);
   if (active_status === 0) {
-    sql.query(
-      "UPDATE Product SET active_status = ? WHERE productid = ?",
-      [req.active_status, req.productid],
-      function(err, res) {
+    var check_product = await query("Select active_status from Product where productid="+req.productid);
+    if(check_product[0].active_status ==1){
+      req.action=5;
+      Product.createliveproductstatushistory(req, function(err,result2){
         if (err) {
-          console.log("error: ", err);
-          result(null, err);
-        } else {
-          var mesobj = {};
-          let sucobj = true;
-          mesobj = "Product removed from live successfully";
-          let resobj = {
-            success: sucobj,
-            status: true,
-            message: mesobj
-          };
+          result(err, null);
+        } else{
+          //console.log("result--->",result2);
+          sql.query(
+                "UPDATE Product SET active_status = ? WHERE productid = ?",
+                [req.active_status, req.productid],
+                function(err, res) {
+                  if (err) {
+                    console.log("error: ", err);
+                    result(null, err);
+                  } else {
+                    var mesobj = {};
+                    let sucobj = true;
+                    mesobj = "Product removed from live successfully";
+                    let resobj = {
+                      success: sucobj,
+                      status: true,
+                      message: mesobj
+                    };
 
-          result(null, resobj);
-        }
-      }
-    );
+                    result(null, resobj);
+                  }
+                }
+          );
+        } 
+      }); 
+    }else{
+      let sucobj = true;
+      let resobj = {
+          success: sucobj,
+          status: false,
+          message: "Following Product already in offline."
+      };
+      result(null, resobj);
+    }
+       
   } else {
     sql.query(
       "select pt.approved_status,pt.active_status,mu.ka_status from Product pt left join MakeitUser mu on mu.userid = pt.makeit_userid where productid = '" + req.productid + "'",
@@ -505,33 +525,52 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
   );
 };
 
-Product.update_quantity_product_byid = function update_quantity_product_byid(req,result) {
+Product.update_quantity_product_byid = async function update_quantity_product_byid(req,result) {
   //console.log(req);
 
   const active_status = parseInt(req.active_status)
   
   if (active_status === 0) {
-    sql.query(
-      "UPDATE Product SET active_status = ?,quantity = 0 WHERE productid = ?",
-      [req.active_status, req.productid],
-      function(err, res) {
-        if (err) {
-          console.log("error: ", err);
-          result(null, err);
-        } else {
-          //{"productid":136,"quantity":"10","active_status":1,"makeit_userid":"184"}
+    var check_product = await query("Select active_status from Product where productid="+req.productid);
+    if(check_product[0].active_status ==1){
+      req.action=5;
+          Product.createliveproductstatushistory(req, function(err,result2){
+            if (err) {
+              result(err, null);
+            } else{
+              //console.log("result--->",result2);
+              sql.query(
+                "UPDATE Product SET active_status = ?,quantity = 0 WHERE productid = ?",
+                [req.active_status, req.productid],
+                function(err, res) {
+                  if (err) {
+                    console.log("error: ", err);
+                    result(null, err);
+                  } else {
+                    //{"productid":136,"quantity":"10","active_status":1,"makeit_userid":"184"}
 
-          Makeituser.makeit_quantity_check(req);
-          let resobj = {
-            success: true,
-            status: true,
-            message: "Product removed from live successfully"
-          };
+                    Makeituser.makeit_quantity_check(req);
+                    let resobj = {
+                      success: true,
+                      status: true,
+                      message: "Product removed from live successfully"
+                    };
 
-          result(null, resobj);
-        }
-      }
-    );
+                    result(null, resobj);
+                  }
+                }
+              );
+            }
+          });
+    }else{
+      let sucobj = true;
+      let resobj = {
+          success: sucobj,
+          status: false,
+          message: "Following Product already in offline."
+      };
+      result(null, resobj);
+    }    
   } else{
     sql.query(
       "select pt.approved_status,pt.active_status,mu.ka_status,mu.makeit_type,mu.virtualkey from Product pt left join MakeitUser mu on mu.userid = pt.makeit_userid where productid = '" + req.productid + "'",
