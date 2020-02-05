@@ -707,7 +707,7 @@ const liveproducthistory_cycleend = new CronJob("0 55 11,15,22 * * *", async fun
   console.log("Live Product History Cycle End");
   await QuickSearch.liveproducthistorycycleend();
 });
-//liveproducthistory_cycleend.start();
+liveproducthistory_cycleend.start();
 
 //////////Live Product History Cycle Start Cron Function//////////////
 QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycyclestart(){
@@ -844,7 +844,7 @@ if(currentday ==1 ){
   if (Makeit_lost_revenue_list) {
     for (let i = 0; i < Makeit_lost_revenue_list.length; i++) {
       
-    var makeit_earning = await query("select id,makeit_id,total_makeit_earnings from Makeit_daywise_report where  makeit_id ='"+Makeit_lost_revenue_list[i].makeit_id+"' and date(created_at)=CURDATE()-1 order by id desc limit 1");
+    var makeit_earning = await query("select id,makeit_id,total_makeit_earnings from Makeit_daywise_report where  makeit_id ='"+Makeit_lost_revenue_list[i].makeit_id+"' and date(date)=CURDATE()-1 order by id desc limit 1");
     var getdate = moment().subtract(1, "days").format("YYYY-MM-DD HH:mm:ss");
     //console.log("makeit_earning",makeit_earning);
     if (makeit_earning.length !=0) {
