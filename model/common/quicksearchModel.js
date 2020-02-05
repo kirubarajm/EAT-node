@@ -889,6 +889,6 @@ if(currentday ==1 ){
   }
  
 });
-Makeit_lost_revenue_report.start();
+//Makeit_lost_revenue_report.start();
 
 module.exports = QuickSearch;
