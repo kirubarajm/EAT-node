@@ -836,26 +836,25 @@ if(currentday ==1 ){
 
 //const Makeit_lost_revenue_report = new CronJob("0 0 2 * * *", async function() {
   const Makeit_lost_revenue_report = new CronJob("0 0 4 * * *", async function(req, result) {
-  console.log("Makeit_lost_revenue ------------------------->");
   var Makeit_lost_revenue = "SELECT a.makeit_id,sum(a.expected_revenue)as expected_revenue FROM( select pth.makeit_id,pth.product_id,Max(pth.actual_quantity+pth.pending_quantity+pth.ordered_quantity) as maxvalues, (Max(pth.actual_quantity+pth.pending_quantity+pth.ordered_quantity) * pt.original_price) as expected_revenue from Live_Product_History  pth left outer join Product pt on pt.productid=pth.product_id   where date(pth.created_at)=CURDATE()-1  group by pth.product_id )a GROUP by a.makeit_id";
 
   var Makeit_lost_revenue_list = await query(Makeit_lost_revenue);
   //console.log("---------------------------->,",Makeit_lost_revenue_list);
   if (Makeit_lost_revenue_list) {
     for (let i = 0; i < Makeit_lost_revenue_list.length; i++) {
-      
+
+
     var makeit_earning = await query("select id,makeit_id,total_makeit_earnings from Makeit_daywise_report where  makeit_id ='"+Makeit_lost_revenue_list[i].makeit_id+"' and date(date)=CURDATE()-1 order by id desc limit 1");
+
     var getdate = moment().subtract(1, "days").format("YYYY-MM-DD HH:mm:ss");
     //console.log("makeit_earning",makeit_earning);
     if (makeit_earning.length !=0) {
-
       
-      //console.log("Makeit_lost_revenue_list[i].total_makeit_earnings",Makeit_lost_revenue_list[i].expected_revenue);
-     
+     var total_lost = Makeit_lost_revenue_list[i].expected_revenue;
       if (makeit_earning[0].total_makeit_earnings !=0) {
         Makeit_lost_revenue_list[i].total_makeit_earnings=makeit_earning[0].total_makeit_earnings;
 
-        if (Makeit_lost_revenue_list[i].expected_revenue = makeit_earning[0].total_makeit_earnings) {
+        if (Makeit_lost_revenue_list[i].expected_revenue == makeit_earning[0].total_makeit_earnings) {
           Makeit_lost_revenue_list[i].status=0;
           Makeit_lost_revenue_list[i].total_lost_revenue=0;
         } else if (Makeit_lost_revenue_list[i].expected_revenue > makeit_earning[0].total_makeit_earnings) {
@@ -868,7 +867,7 @@ if(currentday ==1 ){
       }else{
         Makeit_lost_revenue_list[i].total_makeit_earnings=0;
         Makeit_lost_revenue_list[i].status=1;
-        Makeit_lost_revenue_list[i].total_lost_revenue=Makeit_lost_revenue_list[i].expected_revenue;
+        Makeit_lost_revenue_list[i].total_lost_revenue=total_lost;
       }
       
       Makeit_lost_revenue_list[i].logtime=getdate;
@@ -877,18 +876,19 @@ if(currentday ==1 ){
     
       Makeit_lost_revenue_list[i].total_makeit_earnings=0;
       Makeit_lost_revenue_list[i].status=2;
-      Makeit_lost_revenue_list[i].total_lost_revenue=Makeit_lost_revenue_list[i].expected_revenue;
+      Makeit_lost_revenue_list[i].total_lost_revenue=total_lost;
       Makeit_lost_revenue_list[i].logtime=getdate;
 
     }
 
     var new_Makeittotalrevenue= new Makeittotalrevenue(Makeit_lost_revenue_list[i]);
+    console.log("new_Makeittotalrevenue",new_Makeittotalrevenue);
     Makeittotalrevenue.createMakeittotalrevenue(new_Makeittotalrevenue);
 
     }
   }
  
 });
-//Makeit_lost_revenue_report.start();
+Makeit_lost_revenue_report.start();
 
 module.exports = QuickSearch;
