@@ -8717,28 +8717,29 @@ Order.makeit_incentive_report= async function makeit_incentive_report(req,inc_fr
 
 ///makeit_shutdown_report////
 Order.makeit_shutdown_report= async function makeit_shutdown_report(req,result) { 
-  var query="select date(date) as date,count(distinct makeit_id) as makeit_count from Makeit_daywise_report where date(date) between'"+req.fromdate+"' and '"+req.todate+"' group by date(date)";
-  sql.query(query,function(err, res) {
-    if (err) {
-      result(err, null);
-    } else {
-      if (res.length !== 0) {
-        let resobj = {
-          success: true,
-          status:true,
-          result:res
-        };
-        result(null, resobj);
-      }else {
-        let resobj = {
-          success: true,
-          message: "Sorry! no data found.",
-          status:false
-        };
-        result(null, resobj);
-      }
-    }
-  });
+  if(req.makeit_id && req.makeit_id !=''){
+   var orderscountquery = "select date(date) as date,cycle_count,makeit_id from Makeit_daywise_report where date(date) between '"+req.fromdate+"' and '"+req.todate+"' and makeit_id='"+req.makeit_id+"' group by date(date)";
+    var res = await query(orderscountquery);
+  }else{  
+    var orderscountquery = "select date(date) as date,cycle_count,makeit_id from Makeit_daywise_report where date(date) between '"+req.fromdate+"' and '"+req.todate+"' group by date(date),makeit_id";
+    var res = await query(orderscountquery);
+  }
+  
+  if (res.length !== 0) {
+    let resobj = {
+      success: true,
+      status:true,
+      result:res
+    };
+    result(null, resobj);
+  }else {
+    let resobj = {
+      success: true,
+      message: "Sorry! no data found.",
+      status:false
+    };
+    result(null, resobj);
+  }    
 };
 
 ////Moveit Driver Utilization Report///

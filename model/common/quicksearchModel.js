@@ -707,7 +707,7 @@ const liveproducthistory_cycleend = new CronJob("0 55 11,15,22 * * *", async fun
   console.log("Live Product History Cycle End");
   await QuickSearch.liveproducthistorycycleend();
 });
-liveproducthistory_cycleend.start();
+//liveproducthistory_cycleend.start();
 
 //////////Live Product History Cycle Start Cron Function//////////////
 QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycyclestart(){
