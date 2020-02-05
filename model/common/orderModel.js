@@ -8718,11 +8718,11 @@ Order.makeit_incentive_report= async function makeit_incentive_report(req,inc_fr
 ///makeit_shutdown_report////
 Order.makeit_shutdown_report= async function makeit_shutdown_report(req,result) { 
   if(req.makeit_id && req.makeit_id !=''){
-   var orderscountquery = "select date(date) as date,cycle_count,makeit_id from Makeit_daywise_report where date(date) between '"+req.fromdate+"' and '"+req.todate+"' and makeit_id='"+req.makeit_id+"' group by date(date)";
-    var res = await query(orderscountquery);
+   var makeitshutdownquery = "select date(date) as date,cycle_count,makeit_id from Makeit_daywise_report where date(date) between '"+req.fromdate+"' and '"+req.todate+"' and makeit_id='"+req.makeit_id+"' group by date(date)";
+    var res = await query(makeitshutdownquery);
   }else{  
-    var orderscountquery = "select date(date) as date,cycle_count,makeit_id from Makeit_daywise_report where date(date) between '"+req.fromdate+"' and '"+req.todate+"' group by date(date),makeit_id";
-    var res = await query(orderscountquery);
+    var makeitshutdownquery = "select date(date) as date,cycle_count,makeit_id from Makeit_daywise_report where date(date) between '"+req.fromdate+"' and '"+req.todate+"' group by date(date),makeit_id";
+    var res = await query(makeitshutdownquery);
   }
   
   if (res.length !== 0) {
@@ -8783,5 +8783,33 @@ Order.moveit_utilization_report= async function moveit_utilization_report(req,re
   }
   
 };
+
+///makeit_incentive_report////
+Order.makeit_incentive_report= async function makeit_incentive_report(req,result) {   
+  if(req.eligibility && req.eligibility!=''){
+    var makeitincentivequery ="select makeit_id,eligibility,complete_succession_count,cancel_count,incentive_amount from Makeit_incentive where date(created_at)='"+req.date+"' and eligibility="+req.eligibility;
+    var res = await query(makeitincentivequery);
+  }else{
+    var makeitincentivequery = "select makeit_id,eligibility,complete_succession_count,cancel_count,incentive_amount from Makeit_incentive where date(created_at)='"+req.date+"'";
+    var res = await query(makeitincentivequery);
+  } 
+  
+  if (res.length !== 0) {
+    let resobj = {
+      success: true,
+      status:true,
+      result:res
+    };
+    result(null, resobj);
+  }else {
+    let resobj = {
+      success: true,
+      message: "Sorry! no data found.",
+      status:false
+    };
+    result(null, resobj);
+  }    
+};
+
 
 module.exports = Order;
