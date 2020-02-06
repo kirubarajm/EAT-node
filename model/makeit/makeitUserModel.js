@@ -3201,14 +3201,12 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
     if(((FromDate < CurrentDate) && (ToDate < CurrentDate)) && (parseInt(daysDiff) <=7) && ((FromDate >= FirstOrder) && (ToDate >= FirstOrder))){
       var getweeklyearnings = await query("select ordertime,IFNULL(SUM(makeit_earnings),0) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
 
-
       var get_incentives = await query("select makeit_id,sum(incentive_amount) as incentive_amount from Makeit_incentive where date(created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_id="+req.makeit_id+" ")
       
       if (get_incentives.length !=0) {
         if (get_incentives[0].incentive_amount !=null) {
           makeit_incentives = get_incentives[0].incentive_amount;
-        }
-        
+        }        
       }
       
       var Newarray = [];      
@@ -3570,7 +3568,7 @@ Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_
 
 ////Makeit avg preparation report/////////////
 Makeituser.makeit_incentives= async function makeit_incentives(req,result) {
-  var makeit_avg_list = "select SUM(complete_succession_count) as complete_succession_count,SUM(cancel_order_count) as cancel_order_count,SUM(dinner_count+lunch_count+breakfast_count) AS totalproduct from Makeit_daywise_report where (Date(created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  AND makeit_id = '"+req.makeit_id+"'";
+  var makeit_avg_list = "select SUM(cycle_count) as complete_succession_count,SUM(cancel_order_count) as cancel_order_count,SUM(dinner_count+lunch_count+breakfast_count) AS totalproduct from Makeit_daywise_report where (Date(date) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  AND makeit_id = '"+req.makeit_id+"'";
  
   sql.query(makeit_avg_list, async function(err, res) {
     if(err){
@@ -3652,7 +3650,7 @@ Makeituser.makeit_live_session= async function makeit_live_session(req,result) {
 
 ////Makeit cancel list/////////////
 Makeituser.makeit_order_cancellist= async function makeit_order_cancellist(req,result) {
-  var makeit_avg_list = "SELECT ors.*,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where orderstatus = 7 and makeit_user_id='"+req.makeit_id+"' and (Date(ors.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"') group by ors.orderid order by ors.orderid desc";
+  var makeit_avg_list = "SELECT ors.*,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where orderstatus = 7 and cancel_by=2 and makeit_user_id='"+req.makeit_id+"' and (Date(ors.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"') group by ors.orderid order by ors.orderid desc";
  
   sql.query(makeit_avg_list, async function(err, res) {
     if(err){
