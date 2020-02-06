@@ -8785,10 +8785,21 @@ Order.makeit_shutdown_report= async function makeit_shutdown_report(req,result) 
 
 ////Moveit Driver Utilization Report///
 Order.moveit_utilization_report= async function moveit_utilization_report(req,result) { 
-  var orderscountquery = "select date(created_at) as date,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'12:00:00' THEN orderid END) as cycle1_orders, COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'16:00:00' THEN orderid END) as cycle2_orders, COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'23:59:59' THEN orderid END) as cycle3_orders from Orders where date(created_at) between '"+req.fromdate+"' AND '"+req.todate+"' and orderstatus=6 and moveit_user_id!=0 group by date(created_at)";
+
+  var curDate=new Date();
+  curDate.setDate(curDate.getDate()-7);
+  var todate =moment().format("YYYY-MM-DD");
+  var fromdate=moment(curDate).format("YYYY-MM-DD");
+
+  if(req.fromdate) fromdate=req.fromdate;
+  if(req.todate) todate=req.todate;
+
+  console.log(fromdate+","+todate);
+
+  var orderscountquery = "select date(created_at) as date,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'12:00:00' THEN orderid END) as cycle1_orders, COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'16:00:00' THEN orderid END) as cycle2_orders, COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'23:59:59' THEN orderid END) as cycle3_orders from Orders where date(created_at) between '"+fromdate+"' AND '"+todate+"' and orderstatus=6 and moveit_user_id!=0 group by date(created_at)";
   var orderscount = await query(orderscountquery);
 
-  var logcountquery = "select date(logtime) as date,COUNT(distinct CASE WHEN time(logtime)>='08:00:00' and time(logtime)<'12:00:00' THEN (moveit_userid) END) as cycle1_users, COUNT(distinct CASE WHEN time(logtime)>='12:00:00' and time(logtime)<'16:00:00' THEN (moveit_userid) END) as cycle2_users, COUNT(distinct CASE WHEN time(logtime)>='16:00:00' and time(logtime)<'23:59:59' THEN (moveit_userid) END) as cycle3_users,0 as 'breakfast_utiltiy',0 as 'lunch_utiltiy',0 as 'dinner_utiltiy' from Moveit_Timelog where date(logtime) between '"+req.fromdate+"' AND '"+req.todate+"' group by date(logtime)";
+  var logcountquery = "select date(logtime) as date,COUNT(distinct CASE WHEN time(logtime)>='08:00:00' and time(logtime)<'12:00:00' THEN (moveit_userid) END) as cycle1_users, COUNT(distinct CASE WHEN time(logtime)>='12:00:00' and time(logtime)<'16:00:00' THEN (moveit_userid) END) as cycle2_users, COUNT(distinct CASE WHEN time(logtime)>='16:00:00' and time(logtime)<'23:59:59' THEN (moveit_userid) END) as cycle3_users,0 as 'breakfast_utiltiy',0 as 'lunch_utiltiy',0 as 'dinner_utiltiy' from Moveit_Timelog where date(logtime) between '"+fromdate+"' AND '"+todate+"' group by date(logtime)";
   var logcount = await query(logcountquery);
   
   if(orderscount.length != 0 && logcount !=0){
@@ -8843,7 +8854,7 @@ Order.ope_metrics_report= async function ope_metrics_report(req,result) {
 
   var Abandoned_order_count_query = "SELECT sum(if((date(xfact.created_at)=CURDATE()-"+currentdateminus+"),1,0)) as today_count,sum(if((date(xfact.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY)-"+currentdateminus+"),1,0)) as last_week_count,count(*) as order_count FROM (SELECT t.product, t.created_at,t.userid FROM (Select o.orderid,o.created_at,o.userid,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on ma.userid=o.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id=ma.makeithub_id where o.orderstatus=11 and o.ordertype=0 and (DATE(o.created_at)=CURDATE()-"+currentdateminus+" or DATE(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY)-"+currentdateminus+") GROUP BY o.orderid) t GROUP BY date(t.created_at),t.userid,t.product) xfact"
 
-  //console.log("Abandoned_order_count_query---",Abandoned_order_count_query);
+  console.log("Abandoned_order_count_query---",Abandoned_order_count_query);
 
   var Abandoned_order_count = await query(Abandoned_order_count_query);
  
@@ -8886,7 +8897,7 @@ Order.ope_metrics_report= async function ope_metrics_report(req,result) {
       orderscount[i].today_abandoned_cart=0;
       orderscount[i].last_week_abandoned_cart=0;
 
-      orderscount[i].avg_session_time=0;
+      orderscount[i].avg_delivery_time=0;
 
 
       if(real_today_value && real_today_count)
@@ -8932,16 +8943,17 @@ Order.ope_metrics_report= async function ope_metrics_report(req,result) {
       }
 
       if(Abandoned_order_count.length>0){
+        console.log("total_orders_count--",Abandoned_order_count[i].last_week_count);
+        console.log("total_delivery_time--",(real_lastweek_day_count+dark_lastweek_day_count));
         orderscount[i].today_abandoned_cart=(Abandoned_order_count[i].today_count/(real_today_count+dark_today_count))*100;
         orderscount[i].last_week_abandoned_cart=(Abandoned_order_count[i].last_week_count/(real_lastweek_day_count+dark_lastweek_day_count))*100;
       }
 
-      console.log("total_orders_count--",total_orders_count);
-      console.log("total_delivery_time--",total_delivery_time);
+     
       if(total_orders_count && total_delivery_time){
-        var avg_session_time=(total_delivery_time/total_orders_count);
-        if(avg_session_time)
-        orderscount[i].avg_session_time=toHHMMSS(avg_session_time);
+        var avg_delivery_time=(total_delivery_time/total_orders_count);
+        if(avg_delivery_time)
+        orderscount[i].avg_delivery_time=toHHMMSS(avg_delivery_time);
       }
 
     
