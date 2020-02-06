@@ -148,9 +148,10 @@ Notification.orderEatPushNotification = async function(orderid,userid,pageid) {
       case PushConstant.Pageid_eat_send_notification:
         data = {
           title: userid.title,
-          message: userid.user_message,
+          message:userid.user_message,
           pageid: "" + pageid,
-          image : "https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1580901027983-promotion_ff.jpg",
+          image:userid.image,
+      //    image : "https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1580901027983-promotion_ff.jpg",
           app: "Eat",
           notification_type: "1"
         };

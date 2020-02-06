@@ -5183,10 +5183,12 @@ Eatuser.hub_based_userlist = async function hub_based_userlist(req, result) {
 /////user_based_notification
 Eatuser.user_based_notification = async function user_based_notification(req, result) {
  
- var getuserquery ="select u.userid,u.name,u.email,u.phoneno,ord.orderid,u.pushid_android,u.pushid_ios,u.Locality,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(),INTERVAL "+constant.interval_days+" DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid join MakeitUser as mk on mk.userid=ord.makeit_user_id  join Makeit_hubs as mh on mh.makeithub_id=mk.makeithub_id where u.userid!='' and mh.makeithub_id="+req.makeithub_id+"  and ord.orderstatus < 8 and orderid in (SELECT max(orderid) FROM Orders  GROUP BY userid) order by ord.created_at desc";
- // var userlist = req.userlist;
+  if (req.type==0) {
+    var getuserquery ="select userid,name from User";
+  } else {
+    var getuserquery ="select u.userid,u.name,u.email,u.phoneno,ord.orderid,u.pushid_android,u.pushid_ios,u.Locality,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(),INTERVAL "+constant.interval_days+" DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid join MakeitUser as mk on mk.userid=ord.makeit_user_id  join Makeit_hubs as mh on mh.makeithub_id=mk.makeithub_id where u.userid!='' and mh.makeithub_id="+req.makeithub_id+"  and ord.orderstatus < 8 and orderid in (SELECT max(orderid) FROM Orders  GROUP BY userid) order by ord.created_at desc";
 
-// var getuserquery ="select userid,name from User";
+  }
 
   sql.query(getuserquery,async function(err, res) {
     if (err) {
@@ -5196,8 +5198,10 @@ Eatuser.user_based_notification = async function user_based_notification(req, re
    
       if (req.type==1) {
        var userlist = res.filter(re => re.with7day ===0);
-     }else{
+     }else if(req.type==2){
        var userlist = res.filter(re => re.with7day !==0);
+     }else{
+       var userlist = res;
      }
      // const userlist = res.filter(re => re.with7day===0);
 
@@ -5210,7 +5214,10 @@ Eatuser.user_based_notification = async function user_based_notification(req, re
         user.userid=userlist[i].userid;
         user.user_message = req.user_message;
         user.title = req.title;
-        console.log(user);
+        if (req.image) {
+          user.image = req.image;
+        }
+       
         await Notification.orderEatPushNotification(
           null,
           user,
