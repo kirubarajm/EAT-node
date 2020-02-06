@@ -7,7 +7,7 @@ authentication = {
   host: "eatinstance.crelormihi5z.ap-south-1.rds.amazonaws.com",
   user: "eattovo",
   password: "eattv2020",
-  database: "eatprod",
+  database: "eatdev",
   timezone: "IST",
   multipleStatements: true
 };
