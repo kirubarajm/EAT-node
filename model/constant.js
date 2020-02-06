@@ -131,6 +131,9 @@ const calculate = {
     cycle2:4,
     cycle3:7,
 
+    ///Virtual Kitchen onboarded count////
+    virtual_kitchen_onboarded_count:240
+
 }
 
 

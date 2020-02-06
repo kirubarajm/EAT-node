@@ -1041,7 +1041,7 @@ const homemakertiering = new CronJob("0 0 3 * * *", async function() {
 var currentdatecheck = new Date();
 var currentday = currentdatecheck.getDay()
 if(currentday ==1 ){
-  homemakertiering.start();
+  //homemakertiering.start();
 }
 
 

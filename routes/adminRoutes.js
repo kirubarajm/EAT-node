@@ -305,6 +305,9 @@ app.route("/admin/reports/makeitshutdownreport").post(routesVersioning({"1.0.0":
 ///OPE Metrics Report////
 app.route("/admin/reports/ope_metrics_report").get(routesVersioning({"1.0.0":orders.ope_metrics_report}));
 
+///OPE Metrics Report////
+app.route("/admin/reports/sales_metrics_report").get(routesVersioning({"1.0.0":orders.sales_metrics_report}));
+
 
 
 }

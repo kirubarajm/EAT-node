@@ -1163,3 +1163,11 @@ exports.ope_metrics_report = function(req, res) {
     res.json(result);
   });
 };
+
+////SALES METRICS Report///
+exports.sales_metrics_report = function(req, res) {
+  Order.sales_metrics_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
