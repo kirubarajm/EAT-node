@@ -3708,12 +3708,11 @@ Makeituser.makeit_session_wise_activity_report= async function makeit_session_wi
   curDate.setDate(curDate.getDate()-7);
   var todate =moment().format("YYYY-MM-DD");
   var fromdate=moment(curDate).format("YYYY-MM-DD");
-
   if(req.fromdate) fromdate=req.fromdate;
   if(req.todate) todate=req.todate;
 
   console.log(fromdate+","+todate);
-  var makeit = "select mdr.makeit_id,mdr.date,mu.brandname,(TIME_TO_SEC(mdr.cycle1)/TIME_TO_SEC('"+constant.cycle1_diff_hours+"')*100) as breakfast ,(TIME_TO_SEC(mdr.cycle2)/TIME_TO_SEC('"+constant.cycle2_diff_hours+"')*100) as lunch,(TIME_TO_SEC(mdr.cycle3)/TIME_TO_SEC('"+constant.cycle3_diff_hours+"')*100) as dinner from Makeit_daywise_report mdr left join MakeitUser as mu on mu.userid=mdr.makeit_id where (Date(mdr.created_at) BETWEEN '"+fromdate+"' AND  '"+todate+"') ";
+  var makeit = "select mdr.makeit_id,mdr.date,mu.brandname,(TIME_TO_SEC(if(mdr.cycle1='00:00:00',mdr.cycle1,ADDTIME(mdr.cycle1,'00:05:00')))/TIME_TO_SEC('"+constant.cycle1_diff_hours+"')*100) as breakfast ,(TIME_TO_SEC(if(mdr.cycle2='00:00:00',mdr.cycle2,ADDTIME(mdr.cycle2,'00:05:00')))/TIME_TO_SEC('"+constant.cycle2_diff_hours+"')*100) as lunch,(TIME_TO_SEC(if(mdr.cycle3='00:00:00',mdr.cycle3,ADDTIME(mdr.cycle3,'00:05:00')))/TIME_TO_SEC('"+constant.cycle3_diff_hours+"')*100) as dinner from Makeit_daywise_report mdr left join MakeitUser as mu on mu.userid=mdr.makeit_id where (Date(mdr.created_at) BETWEEN '"+fromdate+"' AND  '"+todate+"') ";
   
   if(req.virtualkey==0 || req.virtualkey==1){
     makeit=makeit +" and mu.virtualkey= "+req.virtualkey

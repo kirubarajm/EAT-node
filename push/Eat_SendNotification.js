@@ -22,7 +22,7 @@ function initializeAppName () {
 
 exports.sendNotificationAndroid = function(
   token,
-  dat,
+  dat,app_type
 ) {
   initializeAppName();
   const options = {
@@ -32,12 +32,20 @@ exports.sendNotificationAndroid = function(
  // dat.content_available = '1';
   var payload = {
     data: dat,
-    notification: {
+    // notification: {
+    //   title: dat.title,
+    //   body: dat.message, // <= CHANGE
+    //   sound : "default"
+    // }
+  };
+  if (app_type===2) {
+    dat.app_type=''+app_type;
+    payload.notification= {
       title: dat.title,
       body: dat.message, // <= CHANGE
       sound : "default"
     }
-  };
+  }
   console.log("token-->",token+""+payload.data);
   EAT.messaging().sendToDevice(token, payload, options);
 };

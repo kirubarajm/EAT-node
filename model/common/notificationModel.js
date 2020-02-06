@@ -148,22 +148,28 @@ Notification.orderEatPushNotification = async function(orderid,userid,pageid) {
       case PushConstant.Pageid_eat_send_notification:
         data = {
           title: userid.title,
-          message: userid.user_message,
+          message:userid.user_message,
           pageid: "" + pageid,
+         
+      //    image : "https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1580901027983-promotion_ff.jpg",
           app: "Eat",
           notification_type: "1"
         };
         break;
   }
   if (data == null) return;
+
+  if (userid.image) {
+   data.image=userid.image;
+  }
   //const user = await Notification.getEatUserDetail(userid);
    console.log("data->", data);
   if (user && user.pushid_android) {
-    FCM_EAT.sendNotificationAndroid(user.pushid_android, data );
+    FCM_EAT.sendNotificationAndroid(user.pushid_android, data,1 );
   }
  
   if (user && user.pushid_ios) {
-    FCM_EAT.sendNotificationAndroid(user.pushid_ios, data);
+    FCM_EAT.sendNotificationAndroid(user.pushid_ios, data,2);
   }
 };
 
