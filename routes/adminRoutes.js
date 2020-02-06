@@ -300,8 +300,8 @@ app.route("/admin/reports/moveitdaywisecyclereport").post(routesVersioning({"1.0
 ///makeit_shutdown_report////
 app.route("/admin/reports/makeitshutdownreport").post(routesVersioning({"1.0.0":orders.makeit_shutdown_report}));
 ////Moveit Driver Utilization  Report///
-//app.route("/admin/reports/moveitutilizationreport").post(routesVersioning({"1.0.0":orders.moveit_utilization_report}));
-
+app.route("/admin/reports/moveitutilizationreport").post(routesVersioning({"1.0.0":orders.moveit_utilization_report}));
+app.route("/admin/reports/homemaker_activity_per_session").post(routesVersioning({"1.0.0":makeituser.makeit_session_wise_activity_report}));
 ///OPE Metrics Report////
 app.route("/admin/reports/ope_metrics_report").get(routesVersioning({"1.0.0":orders.ope_metrics_report}));
 

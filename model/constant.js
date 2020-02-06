@@ -130,7 +130,10 @@ const calculate = {
     cycle1:4,
     cycle2:4,
     cycle3:7,
-
+    ////////////////Makeit Cycle time//////////
+    cycle1_diff_hours:"04:00:00",
+    cycle2_diff_hours:"04:00:00",
+    cycle3_diff_hours:"07:00:00", 
     ///Virtual Kitchen onboarded count////
     virtual_kitchen_onboarded_count:240
 
