@@ -6,6 +6,7 @@ const PushConstant={
     masteridOrder_Pickedup:5,
     masteridOrder_Delivered:6,
 
+    
     Pageid_eat_order_post:1,
     Pageid_eat_order_accept:2,
     Pageid_eat_order_preparing:3,
@@ -15,7 +16,7 @@ const PushConstant={
     Pageid_eat_order_delivered:7,
     Pageid_eat_order_cancel:8,
     Pageid_eat_query_replay:9,
-    Pageid_eat_send_notification:12,//bulk nofication
+    Pageid_eat_send_notification:0,//bulk nofication
 
 
     pageidMoveit_Order_Assigned:1,

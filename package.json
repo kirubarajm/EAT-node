@@ -9,6 +9,7 @@
   "author": "param",
   "license": "ISC",
   "dependencies": {
+    "@angular/animations": "^8.2.14",
     "aws-sdk": "^2.382.0",
     "body-parser": "^1.18.3",
     "cookie-parser": "^1.4.3",

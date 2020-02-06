@@ -5183,8 +5183,11 @@ Eatuser.hub_based_userlist = async function hub_based_userlist(req, result) {
 /////user_based_notification
 Eatuser.user_based_notification = async function user_based_notification(req, result) {
  
-  var getuserquery ="select u.userid,u.name,u.email,u.phoneno,ord.orderid,u.pushid_android,u.pushid_ios,u.Locality,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(),INTERVAL "+constant.interval_days+" DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid join MakeitUser as mk on mk.userid=ord.makeit_user_id  join Makeit_hubs as mh on mh.makeithub_id=mk.makeithub_id where u.userid!='' and mh.makeithub_id="+req.makeithub_id+"  and ord.orderstatus < 8 and orderid in (SELECT max(orderid) FROM Orders  GROUP BY userid) order by ord.created_at desc";
+ var getuserquery ="select u.userid,u.name,u.email,u.phoneno,ord.orderid,u.pushid_android,u.pushid_ios,u.Locality,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(),INTERVAL "+constant.interval_days+" DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid join MakeitUser as mk on mk.userid=ord.makeit_user_id  join Makeit_hubs as mh on mh.makeithub_id=mk.makeithub_id where u.userid!='' and mh.makeithub_id="+req.makeithub_id+"  and ord.orderstatus < 8 and orderid in (SELECT max(orderid) FROM Orders  GROUP BY userid) order by ord.created_at desc";
  // var userlist = req.userlist;
+
+// var getuserquery ="select userid,name from User";
+
   sql.query(getuserquery,async function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -5192,22 +5195,22 @@ Eatuser.user_based_notification = async function user_based_notification(req, re
     } else {
    
       if (req.type==1) {
-
        var userlist = res.filter(re => re.with7day ===0);
      }else{
        var userlist = res.filter(re => re.with7day !==0);
-
      }
      // const userlist = res.filter(re => re.with7day===0);
 
-     // const userlist = req.userlist;
+    //  const userlist = res;
+      
+   //   console.log(userlist.length);
       for (let i = 0; i < userlist.length; i++) {
-     //   console.log(userlist[i]);
+        
         user={};
         user.userid=userlist[i].userid;
         user.user_message = req.user_message;
         user.title = req.title;
-    
+        console.log(user);
         await Notification.orderEatPushNotification(
           null,
           user,
@@ -5365,5 +5368,22 @@ Eatuser.user_growth_order_report = async function user_growth_order_report(req, 
   });
 
 };
+
+
+
+// {
+//   "to" : "cJErKCBpENg:APA91bGGW8lp-Ns7M-f1VUEa5Rcbr1Dk5d1MD8OglxZdLs6OOIN7yvRJNqnowjnojOhGvnH51n8Ela1OmfQeziSzHdvOZx8szh0uwmPK583RdvuiImml-V9VzhB6LZVaV4sgwBLik9W5",
+//   "collapse_key" : "type_a",
+//  "notification":{
+//      "body" : "Tap here! for FREE home delivery",
+//       "title": "EAT from HOMES around you"
+//  },
+//   "data" : {
+//       "message" : "Tap here! for FREE home delivery",
+//       "title": "EAT from HOMES around you",
+//       "image" : "https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1580901027983-promotion_ff.jpg",
+//       "pageid" : "0"
+//   }
+//  }
 
 module.exports = Eatuser;
