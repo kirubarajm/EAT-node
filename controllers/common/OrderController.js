@@ -1149,10 +1149,10 @@ exports.moveit_utilization_report = function(req, res) {
   });
 };
 
-///makeit_incentive_report////
-exports.makeit_incentive_report = function(req, res) {
+///Show Makeit Incentive Report////
+exports.show_makeit_incentive_report = function(req, res) {
   //console.log("moveitdaywisecyclereport");
-  Order.makeit_incentive_report(req.body, function(err, result) {
+  Order.show_makeit_incentive_report(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });

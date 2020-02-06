@@ -8785,7 +8785,7 @@ Order.moveit_utilization_report= async function moveit_utilization_report(req,re
 };
 
 ///makeit_incentive_report////
-Order.makeit_incentive_report= async function makeit_incentive_report(req,result) {   
+Order.show_makeit_incentive_report= async function show_makeit_incentive_report(req,result) {   
   if(req.eligibility && req.eligibility!=''){
     var makeitincentivequery ="select makeit_id,eligibility,complete_succession_count,cancel_count,incentive_amount from Makeit_incentive where date(created_at)='"+req.date+"' and eligibility="+req.eligibility;
     var res = await query(makeitincentivequery);

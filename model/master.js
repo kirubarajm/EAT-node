@@ -815,6 +815,29 @@ const master = [
                 "description": "Caters"
             }
         ]
+    },
+    {
+        'Live_Product_History': [{
+                "action": 1,
+                "description": "Add"
+            },
+            {
+                "action": 2,
+                "description": "Edit"
+            },
+            {
+                "action": 3,
+                "description": "Cycle Start"
+            },
+            {
+                "action": 4,
+                "description": "Cycle End"
+            },
+            {
+                "action": 5,
+                "description": "Unlive Product"
+            }
+        ]
     }
 
 
