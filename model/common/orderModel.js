@@ -5830,7 +5830,7 @@ Order.cancel_orders = function cancel_orders(req, result) {
 //Driver wise COD Settlement 
 Order.driverwise_cod = async function driverwise_cod(req,result) {
   var moveitqueryamount ="select mo.userid,mo.name,mo.phoneno,count(o.orderid) as ordercount ,sum(o.price) as totalamount,mo.moveit_hub as hub_id,mh.address as hubname,mo.zone as zone_id,zo.Zonename as zonename from Orders as o left join MoveitUser as mo on mo.userid= o.moveit_user_id  left join Makeit_hubs as mh on mh.makeithub_id= mo.moveit_hub left join Zone as zo on zo.id= mo.zone where Date(o.moveit_actual_delivered_time) between '"+req.fromdate+"' and '"+req.todate+"' and o.orderstatus = 6  and o.payment_status = 1 and o.payment_type = 0 Group by mo.userid";
-  console.log(moveitqueryamount);
+  //console.log(moveitqueryamount);
   sql.query(moveitqueryamount,function(err, res) {
       if (err) {
         result(err, null);
