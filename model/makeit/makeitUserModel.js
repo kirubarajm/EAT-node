@@ -3619,7 +3619,6 @@ Makeituser.total_lost_revenue= function total_lost_revenue(req, result) {
 
   staticquery ="select mtv.makeit_id,sum(mtv.expected_revenue) as expected_revenue,sum(mtv.total_makeit_earnings) as total_makeit_earnings,mk.name from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id where (Date(mtv.logtime) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"') group by mtv.makeit_id";
 
-  console.log(staticquery);
     sql.query(staticquery, function(err, res) {
       if (err) {
         console.log("error: ", err);
