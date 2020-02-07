@@ -305,8 +305,11 @@ app.route("/admin/reports/homemaker_activity_per_session").post(routesVersioning
 ///OPE Metrics Report////
 app.route("/admin/reports/ope_metrics_report").get(routesVersioning({"1.0.0":orders.ope_metrics_report}));
 
-///OPE Metrics Report////
+///Sales Metrics Report////
 app.route("/admin/reports/sales_metrics_report").get(routesVersioning({"1.0.0":orders.sales_metrics_report}));
+
+///Logs Metrics Report////
+app.route("/admin/reports/logs_metrics_report").get(routesVersioning({"1.0.0":orders.logs_metrics_report}));
 
 
 

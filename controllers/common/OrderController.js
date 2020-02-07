@@ -1171,3 +1171,11 @@ exports.sales_metrics_report = function(req, res) {
     res.json(result);
   });
 };
+
+////LOGS METRICS Report///
+exports.logs_metrics_report = function(req, res) {
+  Order.logs_metrics_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

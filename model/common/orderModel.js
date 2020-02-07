@@ -8854,7 +8854,7 @@ Order.ope_metrics_report= async function ope_metrics_report(req,result) {
 
   var Abandoned_order_count_query = "SELECT sum(if((date(xfact.created_at)=CURDATE()-"+currentdateminus+"),1,0)) as today_count,sum(if((date(xfact.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY)-"+currentdateminus+"),1,0)) as last_week_count,count(*) as order_count FROM (SELECT t.product, t.created_at,t.userid FROM (Select o.orderid,o.created_at,o.userid,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on ma.userid=o.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id=ma.makeithub_id where o.orderstatus=11 and o.ordertype=0 and (DATE(o.created_at)=CURDATE()-"+currentdateminus+" or DATE(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY)-"+currentdateminus+") GROUP BY o.orderid) t GROUP BY date(t.created_at),t.userid,t.product) xfact"
 
-  console.log("Abandoned_order_count_query---",Abandoned_order_count_query);
+  //console.log("Abandoned_order_count_query---",Abandoned_order_count_query);
 
   var Abandoned_order_count = await query(Abandoned_order_count_query);
  
@@ -8900,30 +8900,42 @@ Order.ope_metrics_report= async function ope_metrics_report(req,result) {
       orderscount[i].avg_delivery_time=0;
 
 
-      if(real_today_value && real_today_count)
-      orderscount[i].real_order_aov=(real_today_value/real_today_count);
+      if(real_today_value && real_today_count){
+        var real_order_aov=(real_today_value/real_today_count);
+        orderscount[i].real_order_aov =real_order_aov.toFixed(2);
+      }
+      
 
-      if(dark_today_value && dark_today_count)
-      orderscount[i].dark_order_aov=(dark_today_value/dark_today_count);
+      if(dark_today_value && dark_today_count){
+        var dark_order_aov=(dark_today_value/dark_today_count);
+        orderscount[i].dark_order_aov =dark_order_aov.toFixed(2);
+      }
+      
 
-      if(real_today_cancel_count && real_today_count)
-      orderscount[i].real_order_cancellation_avg=(real_today_cancel_count/real_today_count)*100;
+      if(real_today_cancel_count && real_today_count){
+        var real_order_cancellation_avg=(real_today_cancel_count/real_today_count)*100;
+        orderscount[i].real_order_cancellation_avg=real_order_cancellation_avg.toFixed(2);
+      }
+      
 
-      if(dark_today_cancel_count && dark_today_count)
-      orderscount[i].dark_order_cancellation_avg=(dark_today_cancel_count/dark_today_count)*100;
+      if(dark_today_cancel_count && dark_today_count){
+        var dark_order_cancellation_avg=(dark_today_cancel_count/dark_today_count)*100;
+        orderscount[i].dark_order_cancellation_avg=dark_order_cancellation_avg.toFixed(2);
+      }
+      
 
       if(real_lastweek_day_value && real_today_value){
         var diffvalue=parseInt(real_today_value) - parseInt(real_lastweek_day_value);
         var diviedvalue=diffvalue/parseInt(real_lastweek_day_value);
         var avgvalue=diviedvalue * 100;
-        orderscount[i].real_order_revenue=avgvalue;
+        orderscount[i].real_order_revenue=avgvalue.toFixed(2);
       }
 
       if(dark_lastweek_day_value &&dark_today_value){
         var diffvalue=parseInt(dark_today_value) - parseInt(dark_lastweek_day_value);
         var diviedvalue=diffvalue/parseInt(dark_lastweek_day_value);
         var avgvalue=diviedvalue * 100;
-        orderscount[i].dark_order_revenue=avgvalue;
+        orderscount[i].dark_order_revenue=avgvalue.toFixed(2);
       }
 
 
@@ -8931,7 +8943,7 @@ Order.ope_metrics_report= async function ope_metrics_report(req,result) {
         var diffvalue=parseInt(real_today_count) - parseInt(real_lastweek_day_count);
         var diviedvalue=diffvalue/parseInt(real_lastweek_day_count);
         var avgvalue=diviedvalue * 100;
-        orderscount[i].real_avg_orders=avgvalue;
+        orderscount[i].real_avg_orders=avgvalue.toFixed(2);
       }
 
 
@@ -8939,14 +8951,16 @@ Order.ope_metrics_report= async function ope_metrics_report(req,result) {
         var diffvalue=parseInt(dark_today_count) - parseInt(dark_lastweek_day_count);
         var diviedvalue=diffvalue/parseInt(dark_lastweek_day_count);
         var avgvalue=diviedvalue * 100;
-        orderscount[i].dark_avg_orders=avgvalue;
+        orderscount[i].dark_avg_orders=avgvalue.toFixed(2);
       }
 
       if(Abandoned_order_count.length>0){
-        console.log("total_orders_count--",Abandoned_order_count[i].last_week_count);
-        console.log("total_delivery_time--",(real_lastweek_day_count+dark_lastweek_day_count));
-        orderscount[i].today_abandoned_cart=(Abandoned_order_count[i].today_count/(real_today_count+dark_today_count))*100;
-        orderscount[i].last_week_abandoned_cart=(Abandoned_order_count[i].last_week_count/(real_lastweek_day_count+dark_lastweek_day_count))*100;
+        //console.log("total_orders_count--",Abandoned_order_count[i].last_week_count);
+       // console.log("total_delivery_time--",(real_lastweek_day_count+dark_lastweek_day_count));
+        var today_abandoned_cart=(Abandoned_order_count[i].today_count/(real_today_count+dark_today_count))*100;
+        orderscount[i].today_abandoned_cart=today_abandoned_cart.toFixed(2);
+        var last_week_abandoned_cart=(Abandoned_order_count[i].last_week_count/(real_lastweek_day_count+dark_lastweek_day_count))*100;
+        orderscount[i].last_week_abandoned_cart=last_week_abandoned_cart.toFixed(2);
       }
 
      
@@ -9072,6 +9086,71 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
     };
     result(null, resobj);
   }
+  
+};
+
+
+Order.logs_metrics_report= async function logs_metrics_report(req,result) { 
+  var currentdateminus=1;
+  var noofDriverslivedquery = "select count(mov.moveit_lived_per_day) as no_of_moveit_lived_per_day from (select count(*) as moveit_lived_per_day from Orders where date(created_at) =CURDATE()-"+currentdateminus+" and orderstatus=6 and moveit_user_id!='' group by moveit_user_id) mov";
+  //console.log("orderscountquery---",orderscountquery);
+  var noof_driver_lived_count = await query(noofDriverslivedquery);
+
+  var noof_orders_per_day_query = "select count(*) as no_of_orders_perday from Orders where date(created_at) =CURDATE()-"+currentdateminus+" and orderstatus=6 and moveit_user_id!=''";
+
+  //console.log("Abandoned_order_count_query---",Abandoned_order_count_query);
+
+  var noof_orders_perday_query_count = await query(noof_orders_per_day_query);
+
+  var orderscountquery = "select date(created_at) as date,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'12:00:00' THEN orderid END) as cycle1_orders, COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'16:00:00' THEN orderid END) as cycle2_orders, COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'23:59:59' THEN orderid END) as cycle3_orders from Orders where date(created_at) =CURDATE()-"+currentdateminus+" and orderstatus=6 and moveit_user_id!=0 group by date(created_at)";
+  var orderscount = await query(orderscountquery);
+
+  var logcountquery = "select date(logtime) as date,COUNT(distinct CASE WHEN time(logtime)>='08:00:00' and time(logtime)<'12:00:00' THEN (moveit_userid) END) as cycle1_users, COUNT(distinct CASE WHEN time(logtime)>='12:00:00' and time(logtime)<'16:00:00' THEN (moveit_userid) END) as cycle2_users, COUNT(distinct CASE WHEN time(logtime)>='16:00:00' and time(logtime)<'23:59:59' THEN (moveit_userid) END) as cycle3_users,0 as 'breakfast_utiltiy',0 as 'lunch_utiltiy',0 as 'dinner_utiltiy' from Moveit_Timelog where date(logtime) =CURDATE()-"+currentdateminus+" group by date(logtime)";
+  var logcount = await query(logcountquery);
+  
+  
+
+  var onresult=[];
+  var i = 0;
+  if(noof_driver_lived_count.length != 0 && noof_orders_perday_query_count.length!=0){
+      onresult[i] = Object.assign(noof_driver_lived_count[i], noof_orders_perday_query_count[i]);
+      var no_of_moveit_lived_per_day =parseInt(noof_driver_lived_count[i].no_of_moveit_lived_per_day);
+      var no_of_orders_perday =parseInt(noof_driver_lived_count[i].no_of_orders_perday);
+      
+      if(no_of_moveit_lived_per_day && no_of_orders_perday){
+      var no_of_order_per_rider=(no_of_orders_perday/no_of_moveit_lived_per_day);
+      onresult[i].no_of_order_per_rider=no_of_order_per_rider.toFixed(2)
+      }
+  }else{
+    onresult[i].no_of_moveit_lived_per_day=0;
+    onresult[i].no_of_orders_perday=0;
+    onresult[i].no_of_order_per_rider=0;
+  }
+
+  console.log(orderscount.length,logcount.length);
+  if(orderscount.length != 0 && logcount.length!=0){
+
+          var breakfast_utiltiy = (orderscount[i].cycle1_orders)/(logcount[i].cycle1_users * constant.cycle1) || 0;
+          var lunch_utiltiy = (orderscount[i].cycle2_orders)/(logcount[i].cycle2_users * constant.cycle2) || 0;
+          var dinner_utiltiy = (orderscount[i].cycle3_orders)/(logcount[i].cycle3_users * constant.cycle3) || 0;
+//Driver utilisation
+          var driver_utilisation_per_day=(breakfast_utiltiy+lunch_utiltiy+dinner_utiltiy);
+          onresult[i].breakfast_utiltiy=breakfast_utiltiy.toFixed(2);
+          onresult[i].lunch_utiltiy=lunch_utiltiy.toFixed(2);
+          onresult[i].dinner_utiltiy=dinner_utiltiy.toFixed(2);
+          onresult[i].driver_utilisation_per_day=driver_utilisation_per_day.toFixed(2);
+  }else{
+    onresult[i].no_of_moveit_lived_per_day=0;
+    onresult[i].no_of_orders_perday=0;
+    onresult[i].no_of_order_per_rider=0;
+    onresult[i].driver_utilisation_per_day=0;
+  }
+  let resobj = {
+    success: true,
+    status:true,
+    result: onresult      
+  };
+  result(null, resobj);
   
 };
 
