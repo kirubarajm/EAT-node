@@ -420,9 +420,21 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
      package_content: ["Documents | Books", "Clothes | Accessories", "Electronic Items"],
      // package_content: ["Food"],
       package_approx_value: order_details[0].price,
-      special_instructions: "Orderid : " + order_details[0].orderid.toString() + " ,Kitchen name : " +pickup.name+ " ,Kitchen address : " +pickup.address+ " ,phone no :" + pickup.phoneno+",product name : " +product_name}
+      special_instructions: "Orderid : " + order_details[0].orderid.toString() + " ,Kitchen name : " +pickup.name+ " ,Kitchen address : " +pickup.address+ " ,phone no :" + pickup.phoneno+",product name : " +product_name,
+    
+      
+    }
   
   
+    if (order_details[0].payment_type==0) {
+      form.payment_method= "COD",
+              form.payment_data= {
+            amount: order_details[0].price
+        }
+    }
+
+    console.log(form);
+
     var headers= {
       'Content-Type': 'application/json',
       'client-id': dunzoconst.dunzo_client_id,
