@@ -206,11 +206,11 @@ const master = [
             {
                 "OrderStatusid": 10,
                 "OrderStatus": "Tunnel Orders"
-            }
+            },
             {
                 "OrderStatusid": 11,
                 "OrderStatus": "x-factor Orders"
-            }
+            },
             {
                 "OrderStatusid": 12,
                 "OrderStatus": "Dunzo_zone Orders"
