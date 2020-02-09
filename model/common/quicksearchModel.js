@@ -889,7 +889,13 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
 const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
   console.log("Moveit Daywise Report");
   var moveit_daywise_data = await Order.moveit_daywise_report();
-  await MoveitDayWise.createmoveitdaywise(moveit_daywise_data);
+  console.log("Moveit daywise Report length",moveit_daywise_data.length);
+  if (moveit_daywise_data.length !=0) {    
+    for (let i = 0; i < moveit_daywise_data.length; i++) {
+      var new_moveit_daywise_data = new MoveitDayWise(moveit_daywise_data[i]);
+      await MoveitDayWise.createmoveitdaywise(new_moveit_daywise_data);
+    }
+  } 
 });
 //moveitlog_everyday.start();
 
@@ -897,6 +903,7 @@ const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
 const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
   console.log("Makeit Daywise Report");
   var makeit_daywise_data = await Order.makeit_daywise_report();
+  console.log("makeit daywise Report length",makeit_daywise_data.length);
   if (makeit_daywise_data.length !=0) {    
     for (let i = 0; i < makeit_daywise_data.length; i++) {
       var new_makeit_daywise_data = new MakeitDayWise(makeit_daywise_data[i]);
@@ -1041,7 +1048,7 @@ const homemakertiering = new CronJob("0 0 3 * * *", async function() {
 var currentdatecheck = new Date();
 var currentday = currentdatecheck.getDay()
 if(currentday ==1 ){
-  //homemakertiering.start();
+  homemakertiering.start();
 }
 
 
