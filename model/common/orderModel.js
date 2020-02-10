@@ -3724,8 +3724,8 @@ Order.eat_order_cancel = async function eat_order_cancel(req, result) {
             payment_id: orderdetails[0].transactionid
           };
 
-          req.makeit_id = orderdetails[0].makeit_user_id;
-          Makeituser.makeit_quantity_check(req);
+          req.makeit_userid = orderdetails[0].makeit_user_id;
+         Makeituser.makeit_quantity_check(req);
           var totalrefund = orderdetails[0].price + orderdetails[0].refund_amount;
           //var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 

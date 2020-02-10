@@ -3581,7 +3581,7 @@ Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_
 
 
 ////Get Quantity Check /////////////
-Makeituser.makeit_quantity_check= async function makeit_quantity_check(req,result) {
+Makeituser.makeit_quantity_check = async function makeit_quantity_check(req,result) {
 
         var breatfastcycle = constant.breatfastcycle;
         var dinnercycle = constant.dinnercycle;
