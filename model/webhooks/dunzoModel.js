@@ -269,7 +269,7 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
        //   Order.order_delivery_status_by_moveituser = async function(req, result) {
             var order_delivery_time = moment().format("YYYY-MM-DD HH:mm:ss");
            
-                updatequery ="UPDATE Orders SET orderstatus = 6,moveit_actual_delivered_time = '" +order_delivery_time+"',dunzo_price='"+req.price+"' WHERE orderid ='" +orderdetails[0].orderid +"'";
+                updatequery ="UPDATE Orders SET orderstatus = 6,moveit_actual_delivered_time = '" +order_delivery_time+"',payment_status=1,dunzo_price='"+req.price+"' WHERE orderid ='" +orderdetails[0].orderid +"'";
                 const updatestatusdeliverd = await query(updatequery);
                       let deliverd = {
                         success: true,
