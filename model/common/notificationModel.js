@@ -155,13 +155,14 @@ Notification.orderEatPushNotification = async function(orderid,userid,pageid) {
           app: "Eat",
           notification_type: "1"
         };
+        if (userid.image) {
+          data.image=userid.image;
+         }
         break;
   }
   if (data == null) return;
 
-  if (userid.image) {
-   data.image=userid.image;
-  }
+ 
   //const user = await Notification.getEatUserDetail(userid);
    console.log("data->", data);
   if (user && user.pushid_android) {

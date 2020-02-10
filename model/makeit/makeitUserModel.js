@@ -3581,7 +3581,7 @@ Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_
 
 
 ////Get Quantity Check /////////////
-Makeituser.makeit_quantity_check= async function makeit_quantity_check(req,result) {
+Makeituser.makeit_quantity_check = async function makeit_quantity_check(req,result) {
 
         var breatfastcycle = constant.breatfastcycle;
         var dinnercycle = constant.dinnercycle;
@@ -3617,9 +3617,8 @@ Makeituser.makeit_quantity_check= async function makeit_quantity_check(req,resul
 
 Makeituser.total_lost_revenue= function total_lost_revenue(req, result) {
 
-  staticquery ="select mtv.makeit_id,sum(mtv.expected_revenue) as expected_revenue,sum(mtv.total_makeit_earnings) as total_makeit_earnings,mk.name from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id where (Date(mtv.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"') group by mtv.makeit_id";
+  staticquery ="select mtv.makeit_id,sum(mtv.expected_revenue) as expected_revenue,sum(mtv.total_makeit_earnings) as total_makeit_earnings,mk.name from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id where (Date(mtv.logtime) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"') group by mtv.makeit_id";
 
-  console.log(staticquery);
     sql.query(staticquery, function(err, res) {
       if (err) {
         console.log("error: ", err);
@@ -3640,7 +3639,7 @@ Makeituser.total_lost_revenue= function total_lost_revenue(req, result) {
 
 Makeituser.total_makesuccessionrate= function total_makesuccessionrate(req, result) {
 
-  staticquery ="select mtv.makeit_id,sum(mtv.total_makeit_earnings) as monthly_makeit_earnings,mk.name,sum(mi.incentive_amount) as  incentive_amount,sum(total_lost_revenue) as total_lost_revenue from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id left join Makeit_incentive mi on mi.makeit_id=mtv.makeit_id where (Date(mtv.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"') group by mtv.makeit_id";
+  staticquery ="select mtv.makeit_id,sum(mtv.total_makeit_earnings) as monthly_makeit_earnings,mk.name,sum(mi.incentive_amount) as  incentive_amount,sum(total_lost_revenue) as total_lost_revenue from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id left join Makeit_incentive mi on mi.makeit_id=mtv.makeit_id where (Date(mtv.logtime) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"') group by mtv.makeit_id";
 
     sql.query(staticquery, function(err, res) {
       if (err) {
@@ -3672,7 +3671,7 @@ Makeituser.total_makesuccessionrate= function total_makesuccessionrate(req, resu
 
 Makeituser.total_makefinancedisplay= function total_makefinancedisplay(req, result) {
 
-  staticquery ="select mtv.makeit_id,sum(mtv.total_makeit_earnings) as monthly_makeit_earnings,mk.name,sum(mi.incentive_amount) as  incentive_amount,sum(total_lost_revenue) as total_lost_revenue from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id left join Makeit_incentive mi on mi.makeit_id=mtv.makeit_id where (Date(mtv.created_at) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"') group by mtv.makeit_id";
+  staticquery ="select mtv.makeit_id,sum(distinct mtv.total_makeit_earnings) as monthly_makeit_earnings,mk.name,sum(mi.incentive_amount) as  incentive_amount,sum(distinct mtv.total_lost_revenue) as total_lost_revenue from Makeit_total_revenue mtv join MakeitUser mk on mk.userid=mtv.makeit_id left join Makeit_incentive mi on mi.makeit_id=mtv.makeit_id where (Date(mtv.logtime) BETWEEN '"+req.startdate+"' AND  '"+req.enddate+"') group by mtv.makeit_id";
 
     sql.query(staticquery, function(err, res) {
       if (err) {
