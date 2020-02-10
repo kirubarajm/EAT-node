@@ -9024,34 +9024,20 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
 
   var makeit_session_time = await query(makeit_session_time_query);
 
+  var makeit_Product_lived_query= "select sum(if((q.virtualkey=0 and q.makeit_type=0),1,0)) as no_of_homemaker_kitchen,sum(if((q.virtualkey=0 and q.makeit_type=0),q.live_count,0)) as homemaker_product_live_count,sum(if((q.virtualkey=0 and q.makeit_type=1),1,0)) as no_of_caterers_kitchen,sum(if((q.virtualkey=0 and q.makeit_type=1),q.live_count,0)) as caterers_product_live_count,sum(if((q.virtualkey=1),1,0)) as no_of_dark_kitchen,sum(if((q.virtualkey=1),q.live_count,0)) as dark_product_live_count,count(*) as no_of_makeit,sum(q.live_count) as total_product_live_count from (select p.makeit_id,p.virtualkey,p.makeit_type,count(*) as live_count from (select  lph.makeit_id,lph.product_id,mu.virtualkey,mu.makeit_type from Live_Product_History lph left join MakeitUser as mu on mu.userid=lph.makeit_id  where date(lph.created_at) =CURDATE()-1 and mu.ka_status=2 group by product_id) p group by makeit_id) q"
+
+  var makeit_Product_lived_count = await query(makeit_Product_lived_query);
+
+
+  
+
   //console.log("makeit_session_time_query---",makeit_session_time_query);
 
   var onresult=[];
- 
+  var i = 0;
   if(makeit_onboard_count.length != 0 && makeit_todaylived_count.length!=0){
+    onresult[i] = Object.assign(makeit_onboard_count[i], makeit_todaylived_count[i]);
 
-      var i = 0;
-
-     //onresult[i]={};
-      onresult[i] = Object.assign(makeit_onboard_count[i], makeit_todaylived_count[i]);
-      if(makeit_session_time.length>0){
-        onresult[i] = Object.assign(makeit_session_time[i], onresult[i]);
-        var overall_seconds_of_the_day= makeit_session_time[i].overall_seconds_of_the_day;
-
-        var homemaker_session_time = makeit_session_time[i].homemaker_session_second/(makeit_session_time[i].homaker_count * overall_seconds_of_the_day)
-        homemaker_session_time= homemaker_session_time ||0;
-        onresult[i].homemaker_session_time= homemaker_session_time.toFixed(3) *100;
-
-
-        var caterers_session_time = makeit_session_time[i].caterers_session_second/(makeit_session_time[i].caterers_count * overall_seconds_of_the_day)
-        caterers_session_time= caterers_session_time ||0;
-        onresult[i].caterers_session_time= caterers_session_time.toFixed(3) *100;
-
-        var dark_session_time = makeit_session_time[i].dark_session_second/(makeit_session_time[i].dark_count * overall_seconds_of_the_day)
-        dark_session_time= dark_session_time ||0;
-        onresult[i].dark_session_time= dark_session_time.toFixed(3) *100;
-
-      }
       var drak_kitchen_onboarded =parseInt(makeit_onboard_count[i].drak_kitchen_onboarded);
       var caterers_kitchen_onboarded =parseInt(makeit_onboard_count[i].caterers_kitchen_onboarded);
       var homemaker_kitchen_onboarded = parseInt(makeit_onboard_count[i].homemaker_kitchen_onboarded);
@@ -9061,35 +9047,70 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
       var homemaker_kitchen_lived = parseInt(makeit_todaylived_count[i].homemaker_kitchen_lived);
       
       if(drak_kitchen_onboarded && drak_kitchen_lived){
-       
       var drak_kitchen_lived_percentage=(drak_kitchen_lived/drak_kitchen_onboarded)*100;
       onresult[i].drak_kitchen_lived_percentage=drak_kitchen_lived_percentage.toFixed(2)
-      }
+      }else onresult[i].drak_kitchen_lived_percentage=0;
 
       if(caterers_kitchen_onboarded && caterers_kitchen_lived){
       var caterers_kitchen_lived_percentage=(caterers_kitchen_lived/caterers_kitchen_onboarded)*100;
       onresult[i].caterers_kitchen_lived_percentage=caterers_kitchen_lived_percentage.toFixed(2);
-      }
+      } else onresult[i].caterers_kitchen_lived_percentage=0;
 
       if(homemaker_kitchen_onboarded && homemaker_kitchen_lived){
       var homemaker_kitchen_lived_percentage=(homemaker_kitchen_lived/homemaker_kitchen_onboarded)*100;
       onresult[i].homemaker_kitchen_lived_percentage=homemaker_kitchen_lived_percentage.toFixed(2);
-      }
+      } else onresult[i].homemaker_kitchen_lived_percentage=0;
+  }
 
-      if(makeit_earings_count.length>0){
-        
-        var makeit_earnings =parseInt(makeit_earings_count[i].makeit_earnings);
-        var makeit_count =parseInt(makeit_earings_count[i].makeit_count);
-        console.log(makeit_earnings,makeit_count);
-        var avg_home_maker_earnings =(makeit_earnings/makeit_count).toFixed(2);
-        //avg_home_maker_earnings = avg_home_maker_earnings*100;
-        onresult[i].home_maker_avg_earnings_month=avg_home_maker_earnings;
-      }
+  if(makeit_session_time.length>0){
+    onresult[i] = Object.assign(onresult[i],makeit_session_time[i]);
+    var overall_seconds_of_the_day= makeit_session_time[i].overall_seconds_of_the_day;
 
-      
+    var homemaker_session_time = makeit_session_time[i].homemaker_session_second/(makeit_session_time[i].homaker_count * overall_seconds_of_the_day)
+    homemaker_session_time= homemaker_session_time ||0;
+    onresult[i].homemaker_session_time= homemaker_session_time.toFixed(3) *100;
 
-      
 
+    var caterers_session_time = makeit_session_time[i].caterers_session_second/(makeit_session_time[i].caterers_count * overall_seconds_of_the_day)
+    caterers_session_time= caterers_session_time ||0;
+    onresult[i].caterers_session_time= caterers_session_time.toFixed(3) *100;
+
+    var dark_session_time = makeit_session_time[i].dark_session_second/(makeit_session_time[i].dark_count * overall_seconds_of_the_day)
+    dark_session_time= dark_session_time ||0;
+    onresult[i].dark_session_time= dark_session_time.toFixed(3) *100;
+
+  }
+
+  if(makeit_earings_count.length>0){
+    var makeit_earnings =parseInt(makeit_earings_count[i].makeit_earnings);
+    var makeit_count =parseInt(makeit_earings_count[i].makeit_count);
+    var avg_home_maker_earnings =(makeit_earnings/makeit_count).toFixed(2);
+    onresult[i].home_maker_avg_earnings_month=avg_home_maker_earnings;
+  }else{
+    onresult[i].home_maker_avg_earnings_month=0;
+  }
+
+  if(makeit_Product_lived_count.length>0){
+    onresult[i] = Object.assign(onresult[i],makeit_Product_lived_count[i]);
+
+    var no_of_homemaker_kitchen =makeit_Product_lived_count[i].no_of_homemaker_kitchen;
+    var no_of_caterers_kitchen =makeit_Product_lived_count[i].no_of_caterers_kitchen;
+    var no_of_dark_kitchen =makeit_Product_lived_count[i].no_of_dark_kitchen;
+
+    var homemaker_product_live_count =makeit_Product_lived_count[i].homemaker_product_live_count;
+    var caterers_product_live_count =makeit_Product_lived_count[i].caterers_product_live_count;
+    var dark_product_live_count =makeit_Product_lived_count[i].dark_product_live_count;
+
+    var homemaker_avg_no_of_products_live =homemaker_product_live_count/no_of_homemaker_kitchen;
+    var caterers_avg_no_of_products_live =caterers_product_live_count/no_of_caterers_kitchen;
+    var dark_avg_no_of_products_live =dark_product_live_count/no_of_dark_kitchen;
+
+    onresult[i].homemaker_avg_no_of_products_live = homemaker_avg_no_of_products_live?homemaker_avg_no_of_products_live.toFixed(2) : 0;
+    onresult[i].caterers_avg_no_of_products_live = caterers_avg_no_of_products_live?caterers_avg_no_of_products_live.toFixed(2):0;
+    onresult[i].dark_avg_no_of_products_live = dark_avg_no_of_products_live?dark_avg_no_of_products_live.toFixed(2):0;
+
+  }
+ 
     
     let resobj = {
       success: true,
@@ -9097,14 +9118,7 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
       result: onresult      
     };
     result(null, resobj);
-  }else{
-    let resobj = {
-      success: true,
-      message: "Sorry! no data found.",
-      status:false
-    };
-    result(null, resobj);
-  }
+  
   
 };
 
