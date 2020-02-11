@@ -8,6 +8,8 @@ var Makeitincentive = function(makeitincentive) {
   this.complete_succession_count  = makeitincentive.complete_succession_count;
   this.cancel_count      = makeitincentive.cancel_count;
   this.incentive_amount  = makeitincentive.incentive_amount;
+  this.from_date         = makeitincentive.from_date;
+  this.to_date           = makeitincentive.to_date;
 };
 
 Makeitincentive.createmakeitincentive = function createmakeitincentive(req) {

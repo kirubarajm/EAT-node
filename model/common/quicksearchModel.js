@@ -1084,6 +1084,7 @@ if(currentday ==1 ){
       Makeit_lost_revenue_list[i].logtime=getdate;
 
     }else{
+    
       Makeit_lost_revenue_list[i].total_makeit_earnings=0;
       Makeit_lost_revenue_list[i].status=2;
       Makeit_lost_revenue_list[i].total_lost_revenue=total_lost;
