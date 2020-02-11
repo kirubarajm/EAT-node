@@ -8444,19 +8444,63 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
       }
     }
 
-   
+    ////////////////////////////////Kitchen Percentage////////////////////////////////////
+    for(let i=0; i<makeitlog.length; i++){
+      makeitlog[i].kitchen_percentage = await Order.kitchen_percentage(makeitlog[i].makeit_id);
+      //console.log("makeitlog[i].kitchen_percentage --->",makeitlog[i].kitchen_percentage);
+    }  
   } 
-  //console.log("makeitlog ============>",makeitlog);
   return makeitlog; 
 };
 
+//////////Get Kitchen Percentage//////////
+Order.kitchen_percentage= async function kitchen_percentage(makeit_id){
+  if(makeit_id){
+    var getmaxquantity = await query("select lph.makeit_id,lph.product_id,p.product_name,MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage,0 as kitchen_product_count_percentage,0 as kitchen_product_percentage from Live_Product_History lph left join Product as p on p.productid=lph.product_id where date(lph.created_at)='2020-02-07' and lph.makeit_id="+makeit_id+" group by lph.product_id order by lph.product_id ASC");
+  
+    var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)='2020-02-07' and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+makeit_id+" group by oi.productid order by oi.productid ASC");
+    //result(null, getsoldquantity);
+    var product_count = 0;
+    var kitchen_percentage = 0;
+    if(getmaxquantity.length !=0){
+      ////Calculation For Product Count
+      
+      for(var i=0; i<getmaxquantity.length; i++){
+        var quantity=getmaxquantity[i].total_quantity|| 0;
+        product_count = parseInt(product_count) + parseInt(quantity);
+      }
+
+      for(var i=0; i<getmaxquantity.length; i++){
+        for(var j=0; j<getsoldquantity.length; j++){
+          if(getmaxquantity[i].product_id==getsoldquantity[j].productid){
+            ////Set Soldout Quantity
+            getmaxquantity[i].sold_quantity = getsoldquantity[j].sold_quantity;
+            ////Calculation For Product Percentage
+            getmaxquantity[i].product_percentage = ((getmaxquantity[i].sold_quantity/getmaxquantity[i].total_quantity)*100);
+            ////Calculation For Kitchen Product Percentage
+            getmaxquantity[i].kitchen_product_count_percentage = ((getmaxquantity[i].total_quantity/product_count)*100);
+            ////Calculation For Kitchen Percentage
+            getmaxquantity[i].kitchen_product_percentage = (getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100));
+            ////Calcualtion For kitchen percentage
+            kitchen_percentage = kitchen_percentage+(getmaxquantity[i].product_percentage*(getmaxquantity[i].kitchen_product_count_percentage/100));
+          }
+        }
+      }
+      return kitchen_percentage;
+    }else{
+      return kitchen_percentage;
+    }
+  }else{
+    return 0;
+  }
+};
 ////Makeit Order Count///////
 Order.makeit_order_count = async function makeit_order_count(req,makeitloguser) { 
   // var ordercountquery = "select date(created_at) as log_date,makeit_user_id as makeit_id, count(orderid) as order_count,SUM(makeit_earnings) AS total_makeit_earnings, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' AND orderstatus=6 THEN orderid END) as breakfast_completed, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' AND orderstatus=6 THEN orderid END) as lunch_completed,  COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN orderid END) as dinner_completed,   SUM(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' AND orderstatus=6 THEN makeit_earnings END) as breakfast_total_makeit_earnings, SUM(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' AND orderstatus=6 THEN makeit_earnings END) as lunch_total_makeit_earnings,  SUM(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN makeit_earnings END) as dinner_total_makeit_earnings,   COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as breakfast_canceled,    COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as lunch_canceled,     COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as dinner_canceled  from Orders where makeit_user_id IN("+makeitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 and orderstatus=6 and makeit_user_id!=0  group by makeit_user_id,  date(created_at) order by makeit_user_id,date(created_at)";
   // var ordercount = await query(ordercountquery);
 
   ////Get sold quantity/////////
-  var ordercountquery = "select date(ord.created_at) as log_date,ord.makeit_user_id as makeit_id, COUNT(CASE WHEN ord.orderstatus=6 THEN ord.orderid END) as order_count, SUM(CASE WHEN ord.orderstatus=6 THEN ord.makeit_earnings END) as total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as breakfast_completed, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as lunch_completed, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as dinner_completed, SUM(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as breakfast_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as lunch_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as dinner_total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as breakfast_canceled, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as lunch_canceled, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as dinner_canceled, CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle1_soldqty, CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle2_soldqty, CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle3_soldqty from Orders as ord left join OrderItem as oi on oi.orderid= ord.orderid where ord.makeit_user_id IN("+makeitloguser+") and date(ord.created_at) between CURDATE()-1 and CURDATE() and ord.makeit_user_id!=0 and (ord.orderstatus=6 or ord.orderstatus=7) group by ord.makeit_user_id,  date(ord.created_at) order by ord.makeit_user_id,date(ord.created_at)"
+  var ordercountquery = "select date(ord.created_at) as log_date,ord.makeit_user_id as makeit_id, COUNT(CASE WHEN ord.orderstatus=6 THEN ord.orderid END) as order_count, SUM(CASE WHEN ord.orderstatus=6 THEN ord.makeit_earnings END) as total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as breakfast_completed, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as lunch_completed, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as dinner_completed, SUM(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as breakfast_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as lunch_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as dinner_total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as breakfast_canceled, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as lunch_canceled, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as dinner_canceled, CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle1_soldqty, CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle2_soldqty, CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle3_soldqty from Orders as ord left join OrderItem as oi on oi.orderid= ord.orderid where ord.makeit_user_id IN("+makeitloguser+") and date(ord.created_at) between '2020-02-07' and '2020-02-07' and ord.makeit_user_id!=0 and (ord.orderstatus=6 or ord.orderstatus=7) group by ord.makeit_user_id,  date(ord.created_at) order by ord.makeit_user_id,date(ord.created_at)"
   var ordercount = await query(ordercountquery);
 
   return ordercount;
@@ -8465,10 +8509,10 @@ Order.makeit_order_count = async function makeit_order_count(req,makeitloguser) 
 ////Makeit Logtime perday///////////
 Order.makeit_logtime = async function makeit_logtime(req) {  
   ///Get Moveit Users list///////
-  var makeitlogusersquery = "select makeit_id,date(created_at) as log_date from Makeit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 group by makeit_id order by makeit_id";
+  var makeitlogusersquery = "select makeit_id,date(created_at) as log_date from Makeit_Timelog where date(created_at) between '2020-02-07' and '2020-02-07' group by makeit_id order by makeit_id";
   var makeitlogusers = await query(makeitlogusersquery);
   ///Get Moveit Logs///////
-  var makeitlogquery = "select date(created_at) as log_date,time(created_at) as logtime,type,makeit_id from Makeit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 order by date(created_at),makeit_id";
+  var makeitlogquery = "select date(created_at) as log_date,time(created_at) as logtime,type,makeit_id from Makeit_Timelog where date(created_at) between '2020-02-07' and '2020-02-07' order by date(created_at),makeit_id";
   var makeitlog = await query(makeitlogquery);  
   
   ///console.log("Kloop ==>",makeitlog);
@@ -8598,17 +8642,18 @@ Order.makeit_logtime = async function makeit_logtime(req) {
     makeitlogusers[k].cycle1_soldqty = 0;
     makeitlogusers[k].cycle2_soldqty = 0;
     makeitlogusers[k].cycle3_soldqty = 0;
+    makeitlogusers[k].kitchen_percentage = 0;
   } 
   return makeitlogusers;
 };
 
 ////Makeit Cycle Based Product Count///////
 Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req,makeitloguser) {
-  var liveproductcountquery = "select date(created_at) as log_date,makeit_id, COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' THEN (product_id) END) as breakfast_count, COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' THEN (product_id) END) as lunch_count, COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN (product_id) END) as dinner_count from Live_Product_History where makeit_id IN("+makeitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 group by makeit_id order by makeit_id";
+  var liveproductcountquery = "select date(created_at) as log_date,makeit_id, COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' THEN (product_id) END) as breakfast_count, COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' THEN (product_id) END) as lunch_count, COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN (product_id) END) as dinner_count from Live_Product_History where makeit_id IN("+makeitloguser+") and date(created_at) between '2020-02-07' and '2020-02-07' group by makeit_id order by makeit_id";
   var productcount = await query(liveproductcountquery);
 
   /////////Get Product Count////////
-  var cycle1productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)=CURDATE()-1 and time(created_at)>='08:00:00' and time(created_at)<'12:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
+  var cycle1productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)='2020-02-07' and time(created_at)>='08:00:00' and time(created_at)<'12:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
   var cycle1productcount = await query(cycle1productcountquery);
   
   for (let i = 0; i < productcount.length; i++) {
@@ -8621,7 +8666,7 @@ Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req
     productcount[i].cycle1_qty=count;  
   }
 
-  var cycle2productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)=CURDATE()-1 and time(created_at)>='12:00:00' and time(created_at)<'16:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
+  var cycle2productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)='2020-02-07' and time(created_at)>='12:00:00' and time(created_at)<'16:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
   var cycle2productcount = await query(cycle2productcountquery);
 
   for (let i = 0; i < productcount.length; i++) {
