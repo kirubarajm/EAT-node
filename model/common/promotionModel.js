@@ -5,8 +5,8 @@ const util = require('util');
 const query = util.promisify(sql.query).bind(sql);
 
 var Promotion = function(promotion) {
-  this.coupon_name = coupon.coupon_name;
-  this.active_status = coupon.active_status;
+  this.coupon_name = promotion.coupon_name;
+  this.active_status = promotion.active_status;
 }
 //For Admin
 Promotion.createPromotion = function createPromotion(req, result) {
@@ -27,7 +27,6 @@ Promotion.createPromotion = function createPromotion(req, result) {
       
 };
 
-
 //For Admin
 Promotion.getAllPromotion_by_activstatus = function getAllPromotion_by_activstatus(active_status,result) {
   sql.query("Select * from Promotion where active_status=?",[active_status], function(err, res) {
@@ -45,9 +44,6 @@ Promotion.getAllPromotion_by_activstatus = function getAllPromotion_by_activstat
 };
 
 
-
-
-
 Promotion.getAllPromotion_by_user = function getAllPromotion_by_user(userid,result) {
     sql.query("Select * from Promotion where active_status=?",[userid], function(err, res) {
       if (err) {
@@ -61,10 +57,10 @@ Promotion.getAllPromotion_by_user = function getAllPromotion_by_user(userid,resu
         result(null, resobj);
       }
     });
-  };
+};
 
 
-  Promotion.get_Promotion_by_userid = function get_Promotion_by_userid(req,result) {
+Promotion.get_Promotion_by_userid = function get_Promotion_by_userid(req,result) {
 
     sql.query("Select * from Promotion where active_status= 1 and expiry_date > NOW() order by pid desc limit 1", async function(err, res) {
       if (err) {
@@ -97,9 +93,10 @@ Promotion.getAllPromotion_by_user = function getAllPromotion_by_user(userid,resu
           }  
       }
     });
-  };
+};
 
-  Promotion.get_Promotion_by_userid_new = function get_Promotion_by_userid_new(eatuserid,result) {
+
+Promotion.get_Promotion_by_userid_new = function get_Promotion_by_userid_new(eatuserid,result) {
 
     sql.query("Select * from Promotion where active_status= 1 and expiry_date > NOW() ", async function(err, res) {
       if (err) {
@@ -133,7 +130,7 @@ Promotion.getAllPromotion_by_user = function getAllPromotion_by_user(userid,resu
           }  
       }
     });
-  };
+};
 
 
 
