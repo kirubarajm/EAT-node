@@ -7455,7 +7455,7 @@ Order.onlinerefunded_couponreport= function onlinerefunded_couponreport(req, res
 //////////order_report_byadmin/////////////
 Order.order_report_byadmin= function order_report_byadmin(req, result) {
 
-  var query="Select o.created_at as Orderdate ,o.orderid,CASE WHEN o.ordertype=1 then 'Virtual' WHEN o.ordertype=0 then 'Real' END as order_type,if(o.payment_type=1,'Online','Cash') as payment_type,o.price,o.original_price,o.refund_amount,o.gst,o.discount_amount,o.delivery_charge,o.orderstatus,CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) then 'AfterCancel' WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) then 'BeforeCancel' END as order_cancel_status,u.userid as customer_id,u.name as customer_name,o.address_title as customer_address,o.locality_name as customer_location,o.makeit_user_id as kitchen_id,ma.brandname as kitchen_name,if(ma.virtualkey=1,'Virtual','Real') as kitchen_type,ma.address as hub_location,o.makeit_accept_time as kitchen_accept_time,o.makeit_expected_preparing_time as kitchen_expected_preparing_time,o.makeit_actual_preparing_time as kitchen_actual_preparing_time,o.makeit_earnings as kitche_earnings,if(o.delivery_vendor=1,'Dunzo','Eat') as delivered_by,o.moveit_user_id as moveit_id,mu.name as moveit_name,o.order_assigned_time,o.moveit_assign_lat,o.moveit_assign_long,o.moveit_notification_time,o.moveit_accept_time,o.moveit_accept_lat,moveit_accept_long,o.moveit_reached_time as moveit_kitchen_reached_time,o.moveit_kitchen_reached_lat,o.moveit_kitchen_reached_long,o.moveit_pickup_time,o.moveit_Pickup_lat,o.moveit_Pickup_long,o.moveit_customerlocation_reached_time,o.moveit_customer_location_reached_lat,o.moveit_customer_location_reached_long,o.moveit_expected_delivered_time,o.moveit_actual_delivered_time,o.moveit_delivery_lat,o.moveit_delivery_long,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join User as u on o.userid=u.userid left join MoveitUser as mu on mu.userid = o.moveit_user_id where (o.orderstatus=6 or o.orderstatus=7  or  o.orderstatus=8 or o.orderstatus=9 or o.orderstatus=10 or o.orderstatus=11) and  (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
+  var query="Select o.created_at as Orderdate ,o.orderid,CASE WHEN o.ordertype=1 then 'Virtual' WHEN o.ordertype=0 then 'Real' END as order_type,if(o.payment_type=1,'Online','Cash') as payment_type,o.price,o.original_price,o.refund_amount,o.gst,o.discount_amount,o.delivery_charge,o.orderstatus,CASE WHEN (orderstatus=7 and makeit_actual_preparing_time IS NOT NULL) then 'AfterCancel' WHEN (orderstatus=7 and makeit_actual_preparing_time IS NULL) then 'BeforeCancel' END as order_cancel_status,u.userid as customer_id,u.name as customer_name,o.address_title as customer_address,o.locality_name as customer_location,o.makeit_user_id as kitchen_id,ma.brandname as kitchen_name,if(ma.virtualkey=1,'Virtual','Real') as kitchen_type,ma.lat as kitchen_lat,ma.lon as kitchen_long,mh.address as hub_location,o.makeit_accept_time as kitchen_accept_time,o.makeit_expected_preparing_time as kitchen_expected_preparing_time,o.makeit_actual_preparing_time as kitchen_actual_preparing_time,o.makeit_earnings as kitche_earnings,if(o.delivery_vendor=1,'Dunzo','Eat') as delivered_by,o.moveit_user_id as moveit_id,mu.name as moveit_name,o.order_assigned_time,o.moveit_assign_lat,o.moveit_assign_long,o.moveit_notification_time,o.moveit_accept_time,o.moveit_accept_lat,moveit_accept_long,o.moveit_reached_time as moveit_kitchen_reached_time,o.moveit_kitchen_reached_lat,o.moveit_kitchen_reached_long,o.moveit_pickup_time,o.moveit_Pickup_lat,o.moveit_Pickup_long,o.moveit_customerlocation_reached_time,o.moveit_customer_location_reached_lat,o.moveit_customer_location_reached_long,o.moveit_expected_delivered_time,o.moveit_actual_delivered_time,o.moveit_delivery_lat,o.moveit_delivery_long,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on o.makeit_user_id=ma.userid join User as u on o.userid=u.userid left join MoveitUser as mu on mu.userid = o.moveit_user_id left join Makeit_hubs as mh on mh.makeithub_id = ma.makeithub_id where (o.orderstatus=6 or o.orderstatus=7  or  o.orderstatus=8 or o.orderstatus=9 or o.orderstatus=10 or o.orderstatus=11) and  (DATE(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') GROUP BY o.orderid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -7513,7 +7513,7 @@ Order.Item_wise_report_byadmin= function Item_wise_report_byadmin(req, result) {
 //////////moveit master report/////////////
 Order.moveit_master_report= function moveit_master_report(req, result) {
   
-  var query="select userid as moveit_id,name,phoneno,date(created_at) as date from MoveitUser order by userid";
+  var query="select mou.userid as moveit_id,mou.name,mou.phoneno,date(mou.created_at) as date,mh.address as hub from MoveitUser mou left join Makeit_hubs as mh on mh.makeithub_id = mou.moveit_hub order by mou.userid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -7541,7 +7541,7 @@ Order.moveit_master_report= function moveit_master_report(req, result) {
 
 //////////makeit_master_report/////////////
 Order.makeit_master_report= function makeit_master_report(req, result) {
-    var query="select userid as makeit_id,brandname as kitchen_name,name,phoneno,address,CASE WHEN virtualkey=1 then 'Virtual' WHEN virtualkey=0 then 'Real' END as kitchen_type,date(created_at) as date from MakeitUser order by userid";
+    var query="select mu.userid as makeit_id,mu.brandname as kitchen_name,mu.name,mu.phoneno,mu.address,CASE WHEN mu.virtualkey=1 then 'Virtual' WHEN mu.virtualkey=0 then 'Real' END as kitchen_type,date(mu.created_at) as date,mh.address as hub from MakeitUser mu left join Makeit_hubs as mh on mh.makeithub_id = mu.makeithub_id order by mu.userid";
   //console.log("query-->",query);
   sql.query(query,async function(err, res) {
       if (err) {
@@ -8848,13 +8848,13 @@ Order.moveit_utilization_report= async function moveit_utilization_report(req,re
 ////OPE METRICS Report///
 Order.ope_metrics_report= async function ope_metrics_report(req,result) { 
   var currentdateminus=1;
-  var orderscountquery = "Select sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY)-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=0),o.price,0)) as real_lastweek_day_value,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=0),price,0)) as real_today_value,sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY)-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=1),o.price,0)) as dark_lastweek_day_value,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=1),price,0)) as dark_today_value,sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY)-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=0),1,0)) as real_lastweek_day_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=0),1,0)) as real_today_count,sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY)-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=1),1,0)) as dark_lastweek_day_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=1),1,0)) as dark_today_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=7 and mk.virtualkey=0),1,0)) as real_today_cancel_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=7 and mk.virtualkey=1),1,0)) as dark_today_cancel_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and o.delivery_vendor=0),1,0)) as total_orders_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and o.delivery_vendor=0),TIMESTAMPDIFF(SECOND,o.ordertime,o.moveit_actual_delivered_time),0)) as total_delivery_time from Orders o left join MakeitUser as mk on mk.userid=o.makeit_user_id Where date(o.created_at) between DATE_SUB(CURDATE(), INTERVAL 7 DAY)-"+currentdateminus+" AND CURDATE()-"+currentdateminus;
-  //console.log("orderscountquery---",orderscountquery);
+  var orderscountquery = "Select sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 8 DAY) And o.orderstatus=6 and mk.virtualkey=0),o.price,0)) as real_lastweek_day_value,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=0),price,0)) as real_today_value,sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 8 DAY) And o.orderstatus=6 and mk.virtualkey=1),o.price,0)) as dark_lastweek_day_value,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=1),price,0)) as dark_today_value,sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 8 DAY) And o.orderstatus=6 and mk.virtualkey=0),1,0)) as real_lastweek_day_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=0),1,0)) as real_today_count,sum(if((date(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 8 DAY) And o.orderstatus=6 and mk.virtualkey=1),1,0)) as dark_lastweek_day_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and mk.virtualkey=1),1,0)) as dark_today_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=7 and mk.virtualkey=0),1,0)) as real_today_cancel_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=7 and mk.virtualkey=1),1,0)) as dark_today_cancel_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and o.delivery_vendor=0),1,0)) as total_orders_count,sum(if((date(o.created_at)=CURDATE()-"+currentdateminus+" And o.orderstatus=6 and o.delivery_vendor=0),TIMESTAMPDIFF(SECOND,o.ordertime,o.moveit_actual_delivered_time),0)) as total_delivery_time from Orders o left join MakeitUser as mk on mk.userid=o.makeit_user_id Where date(o.created_at) between DATE_SUB(CURDATE(), INTERVAL 8 DAY) AND CURDATE()-"+currentdateminus;
+  console.log("orderscountquery---",orderscountquery);
   var orderscount = await query(orderscountquery);
 
-  var Abandoned_order_count_query = "SELECT sum(if((date(xfact.created_at)=CURDATE()-"+currentdateminus+"),1,0)) as today_count,sum(if((date(xfact.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY)-"+currentdateminus+"),1,0)) as last_week_count,count(*) as order_count FROM (SELECT t.product, t.created_at,t.userid FROM (Select o.orderid,o.created_at,o.userid,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on ma.userid=o.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id=ma.makeithub_id where o.orderstatus=11 and o.ordertype=0 and (DATE(o.created_at)=CURDATE()-"+currentdateminus+" or DATE(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 7 DAY)-"+currentdateminus+") GROUP BY o.orderid) t GROUP BY date(t.created_at),t.userid,t.product) xfact"
+  var Abandoned_order_count_query = "SELECT sum(if((date(xfact.created_at)=CURDATE()-"+currentdateminus+"),1,0)) as today_count,sum(if((date(xfact.created_at)=DATE_SUB(CURDATE(), INTERVAL 8 DAY)),1,0)) as last_week_count,count(*) as order_count FROM (SELECT t.product, t.created_at,t.userid FROM (Select o.orderid,o.created_at,o.userid,GROUP_CONCAT(p.product_name,' - ',oi.quantity SEPARATOR ',') as product from Orders as o join OrderItem as oi on o.orderid=oi.orderid join Product as p on p.productid = oi.productid join MakeitUser as ma on ma.userid=o.makeit_user_id join Makeit_hubs as mh on mh.makeithub_id=ma.makeithub_id where o.orderstatus=11 and o.ordertype=0 and (DATE(o.created_at)=CURDATE()-"+currentdateminus+" or DATE(o.created_at)=DATE_SUB(CURDATE(), INTERVAL 8 DAY)) GROUP BY o.orderid) t GROUP BY date(t.created_at),t.userid,t.product) xfact"
 
-  //console.log("Abandoned_order_count_query---",Abandoned_order_count_query);
+  console.log("Abandoned_order_count_query---",Abandoned_order_count_query);
 
   var Abandoned_order_count = await query(Abandoned_order_count_query);
  
@@ -9020,21 +9020,24 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
 
   var makeit_earings_count = await query(makeitearingsquery);
 
-  var makeit_session_time_query= "select ROUND((SUM(if((mu.virtualkey=0 and mu.makeit_type=0),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0))/TIME_TO_SEC('15:00:00')),2) as homemaker_session_time,ROUND((SUM(if((mu.virtualkey=0 and mu.makeit_type=1),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0))/TIME_TO_SEC('15:00:00')),2) as caterers_session_time,ROUND((SUM(if((mu.virtualkey=1),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0))/TIME_TO_SEC('15:00:00')),2) as dark_session_time from Makeit_daywise_report mdr left join MakeitUser as mu on  mu.userid=mdr.makeit_id where  date(mdr.date)= CURDATE()-1"
+  var makeit_session_time_query= "Select TIME_TO_SEC('15:00:00') as overall_seconds_of_the_day,Sum(if((mu.virtualkey=0 and mu.makeit_type=0),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0)) as homemaker_session_second,Sum(if((mu.virtualkey=0 and mu.makeit_type=0),1,0)) as homaker_count,Sum(if((mu.virtualkey=0 and mu.makeit_type=1),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0)) as caterers_session_second,Sum(if((mu.virtualkey=0 and mu.makeit_type=1),1,0)) as caterers_count,Sum(if((mu.virtualkey=1),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0)) as dark_session_second,Sum(if((mu.virtualkey=1),1,0)) as dark_count from Makeit_daywise_report mdr left join MakeitUser as mu on  mu.userid=mdr.makeit_id where  date(mdr.date)= CURDATE()-1"
 
   var makeit_session_time = await query(makeit_session_time_query);
 
+  var makeit_Product_lived_query= "select sum(if((q.virtualkey=0 and q.makeit_type=0),1,0)) as no_of_homemaker_kitchen,sum(if((q.virtualkey=0 and q.makeit_type=0),q.live_count,0)) as homemaker_product_live_count,sum(if((q.virtualkey=0 and q.makeit_type=1),1,0)) as no_of_caterers_kitchen,sum(if((q.virtualkey=0 and q.makeit_type=1),q.live_count,0)) as caterers_product_live_count,sum(if((q.virtualkey=1),1,0)) as no_of_dark_kitchen,sum(if((q.virtualkey=1),q.live_count,0)) as dark_product_live_count,count(*) as no_of_makeit,sum(q.live_count) as total_product_live_count from (select p.makeit_id,p.virtualkey,p.makeit_type,count(*) as live_count from (select  lph.makeit_id,lph.product_id,mu.virtualkey,mu.makeit_type from Live_Product_History lph left join MakeitUser as mu on mu.userid=lph.makeit_id  where date(lph.created_at) =CURDATE()-1 and mu.ka_status=2 group by product_id) p group by makeit_id) q"
+
+  var makeit_Product_lived_count = await query(makeit_Product_lived_query);
+
+
+  
+
+  //console.log("makeit_session_time_query---",makeit_session_time_query);
+
   var onresult=[];
- 
+  var i = 0;
   if(makeit_onboard_count.length != 0 && makeit_todaylived_count.length!=0){
+    onresult[i] = Object.assign(makeit_onboard_count[i], makeit_todaylived_count[i]);
 
-      var i = 0;
-
-     //onresult[i]={};
-      onresult[i] = Object.assign(makeit_onboard_count[i], makeit_todaylived_count[i]);
-      if(makeit_session_time.length>0){
-        onresult[i] = Object.assign(makeit_session_time[i], onresult[i]);
-      }
       var drak_kitchen_onboarded =parseInt(makeit_onboard_count[i].drak_kitchen_onboarded);
       var caterers_kitchen_onboarded =parseInt(makeit_onboard_count[i].caterers_kitchen_onboarded);
       var homemaker_kitchen_onboarded = parseInt(makeit_onboard_count[i].homemaker_kitchen_onboarded);
@@ -9044,33 +9047,70 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
       var homemaker_kitchen_lived = parseInt(makeit_todaylived_count[i].homemaker_kitchen_lived);
       
       if(drak_kitchen_onboarded && drak_kitchen_lived){
-       
       var drak_kitchen_lived_percentage=(drak_kitchen_lived/drak_kitchen_onboarded)*100;
       onresult[i].drak_kitchen_lived_percentage=drak_kitchen_lived_percentage.toFixed(2)
-      }
+      }else onresult[i].drak_kitchen_lived_percentage=0;
 
       if(caterers_kitchen_onboarded && caterers_kitchen_lived){
       var caterers_kitchen_lived_percentage=(caterers_kitchen_lived/caterers_kitchen_onboarded)*100;
       onresult[i].caterers_kitchen_lived_percentage=caterers_kitchen_lived_percentage.toFixed(2);
-      }
+      } else onresult[i].caterers_kitchen_lived_percentage=0;
 
       if(homemaker_kitchen_onboarded && homemaker_kitchen_lived){
       var homemaker_kitchen_lived_percentage=(homemaker_kitchen_lived/homemaker_kitchen_onboarded)*100;
       onresult[i].homemaker_kitchen_lived_percentage=homemaker_kitchen_lived_percentage.toFixed(2);
-      }
+      } else onresult[i].homemaker_kitchen_lived_percentage=0;
+  }
 
-      if(makeit_earings_count.length>0){
-        
-        var makeit_earnings =parseInt(makeit_earings_count[i].makeit_earnings);
-        var makeit_count =parseInt(makeit_earings_count[i].makeit_count);
-        console.log(makeit_earnings,makeit_count);
-        var avg_home_maker_earnings =(makeit_earnings/makeit_count).toFixed(2);
-        //avg_home_maker_earnings = avg_home_maker_earnings*100;
-        onresult[i].home_maker_avg_earnings_month=avg_home_maker_earnings;
-      }
+  if(makeit_session_time.length>0){
+    onresult[i] = Object.assign(onresult[i],makeit_session_time[i]);
+    var overall_seconds_of_the_day= makeit_session_time[i].overall_seconds_of_the_day;
 
-      
+    var homemaker_session_time = makeit_session_time[i].homemaker_session_second/(makeit_session_time[i].homaker_count * overall_seconds_of_the_day)
+    homemaker_session_time= homemaker_session_time ||0;
+    onresult[i].homemaker_session_time= homemaker_session_time.toFixed(3) *100;
 
+
+    var caterers_session_time = makeit_session_time[i].caterers_session_second/(makeit_session_time[i].caterers_count * overall_seconds_of_the_day)
+    caterers_session_time= caterers_session_time ||0;
+    onresult[i].caterers_session_time= caterers_session_time.toFixed(3) *100;
+
+    var dark_session_time = makeit_session_time[i].dark_session_second/(makeit_session_time[i].dark_count * overall_seconds_of_the_day)
+    dark_session_time= dark_session_time ||0;
+    onresult[i].dark_session_time= dark_session_time.toFixed(3) *100;
+
+  }
+
+  if(makeit_earings_count.length>0){
+    var makeit_earnings =parseInt(makeit_earings_count[i].makeit_earnings);
+    var makeit_count =parseInt(makeit_earings_count[i].makeit_count);
+    var avg_home_maker_earnings =(makeit_earnings/makeit_count).toFixed(2);
+    onresult[i].home_maker_avg_earnings_month=avg_home_maker_earnings;
+  }else{
+    onresult[i].home_maker_avg_earnings_month=0;
+  }
+
+  if(makeit_Product_lived_count.length>0){
+    onresult[i] = Object.assign(onresult[i],makeit_Product_lived_count[i]);
+
+    var no_of_homemaker_kitchen =makeit_Product_lived_count[i].no_of_homemaker_kitchen;
+    var no_of_caterers_kitchen =makeit_Product_lived_count[i].no_of_caterers_kitchen;
+    var no_of_dark_kitchen =makeit_Product_lived_count[i].no_of_dark_kitchen;
+
+    var homemaker_product_live_count =makeit_Product_lived_count[i].homemaker_product_live_count;
+    var caterers_product_live_count =makeit_Product_lived_count[i].caterers_product_live_count;
+    var dark_product_live_count =makeit_Product_lived_count[i].dark_product_live_count;
+
+    var homemaker_avg_no_of_products_live =homemaker_product_live_count/no_of_homemaker_kitchen;
+    var caterers_avg_no_of_products_live =caterers_product_live_count/no_of_caterers_kitchen;
+    var dark_avg_no_of_products_live =dark_product_live_count/no_of_dark_kitchen;
+
+    onresult[i].homemaker_avg_no_of_products_live = homemaker_avg_no_of_products_live?homemaker_avg_no_of_products_live.toFixed(2) : 0;
+    onresult[i].caterers_avg_no_of_products_live = caterers_avg_no_of_products_live?caterers_avg_no_of_products_live.toFixed(2):0;
+    onresult[i].dark_avg_no_of_products_live = dark_avg_no_of_products_live?dark_avg_no_of_products_live.toFixed(2):0;
+
+  }
+ 
     
     let resobj = {
       success: true,
@@ -9078,14 +9118,7 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
       result: onresult      
     };
     result(null, resobj);
-  }else{
-    let resobj = {
-      success: true,
-      message: "Sorry! no data found.",
-      status:false
-    };
-    result(null, resobj);
-  }
+  
   
 };
 
