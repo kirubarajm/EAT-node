@@ -305,6 +305,12 @@ app.route("/admin/reports/homemaker_activity_per_session").post(routesVersioning
 ///OPE Metrics Report////
 app.route("/admin/reports/ope_metrics_report").get(routesVersioning({"1.0.0":orders.ope_metrics_report}));
 
+///OPE Metrics growth Report ////
+app.route("/admin/reports/ope_metrics_growth").get(routesVersioning({"1.0.0":orders.ope_metrics_growth}));
+
+///OPE Metrics Report table////
+app.route("/admin/reports/ope_metrics_report_format").get(routesVersioning({"1.0.0":orders.ope_metrics_report_format}));
+
 ///Sales Metrics Report////
 app.route("/admin/reports/sales_metrics_report").get(routesVersioning({"1.0.0":orders.sales_metrics_report}));
 

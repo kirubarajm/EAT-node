@@ -1164,6 +1164,22 @@ exports.ope_metrics_report = function(req, res) {
   });
 };
 
+////OPE METRICS Report table fromatted///
+exports.ope_metrics_report_format = function(req, res) {
+  Order.ope_metrics_report_format(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+////OPE METRICS Report for order value///
+exports.ope_metrics_growth = function(req, res) {
+  Order.ope_metrics_growth(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
 ////SALES METRICS Report///
 exports.sales_metrics_report = function(req, res) {
   Order.sales_metrics_report(req.body, function(err, result) {
