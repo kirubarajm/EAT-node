@@ -322,7 +322,7 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
       var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
     }   
      //check zone status if dunzo or (moveit or dunzo)
-    if (get_hub_id_from_makeithub[0].zone_status == 1 || get_hub_id_from_makeithub[0].zone_status == undefined) {
+    if (get_hub_id_from_makeithub[0].zone_status == 1 || get_hub_id_from_makeithub[0].xfactor) {
       console.log("get_hub_id_from_makeithub[0].zone_status != 2");
       //Dunzo or moveit flow
       var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * get_moveit_list_based_on_hub[0].no_of_move_it_count
@@ -6718,7 +6718,7 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
     };    
     result(null, resobj);
   }else{
-    if(constant.zone_control){
+    if(constant.zone_control==false){
       var get_hub_id_from_orders= await query("Select zone from MakeitUser where userid="+req.makeit_user_id);
       var get_moveit_list_based_on_hub = await query("Select count(*) as no_of_move_it_count from MoveitUser where online_status=1 and zone="+get_hub_id_from_orders[0].zone);
     //  var get_orders_queue_based_on_hub = await query("Select count(*) as no_of_orders_count from Orders_queue where zoneid="+get_hub_id_from_orders[0].zone+" and  status !=1") ;
@@ -6732,7 +6732,7 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
       var get_hub_id_from_makeithub= await query("Select xfactor from Makeit_hubs where makeithub_id="+get_hub_id_from_orders[0].makeithub_id);
     }
 ///this condition is Dunzo zone 10 //09-dec-2019
-    if (get_hub_id_from_makeithub[0].zone_status == 1 || get_hub_id_from_makeithub[0].zone_status == undefined) {
+    if (get_hub_id_from_makeithub[0].zone_status == 1 || get_hub_id_from_makeithub[0].xfactor) {
       console.log("Dunzo and moveit");
 
       var xfactorValue = (get_hub_id_from_makeithub[0].xfactor - 1) * (get_moveit_list_based_on_hub[0].no_of_move_it_count || 0)
@@ -6741,6 +6741,7 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
       console.log("xfactorValue-->",Math.round(xfactorValue));
       var fValue= Math.round(xfactorValue);
       if(get_orders_queue_based_on_hub[0].no_of_orders_count < fValue){
+        console.log("working");
         let resobj = {
           success: true,
           status:true,
@@ -6750,6 +6751,8 @@ Order.getXfactors = async function getXfactors(req,orderitems, result) {
         };      
         result(null, resobj);
       }else{
+      console.log("not working");
+
         req.payment_type=3;
         req.payment_status=3;
         req.orderstatus = 11;

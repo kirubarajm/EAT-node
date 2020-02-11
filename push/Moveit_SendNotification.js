@@ -3,6 +3,7 @@ var geoFires = require('geofire');
 var geodist = require('geodist')
 var moment = require("moment");
 var zone =require("../model/common/zoneModel")
+var constant = require("../model/constant");
 
 var MoveitserverKey = require("../moveit-a9128-firebase-adminsdk-3h0b8-6315acfc79");
 var Move_it = null;
@@ -248,8 +249,8 @@ exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomo
   //  console.log("onKeyEnteredRegistration---->"+moment().format("YYYY-MM-DD HH:mm:ss"));
 
    
-    if(distance<=2)  move_it_id_distance_below_2.push(key);
-    if(distance>2 && distance<=3)  move_it_id_distance_above_2.push(key);
+    if(distance<=constant.order_assign_first_radius)  move_it_id_distance_below_2.push(key);
+    if(distance>constant.order_assign_first_radius && distance<=constant.order_assign_second_radius)  move_it_id_distance_above_2.push(key);
     // move_data[key] = {};
     // move_data[key].distance=distance;
     // move_data[key].location=location;
