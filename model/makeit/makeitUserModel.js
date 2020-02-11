@@ -3201,7 +3201,7 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
     if(((FromDate < CurrentDate) && (ToDate < CurrentDate)) && (parseInt(daysDiff) <=7) && ((FromDate >= FirstOrder) && (ToDate >= FirstOrder))){
       var getweeklyearnings = await query("select ordertime,IFNULL(SUM(makeit_earnings),0) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
 
-      var get_incentives = await query("select makeit_id,sum(incentive_amount) as incentive_amount from Makeit_incentive where date(created_at)  BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_id="+req.makeit_id+" ")
+      var get_incentives = await query("select makeit_id,incentive_amount as incentive_amount from Makeit_incentive where date(from_date)='"+req.fromdate+"' AND date(to_date)='"+req.todate+"' and makeit_id="+req.makeit_id+" ")
       
       if (get_incentives.length !=0) {
         if (get_incentives[0].incentive_amount !=null) {
