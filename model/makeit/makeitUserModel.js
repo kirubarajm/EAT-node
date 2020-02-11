@@ -3193,6 +3193,7 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
   var timeDiff    = ToDate-FromDate;
   var daysDiff    = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
   var makeit_incentives = 0;
+  var incentive_status = false;
 
   if(req.makeit_id && req.fromdate && req.todate){
     /////Get First Order Date
@@ -3201,12 +3202,13 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
     if(((FromDate < CurrentDate) && (ToDate < CurrentDate)) && (parseInt(daysDiff) <=7) && ((FromDate >= FirstOrder) && (ToDate >= FirstOrder))){
       var getweeklyearnings = await query("select ordertime,IFNULL(SUM(makeit_earnings),0) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
 
-      var get_incentives = await query("select makeit_id,incentive_amount as incentive_amount from Makeit_incentive where date(from_date)='"+req.fromdate+"' AND date(to_date)='"+req.todate+"' and makeit_id="+req.makeit_id+" ")
-      
+      var get_incentives = await query("select makeit_id,incentive_amount as incentive_amount from Makeit_incentive where date(from_date)='"+req.fromdate+"' AND date(to_date)='"+req.todate+"' and makeit_id="+req.makeit_id+" ");
+
       if (get_incentives.length !=0) {
-        if (get_incentives[0].incentive_amount !=null) {
+        if (get_incentives[0].incentive_amount !=null && get_incentives[0].incentive_amount !=0) {
+          incentive_status = true;
           makeit_incentives = get_incentives[0].incentive_amount;
-        }        
+        }       
       }
       
       var Newarray = [];      
@@ -3224,6 +3226,8 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
               status : true,
               First_Order_date:getfirstmakeitorder[0].firstorder,
               weekly_earnings:weekly_earnings,
+              makeit_incentives:makeit_incentives ,
+              incentive_status:incentive_status,
               message : "Sorry! no data found"
             };
             result(null, resobj);
@@ -3234,6 +3238,7 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
               First_Order_date:getfirstmakeitorder[0].firstorder,
               weekly_earnings:weekly_earnings,
               makeit_incentives:makeit_incentives ,
+              incentive_status:incentive_status,
               result : Newarray
             };
             result(null, resobj);
@@ -3568,16 +3573,44 @@ Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_
 
 ////Makeit avg preparation report/////////////
 Makeituser.makeit_incentives= async function makeit_incentives(req,result) {
-  var makeit_avg_list = "select SUM(cycle_count) as complete_succession_count,SUM(cancel_order_count) as cancel_order_count,SUM(dinner_count+lunch_count+breakfast_count) AS totalproduct from Makeit_daywise_report where (Date(date) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  AND makeit_id = '"+req.makeit_id+"'";
+  var makeit_avg_list = "select cycle_count as complete_succession_count,cancel_order_count as cancel_order_count,dinner_count,lunch_count,breakfast_count from Makeit_daywise_report where (Date(date) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  AND makeit_id = '"+req.makeit_id+"'";
  
   sql.query(makeit_avg_list, async function(err, res) {
     if(err){
       result(null, err);
     }else{
+      var complete_succession_count = 0;
+      var cancel_order_count        = 0;
+      var averageproduct_count      = 0;
+      var cycle_count               = 0;
+      var product_count             = 0;
+
+      for(let i=0; i<res.length; i++){
+        complete_succession_count = complete_succession_count + res[i].complete_succession_count;
+        cancel_order_count        = cancel_order_count + res[i].cancel_order_count;
+        if(res[i].dinner_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].dinner_count;
+        }
+        if(res[i].lunch_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].lunch_count;
+        }
+        if(res[i].breakfast_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].breakfast_count;
+        }
+      }
+
+      averageproduct_count = product_count/cycle_count;
+
+      var Newarray = [];
+      Newarray.push({"complete_succession_count":complete_succession_count,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count});
+      
       let resobj = {
         success: true,
         status : true,
-        result : res
+        result : Newarray
       };
       result(null, resobj);
     }
