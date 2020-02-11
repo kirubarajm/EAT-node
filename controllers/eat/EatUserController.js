@@ -730,3 +730,11 @@ exports.user_growth_order_report = function(req, res) {
     res.json(user);
   });
 };
+
+/////promotion_homescreen
+exports.promotion_homescreen = function(req, res) {
+  Eatuser.promotion_homescreen(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
