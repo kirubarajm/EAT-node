@@ -48,7 +48,7 @@ var Eatuser = function(eatuser) {
   this.gender = eatuser.gender ;
   this.regionid = eatuser.regionid || 0;
   this.pushid_android = eatuser.pushid_android;
-  this.pushid_ios = eatuser.pushid_android;
+  this.pushid_ios = eatuser.pushid_ios;
 };
 
 Eatuser.createUser = function createUser(newUser, result) {
