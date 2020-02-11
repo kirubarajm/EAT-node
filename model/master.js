@@ -838,8 +838,18 @@ const master = [
                 "description": "Unlive Product"
             }
         ]
-    }
-
+    },
+    {
+        'location_user_type': [{
+                "type": 0,
+                "description": "Not tunnel user"
+            },
+            {
+                "type": 1,
+                "description": "Not tunnel user"
+            }
+        ]
+    } 
 
 ]
 module.exports = master;

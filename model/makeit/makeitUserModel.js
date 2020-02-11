@@ -1241,11 +1241,13 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
               var othercharges = delivery_charge + convenience_charge ;
               var home_gst= (othercharges * constant.home_gst)/100;
         
+       
               if (res2[0].makeit_type !=0) {
                 var cater_gst = (totalamount / 100) * constant.gst;
                 var gstcharge= Math.round(home_gst + cater_gst);
              
               }else{
+           
                 var gstcharge=Math.round(home_gst);
                 
               }

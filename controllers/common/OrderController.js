@@ -1195,3 +1195,12 @@ exports.logs_metrics_report = function(req, res) {
     res.json(result);
   });
 };
+
+///Show Makeit Incentive Report////
+exports.show_makeit_incentive_report = function(req, res) {
+  //console.log("moveitdaywisecyclereport");
+  Order.show_makeit_incentive_report(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

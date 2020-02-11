@@ -317,6 +317,7 @@ app.route("/admin/reports/sales_metrics_report").get(routesVersioning({"1.0.0":o
 ///Logs Metrics Report////
 app.route("/admin/reports/logs_metrics_report").get(routesVersioning({"1.0.0":orders.logs_metrics_report}));
 
-
+///makeit_incentive_report////
+app.route("/admin/reports/makeitincentivereport").post(routesVersioning({"1.0.0":orders.show_makeit_incentive_report}));
 
 }

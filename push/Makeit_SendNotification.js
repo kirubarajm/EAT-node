@@ -25,20 +25,21 @@ exports.sendNotificationAndroid = function(
     priority: "high",
     timeToLive: 60 * 60 * 24 // 1 day
   };
-  console.log("token:"+token);
+ // console.log("token:"+token);
   var payload = {
     data: dat
   };
-console.log("-------->",dat.app_type);
+//console.log("-------->",dat.app_type);
+payload.data.app_type=''+dat.app_type;
   if (dat.app_type===2) {
-    dat.app_type=''+dat.app_type;
+  //  dat.app_type=''+dat.app_type;
     payload.notification= {
       title: dat.title,
       body: dat.message, // <= CHANGE
       sound : "default"
     }
   }
-  console.log("payload:"+payload.data.title);
+  //console.log("payload:"+payload.data.title);
   Makeit.messaging().sendToDevice(token, payload, options);
 };
 

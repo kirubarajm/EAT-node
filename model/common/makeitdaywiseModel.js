@@ -26,6 +26,7 @@ var Makeitdaywise = function(makeitdaywise) {
   this.dinner_total_makeit_earnings = makeitdaywise.dinner_total_makeit_earnings;
   this.complete_succession_count = makeitdaywise.complete_succession_count;
   this.cancel_order_count = makeitdaywise.cancel_order_count;
+  this.kitchen_percentage = makeitdaywise.kitchen_percentage;
 };
 
 Makeitdaywise.createmakeitdaywise = function createmakeitdaywise(req,result) {

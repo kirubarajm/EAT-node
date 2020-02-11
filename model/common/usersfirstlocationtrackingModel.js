@@ -10,6 +10,7 @@ var Locationtracking = function(Locationtracking) {
   this.address = Locationtracking.address;
   this.locality = Locationtracking.locality||'';
   this.city = Locationtracking.city||'';
+  this.type = Locationtracking.type || 0;
   //this.created_at = new Date();
 };
 
