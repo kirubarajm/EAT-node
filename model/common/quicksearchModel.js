@@ -496,15 +496,16 @@ const order_auto_assign_Change = new CronJob("* */1 7-23 * * * ", async function
   // var res = await query(
   //   "select oq.*,mk.makeithub_id,mk.userid,mk.lat,mk.pincode,mk.lon,ors.makeit_accept_time,ors.payment_type from Orders_queue as oq join Orders as ors on ors.orderid=oq.orderid join MakeitUser as mk on mk.userid = ors.makeit_user_id where oq.status !=1  and ors.orderstatus < 6  order by ors.ordertime ASC"
   // ); //and created_at > (NOW() - INTERVAL 10 MINUTE
-
-  var res = await query("select oq.*,zo.zone_status,mk.makeithub_id,mk.userid,mk.lat,mk.pincode,mk.lon,ors.makeit_accept_time,ors.payment_type,ors.price from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid left join MakeitUser as mk on mk.userid = ors.makeit_user_id left join Zone as zo on zo.id=mk.zone where oq.status !=1 and ors.orderstatus < 6 and ors.dunzo_taskid IS NULL order by ors.ordertime ASC");
+//select oq.*,zo.zone_status,mk.makeithub_id,mk.userid,mk.lat,mk.pincode,mk.lon,ors.makeit_accept_time,ors.payment_type,ors.price from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid left join MakeitUser as mk on mk.userid = ors.makeit_user_id left join Zone as zo on zo.id=mk.zone where oq.status !=1 and ors.orderstatus < 6 and ors.dunzo_taskid IS NULL order by ors.ordertime ASC
+//order assign logic  
+var res = await query("select oq.*,zo.zone_status,mk.makeithub_id,mk.userid,mk.lat,mk.pincode,mk.lon,ors.makeit_accept_time,ors.payment_type,ors.price from Orders_queue as oq left join Orders as ors on ors.orderid=oq.orderid left join MakeitUser as mk on mk.userid = ors.makeit_user_id left join Zone as zo on zo.id=mk.zone where oq.status !=1 and ors.orderstatus < 6 and ors.dunzo_taskid IS NULL order by ors.ordertime ASC");
   console.log('res length-->',res.length);
   console.log('isCronRun-->',isCronRun);
   if (res.length !== 0&&!isCronRun) {
     
     ////Start: Zone Based Order Assign //////////////
     
-      res.sort((a, b) => parseFloat(a.payment_type) - parseFloat(b.payment_type));
+    //  res.sort((a, b) => parseFloat(a.payment_type) - parseFloat(b.payment_type));
    
     if(constant.zone_control){
       QuickSearch.Zone_order_assign(res,i);
@@ -568,7 +569,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
           
         }
       });
-  }else if(res[i].zone_status == 2 && order_queue_diffMins >1 && res[i].status !=1 && res[i].price ){
+  }else if(res[i].zone_status == 2 && order_queue_diffMins >1 && res[i].status !=1 ){
     console.log("Dunzo xone dunzo_task_create");
       if (res[i].dunzo_req_count >= constant.Dunzo_max_req) {
         var order_cancel={};
@@ -694,7 +695,7 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
     console.log("diffMins"+makeit_accept_time);
     console.log("diffMins"+diffMins);
  
-    if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 && diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0) {  
+    if (dunzoconst.order_assign_dunzo==true  && diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0) {  
       // Dunzo.dunzo_task_create
     //  await QuickSearch.dunzo_task_create(res[i].orderid);
 
@@ -710,7 +711,7 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
         }
       });
      
-    }else if(res[i].zone_status == 2 && order_queue_diffMins >1 && res[i].status !=1 && (res[i].payment_type==1 || (res[i].payment_type==0 && res[i].price==0 ))){
+    }else if(res[i].zone_status == 2 && order_queue_diffMins >1 && res[i].status !=1 ){
      console.log("Dunzo zone dunzo_task_create");
      if (res[i].dunzo_req_count >= constant.Dunzo_max_req) {
        var order_cancel={};
