@@ -6845,11 +6845,13 @@ Order.auto_order_assign =async function auto_order_assign(req, result) {
 if (order_queue_query.length ==0) {
   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
 
-  var geoLocation = [];;
-  geoLocation.push(req.orglat);
-  geoLocation.push(req.orglon);
+  var radius = constant.order_assign_first_radius + constant.order_assign_second_radius;
+        var geoLocation = [];
+        geoLocation.push(req.orglat);
+        geoLocation.push(req.orglon);
+      
 
-  MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,constant.nearby_moveit_radius,async function(err, move_it_id_list) {
+  MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,radius,async function(err, move_it_id_list) {
     if (err) {
       let error = {
         success: true,

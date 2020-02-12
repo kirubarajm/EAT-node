@@ -3,6 +3,7 @@ var geoFires = require('geofire');
 var geodist = require('geodist')
 var moment = require("moment");
 var zone =require("../model/common/zoneModel")
+var constant = require("../model/constant");
 
 var MoveitserverKey = require("../moveit-a9128-firebase-adminsdk-3h0b8-6315acfc79");
 var Move_it = null;
