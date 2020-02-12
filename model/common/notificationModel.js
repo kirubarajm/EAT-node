@@ -232,11 +232,7 @@ Notification.orderMakeItPushNotification = async function(
   }
 };
 
-Notification.orderMoveItPushNotification = async function(
-  orderid,
-  pageid,
-  move_it_user_detail
-) {
+Notification.orderMoveItPushNotification = async function(orderid,pageid,move_it_user_detail) {
   
   const orders = await Notification.getPushOrderDetail(orderid);
  // const moveitdetails = await Notification.getMovieitDetail()
