@@ -3,6 +3,7 @@ var geoFires = require('geofire');
 var geodist = require('geodist')
 var moment = require("moment");
 var zone =require("../model/common/zoneModel")
+var constant = require("../model/constant");
 
 var MoveitserverKey = require("../moveit-a9128-firebase-adminsdk-3h0b8-6315acfc79");
 var Move_it = null;
@@ -205,7 +206,8 @@ exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomo
   //  move_it_id.push(key);
   //  //console.log(move_it_id);
   // });
-  var move_it_id=[];
+  var move_it_id_distance_below_2=[];
+  var move_it_id_distance_above_2=[];
   var move_data={};
   var geoQuery = geoFire.query({
     center: geoLocation,
@@ -218,17 +220,20 @@ exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomo
   //   console.log(key + " entered query at " + location + " (" + distance + " km from center)");
   //  console.log("onKeyEnteredRegistration---->"+moment().format("YYYY-MM-DD HH:mm:ss"));
 
-    move_it_id.push(key);
-    move_data[key] = {};
-    move_data[key].distance=distance;
-    move_data[key].location=location;
+   
+    if(distance<=constant.order_assign_first_radius)  move_it_id_distance_below_2.push(key);
+    if(distance>constant.order_assign_first_radius && distance<=constant.order_assign_second_radius)  move_it_id_distance_above_2.push(key);
+    // move_data[key] = {};
+    // move_data[key].distance=distance;
+    // move_data[key].location=location;
   });
   
   var onReadyRegistration = geoQuery.on("ready", function (key, location, distance) {
   });
  
  await delay(2000);
- move_data.moveitid=move_it_id.toString();
+ move_data.moveitid_below_2=move_it_id_distance_below_2.toString();
+ move_data.moveitid_above_2=move_it_id_distance_above_2.toString();
  result(null,move_data)
 }
 
