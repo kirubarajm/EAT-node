@@ -6826,251 +6826,213 @@ Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
 };
 
 //auto order assign to moveit 
-Order.auto_order_assign =async function auto_order_assign(req, result) {
- 
+Order.auto_order_assign =async function auto_order_assign(req, result){ 
   var order_queue_query = await query("select * from Orders_queue where status = 0 and orderid =" +req.orderid+"");
+    if (order_queue_query.length ==0) {
+      var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+      var geoLocation = [];;
+      geoLocation.push(req.orglat);
+      geoLocation.push(req.orglon);
+      MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,constant.nearby_moveit_radius,async function(err, move_it_id_list) {
+        if (err) {
+          let error = {
+            success: true,
+            status: false,
+            message:"No Move-it found,please after some time"
+          };
+          result(error, null);
+        }else{  
+          var moveitlist = move_it_id_list.moveitid;        
+          if (moveitlist.length > 0) {
+            //  console.log("moveitlist"+moveitlist.length);
+            var moveitlistquery = ("select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount");
+            var nearbymoveit = await query(moveitlistquery);
 
-if (order_queue_query.length ==0) {
-  var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+            if (nearbymoveit.length !==0) {
+              // nearbymoveit.sort((a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout));
+              // console.log("nearbymoveit[0].userid"+nearbymoveit[0].userid);
+              // sql.query("Select online_status,pushid_android,pushid_ios,login_status From MoveitUser where userid= '" +req.moveit_user_id +"' ",function(err, res1) {
+              //   if (err) {
+              //     result(err, null);
+              //   } else {
+              //     var online_status = res1[0].online_status;
+              //     if (res1[0].login_status == 1) {
+              //      if (online_status == 1) {
 
-  var geoLocation = [];;
-  geoLocation.push(req.orglat);
-  geoLocation.push(req.orglon);
+                        sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, req.orderid],async function(err, res2) {
+                          if (err) {
+                            result(err, null);
+                          } else {
+                            var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
+                            req.state=1;
+                            req.moveit_user_id=nearbymoveit[0].userid
+                            Order.update_moveit_lat_long(req);
+                            await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
+                            let resobj = {
+                              success: true,
+                              status:true,
+                              message: "Order Assign Successfully",
+                            };
+                            result(null, resobj);
+                          }
+                        });
+              //     } else {
+              //       let resobj = {
+              //         success: true,
+              //         status: false,
+              //         message: "Move it user is offline"
+              //       };
+              //       result(null, resobj);
+              //     }
+              //   }else if(res1[0].login_status == 2){
+              //     let resobj = {
+              //       success: true,
+              //       status: false,
+              //       message: "Please login"
+              //   };
+              
+              //   result(null, resobj);
+              //   }else if(res1[0].login_status == 3){
+              //     let resobj = {
+              //       success: true,
+              //       status: false,
+              //       message: "Please contact Administrator"
+              //   };
+              
+              //   result(null, resobj);
+              //   }
+              //   }
+              //  }
+              // );
 
-  MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,constant.nearby_moveit_radius,async function(err, move_it_id_list) {
-    if (err) {
-      let error = {
-        success: true,
-        status: false,
-        message:"No Move-it found,please after some time"
-      };
-      result(error, null);
-    }else{
- 
-      var moveitlist = move_it_id_list.moveitid;
-      
-    if (moveitlist.length > 0) {
-    //  console.log("moveitlist"+moveitlist.length);
-      var moveitlistquery = ("select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN("+move_it_id_list.moveitid+") and mu.online_status = 1 and login_status=1 group by mu.userid order by ordercount");
-
-      var nearbymoveit = await query(moveitlistquery);
-
-      if (nearbymoveit.length !==0) {
-        
-        
-       // nearbymoveit.sort((a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout));
-        
-        console.log("nearbymoveit[0].userid"+nearbymoveit[0].userid);
-
-      // sql.query("Select online_status,pushid_android,pushid_ios,login_status From MoveitUser where userid= '" +req.moveit_user_id +"' ",function(err, res1) {
-      //   if (err) {
-      //     result(err, null);
-      //   } else {
-      //     var online_status = res1[0].online_status;
-      //     if (res1[0].login_status == 1) {
-                   
-      //     if (online_status == 1) {
-            sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, req.orderid],async function(err, res2) {
+            }else{
+              var new_Ordersqueue = new Ordersqueue(req);
+              new_Ordersqueue.status = 0;
+              Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
                 if (err) {
                   result(err, null);
-                } else {
-                  var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
-                   req.state=1;
-                  req.moveit_user_id=nearbymoveit[0].userid
-                   Order.update_moveit_lat_long(req);
-                  await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned);
-  
+                }else{
                   let resobj = {
                     success: true,
-                    status:true,
-                    message: "Order Assign Successfully",
-                    
-                  };
+                    status: true,
+                    message: "Order moved to Queue"
+                  };        
                   result(null, resobj);
-               }
-              }
-            );
-      //     } else {
-      //       let resobj = {
-      //         success: true,
-      //         status: false,
-      //         message: "Move it user is offline"
-      //       };
-      //       result(null, resobj);
-      //     }
-      //   }else if(res1[0].login_status == 2){
-      //     let resobj = {
-      //       success: true,
-      //       status: false,
-      //       message: "Please login"
-      //   };
-      
-      //   result(null, resobj);
-      //   }else if(res1[0].login_status == 3){
-      //     let resobj = {
-      //       success: true,
-      //       status: false,
-      //       message: "Please contact Administrator"
-      //   };
-      
-      //   result(null, resobj);
-      //   }
-      //   }
-      //  }
-      // );
-
-      }else{
-
-      var new_Ordersqueue = new Ordersqueue(req);
-      new_Ordersqueue.status = 0;
-      Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
-        if (err) { 
-          result(err, null);
+                }
+              });
+            }
         }else{
-
-          let resobj = {
-            success: true,
-            status: true,
-            message: "Order moved to Queue"
-        };
-      
-        result(null, resobj);
-        }
-      });
-      }
-
-    }else{
-
-      if ((req.zone_status ==2 || req.zone_status ==1) && req.payment_type ==1) {
-        var new_Ordersqueue = new Ordersqueue(req);
-        new_Ordersqueue.status = 0;
-        Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
-          if (err) { 
-            result(err, null);
+          if ((req.zone_status ==2 || req.zone_status ==1) && req.payment_type ==1) {
+            var new_Ordersqueue = new Ordersqueue(req);
+            new_Ordersqueue.status = 0;
+            Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+              if (err) { 
+                result(err, null);
+              }else{
+                let resobj = {
+                  success: true,
+                  status: true,
+                  message: "Order moved to Queue"
+                };
+                result(null, resobj);
+              }
+            });
           }else{
             let resobj = {
               success: true,
               status: true,
-              message: "Order moved to Queue"
+              message: "Please order assign to dunzo"
             };
             result(null, resobj);
-          }
-        });
-      }else{
-        let resobj = {
-          success: true,
-          status: true,
-          message: "Please order assign to dunzo"
-        };
-        result(null, resobj);
-
-      } 
-
-    }
-    }
-  })
-}else{
-  let resobj = {
-    success: true,
-    status:true,
-    message: "already exist",
-    
-  };
-  result(null, resobj);
-}
+          } 
+        }
+      }
+    });
+  }else{
+    let resobj = {
+      success: true,
+      status:true,
+      message: "already exist"      
+    };
+    result(null, resobj);
+  }
 };
 
 //////////////Orders move to queue/////////////////
 Order.order_move_to_queue_by_admin= function order_move_to_queue_by_admin(req, result) {
   console.log(req);
   sql.query("select * from Orders where orderid='"+req.orderid+"' and moveit_user_id="+req.moveit_user_id+"",async function(err, res) {
-      if (err) {
-        result(err, null);
-      } else {
-       
-        if (res.length !== 0) {
-          var reassignorders  = {};
-            
-          reassignorders.orderid = req.orderid;
-          reassignorders.moveit_userid = res[0].moveit_user_id;
-          reassignorders.notification_time = res[0].moveit_notification_time;
-          reassignorders.accept_time = res[0].moveit_accept_time;
-          reassignorders.reason = req.reason;
+    if (err) {
+      result(err, null);
+    } else {       
+      if (res.length !== 0) {
+        var reassignorders  = {};            
+        reassignorders.orderid = req.orderid;
+        reassignorders.moveit_userid = res[0].moveit_user_id;
+        reassignorders.notification_time = res[0].moveit_notification_time;
+        reassignorders.accept_time = res[0].moveit_accept_time;
+        reassignorders.reason = req.reason;
 
-          await Order.createMoveitReassignedOrders(reassignorders);
-          var moveit_online_status_date = await query("Update MoveitUser set online_status = 0  where userid = '"+req.moveit_user_id+"'");
-          var Orders_update_moveit = await query("update Orders set moveit_user_id = 0,moveit_status=0 where orderid =" +req.orderid+"");
+        await Order.createMoveitReassignedOrders(reassignorders);
+        var moveit_online_status_date = await query("Update MoveitUser set online_status = 0  where userid = '"+req.moveit_user_id+"'");
+        var Orders_update_moveit = await query("update Orders set moveit_user_id = 0,moveit_status=0 where orderid =" +req.orderid+"");
+        var Orders_queue_details = await query("select * from Orders_queue where orderid =" +req.orderid+"");
 
-          var Orders_queue_details = await query("select * from Orders_queue where orderid =" +req.orderid+"");
-
-          if (Orders_queue_details.length !==0) {
-            var order_update = await query("update Orders_queue set status = 0 where orderid =" +req.orderid+"");
-        
-            await Notification.orderMoveItPushNotification(
-              req.orderid,
-              PushConstant.pageidMoveit_Order_unassign,
-              await Notification.getMovieitDetail( res[0].moveit_user_id)
-            );
-  
-            let resobj = {
-              success: true,
-              status:true,
-              result:res
-            };
-            result(null, resobj);
-          }else{
-            var makeit_details = await query("select * from MakeitUser where userid =" +res[0].makeit_user_id+"");
-              req.hubid=makeit_details[0].makeithub_id;
-             var new_Ordersqueue = new Ordersqueue(req);
-              new_Ordersqueue.status = 0;
-              Ordersqueue.createOrdersqueue(new_Ordersqueue,async function(err, res2) {
-                if (err) { 
-                  result(err, null);
-                }else{
-               
-                  await Notification.orderMoveItPushNotification(
-                    req.orderid,
-                    PushConstant.pageidMoveit_Order_unassign,
-                    await Notification.getMovieitDetail( res[0].moveit_user_id)
-                  );
-        
-                  let resobj = {
-                    success: true,
-                    status:true,
-                    result:res
-                  };
-                  result(null, resobj);
-                }
-              });
-
-          }
-
-
-          // if(res[0]&&res[0].moveit_user_id){
-          //   await Notification.orderMoveItPushNotification(
-          //     req.orderid,
-          //     PushConstant.pageidMoveit_Order_Cancel,
-          //     null
-          //   );
-          // }
-
-          // let resobj = {
-          //   success: true,
-          //   status:true,
-          //   result:res
-          // };
-          // result(null, resobj);
-        }else {
+        if (Orders_queue_details.length !==0) {
+          var order_update = await query("update Orders_queue set status = 0 where orderid =" +req.orderid+"");
+          await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_unassign,await Notification.getMovieitDetail( res[0].moveit_user_id));
+    
           let resobj = {
             success: true,
-            message: "Sorry! no data found.",
-            status:false
+            status:true,
+            result:res
           };
           result(null, resobj);
+        }else{
+          var makeit_details = await query("select * from MakeitUser where userid =" +res[0].makeit_user_id+"");
+          req.hubid=makeit_details[0].makeithub_id;
+          var new_Ordersqueue = new Ordersqueue(req);
+          new_Ordersqueue.status = 0;
+          Ordersqueue.createOrdersqueue(new_Ordersqueue,async function(err, res2) {
+            if (err) { 
+              result(err, null);
+            }else{               
+              await Notification.orderMoveItPushNotification(req.orderid, PushConstant.pageidMoveit_Order_unassign, await Notification.getMovieitDetail( res[0].moveit_user_id));
+            
+              let resobj = {
+                success: true,
+                status:true,
+                result:res
+              };
+              result(null, resobj);
+            }
+          });
         }
+
+        // if(res[0]&&res[0].moveit_user_id){
+        //   await Notification.orderMoveItPushNotification(
+        //     req.orderid,
+        //     PushConstant.pageidMoveit_Order_Cancel,
+        //     null
+        //   );
+        // }
+
+        // let resobj = {
+        //   success: true,
+        //   status:true,
+        //   result:res
+        // };
+        // result(null, resobj);
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status:false
+        };
+        result(null, resobj);
       }
     }
-  );
+  });
 };
 
 ////Lost customers list/////////
