@@ -9294,6 +9294,10 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
   var makeit_Product_lived_query= "select sum(if((q.virtualkey=0 and q.makeit_type=0),1,0)) as no_of_homemaker_kitchen,sum(if((q.virtualkey=0 and q.makeit_type=0),q.live_count,0)) as homemaker_product_live_count,sum(if((q.virtualkey=0 and q.makeit_type=1),1,0)) as no_of_caterers_kitchen,sum(if((q.virtualkey=0 and q.makeit_type=1),q.live_count,0)) as caterers_product_live_count,sum(if((q.virtualkey=1),1,0)) as no_of_dark_kitchen,sum(if((q.virtualkey=1),q.live_count,0)) as dark_product_live_count,count(*) as no_of_makeit,sum(q.live_count) as total_product_live_count from (select p.makeit_id,p.virtualkey,p.makeit_type,count(*) as live_count from (select  lph.makeit_id,lph.product_id,mu.virtualkey,mu.makeit_type from Live_Product_History lph left join MakeitUser as mu on mu.userid=lph.makeit_id  where date(lph.created_at) =CURDATE()-1 and mu.ka_status=2 group by product_id) p group by makeit_id) q"
 
   var makeit_Product_lived_count = await query(makeit_Product_lived_query);
+  //Product succession average % (Homemaker only)
+  var makeit_succession_query= "select sum(if((mdr.kitchen_percentage!=0 and mu.virtualkey=0 and mu.makeit_type=0),1,0)) as homemaker_count,sum(if((mdr.kitchen_percentage!=0 and mu.virtualkey=0 and mu.makeit_type=0),mdr.kitchen_percentage,0)) as homemaker_succession_percentage from Makeit_daywise_report mdr left join MakeitUser as mu on  mu.userid=mdr.makeit_id where date(date) =CURDATE()-1"
+
+  var makeit_succession_value = await query(makeit_succession_query);
 
 
   
@@ -9334,17 +9338,19 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
     var overall_seconds_of_the_day= makeit_session_time[i].overall_seconds_of_the_day;
 
     var homemaker_session_time = makeit_session_time[i].homemaker_session_second/(makeit_session_time[i].homaker_count * overall_seconds_of_the_day)
-    homemaker_session_time= homemaker_session_time ||0;
-    onresult[i].homemaker_session_time= homemaker_session_time.toFixed(3) *100;
+    
+    homemaker_session_time= homemaker_session_time?homemaker_session_time:0;
+    console.log(homemaker_session_time);
+    onresult[i].homemaker_session_time= (homemaker_session_time *100).toFixed(3);
 
 
     var caterers_session_time = makeit_session_time[i].caterers_session_second/(makeit_session_time[i].caterers_count * overall_seconds_of_the_day)
-    caterers_session_time= caterers_session_time ||0;
-    onresult[i].caterers_session_time= caterers_session_time.toFixed(3) *100;
+    caterers_session_time= caterers_session_time?caterers_session_time:0;
+    onresult[i].caterers_session_time= (caterers_session_time*100).toFixed(3);
 
     var dark_session_time = makeit_session_time[i].dark_session_second/(makeit_session_time[i].dark_count * overall_seconds_of_the_day)
-    dark_session_time= dark_session_time ||0;
-    onresult[i].dark_session_time= dark_session_time.toFixed(3) *100;
+    dark_session_time= dark_session_time?dark_session_time:0;
+    onresult[i].dark_session_time= (dark_session_time *100).toFixed(3);
 
   }
 
@@ -9377,6 +9383,16 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
     onresult[i].dark_avg_no_of_products_live = dark_avg_no_of_products_live?dark_avg_no_of_products_live.toFixed(2):0;
 
   }
+
+  if(makeit_succession_value.length>0){
+    onresult[i] = Object.assign(onresult[i],makeit_succession_value[i]);
+    var homemaker_count = makeit_succession_value[i].homemaker_count;
+    var homemaker_succession_percentage = makeit_succession_value[i].homemaker_succession_percentage;
+    if(homemaker_count&&homemaker_succession_percentage){
+    var homemaker_avg_succession = (homemaker_succession_percentage/homemaker_count);
+    onresult[i].homemaker_avg_succession=homemaker_avg_succession.toFixed(2);
+    }
+  }
  
     
     let resobj = {
@@ -9405,7 +9421,7 @@ Order.logs_metrics_report= async function logs_metrics_report(req,result) {
   var orderscountquery = "select date(created_at) as date,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'12:00:00' THEN orderid END) as cycle1_orders, COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'16:00:00' THEN orderid END) as cycle2_orders, COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'23:59:59' THEN orderid END) as cycle3_orders from Orders where date(created_at) =CURDATE()-"+currentdateminus+" and orderstatus=6 and moveit_user_id!=0 group by date(created_at)";
   var orderscount = await query(orderscountquery);
 
-  var logcountquery = "select date(logtime) as date,COUNT(distinct CASE WHEN time(logtime)>='08:00:00' and time(logtime)<'12:00:00' THEN (moveit_userid) END) as cycle1_users, COUNT(distinct CASE WHEN time(logtime)>='12:00:00' and time(logtime)<'16:00:00' THEN (moveit_userid) END) as cycle2_users, COUNT(distinct CASE WHEN time(logtime)>='16:00:00' and time(logtime)<'23:59:59' THEN (moveit_userid) END) as cycle3_users,0 as 'breakfast_utiltiy',0 as 'lunch_utiltiy',0 as 'dinner_utiltiy' from Moveit_Timelog where date(logtime) =CURDATE()-"+currentdateminus+" group by date(logtime)";
+  var logcountquery = "select sum(TIME_TO_SEC(logtime)) as total_log_time,sum(TIME_TO_SEC(cycle1)) as cycle1_time,sum(TIME_TO_SEC(cycle2)) as cycle2_time,sum(TIME_TO_SEC(cycle3)) as cycle3_time from Moveit_daywise_report where date(date) =CURDATE()-"+currentdateminus;
   var logcount = await query(logcountquery);
   
   
@@ -9429,16 +9445,30 @@ Order.logs_metrics_report= async function logs_metrics_report(req,result) {
 
   console.log(orderscount.length,logcount.length);
   if(orderscount.length != 0 && logcount.length!=0){
+    
+    onresult[i].breakfast_hours =secondsToDhms(logcount[i].cycle1_time);
+    onresult[i].lunch_hours =secondsToDhms(logcount[i].cycle2_time);
+    onresult[i].dinner_hours =secondsToDhms(logcount[i].cycle3_time);
+    onresult[i].total_hours =secondsToDhms(logcount[i].total_log_time);
 
-          var breakfast_utiltiy = (orderscount[i].cycle1_orders)/(logcount[i].cycle1_users * constant.cycle1) || 0;
-          var lunch_utiltiy = (orderscount[i].cycle2_orders)/(logcount[i].cycle2_users * constant.cycle2) || 0;
-          var dinner_utiltiy = (orderscount[i].cycle3_orders)/(logcount[i].cycle3_users * constant.cycle3) || 0;
+    onresult[i].breakfast_orders =orderscount[i].cycle1_orders;
+    onresult[i].lunch_orders =orderscount[i].cycle2_orders;
+    onresult[i].dinner_orders =orderscount[i].cycle3_orders;
+    var total_orders =orderscount[i].cycle1_orders+orderscount[i].cycle2_orders+orderscount[i].cycle3_orders;
+    onresult[i].total_orders = total_orders;
+
+          var breakfast_utiltiy = orderscount[i].cycle1_orders/(logcount[i].cycle1_time/3600);
+          var lunch_utiltiy = (orderscount[i].cycle2_orders)/(logcount[i].cycle2_time/3600);
+          var dinner_utiltiy = (orderscount[i].cycle3_orders)/(logcount[i].cycle3_time/3600);
+          var driver_utiltiy = (total_orders)/(logcount[i].total_log_time/3600);
 //Driver utilisation
           var driver_utilisation_per_day=(breakfast_utiltiy+lunch_utiltiy+dinner_utiltiy);
           onresult[i].breakfast_utiltiy=breakfast_utiltiy.toFixed(2);
           onresult[i].lunch_utiltiy=lunch_utiltiy.toFixed(2);
           onresult[i].dinner_utiltiy=dinner_utiltiy.toFixed(2);
+
           onresult[i].driver_utilisation_per_day=driver_utilisation_per_day.toFixed(2);
+          onresult[i].driver_utiltiy=driver_utiltiy.toFixed(2);
   }else{
     onresult[i].no_of_moveit_lived_per_day=0;
     onresult[i].no_of_orders_perday=0;
@@ -9454,7 +9484,20 @@ Order.logs_metrics_report= async function logs_metrics_report(req,result) {
   
 };
 
+function secondsToDhms(seconds) {
+  seconds = Number(seconds);
+  var d = Math.floor(seconds / (3600*24));
+  var h = Math.floor(seconds % (3600*24) / 3600);
+  var m = Math.floor(seconds % 3600 / 60);
+  var s = Math.floor(seconds % 60);
+  
+  if(d>0) h=h+(d*24);
+  h=h>9?h:"0"+h;
+  m=m>9?m:"0"+m;
+  s=s>9?s:"0"+s;
 
+  return  h +":"+ m +":"+ s;
+}
 ///Show makeit_incentive_report////
 Order.show_makeit_incentive_report= async function show_makeit_incentive_report(req,result) {   
   if(req.eligibility && req.eligibility!=''){

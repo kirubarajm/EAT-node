@@ -849,7 +849,25 @@ const master = [
                 "description": "Not tunnel user"
             }
         ]
-    } 
+    },{
+        'Moveit_timelog_action': [{
+                "action": 1,
+                "description": "Moveit Login and Logout"
+            },
+            {
+                "action": 2,
+                "description": "Cron Login and Logout"
+            },
+            {
+                "action": 3,
+                "description": "20 min logout"
+            },
+            {
+                "action": 4,
+                "description": "Admin Unasign Logout"
+            }
+        ]
+    },
 
 ]
 module.exports = master;
