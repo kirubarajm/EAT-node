@@ -6991,93 +6991,94 @@ if (order_queue_query.length ==0) {
 Order.order_move_to_queue_by_admin= function order_move_to_queue_by_admin(req, result) {
   console.log(req);
   sql.query("select * from Orders where orderid='"+req.orderid+"' and moveit_user_id="+req.moveit_user_id+"",async function(err, res) {
-      if (err) {
-        result(err, null);
-      } else {
-       
-        if (res.length !== 0) {
-          var reassignorders  = {};
-            
-          reassignorders.orderid = req.orderid;
-          reassignorders.moveit_userid = res[0].moveit_user_id;
-          reassignorders.notification_time = res[0].moveit_notification_time;
-          reassignorders.accept_time = res[0].moveit_accept_time;
-          reassignorders.reason = req.reason;
+    if (err) {
+      result(err, null);
+    } else {
+      if (res.length !== 0) {
+        var reassignorders  = {};            
+        reassignorders.orderid = req.orderid;
+        reassignorders.moveit_userid = res[0].moveit_user_id;
+        reassignorders.notification_time = res[0].moveit_notification_time;
+        reassignorders.accept_time = res[0].moveit_accept_time;
+        reassignorders.reason = req.reason;
 
-          await Order.createMoveitReassignedOrders(reassignorders);
-          var moveit_online_status_date = await query("Update MoveitUser set online_status = 0  where userid = '"+req.moveit_user_id+"'");
-          var Orders_update_moveit = await query("update Orders set moveit_user_id = 0,moveit_status=0 where orderid =" +req.orderid+"");
+        await Order.createMoveitReassignedOrders(reassignorders);
+        var moveit_online_status_date = await query("Update MoveitUser set online_status = 0  where userid = '"+req.moveit_user_id+"'");
 
-          var Orders_queue_details = await query("select * from Orders_queue where orderid =" +req.orderid+"");
+        /////Moveit Time Log History////////////////////
+        var reqqq = {};
+        reqqq.moveit_userid = req.moveit_user_id;
+        reqqq.type = 0;
+        reqqq.action = 4;
+        await MoveitUser.create_createMoveitTimelog(reqqq);
+        /////////////////////////////////////////////////
 
-          if (Orders_queue_details.length !==0) {
-            var order_update = await query("update Orders_queue set status = 0 where orderid =" +req.orderid+"");
-        
-            await Notification.orderMoveItPushNotification(
-              req.orderid,
-              PushConstant.pageidMoveit_Order_unassign,
-              await Notification.getMovieitDetail( res[0].moveit_user_id)
-            );
+        var Orders_update_moveit = await query("update Orders set moveit_user_id = 0,moveit_status=0 where orderid =" +req.orderid+"");
+
+        var Orders_queue_details = await query("select * from Orders_queue where orderid =" +req.orderid+"");
+        if (Orders_queue_details.length !==0) {
+          var order_update = await query("update Orders_queue set status = 0 where orderid =" +req.orderid+"");
+          await Notification.orderMoveItPushNotification(
+            req.orderid,
+            PushConstant.pageidMoveit_Order_unassign,
+            await Notification.getMovieitDetail( res[0].moveit_user_id)
+          );
   
-            let resobj = {
-              success: true,
-              status:true,
-              result:res
-            };
-            result(null, resobj);
-          }else{
-            var makeit_details = await query("select * from MakeitUser where userid =" +res[0].makeit_user_id+"");
-              req.hubid=makeit_details[0].makeithub_id;
-             var new_Ordersqueue = new Ordersqueue(req);
-              new_Ordersqueue.status = 0;
-              Ordersqueue.createOrdersqueue(new_Ordersqueue,async function(err, res2) {
-                if (err) { 
-                  result(err, null);
-                }else{
-               
-                  await Notification.orderMoveItPushNotification(
-                    req.orderid,
-                    PushConstant.pageidMoveit_Order_unassign,
-                    await Notification.getMovieitDetail( res[0].moveit_user_id)
-                  );
-        
-                  let resobj = {
-                    success: true,
-                    status:true,
-                    result:res
-                  };
-                  result(null, resobj);
-                }
-              });
-
-          }
-
-
-          // if(res[0]&&res[0].moveit_user_id){
-          //   await Notification.orderMoveItPushNotification(
-          //     req.orderid,
-          //     PushConstant.pageidMoveit_Order_Cancel,
-          //     null
-          //   );
-          // }
-
-          // let resobj = {
-          //   success: true,
-          //   status:true,
-          //   result:res
-          // };
-          // result(null, resobj);
-        }else {
           let resobj = {
             success: true,
-            message: "Sorry! no data found.",
-            status:false
+            status:true,
+            result:res
           };
           result(null, resobj);
+        }else{
+          var makeit_details = await query("select * from MakeitUser where userid =" +res[0].makeit_user_id+"");
+          req.hubid=makeit_details[0].makeithub_id;
+          var new_Ordersqueue = new Ordersqueue(req);
+          new_Ordersqueue.status = 0;
+          Ordersqueue.createOrdersqueue(new_Ordersqueue,async function(err, res2) {
+            if (err) { 
+              result(err, null);
+            }else{
+              await Notification.orderMoveItPushNotification(
+                req.orderid,
+                PushConstant.pageidMoveit_Order_unassign,
+                await Notification.getMovieitDetail( res[0].moveit_user_id)
+              );
+          
+              let resobj = {
+                success: true,
+                status:true,
+                result:res
+              };
+              result(null, resobj);
+            }
+          });
         }
+
+        // if(res[0]&&res[0].moveit_user_id){
+        //   await Notification.orderMoveItPushNotification(
+        //     req.orderid,
+        //     PushConstant.pageidMoveit_Order_Cancel,
+        //     null
+        //   );
+        // }
+        // let resobj = {
+        //   success: true,
+        //   status:true,
+        //   result:res
+        // };
+        // result(null, resobj);
+
+      }else {
+        let resobj = {
+          success: true,
+          message: "Sorry! no data found.",
+          status:false
+        };
+        result(null, resobj);
       }
     }
-  );
+  });
 };
 
 ////Lost customers list/////////
