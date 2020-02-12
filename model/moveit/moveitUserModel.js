@@ -313,7 +313,9 @@ Moveituser.update_online_status =async function (req, result) {
               }
               req.type    = req.online_status;
               req.moveit_userid = req.userid;
-              req.action  = 1;              
+              if (!req.action) {
+                req.action  = 1;              
+              }
               await Moveituser.create_createMoveitTimelog(req);
               
               let resobj = {
@@ -1329,7 +1331,7 @@ Moveituser.moveit_zone_data =async function moveit_zone_data(req, result) {
   var boundaries="";
   var iszone=false;
     if (userdetails.length !==0) {
-      if(constant.zone_control){
+      if(constant.zone_control==false){
   
         var zoneDetail = await query("select * from Zone where id = "+userdetails[0].zone+"");
         console.log(zoneDetail);
