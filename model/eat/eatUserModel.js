@@ -1951,7 +1951,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
   });
 };
 
-Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req,headers, result) {
+Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
  
   //console.log(res3.result[0].amountdetails);
   //var userdetails = await query("");
@@ -1962,7 +1962,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req,headers, re
   var tunnelkitchenliststatus = true;
   const userdetails = await query("select * from User where userid = "+req.eatuserid+" ");
  // const userdetails = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
-if ( headers.apptype ==1) {
+
   
   if (userdetails[0].first_tunnel == 1 ) {
     
@@ -1979,25 +1979,28 @@ if ( headers.apptype ==1) {
 
     const tunnelkitchenlist = await query(tunnelkitchenquery);
 
+    var locationdetails = {};
+    locationdetails.lat=req.lat;
+    locationdetails.lon=req.lon;
+    locationdetails.address= req.address || '';
+    locationdetails.locality= req.locality ||'';
+    locationdetails.city= req.city || '';
+    locationdetails.userid=req.eatuserid;
+
     if (tunnelkitchenlist.length == 0) {
       tunnelkitchenliststatus = false;
-        var locationdetails = {};
-        locationdetails.lat=req.lat;
-        locationdetails.lon=req.lon;
-        locationdetails.address= req.address;
-        locationdetails.locality= req.locality ||'';
-        locationdetails.city= req.city || '';
-        locationdetails.userid=req.eatuserid;
+    
+        locationdetails.type=1;
+
         await Eatuser.create_first_tunnel_user_location(locationdetails);
       }else{
+        locationdetails.type=0;
+        await Eatuser.create_first_tunnel_user_location(locationdetails);
+
         const usertunnelupdate = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
       }
   }
-}else{
-  const usertunnelupdate = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
 
-}
-  
   var cuisinequery = "";
   var cuisinelist = [];
   if (req.cuisinelist !== undefined || req.cuisinelist !== null) {
@@ -2256,17 +2259,23 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
       "' left join Cuisine_makeit cm on cm.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid where (mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status=2 and mk.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) GROUP BY pt.productid HAVING distance < "+radiuslimit+"  ORDER BY mk.unservicable = 0 desc";
     const tunnelkitchenlist = await query(tunnelkitchenquery);
 
+    var locationdetails       = {};
+    locationdetails.lat       = req.lat;
+    locationdetails.lon       = req.lon;
+    locationdetails.address   = req.address || '';
+    locationdetails.locality  = req.locality ||'';
+    locationdetails.city      = req.city || '';
+    locationdetails.userid    = req.eatuserid;
+
     if (tunnelkitchenlist.length == 0) {
       tunnelkitchenliststatus     = false;
-      var locationdetails       = {};
-      locationdetails.lat       = req.lat;
-      locationdetails.lon       = req.lon;
-      locationdetails.address   = req.address;
-      locationdetails.locality  = req.locality ||'';
-      locationdetails.city      = req.city || '';
-      locationdetails.userid    = req.eatuserid;
+      locationdetails.type=1;
+
       await Eatuser.create_first_tunnel_user_location(locationdetails);
     }else{
+      locationdetails.type=0;
+      await Eatuser.create_first_tunnel_user_location(locationdetails);
+
       const usertunnelupdate = await query("Update User set first_tunnel = 0 where userid = "+req.eatuserid+" ");
     }
   }  
