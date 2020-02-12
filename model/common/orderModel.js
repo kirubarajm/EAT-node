@@ -8805,25 +8805,59 @@ Order.moveit_utilization_report= async function moveit_utilization_report(req,re
   var orderscount = await query(orderscountquery);
 
   var logcountquery = "select date(logtime) as date,COUNT(distinct CASE WHEN time(logtime)>='08:00:00' and time(logtime)<'12:00:00' THEN (moveit_userid) END) as cycle1_users, COUNT(distinct CASE WHEN time(logtime)>='12:00:00' and time(logtime)<'16:00:00' THEN (moveit_userid) END) as cycle2_users, COUNT(distinct CASE WHEN time(logtime)>='16:00:00' and time(logtime)<'23:59:59' THEN (moveit_userid) END) as cycle3_users,0 as 'breakfast_utiltiy',0 as 'lunch_utiltiy',0 as 'dinner_utiltiy' from Moveit_Timelog where date(logtime) between '"+fromdate+"' AND '"+todate+"' group by date(logtime)";
-  var logcount = await query(logcountquery);
-  
+  //var logcount = await query(logcountquery);
+
+  var logcountquery_new = "select date(date) as date,sum(TIME_TO_SEC(logtime)) as total_log_time,sum(TIME_TO_SEC(cycle1)) as cycle1_time,sum(TIME_TO_SEC(cycle2)) as cycle2_time,sum(TIME_TO_SEC(cycle3)) as cycle3_time from Moveit_daywise_report where date(date)between '"+fromdate+"' AND '"+todate+"' group by date(date)";
+  var logcount = await query(logcountquery_new);
+  console.log(logcountquery_new);
+  const hourtomin = 3600;
+  var newdata=[];
   if(orderscount.length != 0 && logcount !=0){
     for (let i = 0; i < logcount.length; i++) {
       for (let j = 0; j < orderscount.length; j++) {
-        if(logcount[i].date == orderscount[j].date){
-          logcount[i].breakfast_utiltiy = (orderscount[j].cycle1_orders)/(logcount[i].cycle1_users * constant.cycle1) || 0;
-          logcount[i].lunch_utiltiy = (orderscount[j].cycle2_orders)/(logcount[i].cycle2_users * constant.cycle2) || 0;
-          logcount[i].dinner_utiltiy = (orderscount[j].cycle3_orders)/(logcount[i].cycle3_users * constant.cycle3) || 0;
 
-          logcount[i].breakfast_utiltiy=logcount[i].breakfast_utiltiy.toFixed(2);
-          logcount[i].lunch_utiltiy=logcount[i].lunch_utiltiy.toFixed(2);
-          logcount[i].dinner_utiltiy=logcount[i].dinner_utiltiy.toFixed(2);
+        if(logcount[i].date == orderscount[j].date){
+          var utility_obj={};
+          utility_obj.date=logcount[i].date;
+
+          var breakfast_orders=orderscount[j].cycle1_orders;
+          var lunch_orders=orderscount[j].cycle2_orders;
+          var dinner_orders=orderscount[j].cycle3_orders;
+
+          utility_obj.breakfast_orders=breakfast_orders;
+          utility_obj.lunch_orders=lunch_orders;
+          utility_obj.dinner_orders=dinner_orders;
+
+          var breakfast_time=logcount[i].cycle1_time;
+          var lunch_time=logcount[i].cycle2_time;
+          var dinner_time=logcount[i].cycle3_time;
+
+          utility_obj.breakfast_time=breakfast_time;
+          utility_obj.lunch_time=lunch_time;
+          utility_obj.dinner_time=dinner_time;
+
+          var breakfast_utility = 0;
+          var lunch_utility = 0;
+          var dinner_utility =0;
+
+          if(breakfast_orders && breakfast_time)
+          breakfast_utility = breakfast_orders/(breakfast_time/hourtomin);
+
+          if(lunch_orders && lunch_time)
+          lunch_utility = lunch_orders/(lunch_time/hourtomin);
+
+          if(dinner_orders && dinner_time)
+          dinner_utility = dinner_orders/(dinner_time/hourtomin);
+
+          utility_obj.breakfast_utility=breakfast_utility?breakfast_utility.toFixed(2):0;
+          utility_obj.lunch_utility=lunch_utility?lunch_utility.toFixed(2):0;
+          utility_obj.dinner_utility=dinner_utility?dinner_utility.toFixed(2):0;
+
+          newdata.push(utility_obj)
         }
         
       }  
-          delete logcount[i].cycle1_users;
-           delete logcount[i].cycle2_users;
-           delete logcount[i].cycle3_users;    
+              
     }
 
     // for (let i = 0; i < logcount.length; i++) {
@@ -8835,7 +8869,7 @@ Order.moveit_utilization_report= async function moveit_utilization_report(req,re
     let resobj = {
       success: true,
       status:true,
-      result: logcount      
+      result: newdata      
     };
     result(null, resobj);
   }else{
