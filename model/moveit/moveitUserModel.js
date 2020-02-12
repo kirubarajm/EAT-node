@@ -288,7 +288,7 @@ Moveituser.update_online_status =async function (req, result) {
   if (userdetails.length !==0) {    
     if(userdetails[0].online_status != req.online_status){
       if (userdetails[0].login_status == 1) {        
-        if(constant.zone_control){
+        if(constant.zone_control == false){
           var zoneDetail = await query("select * from Zone where id = "+userdetails[0].zone+"");
           if(zoneDetail&&zoneDetail.length>0&&zoneDetail[0].boundaries){
             zone_id   = zoneDetail[0].id;
