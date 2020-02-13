@@ -564,7 +564,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
           result(err, null);
         } else {
           i++;
-          Zone_order_assign(res,i);
+          order_assign(res,i);
           
         }
       });
@@ -583,7 +583,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
             result(err, null);
           } else {
             i++;
-            Zone_order_assign(res,i);
+            order_assign(res,i);
             
           }
         });
