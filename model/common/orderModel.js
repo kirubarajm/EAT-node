@@ -7497,31 +7497,36 @@ Order.moveit_master_report= function moveit_master_report(req, result) {
 };
 
 //////////makeit_master_report/////////////
-Order.makeit_master_report= function makeit_master_report(req, result) {
-    var query="select mu.userid as makeit_id,mu.brandname as kitchen_name,mu.name,mu.phoneno,mu.address,CASE WHEN mu.virtualkey=1 then 'Virtual' WHEN mu.virtualkey=0 then 'Real' END as kitchen_type,date(mu.created_at) as date,mh.address as hub from MakeitUser mu left join Makeit_hubs as mh on mh.makeithub_id = mu.makeithub_id order by mu.userid";
-  //console.log("query-->",query);
-  sql.query(query,async function(err, res) {
-      if (err) {
-        result(err, null);
-      } else {
-        if (res.length !== 0) {
-          let resobj = {
-            success: true,
-            status:true,
-            result:res
-          };
-          result(null, resobj);
-        }else {
-          let resobj = {
-            success: true,
-            message: "Sorry! no data found.",
-            status:false
-          };
-          result(null, resobj);
-        }
+Order.makeit_master_report= async function makeit_master_report(req, result) {
+  var makeitdata = await query("select mu.userid as makeit_id,mu.brandname as kitchen_name,mu.name,CASE WHEN mu.virtualkey=1 then 'Virtual' WHEN mu.virtualkey=0 then 'Real' END as kitchen_type,c.cuisinename,re.regionname,mu.lat as Lattitude, mu.lon as Longitude,mu.email,mu.phoneno,zo.Zonename,mh.address as hub,mu.bank_holder_name as account_name,mu.bank_account_no as account_number,mu.bank_name,mu.ifsc as ifsc_code, mu.address,date(mu.created_at) as onboarding_date,if(makeit_type=1,'caterer','home') as homemaker_type,0 as first_order_date,0 as last_order_date,0 as life_time_orders from MakeitUser mu left join Makeit_hubs as mh on mh.makeithub_id = mu.makeithub_id left join Cuisine_makeit as cm on cm.makeit_userid = mu.userid left join Cuisine as c on c.cuisineid = cm.cuisineid left join Region as re on re.regionid = mu.regionid left join Zone as zo on zo.id = mu.zone order by mu.userid");
+  
+  var makeitorder = await query("select MIN(created_at) as first_order_date,MAX(created_at) as last_order_date,COUNT(orderid) as life_time_orders,makeit_user_id from Orders group by makeit_user_id order by orderid asc");
+
+  for(let i=0; i<makeitdata.length; i++){
+    for(let j=0; j<makeitorder.length; j++){
+      if(makeitdata[i].makeit_id == makeitorder[j].makeit_user_id){
+        makeitdata[i].first_order_date = makeitorder[j].first_order_date;
+        makeitdata[i].last_order_date = makeitorder[j].last_order_date;
+        makeitdata[i].life_time_orders = makeitorder[j].life_time_orders;
       }
     }
-  );
+  }
+
+  if(makeitdata.length !=''){
+    let resobj = {
+      success: true,
+      status:true,
+      result:makeitdata
+    };
+    result(null, resobj);
+  }else{
+    let resobj = {
+      success: true,
+      message: "Sorry! no data found.",
+      status:false
+    };
+    result(null, resobj);
+  }   
 };
 
 ///User Exp report///
