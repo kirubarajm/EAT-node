@@ -6918,9 +6918,11 @@ if (order_queue_query.length ==0) {
  
        }else{
  
-       var new_Ordersqueue = new Ordersqueue(req);
-       new_Ordersqueue.status = 0;
-       Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
+        if (req.payment_type==1) {
+          
+        var new_Ordersqueue = new Ordersqueue(req);
+        new_Ordersqueue.status = 0;
+        Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
          if (err) { 
            result(err, null);
          }else{
@@ -6934,6 +6936,9 @@ if (order_queue_query.length ==0) {
          result(null, resobj);
          }
        });
+
+        }
+       
        }
 
     }
