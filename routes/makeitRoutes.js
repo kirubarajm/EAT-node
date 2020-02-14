@@ -73,6 +73,12 @@ app.route("/makeit/makeitrevenuelost").post(middleware.checkToken,routesVersioni
 app.route("/makeit/makesuccessionrate").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.total_makesuccessionrate}));
 app.route("/makeit/makefinancedisplay").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.total_makefinancedisplay}));
 
+////////Makeit Incentive///////////
+app.route("/makeit/incentives").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_incentives}));
+////////Makeit cancellist///////////
+app.route("/makeit/order/cancellist").post(middleware.checkToken,routesVersioning({"1.0.0":makeituser.makeit_order_cancellist}));
+////Makeit Live Session/////////////
+app.route("/makeit/makeitlivesession").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_live_session}));
 
 
 }

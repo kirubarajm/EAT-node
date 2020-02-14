@@ -662,3 +662,27 @@ exports.makeit_session_wise_activity_report = function(req, res) {
     res.json(user);
   });
 };
+
+////Weekly Makeit incentives/////////////
+exports.makeit_incentives = function(req, res) {
+  Makeituser.makeit_incentives(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+//makeit_order_cancellist
+exports.makeit_order_cancellist = function(req, res) {
+  Makeituser.makeit_order_cancellist(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Makeit Live Session/////////////
+exports.makeit_live_session = function(req, res) {
+  Makeituser.makeit_live_session(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

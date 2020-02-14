@@ -3193,6 +3193,8 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
   var CurrentDate = new Date();
   var timeDiff    = ToDate-FromDate;
   var daysDiff    = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+  var makeit_incentives = 0;
+  var incentive_status = false;
 
   if(req.makeit_id && req.fromdate && req.todate){
     /////Get First Order Date
@@ -3200,8 +3202,17 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
     var FirstOrder = new Date(getfirstmakeitorder[0].firstorder);
     if(((FromDate < CurrentDate) && (ToDate < CurrentDate)) && (parseInt(daysDiff) <=7) && ((FromDate >= FirstOrder) && (ToDate >= FirstOrder))){
       var getweeklyearnings = await query("select ordertime,IFNULL(SUM(makeit_earnings),0) as makeit_earnings,COUNT(orderid) as ordercount,userid,makeit_user_id from Orders where date(ordertime) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' and makeit_user_id="+req.makeit_id+" and orderstatus=6 and payment_status=1 and lock_status=0 group by date(ordertime) order by ordertime desc");
-      var Newarray = [];   
 
+      var get_incentives = await query("select makeit_id,incentive_amount as incentive_amount from Makeit_incentive where date(from_date)='"+req.fromdate+"' AND date(to_date)='"+req.todate+"' and makeit_id="+req.makeit_id+" ");
+
+      if (get_incentives.length !=0) {
+        if (get_incentives[0].incentive_amount !=null && get_incentives[0].incentive_amount !=0) {
+          incentive_status = true;
+          makeit_incentives = get_incentives[0].incentive_amount;
+        }       
+      }
+      
+      var Newarray = [];      
         if(getweeklyearnings.length>0){
           var weekly_earnings=0;
           for(var i=0; i<getweeklyearnings.length; i++){
@@ -3216,6 +3227,8 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
               status : true,
               First_Order_date:getfirstmakeitorder[0].firstorder,
               weekly_earnings:weekly_earnings,
+              makeit_incentives:makeit_incentives ,
+              incentive_status:incentive_status,
               message : "Sorry! no data found"
             };
             result(null, resobj);
@@ -3225,6 +3238,8 @@ Makeituser.makeit_weekly_earnings= async function makeit_weekly_earnings(req,res
               status : true,
               First_Order_date:getfirstmakeitorder[0].firstorder,
               weekly_earnings:weekly_earnings,
+              makeit_incentives:makeit_incentives ,
+              incentive_status:incentive_status,
               result : Newarray
             };
             result(null, resobj);
@@ -3735,6 +3750,213 @@ Makeituser.makeit_session_wise_activity_report= async function makeit_session_wi
     }
   });
 }; 
+
+////Makeit avg preparation report/////////////
+Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_report(req,result) {
+  var makeit = "Select o.makeit_user_id,mu.brandname,count(*) as total_orders,sum(if(o.orderstatus=6,1,0)) as success_orders_count,sum(if(o.orderstatus!=6,1,0)) as cancel_orders_count,TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))), '%T') as success_order_preparation_time, TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))/sum(if(o.orderstatus=6,1,0))), '%T') as success_order_avg_preparation_time, TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus!=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))), '%T') as cancel_order_preparation_time,TIME_FORMAT(SEC_TO_TIME(SUM(if(o.orderstatus!=6,TIMESTAMPDIFF(SECOND,o.makeit_accept_time,o.makeit_actual_preparing_time),0))/sum(if(o.orderstatus!=6,1,0))), '%T') as cancel_order_avg_preparation_time from Orders as o join MakeitUser as mu on mu.userid=o.makeit_user_id where (Date(o.created_at) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"') and o.makeit_actual_preparing_time is Not NULL";
+  
+  if(req.virtualkey==0 || req.virtualkey==1){
+    makeit=makeit +" and mu.virtualkey= "+req.virtualkey
+  }
+  makeit=makeit + ' group by o.makeit_user_id order by o.makeit_user_id';
+
+  sql.query(makeit, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  }); 
+};
+
+////Makeit avg preparation report/////////////
+Makeituser.makeit_incentives= async function makeit_incentives(req,result) {
+  var makeit_avg_list = "select cycle_count as complete_succession_count,cancel_order_count as cancel_order_count,dinner_count,lunch_count,breakfast_count from Makeit_daywise_report where (Date(date) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  AND makeit_id = '"+req.makeit_id+"'";
+ 
+  sql.query(makeit_avg_list, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      var complete_succession_count = 0;
+      var cancel_order_count        = 0;
+      var averageproduct_count      = 0;
+      var cycle_count               = 0;
+      var product_count             = 0;
+
+      for(let i=0; i<res.length; i++){
+        complete_succession_count = complete_succession_count + res[i].complete_succession_count;
+        cancel_order_count        = cancel_order_count + res[i].cancel_order_count;
+        if(res[i].dinner_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].dinner_count;
+        }
+        if(res[i].lunch_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].lunch_count;
+        }
+        if(res[i].breakfast_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].breakfast_count;
+        }
+      }
+
+      averageproduct_count = product_count/cycle_count;
+
+      var Newarray = [];
+      Newarray.push({"complete_succession_count":complete_succession_count,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count});
+      
+      let resobj = {
+        success: true,
+        status : true,
+        result : Newarray
+      };
+      result(null, resobj);
+    }
+  });  
+};
+
+////Makeit Live Session/////////////
+Makeituser.makeit_live_session= async function makeit_live_session(req,result) {
+  var makeit_live_session_query= "select date(date) as log_date,if(cycle1!='00:00:00',1,0) as cycle1_livestatus,if(cycle2!='00:00:00',1,0) as cycle2_livestatus,if(cycle3!='00:00:00',1,0) as cycle3_livestatus,breakfast_count as cycle1_product_count, lunch_count as cycle2_product_count,dinner_count as cycle3_product_count, cycle1, cycle2, cycle3 from Makeit_daywise_report where makeit_id='"+req.makeit_id+"' and date(date) between '"+req.fromdate+"' AND  '"+req.todate+"' group by date(date)";
+  var makeit_live_session = await query(makeit_live_session_query);
+
+  var makeit_cycle_sold_product_count_query = "select date(ord.created_at) as log_date,ord.makeit_user_id as makeit_id, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as breakfast_canceled, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as lunch_canceled, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as dinner_canceled, CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle1_soldqty, CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle2_soldqty, CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle3_soldqty from Orders as ord left join OrderItem as oi on oi.orderid= ord.orderid where ord.makeit_user_id IN('"+req.makeit_id+"') and date(ord.created_at) between '"+req.fromdate+"' AND  '"+req.todate+"' and ord.makeit_user_id!=0 and (ord.orderstatus=6 or ord.orderstatus=7) group by ord.makeit_user_id,  date(ord.created_at) order by ord.makeit_user_id,date(ord.created_at)";
+  var makeit_cycle_sold_product_count = await query(makeit_cycle_sold_product_count_query);
+
+  for (let i = 0; i < makeit_live_session.length; i++) {
+    for (let j = 0; j < makeit_cycle_sold_product_count.length; j++) {
+      if(makeit_live_session[i].log_date == makeit_cycle_sold_product_count[j].log_date){
+        makeit_live_session[i].breakfast_canceled= makeit_cycle_sold_product_count[j].breakfast_canceled ||0;
+        makeit_live_session[i].lunch_canceled= makeit_cycle_sold_product_count[j].lunch_canceled ||0;
+        makeit_live_session[i].dinner_canceled= makeit_cycle_sold_product_count[j].dinner_canceled ||0;
+        makeit_live_session[i].cycle1_soldqty= makeit_cycle_sold_product_count[j].cycle1_soldqty ||0;
+        makeit_live_session[i].cycle2_soldqty= makeit_cycle_sold_product_count[j].cycle2_soldqty ||0;
+        makeit_live_session[i].cycle3_soldqty= makeit_cycle_sold_product_count[j].cycle3_soldqty ||0;
+      }
+    }
+  } 
+
+  var makeit_cycle_product_count = await Makeituser.makeit_cycle_product_count(req);
+
+  for (let i = 0; i < makeit_live_session.length; i++) {
+    for (let j = 0; j < makeit_cycle_product_count.length; j++) {
+      if(makeit_live_session[i].log_date == makeit_cycle_product_count[j].log_date){
+        makeit_live_session[i].cycle1_qty= makeit_cycle_product_count[j].cycle1_qty ||0;
+        makeit_live_session[i].cycle2_qty= makeit_cycle_product_count[j].cycle2_qty ||0;
+        makeit_live_session[i].cycle3_qty= makeit_cycle_product_count[j].cycle3_qty ||0;
+      }
+    }
+  }
+
+  for (let i = 0; i < makeit_live_session.length; i++) {
+    makeit_live_session[i].cycle1_applicable_status= 0;
+    if(makeit_live_session[i].cycle1 >= constant.cycle1totaltime && makeit_live_session[i].cycle1_product_count >= 4){
+      makeit_live_session[i].cycle1_applicable_status= 1;
+    }else if((makeit_live_session[i].cycle1_qty == makeit_live_session[i].cycle1_soldqty) && makeit_live_session[i].cycle1_product_count >= 4){
+      makeit_live_session[i].cycle1_applicable_status= 1;
+    }
+
+    makeit_live_session[i].cycle2_applicable_status= 0;
+    if(makeit_live_session[i].cycle2 >= constant.cycle2totaltime && makeit_live_session[i].cycle2_product_count >= 4){
+      makeit_live_session[i].cycle2_applicable_status= 1;
+    }else if((makeit_live_session[i].cycle2_qty == makeit_live_session[i].cycle2_soldqty) && makeit_live_session[i].cycle2_product_count >= 4){
+      makeit_live_session[i].cycle2_applicable_status= 1;
+    }
+
+    makeit_live_session[i].cycle3_applicable_status= 0;
+    if(makeit_live_session[i].cycle3 >= constant.cycle3totaltime && makeit_live_session[i].cycle3_product_count >= 4){
+      makeit_live_session[i].cycle3_applicable_status= 1;
+    }else if((makeit_live_session[i].cycle3_qty == makeit_live_session[i].cycle3_soldqty) && makeit_live_session[i].cycle3_product_count >= 4){
+      makeit_live_session[i].cycle3_applicable_status= 1;
+    }
+  }
+
+  let resobj = {
+    success: true,
+    status : true,
+    result : makeit_live_session
+  };
+  result(null,resobj);
+};
+
+////Makeit cancel list/////////////
+Makeituser.makeit_order_cancellist= async function makeit_order_cancellist(req,result) {
+  var makeit_avg_list = "SELECT ors.*,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where orderstatus = 7 and cancel_by=2 and makeit_user_id='"+req.makeit_id+"' and (Date(ors.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"') group by ors.orderid order by ors.orderid desc";
+ 
+  sql.query(makeit_avg_list, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      for (let i = 0; i < res.length; i++) {       
+        if (res[i].items) {
+          var items = JSON.parse(res[i].items);
+          res[i].items = items;
+        }
+      }      
+
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  });    
+};
+
+////Makeit Cycle Based Product Count///////
+Makeituser.makeit_cycle_product_count = async function makeit_cycle_product_count(req) {
+  var liveproductcountquery = "select date(created_at) as log_date, COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' THEN (product_id) END) as breakfast_count, COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' THEN (product_id) END) as lunch_count, COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN (product_id) END) as dinner_count from Live_Product_History where makeit_id IN("+req.makeit_id+") and date(created_at) between '"+req.fromdate+"' and '"+req.todate+"' group by date(created_at)";
+  var productcount = await query(liveproductcountquery);
+
+  /////////Get Product Count////////
+  var cycle1productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty, date(created_at) as log_date from Live_Product_History where date(created_at) between '"+req.fromdate+"' and '"+req.todate+"' and time(created_at)>='08:00:00' and time(created_at)<'12:00:00' and makeit_id IN("+req.makeit_id+") group by product_id,date(created_at)";
+
+  
+  var cycle1productcount = await query(cycle1productcountquery);
+  
+  for (let i = 0; i < productcount.length; i++) {
+    var count = 0;
+    for (let j = 0; j < cycle1productcount.length; j++) {
+      if(productcount[i].log_date == cycle1productcount[j].log_date){
+        count = count + cycle1productcount[j].qty;
+      }    
+    }  
+    productcount[i].cycle1_qty=count;  
+  }
+
+  var cycle2productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty, date(created_at) as log_date from Live_Product_History where date(created_at) between '"+req.fromdate+"' and '"+req.todate+"' and time(created_at)>='12:00:00' and time(created_at)<'16:00:00' and makeit_id IN("+req.makeit_id+") group by product_id,date(created_at)";
+  var cycle2productcount = await query(cycle2productcountquery);
+
+  for (let i = 0; i < productcount.length; i++) {
+    var count = 0;
+    for (let j = 0; j < cycle2productcount.length; j++) {
+      if(productcount[i].log_date == cycle2productcount[j].log_date){
+        count = count + cycle2productcount[j].qty;
+      }    
+    }  
+    productcount[i].cycle2_qty=count;  
+  }
+
+  var cycle3productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty, date(created_at) as log_date from Live_Product_History where date(created_at) between '"+req.fromdate+"' and '"+req.todate+"' and time(created_at)>='16:00:00' and time(created_at)<='23:00:00' and makeit_id IN("+req.makeit_id+") group by product_id,date(created_at)";
+  var cycle3productcount = await query(cycle3productcountquery);
+
+  for (let i = 0; i < productcount.length; i++) {
+    var count = 0;
+    for (let j = 0; j < cycle3productcount.length; j++) {
+      if(productcount[i].log_date == cycle3productcount[j].log_date){
+        count = count + cycle3productcount[j].qty;
+      }    
+    }  
+    productcount[i].cycle3_qty=count;  
+  }
+  return productcount;
+};
 
 
 module.exports = Makeituser;
