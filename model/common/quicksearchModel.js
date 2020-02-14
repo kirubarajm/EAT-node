@@ -553,7 +553,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
     console.log("res[i].payment_type"+res[i].payment_type);
     console.log("res[i].status"+res[i].status);
  
-  if (dunzoconst.order_assign_dunzo==true && res[i].payment_type==1 && diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0 ) {  
+  if (dunzoconst.order_assign_dunzo==true  && diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0 ) {  
        // Dunzo.dunzo_task_create
        console.log("Dunzo.dunzo_task_create");
       //  await QuickSearch.dunzo_task_create(res[i].orderid);
@@ -561,14 +561,15 @@ QuickSearch.order_assign=async function order_assign(res,i){
       //  order_assign(res,i);
       Dunzo.dunzo_task_create(res[i].orderid,async function(err,res3) {
         if (err) {
-          result(err, null);
+          i++;
+          order_assign(res,i);
         } else {
           i++;
           order_assign(res,i);
           
         }
       });
-  }else if(res[i].zone_status == 2 && order_queue_diffMins >1 && res[i].status !=1 && (res[i].payment_type==1 || (res[i].payment_type==0 && res[i].price ))){
+  }else if(res[i].zone_status == 2 && order_queue_diffMins >1 && res[i].status !=1 ){
     console.log("Dunzo xone dunzo_task_create");
       if (res[i].dunzo_req_count >= constant.Dunzo_max_req) {
         var order_cancel={};
@@ -580,7 +581,8 @@ QuickSearch.order_assign=async function order_assign(res,i){
       } else {
         Dunzo.dunzo_task_create(res[i].orderid,async function(err,res3) {
           if (err) {
-            result(err, null);
+            i++;
+            order_assign(res,i);
           } else {
             i++;
             order_assign(res,i);
@@ -687,7 +689,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
 }
 
 };
-//order_auto_assign_Change.start();
+order_auto_assign_Change.start();
 
 ////Zone Based Moveit 
 QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){

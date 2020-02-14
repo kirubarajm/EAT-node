@@ -6918,7 +6918,7 @@ if (order_queue_query.length ==0) {
  
        }else{
  
-        if (req.payment_type==1) {
+       // if (req.payment_type==1) {
           
         var new_Ordersqueue = new Ordersqueue(req);
         new_Ordersqueue.status = 0;
@@ -6937,7 +6937,7 @@ if (order_queue_query.length ==0) {
          }
        });
 
-        }
+      // }
        
        }
 
