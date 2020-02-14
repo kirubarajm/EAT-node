@@ -6975,6 +6975,14 @@ Order.order_move_to_queue_by_admin= function order_move_to_queue_by_admin(req, r
           var moveit_online_status_date = await query("Update MoveitUser set online_status = 0  where userid = '"+req.moveit_user_id+"'");
           var Orders_update_moveit = await query("update Orders set moveit_user_id = 0,moveit_status=0 where orderid =" +req.orderid+"");
 
+          /////Moveit Time Log History////////////////////
+          var reqqq = {};
+          reqqq.moveit_userid = req.moveit_user_id;
+          reqqq.type = 0;
+          reqqq.action = 4;
+          await MoveitUser.create_createMoveitTimelog(reqqq);
+          /////////////////////////////////////////////////
+
           var Orders_queue_details = await query("select * from Orders_queue where orderid =" +req.orderid+"");
 
           if (Orders_queue_details.length !==0) {

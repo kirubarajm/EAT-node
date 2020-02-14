@@ -797,7 +797,7 @@ Moveituser.update_pushid = function(req, result) {
               if(moveit_last_log[0].type==1){
                 req.type    = 0;
                 req.moveit_userid = req.userid;
-                req.action  = 1;              
+                req.action  = 5;              
                 await Moveituser.create_createMoveitTimelog(req);  
               }
               /////////////////////////////////
@@ -857,7 +857,7 @@ Moveituser.update_pushid = function(req, result) {
               if(moveit_last_log[0].type==1){
                 req.type    = 0;
                 req.moveit_userid = req.userid;
-                req.action  = 1;              
+                req.action  = 5;              
                 await Moveituser.create_createMoveitTimelog(req);  
               }
               /////////////////////////////////
