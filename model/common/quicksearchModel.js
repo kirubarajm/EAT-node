@@ -876,14 +876,10 @@ const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async funct
 //kpidashboardproducthistory.start();
 
 ////cron run by moveit user offline every cycle end.
-const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
-  console.log("moveit offline & online");
+const moveitlog_out = new CronJob("59 59 7,11,15,22 * * *", async function() {
+  console.log("moveit offline");
   var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
   
-  var day = moment().format("YYYY-MM-DD HH:mm:ss");
-  var currenthour = moment(day).format("HH");
-  var currentminus = currenthour-1;
-
   if (res.length !== 0) {
     for (let i = 0; i < res.length; i++) {
       /////////logout Moveit-Time log/////////////////
@@ -891,21 +887,33 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
       req.type    = 0;
       req.moveit_userid = res[i].userid;
       req.action  = 2;
-      req.created_at = moment().format("YYYY-MM-DD "+currentminus+":59:59");
-      req.logtime = moment().format("YYYY-MM-DD "+currentminus+":59:59");
-      await Moveituser.create_createMoveitTimelog(req);
-      /////////login Moveit-Time log/////////////////
-      if(currenthour!=23){
-        var req={};
-        req.type    = 1;
-        req.moveit_userid = res[i].userid;
-        req.action  = 2;
-        await Moveituser.create_createMoveitTimelog(req);
-      }     
+      req.created_at = moment().format("YYYY-MM-DD HH:mm:ss");
+      req.logtime = moment().format("YYYY-MM-DD HH:mm:ss");
+      await Moveituser.create_createMoveitTimelog(req);          
     }
   }
 });
-//moveitlog_outin.start();
+moveitlog_out.start();
+
+////cron run by moveit user online every cycle end.
+const moveitlog_in = new CronJob("0 0 8,12,16 * * *", async function() {
+  console.log("moveit online");
+  var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
+  
+  if (res.length !== 0) {
+    for (let i = 0; i < res.length; i++) {      
+      /////////login Moveit-Time log/////////////////
+      var req={};
+      req.type    = 1;
+      req.moveit_userid = res[i].userid;
+      req.action  = 2;
+      req.created_at = moment().format("YYYY-MM-DD HH:mm:ss");
+      req.logtime = moment().format("YYYY-MM-DD HH:mm:ss");
+      await Moveituser.create_createMoveitTimelog(req);
+    }
+  }
+});
+moveitlog_in.start();
 
 ////CRON For Every day Moveit Log with Order///////
 const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {

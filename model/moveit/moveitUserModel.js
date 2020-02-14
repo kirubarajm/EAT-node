@@ -313,11 +313,14 @@ Moveituser.update_online_status =async function (req, result) {
               }
               req.type    = req.online_status;
               req.moveit_userid = req.userid;
+
+              ///////////////Moveit Time Log History///////////
               if (!req.action) {
                 req.action  = 1;              
               }
               await Moveituser.create_createMoveitTimelog(req);
-              
+              //////////////////////////////////////////////////
+
               let resobj = {
                 success   : true,
                 status    : true,
