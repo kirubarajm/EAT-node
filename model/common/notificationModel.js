@@ -154,14 +154,15 @@ Notification.orderEatPushNotification = async function(orderid,userid,pageid) {
       //    image : "https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1580901027983-promotion_ff.jpg",
           app: "Eat",
           notification_type: "1"
-        };
+        };  
+             
+  if (userid.image) {
+    data.image=userid.image;
+   }
         break;
   }
   if (data == null) return;
 
-  if (userid.image) {
-   data.image=userid.image;
-  }
   //const user = await Notification.getEatUserDetail(userid);
    console.log("data->", data);
   if (user && user.pushid_android) {

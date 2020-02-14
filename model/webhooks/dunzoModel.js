@@ -445,6 +445,7 @@ Dunzo.dunzo_task_create = async function dunzo_task_create(orderid,result) {
     //set request parameter
     request.post({headers: headers, url: dunzoconst.dunzo_create_url, json: form, method: 'POST'},async function (e, r, body) {
      
+      console.log("--------------------------------------------body",body);
       dunzo_data={};
       dunzo_data.orderid = orderid;
       dunzo_data.dunzo_responce = JSON.stringify(body);
