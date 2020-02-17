@@ -689,7 +689,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
 }
 
 };
-order_auto_assign_Change.start();
+//order_auto_assign_Change.start();
 
 ////Zone Based Moveit 
 QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
