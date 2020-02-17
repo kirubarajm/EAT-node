@@ -33,13 +33,27 @@ Zendeskissues.getZendeskissuesDetails = function getZendeskissuesDetails(req,res
         result(err, null);
       } else {
 
-        if (req.orderid) {
-            res[0].note = "orderdetails :https://eatalltime.global/eatadmin/vieworder/"+req.orderid
-        }
+        var note = '';
+        // if (req.orderid) {
+        //     note = "orderdetails :https://eatalltime.global/eatadmin/vieworder/"+req.orderid+" ,"
+        // }
 
-        if (req.userid) {
-            res[0].note = res[0].note +', userdetails :https://eatalltime.global/eatadmin/vieweatuser/'+req.userid
-        }
+        // if (req.userid) {
+        //   note = note +' userdetails :https://eatalltime.global/eatadmin/vieweatuser/'+req.userid
+        // }
+
+        if (req.orderid) {
+          note = "orderid :"+req.orderid+" ,"
+      }
+
+      if (req.userid) {
+        note = note +' userid :'+req.userid
+      }
+      
+        res[0].note = note;
+        res[0].department_name = "eat";
+
+        
         let resobj = {
           success: true,
           status:true,

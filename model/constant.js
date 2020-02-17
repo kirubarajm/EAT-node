@@ -138,7 +138,8 @@ const calculate = {
     virtual_kitchen_onboarded_count:240,
 
     order_assign_first_radius : 2.5,
-    order_assign_second_radius : 0.5
+    order_assign_second_radius : 0.5,
+    delivery_buffer_time : 5
 
 }
 

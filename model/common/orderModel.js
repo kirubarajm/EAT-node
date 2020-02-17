@@ -2913,7 +2913,7 @@ Order.orderviewbyeatuser = function(req, result) {
                 
                   var eta = Math.round(pickup + dropoff);
                    if (eta ==0) {                  
-                    eta = foodpreparationtime + Math.round(onekm * res1[0].distance);            
+                    eta = constant.delivery_buffer_time + foodpreparationtime + Math.round(onekm * res1[0].distance);            
                    }
                 if (res1[0].moveit_expected_delivered_time) {
                   res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
@@ -2949,7 +2949,7 @@ Order.orderviewbyeatuser = function(req, result) {
                         res1[0].distance = Math.ceil(res1[0].distance);
 
                   
-                        eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
+                        eta = constant.delivery_buffer_time + foodpreparationtime + Math.round(onekm * res1[0].distance);
                         //15min Food Preparation time , 3min 1 km
                     
                         res1[0].eta = Math.round(eta) + " mins";
@@ -3568,7 +3568,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                 var eta = Math.round(pickup + dropoff);
 
                 if (eta ==0) {                  
-                  eta = foodpreparationtime + Math.round(onekm * res1[0].distance);            
+                  eta = constant.delivery_buffer_time + foodpreparationtime + Math.round(onekm * res1[0].distance);            
                
                 }
                // /moment().add(0, "seconds").add(eta, "minutes").format("YYYY-MM-DD HH:mm:ss")
@@ -3607,7 +3607,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                     }else{
   
                       // we need to remove once delivery time stable
-                      eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
+                      eta = constant.delivery_buffer_time + foodpreparationtime + Math.round(onekm * res1[0].distance);
                       //15min Food Preparation time , 3min 1 km
                   
                       res1[0].eta = Math.round(eta) + " mins";
