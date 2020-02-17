@@ -9310,23 +9310,23 @@ function hhmmss_to_minutes(hms){
 
 Order.sales_metrics_report= async function sales_metrics_report(req,result) { 
   var currentdateminus=1;
-  var makeitonboardquery = "Select "+constant.virtual_kitchen_onboarded_count+" as drak_kitchen_onboarded,sum(if((mu.virtualkey=0 and mu.makeit_type=1),1,0)) as caterers_kitchen_onboarded,sum(if((mu.virtualkey=0 and mu.makeit_type=0),1,0)) as homemaker_kitchen_onboarded from MakeitUser mu where ka_status = 2";
+  var makeitonboardquery = "Select "+constant.virtual_kitchen_onboarded_count+" as drak_kitchen_onboarded,sum(if((mu.virtualkey=0 and mu.makeit_type=1),1,0)) as caterers_kitchen_onboarded,sum(if((mu.virtualkey=0 and mu.makeit_type=0),1,0)) as homemaker_kitchen_onboarded from MakeitUser mu where mu.appointment_status=3 and mu.verified_status=1 and mu.ka_status = 2 and mu.delete_status=0";
   //console.log("orderscountquery---",orderscountquery);
   var makeit_onboard_count = await query(makeitonboardquery);
 
-  var makeittodaylivedquery = "Select sum(if((mu.virtualkey=1),1,0)) as drak_kitchen_lived,sum(if((mu.virtualkey=0 and mu.makeit_type=1),1,0)) as caterers_kitchen_lived,sum(if((mu.virtualkey=0 and mu.makeit_type=0),1,0)) as homemaker_kitchen_lived from MakeitUser mu where mu.userid in(select distinct mt.makeit_id from Makeit_Timelog mt where mt.type=1 and date(mt.created_at)=CURDATE()-"+currentdateminus+")";
+  // var makeittodaylivedquery = "Select sum(if((mu.virtualkey=1),1,0)) as drak_kitchen_lived,sum(if((mu.virtualkey=0 and mu.makeit_type=1),1,0)) as caterers_kitchen_lived,sum(if((mu.virtualkey=0 and mu.makeit_type=0),1,0)) as homemaker_kitchen_lived from MakeitUser mu where mu.userid in(select distinct mt.makeit_id from Makeit_Timelog mt where mt.type=0 and date(mt.created_at)=CURDATE()-"+currentdateminus+")";
 
   //console.log("Abandoned_order_count_query---",Abandoned_order_count_query);
 
-  var makeit_todaylived_count = await query(makeittodaylivedquery);
+  //var makeit_todaylived_count = await query(makeittodaylivedquery);
 
-  var makeitearingsquery = "select sum(f.makeit_earnings) as makeit_earnings, count(f.makeit_user_id) as makeit_count from (Select o.makeit_user_id,sum(o.makeit_earnings)as makeit_earnings  from Orders o left join MakeitUser as mu on  mu.userid=o.makeit_user_id  Where MONTH(o.created_at) = MONTH(CURDATE()) AND  YEAR(o.created_at) = YEAR(CURDATE()) and (o.orderstatus=6 or (o.orderstatus=7 and o.makeit_actual_preparing_time IS Not NULL)) and  mu.virtualkey=0 and mu.makeit_type=0 group by o.makeit_user_id) f";
+  var makeitearingsquery = "select sum(f.makeit_earnings) as homemaker_earnings, count(f.makeit_user_id) as homemaker_count from (Select o.makeit_user_id,sum(o.makeit_earnings)as makeit_earnings  from Orders o left join MakeitUser as mu on  mu.userid=o.makeit_user_id  Where MONTH(o.created_at) = MONTH(CURDATE()) AND  YEAR(o.created_at) = YEAR(CURDATE()) and (o.orderstatus=6 or (o.orderstatus=7 and o.makeit_actual_preparing_time IS Not NULL)) and  mu.virtualkey=0 and mu.makeit_type=0 group by o.makeit_user_id) f";
 
   //console.log("Abandoned_order_count_query---",Abandoned_order_count_query);
 
   var makeit_earings_count = await query(makeitearingsquery);
 
-  var makeit_session_time_query= "Select TIME_TO_SEC('15:00:00') as overall_seconds_of_the_day,Sum(if((mu.virtualkey=0 and mu.makeit_type=0),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0)) as homemaker_session_second,Sum(if((mu.virtualkey=0 and mu.makeit_type=0),1,0)) as homaker_count,Sum(if((mu.virtualkey=0 and mu.makeit_type=1),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0)) as caterers_session_second,Sum(if((mu.virtualkey=0 and mu.makeit_type=1),1,0)) as caterers_count,Sum(if((mu.virtualkey=1),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0)) as dark_session_second,Sum(if((mu.virtualkey=1),1,0)) as dark_count from Makeit_daywise_report mdr left join MakeitUser as mu on  mu.userid=mdr.makeit_id where  date(mdr.date)= CURDATE()-1"
+  var makeit_session_time_query= "Select TIME_TO_SEC('15:00:00') as overall_seconds_of_the_day,Sum(if((mu.virtualkey=0 and mu.makeit_type=0),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0)) as homemaker_session_second,Sum(if((mu.virtualkey=0 and mu.makeit_type=1),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0)) as caterers_session_second,Sum(if((mu.virtualkey=1),TIME_TO_SEC(ADDTIME(mdr.cycle1,ADDTIME(mdr.cycle2,mdr.cycle3))),0)) as dark_session_second,Sum(if((mu.virtualkey=0 and mu.makeit_type=0),1,0)) as homemaker_kitchen_lived,Sum(if((mu.virtualkey=0 and mu.makeit_type=1),1,0)) as caterers_kitchen_lived,Sum(if((mu.virtualkey=1),1,0)) as drak_kitchen_lived,Sum(if((mu.virtualkey=0 and mu.makeit_type=0 and mdr.cycle_count),(mdr.dinner_count+mdr.lunch_count+mdr.breakfast_count)/mdr.cycle_count,0)) as homemaker_product_live_count,Sum(if((mu.virtualkey=0 and mu.makeit_type=1 and mdr.cycle_count),(mdr.dinner_count+mdr.lunch_count+mdr.breakfast_count)/mdr.cycle_count,0)) as caterers_product_live_count,Sum(if((mu.virtualkey=1 and mu.makeit_type IS NULL and mdr.cycle_count),(mdr.dinner_count+mdr.lunch_count+mdr.breakfast_count)/mdr.cycle_count,0)) as dark_product_live_count from Makeit_daywise_report mdr left join MakeitUser as mu on  mu.userid=mdr.makeit_id where  date(mdr.date)= CURDATE()-1"
 
   var makeit_session_time = await query(makeit_session_time_query);
 
@@ -9334,27 +9334,26 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
 
   var makeit_Product_lived_count = await query(makeit_Product_lived_query);
   //Product succession average % (Homemaker only)
-  var makeit_succession_query= "select sum(if((mdr.kitchen_percentage!=0 and mu.virtualkey=0 and mu.makeit_type=0),1,0)) as homemaker_count,sum(if((mdr.kitchen_percentage!=0 and mu.virtualkey=0 and mu.makeit_type=0),mdr.kitchen_percentage,0)) as homemaker_succession_percentage from Makeit_daywise_report mdr left join MakeitUser as mu on  mu.userid=mdr.makeit_id where date(date) =CURDATE()-1"
+  var makeit_succession_query= "select sum(if((mu.virtualkey=0 and mu.makeit_type=0),1,0)) as homemaker_succession_count,sum(if((mdr.kitchen_percentage!=0 and mu.virtualkey=0 and mu.makeit_type=0),mdr.kitchen_percentage,0)) as homemaker_succession_percentage from Makeit_daywise_report mdr left join MakeitUser as mu on  mu.userid=mdr.makeit_id where date(date) =CURDATE()-1"
 
   var makeit_succession_value = await query(makeit_succession_query);
-
-
-  
 
   //console.log("makeit_session_time_query---",makeit_session_time_query);
 
   var onresult=[];
   var i = 0;
-  if(makeit_onboard_count.length != 0 && makeit_todaylived_count.length!=0){
-    onresult[i] = Object.assign(makeit_onboard_count[i], makeit_todaylived_count[i]);
+  if(makeit_onboard_count.length != 0 && makeit_session_time.length!=0){
+    onresult[i] = Object.assign(makeit_onboard_count[i],makeit_session_time[i]);
 
       var drak_kitchen_onboarded =parseInt(makeit_onboard_count[i].drak_kitchen_onboarded);
       var caterers_kitchen_onboarded =parseInt(makeit_onboard_count[i].caterers_kitchen_onboarded);
       var homemaker_kitchen_onboarded = parseInt(makeit_onboard_count[i].homemaker_kitchen_onboarded);
+      homemaker_kitchen_onboarded=homemaker_kitchen_onboarded-constant.testing_kitchen_onboarded_count;
+      onresult[i].homemaker_kitchen_onboarded=homemaker_kitchen_onboarded
 
-      var drak_kitchen_lived =parseInt(makeit_todaylived_count[i].drak_kitchen_lived);
-      var caterers_kitchen_lived =parseInt(makeit_todaylived_count[i].caterers_kitchen_lived);
-      var homemaker_kitchen_lived = parseInt(makeit_todaylived_count[i].homemaker_kitchen_lived);
+       var drak_kitchen_lived =parseInt(makeit_session_time[i].drak_kitchen_lived);
+       var caterers_kitchen_lived =parseInt(makeit_session_time[i].caterers_kitchen_lived);
+       var homemaker_kitchen_lived = parseInt(makeit_session_time[i].homemaker_kitchen_lived);
       
       if(drak_kitchen_onboarded && drak_kitchen_lived){
       var drak_kitchen_lived_percentage=(drak_kitchen_lived/drak_kitchen_onboarded)*100;
@@ -9367,55 +9366,39 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
       } else onresult[i].caterers_kitchen_lived_percentage=0;
 
       if(homemaker_kitchen_onboarded && homemaker_kitchen_lived){
+        console.log(homemaker_kitchen_lived,homemaker_kitchen_onboarded);
       var homemaker_kitchen_lived_percentage=(homemaker_kitchen_lived/homemaker_kitchen_onboarded)*100;
+      console.log(homemaker_kitchen_lived_percentage);
       onresult[i].homemaker_kitchen_lived_percentage=homemaker_kitchen_lived_percentage.toFixed(2);
       } else onresult[i].homemaker_kitchen_lived_percentage=0;
   }
 
   if(makeit_session_time.length>0){
-    onresult[i] = Object.assign(onresult[i],makeit_session_time[i]);
+   // onresult[i] = Object.assign(onresult[i],makeit_session_time[i]);
     var overall_seconds_of_the_day= makeit_session_time[i].overall_seconds_of_the_day;
 
-    var homemaker_session_time = makeit_session_time[i].homemaker_session_second/(makeit_session_time[i].homaker_count * overall_seconds_of_the_day)
+    var homemaker_session_time = makeit_session_time[i].homemaker_session_second/(makeit_session_time[i].homemaker_kitchen_lived * overall_seconds_of_the_day)
     
     homemaker_session_time= homemaker_session_time?homemaker_session_time:0;
     console.log(homemaker_session_time);
-    onresult[i].homemaker_session_time= (homemaker_session_time *100).toFixed(3);
+    onresult[i].homemaker_session_time= (homemaker_session_time *100).toFixed(2);
 
 
-    var caterers_session_time = makeit_session_time[i].caterers_session_second/(makeit_session_time[i].caterers_count * overall_seconds_of_the_day)
+    var caterers_session_time = makeit_session_time[i].caterers_session_second/(makeit_session_time[i].caterers_kitchen_lived * overall_seconds_of_the_day)
     caterers_session_time= caterers_session_time?caterers_session_time:0;
-    onresult[i].caterers_session_time= (caterers_session_time*100).toFixed(3);
+    onresult[i].caterers_session_time= (caterers_session_time*100).toFixed(2);
 
-    var dark_session_time = makeit_session_time[i].dark_session_second/(makeit_session_time[i].dark_count * overall_seconds_of_the_day)
+    var dark_session_time = makeit_session_time[i].dark_session_second/(makeit_session_time[i].drak_kitchen_lived * overall_seconds_of_the_day)
     dark_session_time= dark_session_time?dark_session_time:0;
-    onresult[i].dark_session_time= (dark_session_time *100).toFixed(3);
+    onresult[i].dark_session_time= (dark_session_time *100).toFixed(2);
 
-  }
+    var homemaker_product_live_count =makeit_session_time[i].homemaker_product_live_count;
+    var caterers_product_live_count =makeit_session_time[i].caterers_product_live_count;
+    var dark_product_live_count =makeit_session_time[i].dark_product_live_count;
 
-  if(makeit_earings_count.length>0){
-    var makeit_earnings =parseInt(makeit_earings_count[i].makeit_earnings);
-    var makeit_count =parseInt(makeit_earings_count[i].makeit_count);
-    var avg_home_maker_earnings =(makeit_earnings/makeit_count).toFixed(2);
-    onresult[i].home_maker_avg_earnings_month=avg_home_maker_earnings;
-  }else{
-    onresult[i].home_maker_avg_earnings_month=0;
-  }
-
-  if(makeit_Product_lived_count.length>0){
-    onresult[i] = Object.assign(onresult[i],makeit_Product_lived_count[i]);
-
-    var no_of_homemaker_kitchen =makeit_Product_lived_count[i].no_of_homemaker_kitchen;
-    var no_of_caterers_kitchen =makeit_Product_lived_count[i].no_of_caterers_kitchen;
-    var no_of_dark_kitchen =makeit_Product_lived_count[i].no_of_dark_kitchen;
-
-    var homemaker_product_live_count =makeit_Product_lived_count[i].homemaker_product_live_count;
-    var caterers_product_live_count =makeit_Product_lived_count[i].caterers_product_live_count;
-    var dark_product_live_count =makeit_Product_lived_count[i].dark_product_live_count;
-
-    var homemaker_avg_no_of_products_live =homemaker_product_live_count/no_of_homemaker_kitchen;
-    var caterers_avg_no_of_products_live =caterers_product_live_count/no_of_caterers_kitchen;
-    var dark_avg_no_of_products_live =dark_product_live_count/no_of_dark_kitchen;
+    var homemaker_avg_no_of_products_live =homemaker_product_live_count/makeit_session_time[i].homemaker_kitchen_lived;
+    var caterers_avg_no_of_products_live =caterers_product_live_count/makeit_session_time[i].caterers_kitchen_lived;
+    var dark_avg_no_of_products_live =dark_product_live_count/makeit_session_time[i].drak_kitchen_lived;
 
     onresult[i].homemaker_avg_no_of_products_live = homemaker_avg_no_of_products_live?homemaker_avg_no_of_products_live.toFixed(2) : 0;
     onresult[i].caterers_avg_no_of_products_live = caterers_avg_no_of_products_live?caterers_avg_no_of_products_live.toFixed(2):0;
@@ -9423,12 +9406,43 @@ Order.sales_metrics_report= async function sales_metrics_report(req,result) {
 
   }
 
+  if(makeit_earings_count.length>0){
+    onresult[i] = Object.assign(onresult[i],makeit_earings_count[i]);
+    var makeit_earnings =parseInt(makeit_earings_count[i].homemaker_earnings);
+    var makeit_count =parseInt(makeit_earings_count[i].homemaker_count);
+    var avg_home_maker_earnings =(makeit_earnings/makeit_count).toFixed(2);
+    onresult[i].home_maker_avg_earnings_month=avg_home_maker_earnings;
+  }else{
+    onresult[i].home_maker_avg_earnings_month=0;
+  }
+
+  // if(makeit_Product_lived_count.length>0){
+  //   onresult[i] = Object.assign(onresult[i],makeit_Product_lived_count[i]);
+
+  //   var no_of_homemaker_kitchen =makeit_Product_lived_count[i].no_of_homemaker_kitchen;
+  //   var no_of_caterers_kitchen =makeit_Product_lived_count[i].no_of_caterers_kitchen;
+  //   var no_of_dark_kitchen =makeit_Product_lived_count[i].no_of_dark_kitchen;
+
+  //   var homemaker_product_live_count =makeit_Product_lived_count[i].homemaker_product_live_count;
+  //   var caterers_product_live_count =makeit_Product_lived_count[i].caterers_product_live_count;
+  //   var dark_product_live_count =makeit_Product_lived_count[i].dark_product_live_count;
+
+  //   var homemaker_avg_no_of_products_live =homemaker_product_live_count/no_of_homemaker_kitchen;
+  //   var caterers_avg_no_of_products_live =caterers_product_live_count/no_of_caterers_kitchen;
+  //   var dark_avg_no_of_products_live =dark_product_live_count/no_of_dark_kitchen;
+
+  //   onresult[i].homemaker_avg_no_of_products_live = homemaker_avg_no_of_products_live?homemaker_avg_no_of_products_live.toFixed(2) : 0;
+  //   onresult[i].caterers_avg_no_of_products_live = caterers_avg_no_of_products_live?caterers_avg_no_of_products_live.toFixed(2):0;
+  //   onresult[i].dark_avg_no_of_products_live = dark_avg_no_of_products_live?dark_avg_no_of_products_live.toFixed(2):0;
+
+  // }
+
   if(makeit_succession_value.length>0){
     onresult[i] = Object.assign(onresult[i],makeit_succession_value[i]);
-    var homemaker_count = makeit_succession_value[i].homemaker_count;
+    var homemaker_succession_count = makeit_succession_value[i].homemaker_succession_count;
     var homemaker_succession_percentage = makeit_succession_value[i].homemaker_succession_percentage;
-    if(homemaker_count&&homemaker_succession_percentage){
-    var homemaker_avg_succession = (homemaker_succession_percentage/homemaker_count);
+    if(homemaker_succession_count&&homemaker_succession_percentage){
+    var homemaker_avg_succession = (homemaker_succession_percentage/homemaker_succession_count);
     onresult[i].homemaker_avg_succession=homemaker_avg_succession.toFixed(2);
     }
   }

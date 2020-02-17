@@ -136,6 +136,7 @@ const calculate = {
     cycle3_diff_hours:"07:00:00", 
     ///Virtual Kitchen onboarded count////
     virtual_kitchen_onboarded_count:240,
+    testing_kitchen_onboarded_count:4,
 
     order_assign_first_radius : 2.5,
     order_assign_second_radius : 0.5
