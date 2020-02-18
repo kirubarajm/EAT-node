@@ -893,7 +893,7 @@ const moveitlog_out = new CronJob("59 59 7,11,15,22 * * *", async function() {
     }
   }
 });
-moveitlog_out.start();
+//moveitlog_out.start();
 
 ////cron run by moveit user online every cycle end.
 const moveitlog_in = new CronJob("0 0 8,12,16 * * *", async function() {
@@ -913,7 +913,7 @@ const moveitlog_in = new CronJob("0 0 8,12,16 * * *", async function() {
     }
   }
 });
-moveitlog_in.start();
+//moveitlog_in.start();
 
 ////CRON For Every day Moveit Log with Order///////
 const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
