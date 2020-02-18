@@ -378,12 +378,7 @@ Notification.appointment_makeit_PushNotification = async function(
   }
 };
 
-Notification.sales_PushNotification = async function(
-  sales_userid,
-  makeit_userid,
-  allocationTime,
-  status
-) {
+Notification.sales_PushNotification = async function(sales_userid,makeit_userid,allocationTime,status) {
   var makeit_user_detail = await query(
     "SELECT name FROM MakeitUser where userid = " + makeit_userid
   );
@@ -492,6 +487,44 @@ Notification.queries_answers_PushNotification = async function(
     data.app_type=1;
     FCM_Obj.sendNotificationAndroid(Userdetails[0].pushid_android, data);
   }
+};
+
+
+Notification.zendeskPushNotification = async function(req,pageid) {
+
+  var data = null;
+  switch (pageid) {
+    case PushConstant.Pageid_eat_zendesk_notification:
+      data = {
+        title: req.notification.title,
+        message: req.notification.body,
+        ticket_id: "" + req.notification.ticket_id,
+        app: "Eat",
+        notification_type: "1"
+      };
+      break;
+
+  }
+  if (data == null) return;
+
+ 
+  //const user = await Notification.getEatUserDetail(userid);
+   console.log("data->", data);
+  
+
+   for (let i = 0; i < req.devices.length; i++) {
+    if (req.devices[i].type=='android') {
+    
+      FCM_EAT.sendNotificationAndroid(req.devices[i].identifier, data,1 );
+    }
+   
+    if (req.devices[i].type=='ios') {
+      
+      FCM_EAT.sendNotificationAndroid(req.devices[i].identifier, data,2);
+    }
+     
+   }
+
 };
 
 module.exports = Notification;

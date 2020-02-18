@@ -16,6 +16,7 @@ const PushConstant={
     Pageid_eat_order_cancel:8,
     Pageid_eat_query_replay:9,
     Pageid_eat_send_notification:0,//bulk nofication
+    Pageid_eat_zendesk_notification:13,//zendesk
 
 
     pageidMoveit_Order_Assigned:1,
