@@ -12,6 +12,7 @@ var Dunzomoveitdetails = function(dunzomoveitdetails) {
   this.runner_lng = dunzomoveitdetails.runner_lng;
   this.runner_eta_pickup_min = dunzomoveitdetails.runner_eta_pickup_min;
   this.runner_eta_dropoff_min = dunzomoveitdetails.runner_eta_dropoff_min;
+  this.active_status = dunzomoveitdetails.active_status;
 
 };
 

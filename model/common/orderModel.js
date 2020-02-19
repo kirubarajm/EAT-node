@@ -6861,33 +6861,48 @@ if (order_queue_query.length ==0) {
       result(error, null);
     }else{
  
-      var moveitlist = move_it_id_list.moveitid;
-      console.log(move_it_id_list.moveitid_below_2);
-      console.log(move_it_id_list.moveitid_above_2);
+      //don't remove the commanded code 19-feb-2020
+      // var moveitlist = move_it_id_list.moveitid;
+      // console.log(move_it_id_list.moveitid_below_2);
+      // console.log(move_it_id_list.moveitid_above_2);
       var nearbymoveit = [];
+      var near_by_moveit_data = [];
+      move_it_id_list.sort(
+            (a, b) => parseFloat(a.distance) - parseFloat(b.distance)
+          );
+
+      for (let i = 0; i < move_it_id_list.length; i++) {
       
+        
+        near_by_moveit_data.push(move_it_id_list[i].moveit_id);
+      }
 
       var get_zoneid = await query("select mk.zone from Orders ors join MakeitUser mk on ors.makeit_user_id=mk.userid where ors.orderid='"+req.orderid+"' ");
                
 
-      if (move_it_id_list.moveitid_below_2) {
+      // if (move_it_id_list.moveitid_below_2) {
   
-        var moveitlistquery =
-          "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-          move_it_id_list.moveitid_below_2 +
-          ") and mu.online_status = 1 and login_status=1  and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
-           nearbymoveit = await query(moveitlistquery);
+      //   var moveitlistquery =
+      //     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+      //     move_it_id_list.moveitid_below_2 +
+      //     ") and mu.online_status = 1 and login_status=1  and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
+      //      nearbymoveit = await query(moveitlistquery);
 
-      }
+      // }
       
-      if(move_it_id_list.moveitid_above_2 && nearbymoveit.length ==0){
+      // if(move_it_id_list.moveitid_above_2 && nearbymoveit.length ==0){
 
-        var moveitlistquery =
-          "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-          move_it_id_list.moveitid_above_2 +
-          ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
-          nearbymoveit = await query(moveitlistquery);
-      }
+      //   var moveitlistquery =
+      //     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+      //     move_it_id_list.moveitid_above_2 +
+      //     ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
+      //     nearbymoveit = await query(moveitlistquery);
+      // }
+
+      "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+      near_by_moveit_data +
+      ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+");";
+      nearbymoveit = await query(moveitlistquery);
 
       if (nearbymoveit.length !==0) {
         
