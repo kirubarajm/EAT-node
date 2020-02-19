@@ -313,11 +313,14 @@ Moveituser.update_online_status =async function (req, result) {
               }
               req.type    = req.online_status;
               req.moveit_userid = req.userid;
+
+              ///////////////Moveit Time Log History///////////
               if (!req.action) {
                 req.action  = 1;              
               }
               await Moveituser.create_createMoveitTimelog(req);
-              
+              //////////////////////////////////////////////////
+
               let resobj = {
                 success   : true,
                 status    : true,
@@ -797,7 +800,7 @@ Moveituser.update_pushid = function(req, result) {
               if(moveit_last_log[0].type==1){
                 req.type    = 0;
                 req.moveit_userid = req.userid;
-                req.action  = 1;              
+                req.action  = 5;              
                 await Moveituser.create_createMoveitTimelog(req);  
               }
               /////////////////////////////////
@@ -857,7 +860,7 @@ Moveituser.update_pushid = function(req, result) {
               if(moveit_last_log[0].type==1){
                 req.type    = 0;
                 req.moveit_userid = req.userid;
-                req.action  = 1;              
+                req.action  = 5;              
                 await Moveituser.create_createMoveitTimelog(req);  
               }
               /////////////////////////////////

@@ -286,7 +286,7 @@ Product.moveliveproduct = async function(req, result) {
   console.log(req);
   var active_status = parseInt(req.active_status);
   if (active_status === 0) {
-    var check_product = await query("Select active_status from Product where productid="+req.productid);
+    var check_product = await query("Select active_status,makeit_userid from Product where productid="+req.productid);
     if(check_product[0].active_status ==1){
       req.action=5;
       Product.createliveproductstatushistory(req, function(err,result2){
@@ -302,6 +302,10 @@ Product.moveliveproduct = async function(req, result) {
                     console.log("error: ", err);
                     result(null, err);
                   } else {
+                    ///////////Makeit Time Log /////////
+                    req.makeit_userid = check_product[0].makeit_userid;
+                    Makeituser.makeit_quantity_check(req);
+                    /////////////////////////////////////
                     var mesobj = {};
                     let sucobj = true;
                     mesobj = "Product removed from live successfully";
@@ -329,7 +333,7 @@ Product.moveliveproduct = async function(req, result) {
        
   } else {
     sql.query(
-      "select pt.approved_status,pt.active_status,mu.ka_status from Product pt left join MakeitUser mu on mu.userid = pt.makeit_userid where productid = '" + req.productid + "'",
+      "select pt.makeit_userid,pt.approved_status,pt.active_status,mu.ka_status from Product pt left join MakeitUser mu on mu.userid = pt.makeit_userid where productid = '" + req.productid + "'",
       function(err, res) {
         if (err) {
           console.log("error: ", err);
@@ -339,10 +343,14 @@ Product.moveliveproduct = async function(req, result) {
             sql.query(
               "UPDATE Product SET active_status = ? WHERE productid = ?",
               [req.active_status, req.productid],
-              function(err, res) {
+              function(err, res1) {
                 if (err) {
                   result(err,null);
                 } else {
+                  ///////////Makeit Time Log /////////
+                  req.makeit_userid = res[0].makeit_userid;
+                  Makeituser.makeit_quantity_check(req);
+                  /////////////////////////////////////
                   let sucobj = true;
                   var mesobj = "Product added to live successfully";
                   let resobj = {
@@ -548,7 +556,6 @@ Product.update_quantity_product_byid = async function update_quantity_product_by
                     result(null, err);
                   } else {
                     //{"productid":136,"quantity":"10","active_status":1,"makeit_userid":"184"}
-
                     Makeituser.makeit_quantity_check(req);
                     let resobj = {
                       success: true,

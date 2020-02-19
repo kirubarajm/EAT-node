@@ -6975,6 +6975,14 @@ Order.order_move_to_queue_by_admin= function order_move_to_queue_by_admin(req, r
           var moveit_online_status_date = await query("Update MoveitUser set online_status = 0  where userid = '"+req.moveit_user_id+"'");
           var Orders_update_moveit = await query("update Orders set moveit_user_id = 0,moveit_status=0 where orderid =" +req.orderid+"");
 
+          /////Moveit Time Log History////////////////////
+          var reqqq = {};
+          reqqq.moveit_userid = req.moveit_user_id;
+          reqqq.type = 0;
+          reqqq.action = 4;
+          await MoveitUser.create_createMoveitTimelog(reqqq);
+          /////////////////////////////////////////////////
+
           var Orders_queue_details = await query("select * from Orders_queue where orderid =" +req.orderid+"");
 
           if (Orders_queue_details.length !==0) {
@@ -7473,37 +7481,44 @@ Order.Item_wise_report_byadmin= function Item_wise_report_byadmin(req, result) {
 };
 
 //////////moveit master report/////////////
-Order.moveit_master_report= function moveit_master_report(req, result) {
+Order.moveit_master_report= async function moveit_master_report(req, result) {
   
-  var query="select mou.userid as moveit_id,mou.name,mou.phoneno,date(mou.created_at) as date,mh.address as hub from MoveitUser mou left join Makeit_hubs as mh on mh.makeithub_id = mou.moveit_hub order by mou.userid";
-  //console.log("query-->",query);
-  sql.query(query,async function(err, res) {
-      if (err) {
-        result(err, null);
-      } else {
-        if (res.length !== 0) {
-          let resobj = {
-            success: true,
-            status:true,
-            result:res
-          };
-          result(null, resobj);
-        }else {
-          let resobj = {
-            success: true,
-            message: "Sorry! no data found.",
-            status:false
-          };
-          result(null, resobj);
-        }
+  var moveitdata = await query("select mu.userid as moveit_id,mu.name,mu.phoneno,zo.Zonename,mu.Vehicle_no,mu.driver_lic,mu.vech_insurance,date(mu.created_at) as date,mh.address as hub from MoveitUser mu left join Makeit_hubs as mh on mh.makeithub_id = mu.moveit_hub left join Zone as zo on zo.id = mu.zone order by mu.userid");
+  
+  var moveitorder = await query("select MIN(created_at) as first_order_date,MAX(created_at) as last_order_date,COUNT(CASE WHEN orderstatus=6 THEN orderid END)as life_time_orders,moveit_user_id from Orders group by moveit_user_id order by orderid asc");
+
+  for(let i=0; i<moveitdata.length; i++){
+    for(let j=0; j<moveitorder.length; j++){
+      if(moveitdata[i].moveit_id == moveitorder[j].moveit_user_id){
+        moveitdata[i].first_order_date = moveitorder[j].first_order_date;
+        moveitdata[i].last_order_date = moveitorder[j].last_order_date;
+        moveitdata[i].life_time_orders = moveitorder[j].life_time_orders;
       }
     }
-  );
+  }
+
+  if(moveitdata.length !=''){
+    let resobj = {
+      success: true,
+      status:true,
+      result:moveitdata
+    };
+    result(null, resobj);
+  }else{
+    let resobj = {
+      success: true,
+      message: "Sorry! no data found.",
+      status:false
+    };
+    result(null, resobj);
+  }  
+
+  
 };
 
 //////////makeit_master_report/////////////
 Order.makeit_master_report= async function makeit_master_report(req, result) {
-  var makeitdata = await query("select mu.userid as makeit_id,mu.brandname as kitchen_name,mu.name,CASE WHEN mu.virtualkey=1 then 'Virtual' WHEN mu.virtualkey=0 then 'Real' END as kitchen_type,c.cuisinename,re.regionname,mu.lat as Lattitude, mu.lon as Longitude,mu.email,mu.phoneno,zo.Zonename,mh.address as hub,mu.bank_holder_name as account_name,mu.bank_account_no as account_number,mu.bank_name,mu.ifsc as ifsc_code, mu.address,date(mu.created_at) as onboarding_date,if(makeit_type=1,'caterer','home') as homemaker_type,0 as first_order_date,0 as last_order_date,0 as life_time_orders from MakeitUser mu left join Makeit_hubs as mh on mh.makeithub_id = mu.makeithub_id left join Cuisine_makeit as cm on cm.makeit_userid = mu.userid left join Cuisine as c on c.cuisineid = cm.cuisineid left join Region as re on re.regionid = mu.regionid left join Zone as zo on zo.id = mu.zone order by mu.userid");
+  var makeitdata = await query("select mu.userid as makeit_id,mu.brandname as kitchen_name,mu.name,CASE WHEN mu.virtualkey=1 then 'Virtual' WHEN mu.virtualkey=0 then 'Real' END as kitchen_type,c.cuisinename,re.regionname,mu.lat as Lattitude, mu.lon as Longitude,mu.email,mu.phoneno,zo.Zonename,mh.address as hub,mu.bank_holder_name as account_name,mu.bank_account_no as account_number,mu.bank_name,mu.ifsc as ifsc_code, mu.address,if(makeit_type=1,'caterer','home') as homemaker_type,0 as first_order_date,0 as last_order_date,0 as life_time_orders,sqe.name as accountmanagername,MIN(date(prd.created_at)) as onboarding_date,CASE WHEN mu.appointment_status=0 then 'waiting for sales appoinment' WHEN mu.appointment_status=1 then 'waiting for sales approval' WHEN mu.appointment_status=2 then 'waiting for admin approval' WHEN mu.appointment_status=3 then 'admin approved' END as status from MakeitUser mu left join Makeit_hubs as mh on mh.makeithub_id = mu.makeithub_id left join Cuisine_makeit as cm on cm.makeit_userid = mu.userid left join Cuisine as c on c.cuisineid = cm.cuisineid left join Region as re on re.regionid = mu.regionid left join Zone as zo on zo.id = mu.zone left join Allocation as alo on alo.makeit_userid=mu.userid left join Sales_QA_employees as sqe on sqe.id = alo.sales_emp_id left join Product as prd on prd.makeit_userid=mu.userid group by mu.userid order by mu.userid");
   
   var makeitorder = await query("select MIN(created_at) as first_order_date,MAX(created_at) as last_order_date,COUNT(orderid) as life_time_orders,makeit_user_id from Orders group by makeit_user_id order by orderid asc");
 
