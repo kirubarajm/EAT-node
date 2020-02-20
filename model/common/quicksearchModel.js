@@ -807,7 +807,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
                 
                 // if(move_it_id_list.moveitid_above_2 && nearbymoveit.length ==0){
   
-                //   var moveitlistquery =
+                  var moveitlistquery =
                     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
                     near_by_moveit_data +
                     ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+");";
@@ -865,7 +865,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
 }
 
 };
-order_auto_assign_Change.start();
+//order_auto_assign_Change.start();
 
 ////Zone Based Moveit 
 QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){

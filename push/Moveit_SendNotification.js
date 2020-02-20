@@ -260,6 +260,8 @@ exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomo
     center: geoLocation,
     radius: radius
   });
+
+  
   //let userPosition = CLLocation(geoLocation[0] , geoLocation[1])
 
 
@@ -267,7 +269,7 @@ exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomo
   const delay = ms => new Promise(res => setTimeout(res, ms))
   //console.log("onKeyEnteredRegistration---->"+moment().format("YYYY-MM-DD HH:mm:ss"));
   var onKeyEnteredRegistration = geoQuery.on("key_entered",async function(key, location, distance) {
-  console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+ // console.log(key + " entered query at " + location + " (" + distance + " km from center)");
   //  console.log("onKeyEnteredRegistration---->"+moment().format("YYYY-MM-DD HH:mm:ss"));
 
    
@@ -291,8 +293,7 @@ exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomo
  await delay(2000);
 //  move_data.moveitid_below_2=move_it_id_distance_below_2.toString();
 //  move_data.moveitid_above_2=move_it_id_distance_above_2.toString();
-console.log("moveit_data_result",moveit_data_result);
-console.log("move_data",moveit_data_result);
+
  result(null,moveit_data_result)
 }
 
