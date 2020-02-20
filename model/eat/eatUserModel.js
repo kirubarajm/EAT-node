@@ -492,7 +492,7 @@ Eatuser.get_eat_makeit_product_list = async function(req, result) {
             //15min Food Preparation time , 3min 1 km
             //  eta = 15 + 3 * res[i].distance;
        
-            var eta = foodpreparationtime + (onekm * res[i].distance);
+            var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res[i].distance);
             //15min Food Preparation time , 3min 1 km         
             res[i].eta = Math.round(eta);  
         
@@ -741,10 +741,9 @@ Eatuser.get_eat_makeit_product_list_v_2 = async function(req, result) {
           //  console.log(product_id_list);          
           //  res[0].distance = res[0].distance * constant.onemile;
           res[0].distance = res[0].distance.toFixed(2) ;
-          console.log(res[0].distance);
           //15min Food Preparation time , 3min 1 km
           //  eta = 15 + 3 * res[i].distance;
-          var eta = foodpreparationtime + (onekm * res[0].distance);
+          var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res[0].distance);
           //15min Food Preparation time , 3min 1 km         
           res[0].eta = Math.round(eta);  
           
@@ -994,7 +993,7 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
       
           // 15min Food Preparation time , 3min 1 km
           //  eta = 15 + 3 * res[i].distance;
-          var eta = foodpreparationtime + (onekm * res[0].distance);
+          var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res[0].distance);
           //15min Food Preparation time , 3min 1 km         
           res[0].eta = Math.round(eta);  
          
@@ -1320,7 +1319,7 @@ Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
     } else {
       for (let i = 0; i < res.length; i++) {
       //  eta = 15 + 3 * res[i].distance;
-      var eta = foodpreparationtime + onekm * res[i].distance;
+      var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res[i].distance);
         //15min Food Preparation time , 3min 1 km
        
         res[i].eta = Math.round(eta) + " mins";
@@ -1463,7 +1462,7 @@ Eatuser.get_eat_kitchen_list_sort_filter = function (req, result) {
         // res[i].distance = res[i].distance * constant.onemile;
         // 15min Food Preparation time , 3min 1 km
         //  eta = 15 + 3 * res[i].distance;
-        var eta = foodpreparationtime + (onekm * res[i].distance);
+        var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res[i].distance);
         //15min Food Preparation time , 3min 1 km       
         res[i].eta = Math.round(eta);    
         res[i].serviceablestatus = false;
@@ -1842,7 +1841,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v2 = async function (req, result) {
       for (let i = 0; i < res.length; i++) {
         // res[i].distance = res[i].distance * constant.onemile;
         res[i].distance = res[i].distance.toFixed(2) ;
-        var eta = foodpreparationtime + (onekm * res[i].distance);
+        var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res[i].distance);
         //15min Food Preparation time , 3min 1 km
         res[i].eta = Math.round(eta);    
         res[i].serviceablestatus = false;
@@ -2106,7 +2105,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_1 = async function (req, result) {
         //res[i].distance = res[i].distance * constant.onemile;
         res[i].distance = res[i].distance.toFixed(2) ;
 
-        var eta = foodpreparationtime + (onekm * res[i].distance);
+        var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res[i].distance);
         //15min Food Preparation time , 3min 1 km
        
         res[i].eta = Math.round(eta);    
@@ -2361,7 +2360,8 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
         res[i].subtitle = "kitchen";
         res[i].type     = 0;
         res[i].distance = res[i].distance.toFixed(2) ;
-        var eta         = foodpreparationtime + (onekm * res[i].distance);
+        res[i].distance = Math.ceil(res[i].distance);
+        var eta         = constant.delivery_buffer_time +foodpreparationtime + (onekm * res[i].distance);
         res[i].eta      = Math.round(eta);    
         res[i].serviceablestatus = false;
         res[i].kitchenstatus     = 1;

@@ -192,6 +192,52 @@ exports.sendNotificationAndroid = function(
 // }
 
 
+// exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomoveitbydistance(geoLocation,radius,result) {
+//   initializeAppName();
+
+//   // var move_it_id=[];
+//   // var geoQuery = geoFire.query({
+//   //   center: geoLocation,
+//   //   radius: radius
+//   // });
+  
+//   // var onKeyEnteredRegistration = geoQuery.on("key_entered",async function(key, location, distance) {
+//   //   console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+//   //  move_it_id.push(key);
+//   //  //console.log(move_it_id);
+//   // });
+//   var move_it_id_distance_below_2=[];
+//   var move_it_id_distance_above_2=[];
+//   var move_data={};
+//   var geoQuery = geoFire.query({
+//     center: geoLocation,
+//     radius: radius
+//   });
+
+//   const delay = ms => new Promise(res => setTimeout(res, ms))
+//   //console.log("onKeyEnteredRegistration---->"+moment().format("YYYY-MM-DD HH:mm:ss"));
+//   var onKeyEnteredRegistration = geoQuery.on("key_entered",async function(key, location, distance) {
+//      console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+//   //  console.log("onKeyEnteredRegistration---->"+moment().format("YYYY-MM-DD HH:mm:ss"));
+
+   
+//     if(distance<=constant.order_assign_first_radius)  move_it_id_distance_below_2.push(key);
+//     if(distance>constant.order_assign_first_radius && distance<=constant.order_assign_second_radius)  move_it_id_distance_above_2.push(key);
+//     // move_data[key] = {};
+//     // move_data[key].distance=distance;
+//     // move_data[key].location=location;
+//   });
+  
+//   var onReadyRegistration = geoQuery.on("ready", function (key, location, distance) {
+//   });
+ 
+//  await delay(2000);
+//  move_data.moveitid_below_2=move_it_id_distance_below_2.toString();
+//  move_data.moveitid_above_2=move_it_id_distance_above_2.toString();
+//  result(null,move_data)
+// }
+
+
 exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomoveitbydistance(geoLocation,radius,result) {
   initializeAppName();
 
@@ -208,34 +254,49 @@ exports.geoFireGetKeyByGeomoveitbydistance = async function geoFireGetKeyByGeomo
   // });
   var move_it_id_distance_below_2=[];
   var move_it_id_distance_above_2=[];
+  var moveit_data_result = [];
   var move_data={};
   var geoQuery = geoFire.query({
     center: geoLocation,
     radius: radius
   });
 
+  
+  //let userPosition = CLLocation(geoLocation[0] , geoLocation[1])
+
+
+  
   const delay = ms => new Promise(res => setTimeout(res, ms))
   //console.log("onKeyEnteredRegistration---->"+moment().format("YYYY-MM-DD HH:mm:ss"));
   var onKeyEnteredRegistration = geoQuery.on("key_entered",async function(key, location, distance) {
-  //   console.log(key + " entered query at " + location + " (" + distance + " km from center)");
+ // console.log(key + " entered query at " + location + " (" + distance + " km from center)");
   //  console.log("onKeyEnteredRegistration---->"+moment().format("YYYY-MM-DD HH:mm:ss"));
 
    
-    if(distance<=constant.order_assign_first_radius)  move_it_id_distance_below_2.push(key);
-    if(distance>constant.order_assign_first_radius && distance<=constant.order_assign_second_radius)  move_it_id_distance_above_2.push(key);
+    // if(distance<=constant.order_assign_first_radius)  move_it_id_distance_below_2.push(key);
+    // if(distance>constant.order_assign_first_radius && distance<=constant.order_assign_second_radius)  move_it_id_distance_above_2.push(key);
     // move_data[key] = {};
     // move_data[key].distance=distance;
     // move_data[key].location=location;
+    // move_data[key].key=key;
+
+    move_data = {};
+    move_data.distance=distance;
+    move_data.location=location;
+    move_data.moveit_id=key;
+    moveit_data_result.push(move_data);
   });
   
   var onReadyRegistration = geoQuery.on("ready", function (key, location, distance) {
   });
  
  await delay(2000);
- move_data.moveitid_below_2=move_it_id_distance_below_2.toString();
- move_data.moveitid_above_2=move_it_id_distance_above_2.toString();
- result(null,move_data)
+//  move_data.moveitid_below_2=move_it_id_distance_below_2.toString();
+//  move_data.moveitid_above_2=move_it_id_distance_above_2.toString();
+
+ result(null,moveit_data_result)
 }
+
 
 async function get_moveit_list(geoLocation,radius) {
  

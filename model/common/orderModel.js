@@ -2913,7 +2913,7 @@ Order.orderviewbyeatuser = function(req, result) {
                 
                   var eta = Math.round(pickup + dropoff);
                    if (eta ==0) {                  
-                    eta = foodpreparationtime + Math.round(onekm * res1[0].distance);            
+                    eta = constant.delivery_buffer_time + foodpreparationtime + Math.round(onekm * res1[0].distance);            
                    }
                 if (res1[0].moveit_expected_delivered_time) {
                   res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
@@ -2949,7 +2949,7 @@ Order.orderviewbyeatuser = function(req, result) {
                         res1[0].distance = Math.ceil(res1[0].distance);
 
                   
-                        eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
+                        eta = constant.delivery_buffer_time + foodpreparationtime + Math.round(onekm * res1[0].distance);
                         //15min Food Preparation time , 3min 1 km
                     
                         res1[0].eta = Math.round(eta) + " mins";
@@ -3457,62 +3457,6 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                 res1[0].onlinepaymentstatus = true;
               }
           
-              
-                // if ( res1[0].orderstatus < 6 ) {
-                //   //check our delivery or dunzo delivery
-                //   if (res1[0].deliver_vendor==0) {
-                //     //store order delivery time
-                //     if ( res1[0].orderstatus < 5 ){
-                //       req.orderid  =res1[0].orderid;
-                //       await Order.eat_get_delivery_time(req);
-                //     }
-                   
-                //   //get delivery time
-                //    var orderdeliverytime = await query("select * from Order_deliverytime where orderid = "+res1[0].orderid +" order by od_id desc limit 1");
-                   
-                //    if (orderdeliverytime.length !== 0) {
-                //      res1[0].deliverytime = orderdeliverytime[0].deliverytime;
-                //      res1[0].eta = foodpreparationtime + orderdeliverytime[0].duration;
-                //    }else{
-       
-                //      // we need to remove once delivery time stable
-                //      eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
-                //      //15min Food Preparation time , 3min 1 km
-                  
-                //      res1[0].eta = Math.round(eta) + " mins";
-                //    }
-  
-  
-                //   }else{
-  
-                   
-                //     // await Order.dunzo_task_status(res1[0].dunzo_taskid, function(error, response, data){
-                //     //   console.log(response);
-  
-                //     //   console.log(data);
-  
-                //     // });
-                //     console.log(res1[0].runner_eta_pickup_min);
-                //     res1[0].eta = parseInt(res1[0].runner_eta_pickup_min) + parseInt(res1[0].runner_eta_dropoff_min);
-  
-                //   }
-                  
-                //   // we need to remove once delivery time stable
-                //   if (!res1[0].deliverytime) {
-                //     if (res1[0].orderstatus > 3) {
-                //       // +20 min add with moveit order assign time
-                //      res1[0].deliverytime = res1[0].moveit_expected_delivered_time;
-                //    }else{
-                //      var deliverytime = moment(res1[0].ordertime)
-                //      .add(0, "seconds")
-                //      .add(20, "minutes")
-                //      .format("YYYY-MM-DD HH:mm:ss");
-                //      res1[0].deliverytime = deliverytime;
-                //    }
-                //   }
-      
-                // }
-           
                 res1[0].distance = Math.ceil(res1[0].distance);
 
                 if ( res1[0].orderstatus < 6 ) {
@@ -3563,12 +3507,10 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                 var pickup= parseInt(res1[0].runner_eta_pickup_min) || 0;
                 var dropoff= parseInt(res1[0].runner_eta_dropoff_min) || 0;
 
-                console.log(pickup);
-                console.log(dropoff);
                 var eta = Math.round(pickup + dropoff);
 
                 if (eta ==0) {                  
-                  eta = foodpreparationtime + Math.round(onekm * res1[0].distance);            
+                  eta = constant.delivery_buffer_time + foodpreparationtime + Math.round(onekm * res1[0].distance);            
                
                 }
                // /moment().add(0, "seconds").add(eta, "minutes").format("YYYY-MM-DD HH:mm:ss")
@@ -3580,6 +3522,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                
                 res1[0].eta = eta;
                
+       
                 let resobj = {
                   success: true,
                   status: true,
@@ -3607,7 +3550,7 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                     }else{
   
                       // we need to remove once delivery time stable
-                      eta = foodpreparationtime + Math.round(onekm * res1[0].distance);
+                      eta = constant.delivery_buffer_time + foodpreparationtime + Math.round(onekm * res1[0].distance);
                       //15min Food Preparation time , 3min 1 km
                   
                       res1[0].eta = Math.round(eta) + " mins";
@@ -3640,18 +3583,6 @@ Order.live_order_list_byeatuserid = async function live_order_list_byeatuserid(r
                 }
 
 
-
-
-
-
-
-              // let resobj = {
-              //   success: true,
-              //   status: true,
-              //   orderdetails: orderdetails,
-              //   result: res1
-              // };
-              // result(null, resobj);
             }
           });
         }
@@ -6861,33 +6792,48 @@ if (order_queue_query.length ==0) {
       result(error, null);
     }else{
  
-      var moveitlist = move_it_id_list.moveitid;
-      console.log(move_it_id_list.moveitid_below_2);
-      console.log(move_it_id_list.moveitid_above_2);
+      //don't remove the commanded code 19-feb-2020
+      // var moveitlist = move_it_id_list.moveitid;
+      // console.log(move_it_id_list.moveitid_below_2);
+      // console.log(move_it_id_list.moveitid_above_2);
       var nearbymoveit = [];
+      var near_by_moveit_data = [];
+      move_it_id_list.sort(
+            (a, b) => parseFloat(a.distance) - parseFloat(b.distance)
+          );
+
+      for (let i = 0; i < move_it_id_list.length; i++) {
       
+        
+        near_by_moveit_data.push(move_it_id_list[i].moveit_id);
+      }
 
       var get_zoneid = await query("select mk.zone from Orders ors join MakeitUser mk on ors.makeit_user_id=mk.userid where ors.orderid='"+req.orderid+"' ");
                
 
-      if (move_it_id_list.moveitid_below_2) {
+      // if (move_it_id_list.moveitid_below_2) {
   
-        var moveitlistquery =
-          "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-          move_it_id_list.moveitid_below_2 +
-          ") and mu.online_status = 1 and login_status=1  and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
-           nearbymoveit = await query(moveitlistquery);
+      //   var moveitlistquery =
+      //     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+      //     move_it_id_list.moveitid_below_2 +
+      //     ") and mu.online_status = 1 and login_status=1  and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
+      //      nearbymoveit = await query(moveitlistquery);
 
-      }
+      // }
       
-      if(move_it_id_list.moveitid_above_2 && nearbymoveit.length ==0){
+      // if(move_it_id_list.moveitid_above_2 && nearbymoveit.length ==0){
 
-        var moveitlistquery =
-          "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-          move_it_id_list.moveitid_above_2 +
-          ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
-          nearbymoveit = await query(moveitlistquery);
-      }
+      //   var moveitlistquery =
+      //     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+      //     move_it_id_list.moveitid_above_2 +
+      //     ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
+      //     nearbymoveit = await query(moveitlistquery);
+      // }
+      var moveitlistquery =
+      "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+      near_by_moveit_data +
+      ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+");";
+      nearbymoveit = await query(moveitlistquery);
 
       if (nearbymoveit.length !==0) {
         

@@ -20,10 +20,7 @@ function initializeAppName () {
 };
 
 
-exports.sendNotificationAndroid = function(
-  token,
-  dat,app_type
-) {
+exports.sendNotificationAndroid = function(token,dat,app_type) {
   initializeAppName();
   const options = {
     priority: "high",

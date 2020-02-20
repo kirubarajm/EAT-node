@@ -2648,7 +2648,8 @@ Makeituser.edit_makeit_brand_identity_by_sales = async function(req,cuisines,res
           key !== "cuisines" &&
           key !== "region" &&
           key !== "rating" &&
-          key !== "removecuisines"
+          key !== "removecuisines"&&
+          key !== "userid"
         ) {
           column = column + key + "='" + value + "',";
         } else if (key === "rating") {

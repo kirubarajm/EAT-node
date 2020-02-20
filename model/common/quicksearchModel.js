@@ -320,6 +320,7 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
     }
   }
 });
+//liveproducthistory.start();
 
 //cron run by moveit user offline every night 2 AM.
 const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
@@ -523,6 +524,172 @@ QuickSearch.admin_order_cancel = function admin_order_cancel(order_cancel) {
   });
 };
 
+// QuickSearch.order_assign=async function order_assign(res,i){
+//   try{
+//   const delay = ms => new Promise(res => setTimeout(res, ms))
+//   isCronRun=true;
+//   console.log('i id-->',i)
+//   console.log('i res.length-->',res.length)
+//   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
+//   if (i<res.length) {
+//     //for (let i = 0; i < res.length; i++) {
+
+//     //dunzo code
+//     var today = moment();
+//     var makeit_accept_time = moment(res[i].makeit_accept_time);
+//     var diffMs = today - makeit_accept_time;
+//     // var diffDays = Math.floor(diffMs / 86400000);
+//     // var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
+//     var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
+
+//     var order_queue_update_time = moment(res[i].updated_at);
+//     var order_queue_diffMs = today - order_queue_update_time;
+
+//     var order_queue_diffMins = Math.round(((order_queue_diffMs % 86400000) % 3600000) / 60000);
+    
+//     console.log("order_queue_diffMins"+order_queue_diffMins);
+//     console.log("res[i].dunzo_req_count"+res[i].dunzo_req_count);
+//     console.log("diffMins"+diffMins);
+//     console.log("res[i].payment_type"+res[i].payment_type);
+//     console.log("res[i].status"+res[i].status);
+ 
+//   if (dunzoconst.order_assign_dunzo==true  && diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0 ) {  
+//        // Dunzo.dunzo_task_create
+//        console.log("Dunzo.dunzo_task_create");
+//       //  await QuickSearch.dunzo_task_create(res[i].orderid);
+//       //  i++;
+//       //  order_assign(res,i);
+//       Dunzo.dunzo_task_create(res[i].orderid,async function(err,res3) {
+//         if (err) {
+//           i++;
+//           order_assign(res,i);
+//         } else {
+//           i++;
+//           order_assign(res,i);
+          
+//         }
+//       });
+//   }else if(res[i].zone_status == 2 && order_queue_diffMins >1 && res[i].status !=1 ){
+//     console.log("Dunzo xone dunzo_task_create");
+//       if (res[i].dunzo_req_count >= constant.Dunzo_max_req) {
+//         var order_cancel={};
+//         order_cancel.orderid = res[i].orderid;
+//         order_cancel.cancel_reason ='Dunzo failure to generate task id';
+//         await QuickSearch.admin_order_cancel(order_cancel);
+//         i++;
+//         order_assign(res,i);
+//       } else {
+//         Dunzo.dunzo_task_create(res[i].orderid,async function(err,res3) {
+//           if (err) {
+//             i++;
+//             order_assign(res,i);
+//           } else {
+//             i++;
+//             order_assign(res,i);
+            
+//           }
+//         });
+//       }
+      
+//   }else{
+
+//         var radius = constant.order_assign_first_radius + constant.order_assign_second_radius;
+//         var geoLocation = [];
+//         geoLocation.push(res[i].lat);
+//         geoLocation.push(res[i].lon);
+//         MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,radius,async function(err, move_it_id_list) {
+//             if (err) {
+//               let error = {
+//                 success: true,
+//                 status: false,
+//                 message: "No Move-it found,please after some time"
+//               };
+//               console.log('Geo error->',err);
+//               i++;
+//               order_assign(res,i);
+//             } else {
+//               console.log("move_it_id_list.moveitid_below_2",move_it_id_list.moveitid_below_2);
+//               console.log("move_it_id_list.moveitid_above_2",move_it_id_list.moveitid_above_2);
+//               var nearbymoveit = [];
+              
+//          //     if (move_it_id_list.moveitid_below_2) {
+
+//             var get_zoneid = await query("select mk.zone from Orders ors join MakeitUser mk on ors.makeit_user_id=mk.userid where ors.orderid='"+res[i].orderid+"' ");
+               
+
+//                 if (move_it_id_list.moveitid_below_2) {
+            
+//                   var moveitlistquery =
+//                     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+//                     move_it_id_list.moveitid_below_2 +
+//                     ") and mu.online_status = 1 and login_status=1  and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
+//                      nearbymoveit = await query(moveitlistquery);
+
+//                 }
+                
+//                 if(move_it_id_list.moveitid_above_2 && nearbymoveit.length ==0){
+  
+//                   var moveitlistquery =
+//                     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+//                     move_it_id_list.moveitid_above_2 +
+//                     ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
+//                     nearbymoveit = await query(moveitlistquery);
+//                 }
+  
+//                   if (nearbymoveit.length !== 0) {
+//                   // nearbymoveit.sort(
+//                   //   (a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout)
+//                   // );
+//                   console.log('nearbymoveit id-->',nearbymoveit[0].userid);
+//                   sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, res[i].orderid],async function(err, res2) {
+//                       if (err) {
+//                          console.log('Order Update error->',err);
+//                         i++;
+//                         order_assign(res,i);
+//                       } else {
+//                         var moveit_offline_query = await query(
+//                           "update Orders_queue set status = 1 where orderid =" +
+//                             res[i].orderid +
+//                             ""
+//                         );
+//                          var req={};
+//                         req.state=1;
+//                         req.moveit_user_id=nearbymoveit[0].userid;
+//                         Order.update_moveit_lat_long(req);
+//                         await Notification.orderMoveItPushNotification(
+//                           res[i].orderid,
+//                           PushConstant.pageidMoveit_Order_Assigned
+//                         );
+//                        // delay(1000);
+//                        i++;
+//                        order_assign(res,i);
+//                       }
+//                     }
+//                   );
+//                 }else{
+//                   i++;
+//                   order_assign(res,i);
+//                 }
+//               // }else{
+//               //   i++;
+//               //   order_assign(res,i);
+    
+//               // }
+//             }
+//           }
+//         );
+
+//   }
+//   }else{
+//     isCronRun=false;
+//   }
+// }catch(e){
+//   console.log("e--->",e);
+//   isCronRun=false;
+// }
+
+// };
+
 QuickSearch.order_assign=async function order_assign(res,i){
   try{
   const delay = ms => new Promise(res => setTimeout(res, ms))
@@ -607,8 +774,20 @@ QuickSearch.order_assign=async function order_assign(res,i){
               i++;
               order_assign(res,i);
             } else {
-              console.log("move_it_id_list.moveitid_below_2",move_it_id_list.moveitid_below_2);
-              console.log("move_it_id_list.moveitid_above_2",move_it_id_list.moveitid_above_2);
+            
+              var near_by_moveit_data = [];
+              move_it_id_list.sort(
+                    (a, b) => parseFloat(a.distance) - parseFloat(b.distance)
+                  );
+
+              for (let i = 0; i < move_it_id_list.length; i++) {
+              
+                
+                near_by_moveit_data.push(move_it_id_list[i].moveit_id);
+              }
+                  console.log("move_it_id_list",move_it_id_list);
+                  console.log("move_it_id_list",move_it_id_list.length);
+           //   console.log("move_it_id_list.moveitid_above_2",move_it_id_list.moveitid_above_2);
               var nearbymoveit = [];
               
          //     if (move_it_id_list.moveitid_below_2) {
@@ -616,29 +795,27 @@ QuickSearch.order_assign=async function order_assign(res,i){
             var get_zoneid = await query("select mk.zone from Orders ors join MakeitUser mk on ors.makeit_user_id=mk.userid where ors.orderid='"+res[i].orderid+"' ");
                
 
-                if (move_it_id_list.moveitid_below_2) {
+                // if (move_it_id_list.moveitid_below_2) {
             
-                  var moveitlistquery =
-                    "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-                    move_it_id_list.moveitid_below_2 +
-                    ") and mu.online_status = 1 and login_status=1  and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
-                     nearbymoveit = await query(moveitlistquery);
+                //   var moveitlistquery =
+                //     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+                //     move_it_id_list.moveitid_below_2 +
+                //     ") and mu.online_status = 1 and login_status=1  and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
+                //      nearbymoveit = await query(moveitlistquery);
 
-                }
+                // }
                 
-                if(move_it_id_list.moveitid_above_2 && nearbymoveit.length ==0){
+                // if(move_it_id_list.moveitid_above_2 && nearbymoveit.length ==0){
   
                   var moveitlistquery =
                     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-                    move_it_id_list.moveitid_above_2 +
-                    ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
+                    near_by_moveit_data +
+                    ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+");";
                     nearbymoveit = await query(moveitlistquery);
-                }
+                // }
   
                   if (nearbymoveit.length !== 0) {
-                  // nearbymoveit.sort(
-                  //   (a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout)
-                  // );
+                
                   console.log('nearbymoveit id-->',nearbymoveit[0].userid);
                   sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, res[i].orderid],async function(err, res2) {
                       if (err) {
@@ -872,12 +1049,17 @@ const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async funct
     }
   }
 });
+//kpidashboardproducthistory.start();
 
 ////cron run by moveit user offline every cycle end.
-const moveitlog_out = new CronJob("59 59 7,11,15,22 * * *", async function() {
-  console.log("moveit offline");
+const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
+  console.log("moveit offline & online");
   var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
   
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");
+  var currenthour = moment(day).format("HH");
+  var currentminus = currenthour-1;
+
   if (res.length !== 0) {
     for (let i = 0; i < res.length; i++) {
       /////////logout Moveit-Time log/////////////////
@@ -885,33 +1067,21 @@ const moveitlog_out = new CronJob("59 59 7,11,15,22 * * *", async function() {
       req.type    = 0;
       req.moveit_userid = res[i].userid;
       req.action  = 2;
-      req.created_at = moment().format("YYYY-MM-DD HH:mm:ss");
-      req.logtime = moment().format("YYYY-MM-DD HH:mm:ss");
-      await Moveituser.create_createMoveitTimelog(req);          
-    }
-  }
-});
-//moveitlog_out.start();
-
-////cron run by moveit user online every cycle end.
-const moveitlog_in = new CronJob("0 0 8,12,16 * * *", async function() {
-  console.log("moveit online");
-  var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
-  
-  if (res.length !== 0) {
-    for (let i = 0; i < res.length; i++) {      
-      /////////login Moveit-Time log/////////////////
-      var req={};
-      req.type    = 1;
-      req.moveit_userid = res[i].userid;
-      req.action  = 2;
-      req.created_at = moment().format("YYYY-MM-DD HH:mm:ss");
-      req.logtime = moment().format("YYYY-MM-DD HH:mm:ss");
+      req.created_at = moment().format("YYYY-MM-DD "+currentminus+":59:59");
+      req.logtime = moment().format("YYYY-MM-DD "+currentminus+":59:59");
       await Moveituser.create_createMoveitTimelog(req);
+      /////////login Moveit-Time log/////////////////
+      if(currenthour!=23){
+        var req={};
+        req.type    = 1;
+        req.moveit_userid = res[i].userid;
+        req.action  = 2;
+        await Moveituser.create_createMoveitTimelog(req);
+      }     
     }
   }
 });
-//moveitlog_in.start();
+//moveitlog_outin.start();
 
 ////CRON For Every day Moveit Log with Order///////
 const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {

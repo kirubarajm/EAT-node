@@ -378,12 +378,7 @@ Notification.appointment_makeit_PushNotification = async function(
   }
 };
 
-Notification.sales_PushNotification = async function(
-  sales_userid,
-  makeit_userid,
-  allocationTime,
-  status
-) {
+Notification.sales_PushNotification = async function(sales_userid,makeit_userid,allocationTime,status) {
   var makeit_user_detail = await query(
     "SELECT name FROM MakeitUser where userid = " + makeit_userid
   );
