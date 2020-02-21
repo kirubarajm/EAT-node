@@ -66,13 +66,14 @@ exports.create_a_new_documents = function(req, res) {
   var kitchanApplicationImage = req.body.kitchan_application_image;
   var packagingdetails = req.body.packagingdetails;
   var document_delete_list = req.body.documentdeletelist;
+  var packageinventory = req.body.packageinventory;
   
   if (!new_documents) {
     res
       .status(400)
       .send({ error: true, message: "Please provide documents" });
   } else {
-    DocumentSales.createkitchenDoument(new_documents,kitchanImage,kitchanApplicationImage,packagingdetails,document_delete_list,function(
+    DocumentSales.createkitchenDoument(new_documents,kitchanImage,kitchanApplicationImage,packagingdetails,document_delete_list,packageinventory,function(
       err,
       documents
     ) {

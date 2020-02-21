@@ -4,6 +4,7 @@ var Documents = require("./documentsModel.js");
 var PackagingBox = require("./packagingboxModel.js");
 const util = require("util");
 const query = util.promisify(sql.query).bind(sql);
+var PackageInventory = require("../makeit/packageInventoryModel.js");
 
 //Task object constructor
 var Documentsales = function(documentsales) {
@@ -58,7 +59,8 @@ Documentsales.createnewDocument = function createnewDocument(
   });
 };
 
-Documentsales.createkitchenDoument = async function createkitchenDoument(newdocument,kitchanImage,kitchanApplicationImage,packagingdetails,document_delete_list,res) {
+Documentsales.createkitchenDoument = async function createkitchenDoument(newdocument,kitchanImage,kitchanApplicationImage,packagingdetails,document_delete_list,packageinventory,res) {
+  console.log("package_inventory --->",packageinventory);
   try{
     var salesdocu = await query(
       "Select * From Documents_Sales where sales_userid = '" +
@@ -109,6 +111,13 @@ Documentsales.createkitchenDoument = async function createkitchenDoument(newdocu
           if (err) return res(err, null);
           
         });
+      }
+    }
+
+    ////Package Inventory Inserted/////////////////
+    if(packageinventory && packageinventory.length !==0){
+      for(let k=0; k<packageinventory.length; k++){
+        PackageInventory.createPackageInventory(packageinventory[k], function(err, result){});
       }
     }
   
