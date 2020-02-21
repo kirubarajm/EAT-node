@@ -1222,7 +1222,7 @@ Collection.get_all_collection_by_cid_getkichens = async function get_all_collect
         //   console.log(res1[i].distance);
           //15min Food Preparation time , 3min 1 km
         //  eta = 15 + 3 * res[i].distance;
-          var eta = foodpreparationtime + (onekm * res1[i].distance);
+          var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res1[i].distance);
           
           res1[i].serviceablestatus = false;
 
@@ -1339,7 +1339,7 @@ Collection.get_all_collection_by_cid_getkichens_v2 = async function get_all_coll
                 res1[i].distance = res1[i].distance.toFixed(2);
                 //15min Food Preparation time , 3min 1 km
               //  eta = 15 + 3 * res[i].distance;
-                var eta = foodpreparationtime + onekm * res1[i].distance;
+                var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res1[i].distance);
                 
                 res1[i].serviceablestatus = false;
     
@@ -1467,7 +1467,7 @@ Collection.get_all_collection_by_cid_getkichens_infinity_screen = async function
           res1[i].productlist = 0;
         }        
       }      
-      var eta = foodpreparationtime + (onekm * res1[i].distance);          
+      var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res1[i].distance);          
       res1[i].serviceablestatus   = false;          
       if (res1[i].distance <= radiuslimit) {
         res1[i].serviceablestatus = true;
@@ -1581,7 +1581,7 @@ Collection.get_all_collection_by_cid_v2_infinity_screen  = async function get_al
               res1[i].distance = res1[i].distance.toFixed(2);
               //  15min Food Preparation time , 3min 1 km
               //  eta = 15 + 3 * res[i].distance;
-              var eta = foodpreparationtime + onekm * res1[i].distance;                    
+              var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res1[i].distance);                    
               // res1[i].serviceablestatus = false; 
               // if (res1[i].distance <= radiuslimit) {
               //   res1[i].serviceablestatus = true;

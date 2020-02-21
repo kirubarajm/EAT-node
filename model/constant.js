@@ -11,7 +11,7 @@ const calculate = {
   refferalcontent:"Welcome to EAT. Click the link to download the EAT app from play store",
   radiuslimit: 2.37,
   foodpreparationtime: 15, //min
-  onekm: 10,
+  onekm: 3,
   servicecharge: 0,
   cancellationmessage: "Are you sure! you want to cancel the order?",
   makeit_nearby_moveit_radius: 4, // in kilometers
@@ -139,7 +139,8 @@ const calculate = {
     testing_kitchen_onboarded_count:4,
 
     order_assign_first_radius : 2.5,
-    order_assign_second_radius : 0.5
+    order_assign_second_radius : 0.5,
+    delivery_buffer_time : 5
 
 }
 
