@@ -27,6 +27,7 @@ module.exports = function(app) {
   var packageController = require("../controllers/common/PackagingBoxTrackingController");
   var packageInventoryController = require("../controllers/makeit/PackageInventoryController");
   var zone = require("../controllers/common/ZoneController");
+
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));
@@ -120,8 +121,6 @@ app.route("/admin/order/delivery").put(routesVersioning({"1.0.0":orders.admin_or
 app.route("/admin/order/paymentstatus").put(routesVersioning({"1.0.0":orders.admin_order_payment_status}));
 app.route("/admin/moveit/ordercount").post(routesVersioning({"1.0.0":orders.admin_order_order_count_by_moveit}));
 app.route("/admin/makeit/unserviceable").post(routesVersioning({"1.0.0":makeituser.admin_makeit_serviceable_status}));
-
-
 app.route("/admin/reports/moveitorders").post(routesVersioning({"1.0.0":orders.admin_moveit_no_orders}));
 app.route("/admin/reports/orderturnaroundtime/makeit").post(routesVersioning({"1.0.0":orders.admin_order_turnaround_time_makeit}));
 app.route("/admin/reports/orderturnaroundtime/moveit").post(routesVersioning({"1.0.0":orders.admin_order_turnaround_time_moveit}));
@@ -139,21 +138,16 @@ app.route("/admin/reports/newusersordersreport").post(routesVersioning({"1.0.0":
 app.route("/admin/reports/retainedcustomerreport").post(routesVersioning({"1.0.0":orders.retained_customer}));
 app.route("/admin/reports/userorderhistoryreport").post(routesVersioning({"1.0.0":orders.user_orders_history}));
 app.route("/admin/reports/salesaccountreport").post(routesVersioning({"1.0.0":orders.datewise_sales}));
-
 app.route("/admin/reports/cancelordersreport").post(routesVersioning({"1.0.0":orders.cancel_orders}));
 app.route("/admin/reports/driverwisecodreport").post(routesVersioning({"1.0.0":orders.driverwise_cod}));
 app.route("/admin/reports/hubtotaldeliveryreport").post(routesVersioning({"1.0.0":orders.hub_total_delivery}));
-
 app.route("/admin/reports/productwisereport").post(routesVersioning({"1.0.0":orders.product_wise}));
 app.route("/admin/reports/productwisevirtualreport").post(routesVersioning({"1.0.0":orders.product_wise_virtual}));
 app.route("/admin/reports/productwiserealreport").post(routesVersioning({"1.0.0":orders.product_wise_real}));
-
 app.route("/admin/reports/ordersreport").post(routesVersioning({"1.0.0":orders.orders_report}));
 app.route("/admin/reports/virtualordersreport").post(routesVersioning({"1.0.0":orders.virtual_orders_report}));
 app.route("/admin/reports/realordersreport").post(routesVersioning({"1.0.0":orders.real_orders_report}));
-
 app.route("/admin/ordersrating").post(routesVersioning({"1.0.0":orders.orders_rating}));
-
 app.route("/admin/reports/kitchenwisereport").post(routesVersioning({"1.0.0":orders.kitchenwise_report}));
 app.route("/admin/reports/virtualmakeitearningsreport").post(routesVersioning({"1.0.0":orders.virtual_makeit_earnings}));
 app.route("/admin/reports/realmakeitearningsreport").post(routesVersioning({"1.0.0":orders.real_makeit_earnings}));
@@ -164,13 +158,10 @@ app.route("/admin/reports/realkitchenpreparebeforecancel").post(routesVersioning
 
 ////Razorpay Capture
 app.route("/admin/orders/razorpaycapture").post(routesVersioning({"1.0.0":Razorpay.razorpaycapture}));
-
 app.route("/admin/order/pickupcancel").put(routesVersioning({"1.0.0":orders.admin_order_pickup_cancel}));
 app.route("/admin/order/preparedcancel").put(routesVersioning({"1.0.0":orders.admin_order_prepared_cancel}));
-
 app.route("/admin/reports/virtualkitchenordercanceled").post(routesVersioning({"1.0.0":orders.virtual_order_canceled}));
 app.route("/admin/reports/realkitchenordercanceled").post(routesVersioning({"1.0.0":orders.real_order_canceled}));
-
 app.route("/admin/moveit/current_location").post(routesVersioning({"1.0.0":moveituser.admin_moveit_current_location}));
 app.route("/admin/moveit/nearbymoveit").post(routesVersioning({"1.0.0":moveituser.getNearByMoveit_auto_assign}));
 
@@ -178,7 +169,6 @@ app.route("/admin/moveit/nearbymoveit").post(routesVersioning({"1.0.0":moveituse
 app.route("/admin/makeit/liveproductstatus").post(routesVersioning({"1.0.0":makeituser.makeit_liveproduct_status}));
 app.route("/admin/makeit/kitchenliveproductstatus").post(routesVersioning({"1.0.0":makeituser.kitchen_liveproduct_status}));
 app.route("/admin/makeit/kitchenpercentage").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage}));
-
 app.route("/admin/order/movetoqueue").put(routesVersioning({"1.0.0":orders.order_move_to_queue}));
 ////Live Product Status History Report
 app.route("/admin/reports/kitchenpercentage_report").post(routesVersioning({"1.0.0":makeituser.admin_list_all_makeitusers_percentage_report}));
@@ -240,7 +230,6 @@ app.route("/admin/reports/virtualabandonedcartrevenu").post(routesVersioning({"1
 app.route("/admin/reports/realabandonedcartrevenu").post(routesVersioning({"1.0.0":orders.real_abandonedcartrevenu_report}));
 
 //admin dunzo cod order list
-
 app.route("/admin/dunzocodorders").post(routesVersioning({"1.0.0":orders.list_dunzo_zone_cod_orders}));
 app.route("/admin/dunzoorderlist").post(routesVersioning({"1.0.0":orders.list_dunzo_zone_cod_orders_list}));
 app.route("/admin/dunzoorder/assign").post(routesVersioning({"1.0.0":orders.dunzo_order_assign}));
@@ -284,11 +273,9 @@ app.route("/admin/zone/xfactorupdate").post(routesVersioning({"1.0.0":zone.updat
 ///KPI Dashboard Reports Live Kitchen count////
 app.route("/admin/reports/loglivekitchenavgcount").post(routesVersioning({"1.0.0":orders.log_livekitchenavgcount_report}));
 app.route("/admin/reports/loghublivekitchenavgcount").post(routesVersioning({"1.0.0":orders.log_hub_livekitchenavgcount_report}));
-
 app.route("/admin/reports/cancelled_report_follow_up").post(routesVersioning({"1.0.0":orders.cancelled_report_follow_up}));
 app.route("/admin/reports/unclosed_orders").post(routesVersioning({"1.0.0":orders.unclosed_orders}));
 app.route("/admin/reports/customerexperience").post(routesVersioning({"1.0.0":orders.customerexperience}));
-
 app.route("/admin/reports/eatusergrowth").post(routesVersioning({"1.0.0":eatuser.user_growth_order_report}));
 app.route("/admin/reports/makeit_earnings").post(routesVersioning({"1.0.0":makeituser.makeit_earnings_report}));
 app.route("/admin/reports/makeit_cancellation").post(routesVersioning({"1.0.0":makeituser.makeit_cancellation_report}));

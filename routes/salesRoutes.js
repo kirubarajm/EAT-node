@@ -30,13 +30,10 @@ app.route("/sales/registration").post(routesVersioning({"1.0.0":salesuser.create
 app.route("/sales/trainingdocs").get(middleware.checkToken,routesVersioning({"1.0.0":documents.list_all_sales_training_documents}));
 app.route("/sales/tasklist/:id").get(middleware.checkToken,routesVersioning({"1.0.0":allocation.list_all_allocation_by_salesempid,"2.0.0":allocation.list_all_allocation_by_salesempid_V2}));
 app.route("/sales/todaytasklist/:id").get(middleware.checkToken,routesVersioning({"1.0.0":allocation.list_all_today_tasklist_by_salesempid}));
-
 app.route("/salesusers").post(routesVersioning({"1.0.0":salesuser.create_a_user}));
 //app.route("/salesusers").get(routesVersioning({"1.0.0":salesuser.list_all_user}));
 app.route("/salesusers/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":salesuser.read_a_user}));
 app.route("/salesusers/:userid").put(middleware.checkToken,routesVersioning({"1.0.0":salesuser.update_a_user}));
-
-
 app.route("/sales/versioncheck").post(routesVersioning({"1.0.0": salesuser.sales_app_version_check_vid}));
 app.route("/sales/logout").post(middleware.checkToken,routesVersioning({"1.0.0":salesuser.Salesuser_logout}));
 //app.route("/salesusers/:userid").delete(routesVersioning({"1.0.0":salesuser.delete_a_user}));
