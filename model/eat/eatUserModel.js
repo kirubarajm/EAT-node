@@ -5147,7 +5147,6 @@ Eatuser.payment_retry = async function payment_retry(req, result) {
       };
       result(null, resobj);
     }
-    result(getorder);
   }else{
     let resobj = {
       success: true,

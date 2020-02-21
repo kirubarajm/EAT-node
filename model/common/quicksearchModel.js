@@ -882,6 +882,7 @@ const moveitlog_out = new CronJob("59 59 7,11,15,22 * * *", async function() {
     for (let i = 0; i < res.length; i++) {
       /////////logout Moveit-Time log/////////////////
       var req={};
+      
       req.type    = 0;
       req.moveit_userid = res[i].userid;
       req.action  = 2;
