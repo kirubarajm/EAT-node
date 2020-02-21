@@ -320,4 +320,7 @@ app.route("/admin/reports/logs_metrics_report").get(routesVersioning({"1.0.0":or
 ///makeit_incentive_report////
 app.route("/admin/reports/makeitincentivereport").post(routesVersioning({"1.0.0":orders.show_makeit_incentive_report}));
 
+///Eat users orders list////
+app.route("/admin/user/orderlist").post(routesVersioning({"1.0.0":orders.eat_user_order_list}));
+
 }

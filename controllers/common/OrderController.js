@@ -1204,3 +1204,12 @@ exports.show_makeit_incentive_report = function(req, res) {
     res.json(result);
   });
 };
+
+///Eat users orders list////
+exports.eat_user_order_list = function(req, res) {
+
+  Order.eat_user_order_list(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

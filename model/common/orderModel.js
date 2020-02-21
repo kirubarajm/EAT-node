@@ -9575,4 +9575,57 @@ Order.show_makeit_incentive_report= async function show_makeit_incentive_report(
   }    
 };
 
+
+///Eat users orders list////
+Order.eat_user_order_list= async function eat_user_order_list(req,result) {   
+  var isEmptylist=true;
+  if(req.userid){
+    var orderlimit = 20;
+    var page = req.page || 1;
+    var startlimit = (page - 1) * orderlimit;
+  
+    var or_query =
+    "Select od.*,us.*,mu.brandname,mu.virtualkey as kitchentype from Orders as od left join User as us on od.userid=us.userid join MakeitUser as mu on mu.userid=od.makeit_user_id where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2)) and od.userid="+req.userid;
+   // var query =
+      //"Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status>0) )and orderstatus < 9";
+    var searchquery =
+      "od.orderid LIKE  '%" +
+      req.search +
+      "%'";
+  
+    if (req.delivery_vendor !== "all"){
+      or_query = or_query + " and od.delivery_vendor = '" + req.delivery_vendor + "'";
+    }
+    if (req.search) {
+      or_query = or_query + " and " + searchquery;
+    }
+  
+    var limitquery =or_query +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
+    var ordertotalcount = await query(or_query);
+    var orderlist = await query(limitquery);
+    var totalcount = 0;
+    if (orderlist.length !== 0) {
+      totalcount = ordertotalcount.length;
+      isEmptylist=false;
+      let resobj = {
+        success: true,
+        status:true,
+        totalorder: totalcount,
+        result:orderlist
+      };
+      result(null, resobj);
+    }
+  }
+  
+   if(isEmptylist){
+    let resobj = {
+      success: true,
+      message: "Sorry!No Orders Found",
+      status:false
+    };
+    result(null, resobj);
+  }    
+};
+
+
 module.exports = Order;
