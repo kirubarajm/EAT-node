@@ -13,10 +13,6 @@ var PushConstant = require("../../push/PushConstant.js");
 
 
 
-
-
-
-
 //Task object constructor
 var Dunzo = function(dunzo){
     this.makeit_userid = dunzo.makeit_userid;
@@ -71,8 +67,6 @@ Dunzo.create_Dunzoresponce = function create_Dunzoresponce(dunzo_responce) {
     else return res;
   });
 };
-
-
 
 
 // controller for moveit details
