@@ -2250,7 +2250,7 @@ Order.order_delivery_status_by_moveituser =async function(req, result) {
             };
             result(null, resobj);
           }
-        }
+          }
         } else {
           let resobj = {
             success: true,

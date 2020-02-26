@@ -31,7 +31,6 @@ app.route("/moveit/hub").post(middleware.checkToken,routesVersioning({"1.0.0":mo
 app.route("/moveit/setlocation").post(middleware.checkToken,routesVersioning({"1.0.0":moveituser.setGeoLocation}));
 app.route("/moveit/getlocation").post(middleware.checkToken,routesVersioning({"1.0.0":moveituser.getGeoLocation}));
 app.route("/moveitusers").get(middleware.checkToken,routesVersioning({"1.0.0":moveituser.list_all_user})).post(middleware.checkToken,routesVersioning({"1.0.0":moveituser.create_a_user}));
-
 app.route("/moveitusers/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":moveituser.read_a_user})).put(middleware.checkToken,routesVersioning({"1.0.0":moveituser.update_a_user})).delete(middleware.checkToken,routesVersioning({"1.0.0":moveituser.delete_a_user}));
 app.route("/moveit/logout").post(middleware.checkToken,routesVersioning({"1.0.0":moveituser.Moveituser_logout}));
 app.route("/moveit/todayincome").post(routesVersioning({"1.0.0":orders.moveit_delivery_cash_received_by_today}));
