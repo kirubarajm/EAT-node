@@ -2360,8 +2360,9 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
         res[i].subtitle = "kitchen";
         res[i].type     = 0;
         res[i].distance = res[i].distance.toFixed(2) ;
-        res[i].distance = Math.ceil(res[i].distance);
-        var eta         = constant.delivery_buffer_time +foodpreparationtime + (onekm * res[i].distance);
+        var eta_distance = Math.ceil(res[i].distance);
+        //console.log("res[i].distance",res[i].distance,res[i].makeituserid);
+        var eta         = constant.delivery_buffer_time +foodpreparationtime + (onekm * eta_distance);
         res[i].eta      = Math.round(eta);    
         res[i].serviceablestatus = false;
         res[i].kitchenstatus     = 1;
