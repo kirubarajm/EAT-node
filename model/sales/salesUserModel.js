@@ -92,7 +92,7 @@ Salesuser.getUserById = function getUserById(userId, result) {
 
 Salesuser.getMakeitkitchenInfo = function getMakeitkitchenInfo(userId, result) {
   sql.query(
-    "Select brandname,hometownid,gender,food_type,bank_account_no,bank_holder_name,bank_name,branch_name,ifsc from MakeitUser where userid = ? ",
+    "Select makeit_type,brandname,hometownid,gender,food_type,bank_account_no,bank_holder_name,bank_name,branch_name,ifsc from MakeitUser where userid = ? ",
     userId,
     function(err, res) {
       if (err) {
