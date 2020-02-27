@@ -9627,5 +9627,97 @@ Order.eat_user_order_list= async function eat_user_order_list(req,result) {
   }    
 };
 
+///Admin Raw Data Report -> liveproducthistory_rawreport////
+Order.liveproducthistory_rawreport= async function liveproducthistory_rawreport(req,result) {
+  if(req.fromdate !='' && req.todate !=''){
+    var liveproducthistoryquery ="select * from Live_Product_History where date(created_at) between '"+req.fromdate+"' and '"+req.todate+"'";
+    var res = await query(liveproducthistoryquery); 
+  
+    if (res.length !== 0) {
+      let resobj = {
+        success: true,
+        status:true,
+        result:res
+      };
+      result(null, resobj);
+    }else {
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status:false
+      };
+      result(null, resobj);
+    }  
+  }else{
+    let resobj = {
+      success: false,
+      status:false,
+      message: "please check all required fields",
+    };
+    result(null, resobj);
+  }    
+};
+
+///Admin Raw Data Report -> makeitlog_rawreport////
+Order.makeitlog_rawreport= async function makeitlog_rawreport(req,result) {
+  if(req.fromdate !='' && req.todate !=''){
+    var makeitlogquery ="select * from Makeit_Timelog where date(created_at) between '"+req.fromdate+"' and '"+req.todate+"'";
+    var res = await query(makeitlogquery); 
+  
+    if (res.length !== 0) {
+      let resobj = {
+        success: true,
+        status:true,
+        result:res
+      };
+      result(null, resobj);
+    }else {
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status:false
+      };
+      result(null, resobj);
+    }  
+  }else{
+    let resobj = {
+      success: false,
+      status:false,
+      message: "please check all required fields",
+    };
+    result(null, resobj);
+  }    
+};
+
+///Admin Raw Data Report -> moveitlog_rawreport////
+Order.moveitlog_rawreport= async function moveitlog_rawreport(req,result) {
+  if(req.fromdate !='' && req.todate !=''){
+    var moveitlogquery ="select * from Moveit_Timelog where date(created_at) between '"+req.fromdate+"' and '"+req.todate+"'";
+    var res = await query(moveitlogquery); 
+  
+    if (res.length !== 0) {
+      let resobj = {
+        success: true,
+        status:true,
+        result:res
+      };
+      result(null, resobj);
+    }else {
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status:false
+      };
+      result(null, resobj);
+    }  
+  }else{
+    let resobj = {
+      success: false,
+      status:false,
+      message: "please check all required fields",
+    };
+    result(null, resobj);
+  }    
+};
 
 module.exports = Order;
