@@ -1207,8 +1207,31 @@ exports.show_makeit_incentive_report = function(req, res) {
 
 ///Eat users orders list////
 exports.eat_user_order_list = function(req, res) {
-
   Order.eat_user_order_list(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+///Admin Raw Data Report -> liveproducthistory_rawreport////
+exports.liveproducthistory_rawreport = function(req, res) {
+  Order.liveproducthistory_rawreport(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+///Admin Raw Data Report -> makeitlog_rawreport////
+exports.makeitlog_rawreport = function(req, res) {
+  Order.makeitlog_rawreport(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
+///Admin Raw Data Report -> moveitlog_rawreport////
+exports.moveitlog_rawreport = function(req, res) {
+  Order.moveitlog_rawreport(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });

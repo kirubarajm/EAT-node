@@ -323,4 +323,9 @@ app.route("/admin/reports/makeitincentivereport").post(routesVersioning({"1.0.0"
 ///Eat users orders list////
 app.route("/admin/user/orderlist").post(routesVersioning({"1.0.0":orders.eat_user_order_list}));
 
+///Admin Raw Data Report////
+app.route("/admin/reports/liveproducthistoryrawreport").post(routesVersioning({"1.0.0":orders.liveproducthistory_rawreport}));
+app.route("/admin/reports/makeitlograwreport").post(routesVersioning({"1.0.0":orders.makeitlog_rawreport}));
+app.route("/admin/reports/moveitlograwreport").post(routesVersioning({"1.0.0":orders.moveitlog_rawreport}));
+
 }
