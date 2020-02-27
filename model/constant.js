@@ -140,7 +140,10 @@ const calculate = {
 
     order_assign_first_radius : 2.5,
     order_assign_second_radius : 0.5,
-    delivery_buffer_time : 5
+    delivery_buffer_time : 5,
+    Xfactor_status:false,
+    Xfactor_moveit_count:5,
+    order_waiting_min:30 //min
 
 }
 
