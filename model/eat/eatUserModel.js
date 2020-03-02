@@ -16,6 +16,7 @@ var Notification = require("../../model/common/notificationModel.js");
 var PushConstant = require("../../push/PushConstant.js");
 var Stories = require("../../model/common/storyModel");
 var Offers = require("../../model/common/couponModel");
+var Zendeskrequest = require("../../model/common/ZendeskRequestsModel");
 
 
 // var instance = new Razorpay({
@@ -5372,5 +5373,127 @@ Eatuser.user_growth_order_report = async function user_growth_order_report(req, 
   });
 
 };
+
+
+Eatuser.new_zendesk_request_create = function new_zendesk_request_create(req) {
+
+  var new_ZendeskRequestsModel= new Zendeskrequest(req);
+  Zendeskrequest.createZendeskrequest(new_ZendeskRequestsModel, function(err, res) {
+    if (err) return err;
+    else return res;
+  });
+};
+
+Eatuser.zendesk_request_create = function zendesk_request_create(req, result) {
+
+  sql.query("Select * from User where  userid = ? ",req.userid,function(err, res) {
+      if (err) {
+        console.log("error: ", err);
+        result(err, null);
+      } else {
+      
+        if (!res[0].zendeskuserid) {
+            
+
+          var user ={};
+          var userdetails={}
+          user.name=res[0].name;
+          user.email=res[0].email;
+          user.phone=res[0].phoneno;
+          userdetails.user = user;
+         
+          console.log("userdetails----------->",userdetails);
+
+
+        var Username = 'tovologies@gmail.com';
+        var Password = 'Temptovo';
+        
+      //   console.log(user11111);
+        auth = "Basic " + Buffer.from(Username + ":" + Password).toString("base64");
+        var headers= {
+          'Content-Type': 'application/json',
+          'Authorization': auth,
+         };
+  
+    //set request parameter
+       request.post({headers: headers, url: 'https://tovogroup.zendesk.com/api/v2/users.json?', json: userdetails, method: 'POST'},async function (e, r, body) {
+    
+       if (!body.error) {
+         
+         var updatedetails = await query("update User set zendeskuserid= '"+body.user.id+"' where userid = "+req.userid+ " ")
+
+         req.zendeskuserid=body.user.id;
+
+         Eatuser.new_zendesk_request_create(req);
+   
+         let resobj = {
+           success: true,
+           status: true,
+           status_code : 200,
+           message : "request created successfully",
+           
+         };
+         result(null, resobj);
+         
+       }else{
+         var url = "https://tovogroup.zendesk.com/api/v2/users/search.json?query=email:"+res[0].email+""
+    
+         console.log("-------------------------------url",url);
+
+
+          request.get({headers: headers, url:url, method: 'GET'},async function (e, r, body) {
+            console.log("e--",e);
+            //console.log("r--",r);
+            console.log("-------------------------------body",body);
+
+            const obj = JSON.parse(body);
+            console.log("-------------------------------body.user[0].id",obj.users[0]);
+            if (obj.users[0].id) {
+            var updatedetails = await query("update User set zendeskuserid= '"+obj.users[0].id+"' where userid = "+req.userid+ " ")
+
+              req.zendeskuserid=obj.users[0].id;
+
+              Eatuser.new_zendesk_request_create(req);
+        
+              let resobj = {
+                success: true,
+                status: true,
+                status_code : 200,
+                message : "request created successfully",
+                
+              };
+              result(null, resobj);
+            
+              }
+          });
+       }
+  
+      
+       });
+
+        }else{
+
+          req.zendeskuserid=res[0].zendeskuserid;
+
+          console.log("req------------>",req);
+          Eatuser.new_zendesk_request_create(req);
+   
+          let resobj = {
+            success: true,
+            status: true,
+            status_code : 200,
+            message : "request created successfully",
+            
+          };
+          result(null, resobj);
+        }
+
+
+       
+      }
+    }
+  );
+};
+
 
 module.exports = Eatuser;

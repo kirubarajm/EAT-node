@@ -489,4 +489,42 @@ Notification.queries_answers_PushNotification = async function(
   }
 };
 
+
+Notification.zendeskPushNotification = async function(req,pageid) {
+
+  var data = null;
+  switch (pageid) {
+    case PushConstant.Pageid_eat_zendesk_notification:
+      data = {
+        title: req.notification.title,
+        message: req.notification.body,
+        ticket_id: "" + req.notification.ticket_id,
+        app: "Eat",
+        notification_type: "1"
+      };
+      break;
+
+  }
+  if (data == null) return;
+
+ 
+  //const user = await Notification.getEatUserDetail(userid);
+   console.log("data->", data);
+  
+
+   for (let i = 0; i < req.devices.length; i++) {
+    if (req.devices[i].type=='android') {
+    
+      FCM_EAT.sendNotificationAndroid(req.devices[i].identifier, data,1 );
+    }
+   
+    if (req.devices[i].type=='ios') {
+      
+      FCM_EAT.sendNotificationAndroid(req.devices[i].identifier, data,2);
+    }
+     
+   }
+
+};
+
 module.exports = Notification;

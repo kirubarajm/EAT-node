@@ -328,4 +328,9 @@ app.route("/admin/reports/liveproducthistoryrawreport").post(routesVersioning({"
 app.route("/admin/reports/makeitlograwreport").post(routesVersioning({"1.0.0":orders.makeitlog_rawreport}));
 app.route("/admin/reports/moveitlograwreport").post(routesVersioning({"1.0.0":orders.moveitlog_rawreport}));
 
+
+///Click to call////
+app.route("/admin/clicktocall").post(routesVersioning({"1.0.0":orders.show_makeit_incentive_report}));
+
+
 }

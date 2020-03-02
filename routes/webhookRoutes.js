@@ -3,6 +3,8 @@ module.exports = function(app) {
     var routesVersioning = require('express-routes-versioning')();
     var DunzoController = require("../controllers/webhooks/dunzoController.js");
     var RazorpayController = require("../controllers/webhooks/razorpayController");
+    var ZendeskController = require("../controllers/webhooks/zendeskController");
+
     var middleware = require('../model/middleware.js');
 
     app.route("/webhooks/dunzo").post(routesVersioning({"1.0.0": DunzoController.dunzo_nex_state_update}));
@@ -14,5 +16,10 @@ module.exports = function(app) {
 
     /////////////Razorpay Webhooks///////////////
     app.route("/webhooks/razorpay").post(routesVersioning({"1.0.0":RazorpayController.webhooks}));
+
+
+    //////////zen-desk///////
+    app.route("/webhooks/zendesk").post(routesVersioning({"1.0.0":ZendeskController.ZendeskController_webhooks}));
+
 
 }

@@ -17,6 +17,7 @@ module.exports = function(app) {
   let config = require('../model/config.js');
   let middleware = require('../model/middleware.js');
   var Promotion = require("../controllers/common/PromotionController");
+  var Zendeskissues = require("../controllers/common/ZendeskissuesController");
 
 
 
@@ -176,5 +177,13 @@ app.route("/eat/getotp/:phone_number").get(middleware.checkToken,routesVersionin
 //////////Razorpay////////////////////
 app.route("/eat/payment/retry").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.payment_retry}));
 app.route("/eat/promotion/homescreen").post(middleware.checkToken,routesVersioning({"1.0.0":Promotion.get_all_Promotion_by_userid}));
+
+//////zen desk//////
+app.route("/eat/zendesk/issues").post(middleware.checkToken,routesVersioning({"1.0.0":Zendeskissues.getZendeskissues}));
+app.route("/eat/zendesk/issuesdetails").post(middleware.checkToken,routesVersioning({"1.0.0":Zendeskissues.getZendeskissuesDetails}));
+app.route("/eat/zendesk/requestcreate").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.zendesk_requestcreate}));
+
+
+
 
 }

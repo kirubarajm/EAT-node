@@ -143,7 +143,10 @@ const calculate = {
     delivery_buffer_time : 5,
     Xfactor_status:false,
     Xfactor_moveit_count:5,
-    order_waiting_min:30 //min
+    order_waiting_min:30, //min
+    zendesk_url:"https://tovogroup.zendesk.com/",
+    Username:"tovologies@gmail.com",
+    Password:"Temptovo"
 
 }
 
