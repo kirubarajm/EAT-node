@@ -321,6 +321,6 @@ app.route("/admin/reports/logs_metrics_report").get(routesVersioning({"1.0.0":or
 app.route("/admin/reports/makeitincentivereport").post(routesVersioning({"1.0.0":orders.show_makeit_incentive_report}));
 
 ///Click to call////
-app.route("/admin/clicktocall").post(routesVersioning({"1.0.0":orders.show_makeit_incentive_report}));
+app.route("/admin/clicktocall").post(routesVersioning({"1.0.0":eatuser.click_to_call}));
 
 }

@@ -5405,21 +5405,15 @@ Eatuser.zendesk_request_create = function zendesk_request_create(req, result) {
       } else {
       
         if (!res[0].zendeskuserid) {
-            
-
           var user ={};
           var userdetails={}
           user.name=res[0].name;
           user.email=res[0].email;
           user.phone=res[0].phoneno;
           userdetails.user = user;
-         
           console.log("userdetails----------->",userdetails);
-
-
         var Username = 'tovologies@gmail.com';
         var Password = 'Temptovo';
-        
       //   console.log(user11111);
         auth = "Basic " + Buffer.from(Username + ":" + Password).toString("base64");
         var headers= {
@@ -5507,5 +5501,134 @@ Eatuser.zendesk_request_create = function zendesk_request_create(req, result) {
   );
 };
 
+///Show makeit_incentive_report////
+Eatuser.click_to_call= async function click_to_call(req,result) {   
+  var zendeskuserid=0;
+  var auth = "Basic " + Buffer.from(constant.Username + ":" + constant.Password).toString("base64");
+  var headers= {
+    'Content-Type': 'application/json',
+    'Authorization': auth,
+   };
+
+  sql.query("Select * from User where  userid = ? ",req.userid,function(err, res) {
+    if (err) {
+      result(err, null);
+    } else {
+      if (!res[0].zendeskuserid) {
+        var user ={};
+        var userdetails={}
+        user.name=res[0].name;
+        user.email=res[0].email;
+        user.phone=res[0].phoneno;
+        userdetails.user = user;
+        var Userapi="/api/v2/users.json?"
+        var UserURL=constant.zendesk_url+Userapi;
+  //set request parameter
+     request.post({headers: headers, url: UserURL, json: userdetails, method: 'POST'},async function (e, r, body) {
+      var objUser = body;
+      try {
+        objUser = JSON.parse(body);
+      } catch (e) {
+          console.log("e--",e);
+      }
+     if (!objUser.error) {
+       var updatedetails = await query("update User set zendeskuserid= '"+objUser.user.id+"' where userid = "+req.userid+ " ")
+       zendeskuserid=objUser.user.id;
+       req.zendeskuserid=objUser.user.id;
+       Eatuser.new_zendesk_request_create(req);
+      //  let resobj = {
+      //    success: true,
+      //    status: true,
+      //    status_code : 200,
+      //    message : "request created successfully",
+         
+      //  };
+      //  result(null, resobj);
+       
+     }else{
+       var url = constant.zendesk_url+"/api/v2/users/search.json?query=email:"+res[0].email+""
+        request.get({headers: headers, url:url, method: 'GET'},async function (e, r, body) {
+          var obj = body;
+          try {
+            obj = JSON.parse(body);
+          } catch (e) {
+            console.log("e--",e);
+          }
+          if (obj.users[0].id) {
+          var updatedetails = await query("update User set zendeskuserid= '"+obj.users[0].id+"' where userid = "+req.userid+ " ")
+            zendeskuserid=obj.users[0].id;  
+            req.zendeskuserid=obj.users[0].id;
+            Eatuser.new_zendesk_request_create(req);
+            // let resobj = {
+            //   success: true,
+            //   status: true,
+            //   status_code : 200,
+            //   message : "request created successfully",
+              
+            // };
+            // result(null, resobj);
+            }
+        });
+     }
+     });
+      }else{
+        zendeskuserid=res[0].zendeskuserid;
+        req.zendeskuserid=res[0].zendeskuserid;
+        Eatuser.new_zendesk_request_create(req);
+        // let resobj = {
+        //   success: true,
+        //   status: true,
+        //   status_code : 200,
+        //   message : "request created successfully",
+          
+        // };
+        // result(null, resobj);
+      }
+
+      if(zendeskuserid){
+        var detail={};
+        var ticketdetails={}
+        detail.priority='high';
+        detail.requester_id=zendeskuserid;
+        detail.tags=['admin'];
+        ticketdetails.ticket = detail;
+        var url = constant.zendesk_url+"/api/v2/tickets.json"
+        request.post({headers: headers, url:url, json: ticketdetails,method: 'POST'},async function (e, r, body) {
+          var obj = body;
+          try {
+            obj = JSON.parse(body);
+          } catch (e) {
+            console.log("e--",e);
+          }
+          if (obj.ticket.id) {
+            var ticketid=obj.ticket.id;
+            req.ticketid=ticketid;
+            Eatuser.new_zendesk_request_create(req);
+            var updateOrderQuery="update Orders set zendesk_ticketid= "+ticketid+" where orderid= "+req.orderid; 
+            var update_orders=await query(updateOrderQuery);
+            let resobj = {
+              success: true,
+              status: true,
+              status_code : 200,
+              message : "Ticket created successfully",
+              
+            };
+             result(null, resobj);
+            }
+        });
+      }else{
+        let resobj = {
+          success: true,
+          status: false,
+          status_code : 200,
+          message : "Ticket Not Created. Please try again",
+          
+        };
+         result(null, resobj);
+      }
+    }
+  }
+);
+};
 
 module.exports = Eatuser;

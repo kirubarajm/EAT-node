@@ -1204,12 +1204,3 @@ exports.show_makeit_incentive_report = function(req, res) {
     res.json(result);
   });
 };
-
-///Click to call api////
-exports.click_to_call = function(req, res) {
-  //console.log("moveitdaywisecyclereport");
-  Order.click_to_call(req.body, function(err, result) {
-    if (err) res.send(err);
-    res.json(result);
-  });
-};

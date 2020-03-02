@@ -19,7 +19,7 @@ module.exports = function(app) {
 
 
     //////////zen-desk///////
-    app.route("/webhooks/zendesk").post(routesVersioning({"1.0.0":ZendeskController.ZendeskController_webhooks}));
+    app.route("/webhooks/zendesk").post(routesVersioning({"1.0.0":ZendeskController.ZendeskController_webhooks_tickets}));
 
 
 }
