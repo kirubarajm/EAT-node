@@ -72,7 +72,7 @@ ZendeskWebhook.ZendeskController_webhooks_tickets =async function ZendeskControl
       //console.log("body--",body);
       var data = body;
       try {
-        var data = JSON.parse(body);
+         data = JSON.parse(body);
       } catch (e) {
           console.log("e--",e);
       }
@@ -101,11 +101,16 @@ ZendeskWebhook.ZendeskController_webhooks_tickets =async function ZendeskControl
 
            if(select_tags.length>0){
             var type =get_zendesk_chat[0].type;
-            var tags_type= type==1?"CurrentOrder":"OldOrder"
-            select_tags.push(tags_type);
+            var tags_type= type==1?"currentOrder":"oldOrder"
+            var tags=[];
+            tags.push(tags_type);
+            tags.push("order_id_"+get_zendesk_chat[0].orderid);
+            //console.log("model select_tags[0].tag_name--",select_tags[0].tag_name.replace(/\s+/g,"_"));
+            tags.push(select_tags[0].tag_name.replace(/\s+/g,"_"));
+            console.log("select_tags-->",tags);
              var userdetails={
                  ticket:{
-                   tags: select_tags
+                   tags: tags
                  }
              }
             request.put({headers: headers, url:ticketURL, json: userdetails,method: 'PUT'},async function (e, r, body) {
