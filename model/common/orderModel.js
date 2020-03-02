@@ -9509,4 +9509,10 @@ Order.show_makeit_incentive_report= async function show_makeit_incentive_report(
   }    
 };
 
+
+///Show makeit_incentive_report////
+Order.click_to_call= async function click_to_call(req,result) {   
+    
+};
+
 module.exports = Order;
