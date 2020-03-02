@@ -737,3 +737,13 @@ exports.promotion_homescreen = function(req, res) {
     res.json(user);
   });
 };
+
+exports.zendesk_requestcreate = function(req, res) {
+  if (req.headers) {
+    req.body.app_type = parseInt(req.headers.apptype);
+  }
+  Eatuser.zendesk_request_create(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
