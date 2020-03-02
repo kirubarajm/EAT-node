@@ -2486,27 +2486,21 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
               } else {
                 // if (res3.status != true) {
                 //   result(null, res3);
-                // } else {   
-                  
-                
-                                
-                // }
+                // } else {  }
                 if (res3.status == true) {
-                var collectionlist        = {};
-                collectionlist.collection = res3.collection;
-                var collectiontype        = collectionlist.collection;
-                var collectiontrue = collectiontype.filter(collectiontype => collectiontype.type==2);
-                collectionlist.collection = collectiontrue.filter(collectiontrue => collectiontrue.collectionstatus==true);
-
-                
-                if(kitchenlist.length >= kitchen_pagenation_limit){
-                  kitchenlist.push(collectionlist);
-                  kitchenlist[kitchenlist.length-1].title   = "Collections";
-                  kitchenlist[kitchenlist.length-1].subtitle= "Collections";
-                  kitchenlist[kitchenlist.length-1].type    = 1; 
-                }   
-                }
-                                  
+                  var collectionlist        = {};
+                  collectionlist.collection = res3.collection;
+                  var collectiontype        = collectionlist.collection;
+                  var collectiontrue = collectiontype.filter(collectiontype => collectiontype.type==2);
+                  collectionlist.collection = collectiontrue.filter(collectiontrue => collectiontrue.collectionstatus==true);
+                  
+                  if(kitchenlist.length >= kitchen_pagenation_limit){
+                    kitchenlist.push(collectionlist);
+                    kitchenlist[kitchenlist.length-1].title   = "Collections";
+                    kitchenlist[kitchenlist.length-1].subtitle= "Collections";
+                    kitchenlist[kitchenlist.length-1].type    = 1; 
+                  }   
+                }                               
 
                 let resobj = {
                   success: true,
@@ -2715,17 +2709,14 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
             var repeat_collection = page%2;
             if(repeat_collection ==0){
               ///////////Collection List//////////////
-              console.log("Collection List  ===============>");
-              await Collection.list_all_active_collection(req,async function(err,res3) {
+              await Collection.list_all_active_collection_infinity_screen(req,async function(err,res3) {
                 if (err) {
                   result(err, null);
                 } else {
                   // if (res3.status != true) {
                   //   repeat_collection =2 ;
                   //   result(null, res3);
-                  // } else {      
-                                               
-                  // }
+                  // } else {  }
 
                   if (res3.status == true) {
                     var collectionlist        = {};
@@ -2741,9 +2732,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                       kitchenlist[kitchenlist.length-1].subtitle= "Collections";
                       kitchenlist[kitchenlist.length-1].type    = 1; 
                     }  
-                  }
-
-                
+                  }               
                   
                   let resobj = {
                     success: true,
@@ -2760,8 +2749,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
               });            
             }else{
               ///////////Collection Details//////////////
-              console.log("Collection Details  ===============>");
-              Collection.list_all_active_collection(req,async function(err,cidlist) {
+              Collection.list_all_active_collection_infinity_screen(req,async function(err,cidlist) {
                 if (err) { 
                   result(err, null);
                 } else {
@@ -2772,6 +2760,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                     if (err) { 
                       result(err, null);
                     } else {
+                      //console.log("else collectiontype2list-->",collectiontype2list);
                       if (collectiontype2list.status != true) {
                         repeat_collection = 1;
                         result(null, collectiontype2list);

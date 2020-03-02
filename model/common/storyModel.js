@@ -62,7 +62,7 @@ var Stories = function(stories) {
         } else {
          
           for (let i = 0; i < res.length; i++) {
-                    console.log(res[i].storyid);
+                    //console.log(res[i].storyid);
                     var stories = await query("select * from Story where storyid = '"+res[i].storyid+"'");
                     
                     
