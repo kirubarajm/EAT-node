@@ -25,8 +25,6 @@ Zendeskissues.createZendeskissues = function createZendeskissues(req, result) {
   });
 };
 
-
-
 Zendeskissues.getZendeskissuesDetails = function getZendeskissuesDetails(req,result) {
     sql.query("Select zi.id,zi.issues,zi.type,zi.department,zi.tid,zt.tag_name from Zendesk_issues zi join Zendesk_tag zt on zt.tid=zi.tid where zi.active_status=1 and zi.id='"+req.id+"'", function(err, res) {
       if (err) {
