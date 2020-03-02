@@ -17,9 +17,11 @@ module.exports = function(app) {
     /////////////Razorpay Webhooks///////////////
     app.route("/webhooks/razorpay").post(routesVersioning({"1.0.0":RazorpayController.webhooks}));
 
-
     //////////zen-desk///////
-    app.route("/webhooks/zendesk").post(routesVersioning({"1.0.0":ZendeskController.ZendeskController_webhooks}));
+    app.route("/webhooks/zendesk").post(routesVersioning({"1.0.0":ZendeskController.ZendeskController_webhooks_tickets}));
+
+    app.route("/webhooks/zendesk/ticket_update").post(routesVersioning({"1.0.0":ZendeskController.ZendeskController_webhooks_tickets}));
+
 
 
 }
