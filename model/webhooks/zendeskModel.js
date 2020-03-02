@@ -80,7 +80,7 @@ ZendeskWebhook.ZendeskController_webhooks_tickets =async function ZendeskControl
       if(data.ticket){
         var zendesk_userid=data.ticket.requester_id;
         console.log("zendesk_userid-->",zendesk_userid);
-        var get_zendesk_chat_query="select id,orderid,issueid from Zendesk_chat_requests where zendeskuserid= "+zendesk_userid +" order by id desc LIMIT 1";
+        var get_zendesk_chat_query="select id,orderid,issueid,type from Zendesk_chat_requests where zendeskuserid= "+zendesk_userid +" order by id desc LIMIT 1";
         var get_zendesk_chat=await query(get_zendesk_chat_query);
         console.log("get_zendesk_chat_query-->",get_zendesk_chat);
         if(get_zendesk_chat.length>0){
@@ -93,22 +93,25 @@ ZendeskWebhook.ZendeskController_webhooks_tickets =async function ZendeskControl
           var update_orders=await query(updateOrderQuery);
           console.log("updateOrderQuery-->",updateOrderQuery);
 
-          // var select_tags_query= "select tag_name from Zendesk_issues zi left join Zendesk_tag zt on zt.tid=zi.tid where tid in("+get_zendesk_chat_id[0].issueid+")"
-          // var select_tags= await query(select_tags_query);
+           var select_tags_query= "select zt.tag_name from Zendesk_issues zi left join Zendesk_tag zt on zt.tid=zi.tid where id ="+get_zendesk_chat[0].issueid
+           var select_tags= await query(select_tags_query);
 
-          // console.log("select_tags e--",select_tags);
+           console.log("select_tags e--",select_tags);
 
-          // if(select_tags.length>0){
-          //   var userdetails={
-          //       ticket:{
-          //         tags: [select_tags]
-          //       }
-          //   }
-          //   request.put({headers: headers, url:ticketURL, json: userdetails,method: 'PUT'},async function (e, r, body) {
-          //       console.log("tags e--",e);
-          //       console.log("tags body--",body);
-          //   });
-          // }
+           if(select_tags.length>0){
+            var type =get_zendesk_chat[0].type;
+            var tags_type= type==1?"CurrentOrder":"OldOrder"
+            select_tags.push(tags_type);
+             var userdetails={
+                 ticket:{
+                   tags: select_tags
+                 }
+             }
+            request.put({headers: headers, url:ticketURL, json: userdetails,method: 'PUT'},async function (e, r, body) {
+                console.log("tags e--",e);
+                console.log("tags body--",body);
+            });
+          }
           
           isResponse=true;
         }
