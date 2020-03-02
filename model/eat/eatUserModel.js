@@ -5421,7 +5421,7 @@ Eatuser.zendesk_request_create = function zendesk_request_create(req, result) {
         var Password = 'Temptovo';
         
       //   console.log(user11111);
-        auth = "Basic " + new Buffer(Username + ":" + Password).toString("base64");
+        auth = "Basic " + Buffer.from(Username + ":" + Password).toString("base64");
         var headers= {
           'Content-Type': 'application/json',
           'Authorization': auth,
@@ -5430,8 +5430,7 @@ Eatuser.zendesk_request_create = function zendesk_request_create(req, result) {
     //set request parameter
        request.post({headers: headers, url: 'https://tovogroup.zendesk.com/api/v2/users.json?', json: userdetails, method: 'POST'},async function (e, r, body) {
     
-    //   console.log(body);
-       if (body.user.id) {
+       if (!body.error) {
          
          var updatedetails = await query("update User set zendeskuserid= '"+body.user.id+"' where userid = "+req.userid+ " ")
 
@@ -5448,6 +5447,37 @@ Eatuser.zendesk_request_create = function zendesk_request_create(req, result) {
          };
          result(null, resobj);
          
+       }else{
+         var url = "https://tovogroup.zendesk.com/api/v2/users/search.json?query=email:"+res[0].email+""
+    
+         console.log("-------------------------------url",url);
+
+
+          request.get({headers: headers, url:url, method: 'GET'},async function (e, r, body) {
+            console.log("e--",e);
+            //console.log("r--",r);
+            console.log("-------------------------------body",body);
+
+            const obj = JSON.parse(body);
+            console.log("-------------------------------body.user[0].id",obj.users[0]);
+            if (obj.users[0].id) {
+            var updatedetails = await query("update User set zendeskuserid= '"+obj.users[0].id+"' where userid = "+req.userid+ " ")
+
+              req.zendeskuserid=obj.users[0].id;
+
+              Eatuser.new_zendesk_request_create(req);
+        
+              let resobj = {
+                success: true,
+                status: true,
+                status_code : 200,
+                message : "request created successfully",
+                
+              };
+              result(null, resobj);
+            
+              }
+          });
        }
   
       

@@ -742,6 +742,15 @@ exports.zendesk_requestcreate = function(req, res) {
   if (req.headers) {
     req.body.app_type = parseInt(req.headers.apptype);
   }
+
+  if (req.body.orderid) {
+    req.body.orderid = parseInt(req.body.orderid);
+  }
+
+
+  if (req.body.userid) {
+    req.body.userid = parseInt(req.body.userid);
+  }
   Eatuser.zendesk_request_create(req.body, function(err, user) {
     if (err) res.send(err);
     res.json(user);
