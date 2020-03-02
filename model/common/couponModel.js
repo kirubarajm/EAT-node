@@ -95,7 +95,6 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
       if (err) {
         result(err, null);
       } else {
-
       
           if (res.length !== 0 ) {
 
@@ -167,8 +166,9 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
       req.coupon_name = res[i].coupon_name;
       req.numberoftimes = res[i].numberoftimes;
 
+ 
       var couponinfo = await query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? and active_status=1 ",[req.eatuserid,req.cid]);
-      console.log(couponinfo[0].cnt);
+      //console.log(couponinfo[0].cnt);
       if(couponinfo[0].cnt < req.numberoftimes){
        res[i].couponstatus = true;
       }else{
@@ -176,6 +176,31 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
       // delete res[i];
      // res.splice(i);
       }
+
+
+      if (req.coupon_type ==2 && res[i].couponstatus==true) {
+        
+  
+        var get_user_created_at = await query("select date(created_at) as created_at from User where userid="+req.eatuserid+"");
+        
+        
+        var dateFrom = "02/03/2020";
+        var dateTo = "30/03/2020";
+        var dateCheck = "02/03/2020";
+
+        var d1 = dateFrom.split("/");
+        var d2 = dateTo.split("/");
+        var c = dateCheck.split("/");
+
+        var from = new Date(d1[2], parseInt(d1[1])-1, d1[0]);  // -1 because months are from 0 to 11
+        var to   = new Date(d2[2], parseInt(d2[1])-1, d2[0]);
+        var check = new Date(c[2], parseInt(c[1])-1, c[0]);
+
+        console.log(check > from && check < to)
+
+
+      }
+     
 
     }
   
