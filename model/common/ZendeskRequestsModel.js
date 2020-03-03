@@ -17,9 +17,9 @@ Zendeskrequest.createZendeskrequest =async function createZendeskrequest(req, re
 
  //   console.log("---------------->new_zendesk_request_create",req);
 
-var get_zendesk= await query("select * from Zendesk_chat_requests where orderid= "+req.orderid+"  and issueid= "+req.issueid+"  ")
+var get_zendesk= await query("select * from Zendesk_chat_requests where orderid= "+req.orderid+"  and issueid= "+req.issueid+" ")
 
-var get_ticketid= await query("select * from Zendesk_chat_requests where orderid= "+req.orderid+"  order by id desc limit 1  ")
+var get_ticketid= await query("select * from Zendesk_chat_requests where orderid= "+req.orderid+"  order by id desc limit 1 ")
 
     if (get_zendesk.length==0) {
 
