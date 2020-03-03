@@ -8244,7 +8244,7 @@ Order.moveit_daywise_report= async function moveit_daywise_report(req) {
 
 ////Moveit Order Count///////
 Order.moveit_order_count = async function moveit_order_count(req,moveitloguser) {
-  var ordercountquery = "select date(created_at) as date,moveit_user_id,count(orderid) as order_count, COUNT(CASE WHEN time(order_assigned_time)>='08:00:00' AND time(order_assigned_time)<'12:00:00' THEN orderid END) as breakfast, COUNT(CASE WHEN time(order_assigned_time)>='12:00:00' AND time(order_assigned_time)<'16:00:00' THEN orderid END) as lunch, COUNT(CASE WHEN time(order_assigned_time)>='16:00:00' AND time(order_assigned_time)<='23:59:59' THEN orderid END) as dinner from Orders where moveit_user_id IN("+moveitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 and orderstatus=6 and moveit_user_id!=0 group by moveit_user_id,date(created_at) order by moveit_user_id,date(created_at)";
+  var ordercountquery = "select date(created_at) as date,moveit_user_id,count(orderid) as order_count, COUNT(CASE WHEN time(order_assigned_time)>='08:00:00' AND time(order_assigned_time)<'12:00:00' THEN orderid END) as breakfast, COUNT(CASE WHEN time(order_assigned_time)>='12:00:00' AND time(order_assigned_time)<'16:00:00' THEN orderid END) as lunch, COUNT(CASE WHEN time(order_assigned_time)>='16:00:00' AND time(order_assigned_time)<='23:59:59' THEN orderid END) as dinner,COUNT(CASE WHEN time(order_assigned_time)>='08:00:00' AND time(order_assigned_time)<'09:00:00' THEN orderid END) as log0809_count,COUNT(CASE WHEN time(order_assigned_time)>='09:00:00' AND time(order_assigned_time)<'10:00:00' THEN orderid END) as log0910_count, COUNT(CASE WHEN time(order_assigned_time)>='10:00:00' AND time(order_assigned_time)<'11:00:00' THEN orderid END) as log1011_count, COUNT(CASE WHEN time(order_assigned_time)>='11:00:00' AND time(order_assigned_time)<'12:00:00' THEN orderid END) as log1112_count, COUNT(CASE WHEN time(order_assigned_time)>='12:00:00' AND time(order_assigned_time)<'13:00:00' THEN orderid END) as log1213_count, COUNT(CASE WHEN time(order_assigned_time)>='13:00:00' AND time(order_assigned_time)<'14:00:00' THEN orderid END) as log1314_count, COUNT(CASE WHEN time(order_assigned_time)>='14:00:00' AND time(order_assigned_time)<'15:00:00' THEN orderid END) as log1415_count, COUNT(CASE WHEN time(order_assigned_time)>='15:00:00' AND time(order_assigned_time)<'16:00:00' THEN orderid END) as log1516_count, COUNT(CASE WHEN time(order_assigned_time)>='16:00:00' AND time(order_assigned_time)<'17:00:00' THEN orderid END) as log1617_count, COUNT(CASE WHEN time(order_assigned_time)>='17:00:00' AND time(order_assigned_time)<'18:00:00' THEN orderid END) as log1718_count, COUNT(CASE WHEN time(order_assigned_time)>='18:00:00' AND time(order_assigned_time)<'19:00:00' THEN orderid END) as log1819_count, COUNT(CASE WHEN time(order_assigned_time)>='19:00:00' AND time(order_assigned_time)<'20:00:00' THEN orderid END) as log1920_count, COUNT(CASE WHEN time(order_assigned_time)>='20:00:00' AND time(order_assigned_time)<'21:00:00' THEN orderid END) as log2021_count, COUNT(CASE WHEN time(order_assigned_time)>='21:00:00' AND time(order_assigned_time)<'22:00:00' THEN orderid END) as log2122_count,COUNT(CASE WHEN time(order_assigned_time)>='22:00:00' AND time(order_assigned_time)<'23:00:00' THEN orderid END) as log2223_count from Orders where moveit_user_id IN("+moveitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 and orderstatus=6 and moveit_user_id!=0 group by moveit_user_id,date(created_at) order by moveit_user_id,date(created_at)";
   var ordercount = await query(ordercountquery);
   return ordercount;
 };
@@ -8294,6 +8294,123 @@ Order.moveit_logtime = async function moveit_logtime(req) {
     var secondscycle3    = '';
     var avgtimecycle3    = '00:00:00';    
 
+    /////// 1 hr variable declaration /////////////
+    var hrstarttime = '';
+    var hrendtime   = '';
+    /////// log0809/////////
+    var starttime0809     = '';
+    var endtime0809       = '';
+    var avgtimediff0809   = '';
+    var avgtimediffsec0809 = '';
+    var seconds0809       = '';
+    var avgtime0809       = '00:00:00';
+    /////// log0910/////////
+    var starttime0910     = '';
+    var endtime0910       = '';
+    var avgtimediff0910   = '';
+    var avgtimediffsec0910 = '';
+    var seconds0910       = '';
+    var avgtime0910       = '00:00:00';
+    /////// log1011/////////
+    var starttime1011     = '';
+    var endtime1011       = '';
+    var avgtimediff1011  = '';
+    var avgtimediffsec1011 = '';
+    var seconds1011       = '';
+    var avgtime1011       = '00:00:00';
+    /////// log1112/////////
+    var starttime1112     = '';
+    var endtime1112       = '';
+    var avgtimediff1112  = '';
+    var avgtimediffsec1112 = '';
+    var seconds1112       = '';
+    var avgtime1112       = '00:00:00';
+    /////// log1213/////////
+    var starttime1213     = '';
+    var endtime1213       = '';
+    var avgtimediff1213  = '';
+    var avgtimediffsec1213 = '';
+    var seconds1213       = '';
+    var avgtime1213       = '00:00:00';
+    /////// log1314/////////
+    var starttime1314     = '';
+    var endtime1314       = '';
+    var avgtimediff1314  = '';
+    var avgtimediffsec1314 = '';
+    var seconds1314       = '';
+    var avgtime1314       = '00:00:00';
+    /////// log1415/////////
+    var starttime1415     = '';
+    var endtime1415       = '';
+    var avgtimediff1415  = '';
+    var avgtimediffsec1415 = '';
+    var seconds1415       = '';
+    var avgtime1415       = '00:00:00';
+    /////// log1516/////////
+    var starttime1516     = '';
+    var endtime1516       = '';
+    var avgtimediff1516  = '';
+    var avgtimediffsec1516 = '';
+    var seconds1516       = '';
+    var avgtime1516       = '00:00:00';
+    /////// log1617/////////
+    var starttime1617     = '';
+    var endtime1617       = '';
+    var avgtimediff1617  = '';
+    var avgtimediffsec1617 = '';
+    var seconds1617       = '';
+    var avgtime1617       = '00:00:00';
+    /////// log1718/////////
+    var starttime1718     = '';
+    var endtime1718       = '';
+    var avgtimediff1718  = '';
+    var avgtimediffsec1718 = '';
+    var seconds1718       = '';
+    var avgtime1718       = '00:00:00';
+    /////// log1819/////////
+    var starttime1819     = '';
+    var endtime1819       = '';
+    var avgtimediff1819  = '';
+    var avgtimediffsec1819 = '';
+    var seconds1819       = '';
+    var avgtime1819       = '00:00:00';
+    /////// log1819/////////
+    var starttime1819     = '';
+    var endtime1819       = '';
+    var avgtimediff1819  = '';
+    var avgtimediffsec1819 = '';
+    var seconds1819       = '';
+    var avgtime1819       = '00:00:00';
+    /////// log1920/////////
+    var starttime1920     = '';
+    var endtime1920       = '';
+    var avgtimediff1920  = '';
+    var avgtimediffsec1920 = '';
+    var seconds1920       = '';
+    var avgtime1920       = '00:00:00';
+    /////// log2021/////////
+    var starttime2021     = '';
+    var endtime2021       = '';
+    var avgtimediff2021  = '';
+    var avgtimediffsec2021 = '';
+    var seconds2021       = '';
+    var avgtime2021       = '00:00:00';
+    /////// log2122/////////
+     var starttime2122     = '';
+     var endtime2122       = '';
+     var avgtimediff2122  = '';
+     var avgtimediffsec2122 = '';
+     var seconds2122       = '';
+     var avgtime2122       = '00:00:00';
+    /////// log2223/////////
+    var starttime2223     = '';
+    var endtime2223       = '';
+    var avgtimediff2223  = '';
+    var avgtimediffsec2223 = '';
+    var seconds2223       = '';
+    var avgtime2223       = '00:00:00';
+    //////////////////////////////////////////////
+
     for (let l = 0; l < moveitlog.length; l++) { 
       if(moveitavg[k].moveit_userid == moveitlog[l].moveit_userid && moveitavg[k].date == moveitlog[l].log_date){ 
         if(moveitlog[l].type==1){
@@ -8305,6 +8422,24 @@ Order.moveit_logtime = async function moveit_logtime(req) {
           }else if(starttime >= "16:00:00" && starttime < "23:00:00"){
             starttimecycle3 = starttime;
           } 
+
+          //////////1 hr type-1/////////
+          if(hrstarttime >= "08:00:00" && hrstarttime < "09:00:00"){ starttime0809 = hrstarttime; }
+          else if(hrstarttime >= "09:00:00" && hrstarttime < "10:00:00"){ starttime0910 = hrstarttime; }
+          else if(hrstarttime >= "10:00:00" && hrstarttime < "11:00:00"){ starttime1011 = hrstarttime; }
+          else if(hrstarttime >= "11:00:00" && hrstarttime < "12:00:00"){ starttime1112 = hrstarttime; }
+          else if(hrstarttime >= "12:00:00" && hrstarttime < "13:00:00"){ starttime1213 = hrstarttime; }
+          else if(hrstarttime >= "13:00:00" && hrstarttime < "14:00:00"){ starttime1314 = hrstarttime; }
+          else if(hrstarttime >= "14:00:00" && hrstarttime < "15:00:00"){ starttime1415 = hrstarttime; }
+          else if(hrstarttime >= "15:00:00" && hrstarttime < "16:00:00"){ starttime1516 = hrstarttime; }
+          else if(hrstarttime >= "16:00:00" && hrstarttime < "17:00:00"){ starttime1617 = hrstarttime; }
+          else if(hrstarttime >= "17:00:00" && hrstarttime < "18:00:00"){ starttime1718 = hrstarttime; }
+          else if(hrstarttime >= "18:00:00" && hrstarttime < "19:00:00"){ starttime1819 = hrstarttime; }
+          else if(hrstarttime >= "19:00:00" && hrstarttime < "20:00:00"){ starttime1920 = hrstarttime; }
+          else if(hrstarttime >= "20:00:00" && hrstarttime < "21:00:00"){ starttime2021 = hrstarttime; }
+          else if(hrstarttime >= "21:00:00" && hrstarttime < "22:00:00"){ starttime2122 = hrstarttime; }
+          else if(hrstarttime >= "22:00:00" && hrstarttime < "23:00:00"){ starttime2223 = hrstarttime; }
+          //////////////////////////////
         }else if(moveitlog[l].type==0){
           endtime = moveitlog[l].logtime;
           if(endtime >= "08:00:00" && endtime < "12:00:00"){
@@ -8314,6 +8449,24 @@ Order.moveit_logtime = async function moveit_logtime(req) {
           }else if(endtime >= "16:00:00" && endtime < "23:00:00"){
             endtimecycle3 = endtime;
           } 
+
+          //////////1 hr type-2/////////
+          if(hrendtime >= "08:00:00" && hrendtime < "09:00:00"){ endtime0809 = hrendtime; }
+          else if(hrendtime >= "09:00:00" && hrendtime < "10:00:00"){ endtime0910 = hrendtime; }
+          else if(hrendtime >= "10:00:00" && hrendtime < "11:00:00"){ endtime1011 = hrendtime; }
+          else if(hrendtime >= "11:00:00" && hrendtime < "12:00:00"){ endtime1112 = hrendtime; }
+          else if(hrendtime >= "12:00:00" && hrendtime < "13:00:00"){ endtime1213 = hrendtime; }
+          else if(hrendtime >= "13:00:00" && hrendtime < "14:00:00"){ endtime1314 = hrendtime; }
+          else if(hrendtime >= "14:00:00" && hrendtime < "15:00:00"){ endtime1415 = hrendtime; }
+          else if(hrendtime >= "15:00:00" && hrendtime < "16:00:00"){ endtime1516 = hrendtime; }
+          else if(hrendtime >= "16:00:00" && hrendtime < "17:00:00"){ endtime1617 = hrendtime; }
+          else if(hrendtime >= "17:00:00" && hrendtime < "18:00:00"){ endtime1718 = hrendtime; }
+          else if(hrendtime >= "18:00:00" && hrendtime < "19:00:00"){ endtime1819 = hrendtime; }
+          else if(hrendtime >= "19:00:00" && hrendtime < "20:00:00"){ endtime1920 = hrendtime; }
+          else if(hrendtime >= "20:00:00" && hrendtime < "21:00:00"){ endtime2021 = hrendtime; }
+          else if(hrendtime >= "21:00:00" && hrendtime < "22:00:00"){ endtime2122 = hrendtime; }
+          else if(hrendtime >= "22:00:00" && hrendtime < "23:00:00"){ endtime2223 = hrendtime; }
+          //////////////////////////////
         }
         
         if(starttimecycle1 !='' && endtimecycle1 !=''){
@@ -8344,11 +8497,156 @@ Order.moveit_logtime = async function moveit_logtime(req) {
         }
         starttime ='';
         endtime ='';
+
+        ///////////////////////////// 1hr Log /////////////////////
+        if(starttime0809 !='' && endtime0809 !=''){
+          var avgtimediff0809    = moment.utc(moment(endtime0809, "HH:mm:ss").diff(moment(starttime0809, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec0809 = avgtimediff0809.split(':'); 
+          var seconds0809        = (+avgtimediffsec0809[0]) * 60 * 60 + (+avgtimediffsec0809[1]) * 60 + (+avgtimediffsec0809[2]); 
+          avgtime0809        = moment(avgtime0809,"HH:mm:ss").add(seconds0809,'s').format("HH:mm:ss");
+          starttime0809 = '';
+          endtime0809   = '';
+        }
+        if(starttime0910 !='' && endtime0910 !=''){
+          var avgtimediff0910    = moment.utc(moment(endtime0910, "HH:mm:ss").diff(moment(starttime0910, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec0910 = avgtimediff0910.split(':'); 
+          var seconds0910        = (+avgtimediffsec0910[0]) * 60 * 60 + (+avgtimediffsec0910[1]) * 60 + (+avgtimediffsec0910[2]); 
+          avgtime0910        = moment(avgtime0910,"HH:mm:ss").add(seconds0910,'s').format("HH:mm:ss");
+          starttime0910 = '';
+          endtime0910   = '';
+        }
+        if(starttime1011 !='' && endtime1011 !=''){
+          var avgtimediff1011    = moment.utc(moment(endtime1011, "HH:mm:ss").diff(moment(starttime1011, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec1011 = avgtimediff1011.split(':'); 
+          var seconds1011        = (+avgtimediffsec1011[0]) * 60 * 60 + (+avgtimediffsec1011[1]) * 60 + (+avgtimediffsec1011[2]); 
+          avgtime1011        = moment(avgtime1011,"HH:mm:ss").add(seconds1011,'s').format("HH:mm:ss");
+          starttime1011 = '';
+          endtime1011   = '';
+        }
+        if(starttime1112 !='' && endtime1112 !=''){
+          var avgtimediff1112    = moment.utc(moment(endtime1112, "HH:mm:ss").diff(moment(starttime1112, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec1112 = avgtimediff1112.split(':'); 
+          var seconds1112        = (+avgtimediffsec1112[0]) * 60 * 60 + (+avgtimediffsec1112[1]) * 60 + (+avgtimediffsec1112[2]); 
+          avgtime1112        = moment(avgtime1112,"HH:mm:ss").add(seconds1112,'s').format("HH:mm:ss");
+          starttime1112 = '';
+          endtime1112   = '';
+        }
+        if(starttime1213 !='' && endtime1213 !=''){
+          var avgtimediff1213    = moment.utc(moment(endtime1213, "HH:mm:ss").diff(moment(starttime1213, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec1213 = avgtimediff1213.split(':'); 
+          var seconds1213        = (+avgtimediffsec1213[0]) * 60 * 60 + (+avgtimediffsec1213[1]) * 60 + (+avgtimediffsec1213[2]); 
+          avgtime1213        = moment(avgtime1213,"HH:mm:ss").add(seconds1213,'s').format("HH:mm:ss");
+          starttime1213 = '';
+          endtime1213   = '';
+        }
+        if(starttime1314 !='' && endtime1314 !=''){
+          var avgtimediff1314    = moment.utc(moment(endtime1314, "HH:mm:ss").diff(moment(starttime1314, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec1314 = avgtimediff1314.split(':'); 
+          var seconds1314        = (+avgtimediffsec1314[0]) * 60 * 60 + (+avgtimediffsec1314[1]) * 60 + (+avgtimediffsec1314[2]); 
+          avgtime1314        = moment(avgtime1314,"HH:mm:ss").add(seconds1314,'s').format("HH:mm:ss");
+          starttime1314 = '';
+          endtime1314   = '';
+        }
+        if(starttime1415 !='' && endtime1415 !=''){
+          var avgtimediff1415    = moment.utc(moment(endtime1415, "HH:mm:ss").diff(moment(starttime1415, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec1415 = avgtimediff1415.split(':'); 
+          var seconds1415        = (+avgtimediffsec1415[0]) * 60 * 60 + (+avgtimediffsec1415[1]) * 60 + (+avgtimediffsec1415[2]); 
+          avgtime1415        = moment(avgtime1415,"HH:mm:ss").add(seconds1415,'s').format("HH:mm:ss");
+          starttime1415 = '';
+          endtime1415   = '';
+        }
+        if(starttime1516 !='' && endtime1516 !=''){
+          var avgtimediff1516    = moment.utc(moment(endtime1516, "HH:mm:ss").diff(moment(starttime1516, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec1516 = avgtimediff1516.split(':'); 
+          var seconds1516        = (+avgtimediffsec1516[0]) * 60 * 60 + (+avgtimediffsec1516[1]) * 60 + (+avgtimediffsec1516[2]); 
+          avgtime1516        = moment(avgtime1516,"HH:mm:ss").add(seconds1516,'s').format("HH:mm:ss");
+          starttime1516 = '';
+          endtime1516   = '';
+        }
+        if(starttime1617 !='' && endtime1617 !=''){
+          var avgtimediff1617    = moment.utc(moment(endtime1617, "HH:mm:ss").diff(moment(starttime1617, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec1617 = avgtimediff1617.split(':'); 
+          var seconds1617        = (+avgtimediffsec1617[0]) * 60 * 60 + (+avgtimediffsec1617[1]) * 60 + (+avgtimediffsec1617[2]); 
+          avgtime1617        = moment(avgtime1617,"HH:mm:ss").add(seconds1617,'s').format("HH:mm:ss");
+          starttime1617 = '';
+          endtime1617   = '';
+        }
+        if(starttime1718 !='' && endtime1718 !=''){
+          var avgtimediff1718    = moment.utc(moment(endtime1718, "HH:mm:ss").diff(moment(starttime1718, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec1718 = avgtimediff1718.split(':'); 
+          var seconds1718        = (+avgtimediffsec1718[0]) * 60 * 60 + (+avgtimediffsec1718[1]) * 60 + (+avgtimediffsec1718[2]); 
+          avgtime1718        = moment(avgtime1718,"HH:mm:ss").add(seconds1718,'s').format("HH:mm:ss");
+          starttime1718 = '';
+          endtime1718   = '';
+        }
+        if(starttime1819 !='' && endtime1819 !=''){
+          var avgtimediff1819    = moment.utc(moment(endtime1819, "HH:mm:ss").diff(moment(starttime1819, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec1819 = avgtimediff1819.split(':'); 
+          var seconds1819        = (+avgtimediffsec1819[0]) * 60 * 60 + (+avgtimediffsec1819[1]) * 60 + (+avgtimediffsec1819[2]); 
+          avgtime1819        = moment(avgtime1819,"HH:mm:ss").add(seconds1819,'s').format("HH:mm:ss");
+          starttime1819 = '';
+          endtime1819   = '';
+        }
+        if(starttime1920 !='' && endtime1920 !=''){
+          var avgtimediff1920    = moment.utc(moment(endtime1920, "HH:mm:ss").diff(moment(starttime1920, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec1920 = avgtimediff1920.split(':'); 
+          var seconds1920        = (+avgtimediffsec1920[0]) * 60 * 60 + (+avgtimediffsec1920[1]) * 60 + (+avgtimediffsec1920[2]); 
+          avgtime1920        = moment(avgtime1920,"HH:mm:ss").add(seconds1920,'s').format("HH:mm:ss");
+          starttime1920 = '';
+          endtime1920   = '';
+        }
+        if(starttime2021 !='' && endtime2021 !=''){
+          var avgtimediff2021    = moment.utc(moment(endtime2021, "HH:mm:ss").diff(moment(starttime2021, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec2021 = avgtimediff2021.split(':'); 
+          var seconds2021        = (+avgtimediffsec2021[0]) * 60 * 60 + (+avgtimediffsec2021[1]) * 60 + (+avgtimediffsec2021[2]); 
+          avgtime2021        = moment(avgtime2021,"HH:mm:ss").add(seconds2021,'s').format("HH:mm:ss");
+          starttime2021 = '';
+          endtime2021   = '';
+        }
+        if(starttime2122 !='' && endtime2122 !=''){
+          var avgtimediff2122    = moment.utc(moment(endtime2122, "HH:mm:ss").diff(moment(starttime2122, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec2122 = avgtimediff2122.split(':'); 
+          var seconds2122        = (+avgtimediffsec2122[0]) * 60 * 60 + (+avgtimediffsec2122[1]) * 60 + (+avgtimediffsec2122[2]); 
+          avgtime2122        = moment(avgtime2122,"HH:mm:ss").add(seconds2122,'s').format("HH:mm:ss");
+          starttime2122 = '';
+          endtime2122   = '';
+        }
+        if(starttime2223 !='' && endtime2223 !=''){
+          var avgtimediff2223    = moment.utc(moment(endtime2223, "HH:mm:ss").diff(moment(starttime2223, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec2223 = avgtimediff2223.split(':'); 
+          var seconds2223        = (+avgtimediffsec2223[0]) * 60 * 60 + (+avgtimediffsec2223[1]) * 60 + (+avgtimediffsec2223[2]); 
+          avgtime2223        = moment(avgtime2223,"HH:mm:ss").add(seconds2223,'s').format("HH:mm:ss");
+          starttime2223 = '';
+          endtime2223   = '';
+        }
+
+        hrstarttime ='';
+        hrendtime ='';
+        ///////////////////////////////////////////////////////////
       } 
     }     
     moveitavg[k].cycle1 = avgtimecycle1;
     moveitavg[k].cycle2 = avgtimecycle2;
     moveitavg[k].cycle3 = avgtimecycle3;
+
+    //////////// 1hr data//////////////
+    moveitavg[k].log0809 = avgtime0809;
+    moveitavg[k].log0910 = avgtime0910;
+    moveitavg[k].log1011 = avgtime1011;
+    moveitavg[k].log1112 = avgtime1112;
+    moveitavg[k].log1213 = avgtime1213;
+    moveitavg[k].log1314 = avgtime1314;
+    moveitavg[k].log1415 = avgtime1415;
+    moveitavg[k].log1516 = avgtime1516;
+    moveitavg[k].log1617 = avgtime1617;
+    moveitavg[k].log1718 = avgtime1718;
+    moveitavg[k].log1819 = avgtime1819;
+    moveitavg[k].log1920 = avgtime1920;
+    moveitavg[k].log2021 = avgtime2021;
+    moveitavg[k].log2122 = avgtime2122;
+    moveitavg[k].log2223 = avgtime2223;
+    //////////////////////////////////
+
     moveitavg[k].logtime ='00:00:00';
     var cycle1 = moveitavg[k].cycle1.split(':'); 
     var cycle1sec  = (+cycle1[0]) * 60 * 60 + (+cycle1[1]) * 60 + (+cycle1[2]); 
@@ -8367,6 +8665,22 @@ Order.moveit_logtime = async function moveit_logtime(req) {
     moveitavg[k].breakfast =0;
     moveitavg[k].lunch =0;
     moveitavg[k].dinner =0;
+
+    moveitavg[k].log0809_count = 0;
+    moveitavg[k].log0910_count = 0;
+    moveitavg[k].log1011_count = 0;
+    moveitavg[k].log1112_count = 0;
+    moveitavg[k].log1213_count = 0;
+    moveitavg[k].log1314_count = 0;
+    moveitavg[k].log1415_count = 0;
+    moveitavg[k].log1516_count = 0;
+    moveitavg[k].log1617_count = 0;
+    moveitavg[k].log1718_count = 0;
+    moveitavg[k].log1819_count = 0;
+    moveitavg[k].log1920_count = 0;
+    moveitavg[k].log2021_count = 0;
+    moveitavg[k].log2122_count = 0;
+    moveitavg[k].log2223_count = 0;
   } 
   return moveitavg;
 };
@@ -8374,6 +8688,7 @@ Order.moveit_logtime = async function moveit_logtime(req) {
 ///Makeit Succession Report////
 Order.makeit_daywise_report= async function makeit_daywise_report(req) { 
   var makeitlog = await Order.makeit_logtime(req);
+  //console.log("makeitlog -->",makeitlog);
   var makeitloguser = [];
   if(makeitlog.length>0){ 
     for (let i = 0; i < makeitlog.length; i++) {
@@ -8401,6 +8716,37 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
               makeitlog[i].cycle1_soldqty     = makeitorders[j].cycle1_soldqty || 0;
               makeitlog[i].cycle2_soldqty     = makeitorders[j].cycle2_soldqty || 0;
               makeitlog[i].cycle3_soldqty     = makeitorders[j].cycle3_soldqty || 0;
+
+              makeitlog[i].log0809_completed  = makeitorders[j].log0809_completed || 0;
+              makeitlog[i].log0910_completed  = makeitorders[j].log0910_completed || 0;
+              makeitlog[i].log1011_completed  = makeitorders[j].log1011_completed || 0;
+              makeitlog[i].log1112_completed  = makeitorders[j].log1112_completed || 0;
+              makeitlog[i].log1213_completed  = makeitorders[j].log1213_completed || 0;
+              makeitlog[i].log1314_completed  = makeitorders[j].log1314_completed || 0;
+              makeitlog[i].log1415_completed  = makeitorders[j].log1415_completed || 0;
+              makeitlog[i].log1516_completed  = makeitorders[j].log1516_completed || 0;
+              makeitlog[i].log1617_completed  = makeitorders[j].log1617_completed || 0;
+              makeitlog[i].log1718_completed  = makeitorders[j].log1718_completed || 0;
+              makeitlog[i].log1819_completed  = makeitorders[j].log1819_completed || 0;
+              makeitlog[i].log1920_completed  = makeitorders[j].log1920_completed || 0;
+              makeitlog[i].log2021_completed  = makeitorders[j].log2021_completed || 0;
+              makeitlog[i].log2122_completed  = makeitorders[j].log2122_completed || 0;
+              makeitlog[i].log2223_completed  = makeitorders[j].log2223_completed || 0;
+              makeitlog[i].log0809_canceled  = makeitorders[j].log0809_canceled || 0;
+              makeitlog[i].log0910_canceled  = makeitorders[j].log0910_canceled || 0;
+              makeitlog[i].log1011_canceled  = makeitorders[j].log1011_canceled || 0;
+              makeitlog[i].log1112_canceled  = makeitorders[j].log1112_canceled || 0;
+              makeitlog[i].log1213_canceled  = makeitorders[j].log1213_canceled || 0;
+              makeitlog[i].log1314_canceled  = makeitorders[j].log1314_canceled || 0;
+              makeitlog[i].log1415_canceled  = makeitorders[j].log1415_canceled || 0;
+              makeitlog[i].log1516_canceled  = makeitorders[j].log1516_canceled || 0;
+              makeitlog[i].log1617_canceled  = makeitorders[j].log1617_canceled || 0;
+              makeitlog[i].log1718_canceled  = makeitorders[j].log1718_canceled || 0;
+              makeitlog[i].log1819_canceled  = makeitorders[j].log1819_canceled || 0;
+              makeitlog[i].log1920_canceled  = makeitorders[j].log1920_canceled || 0;
+              makeitlog[i].log2021_canceled  = makeitorders[j].log2021_canceled || 0;
+              makeitlog[i].log2122_canceled  = makeitorders[j].log2122_canceled || 0;
+              makeitlog[i].log2223_canceled  = makeitorders[j].log2223_canceled || 0;
             }        
           }
         }    
@@ -8416,7 +8762,23 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
             makeitlog[i].dinner_count     = liveproducts[j].dinner_count;             
             makeitlog[i].cycle1_qty       = liveproducts[j].cycle1_qty;
             makeitlog[i].cycle2_qty       = liveproducts[j].cycle2_qty; 
-            makeitlog[i].cycle3_qty       = liveproducts[j].cycle3_qty;      
+            makeitlog[i].cycle3_qty       = liveproducts[j].cycle3_qty;   
+            
+            makeitlog[i].log0809_count    = liveproducts[j].log0809;  
+            makeitlog[i].log0910_count    = liveproducts[j].log0910;  
+            makeitlog[i].log1011_count    = liveproducts[j].log1011;  
+            makeitlog[i].log1112_count    = liveproducts[j].log1112;  
+            makeitlog[i].log1213_count    = liveproducts[j].log1213;  
+            makeitlog[i].log1314_count    = liveproducts[j].log1314;  
+            makeitlog[i].log1415_count    = liveproducts[j].log1415;  
+            makeitlog[i].log1516_count    = liveproducts[j].log1516;  
+            makeitlog[i].log1617_count    = liveproducts[j].log1617;  
+            makeitlog[i].log1718_count    = liveproducts[j].log1718;  
+            makeitlog[i].log1819_count    = liveproducts[j].log1819;  
+            makeitlog[i].log1920_count    = liveproducts[j].log1920;  
+            makeitlog[i].log2021_count    = liveproducts[j].log2021;  
+            makeitlog[i].log2122_count    = liveproducts[j].log2122; 
+            makeitlog[i].log2223_count    = liveproducts[j].log2223;  
           }
         }   
       }
@@ -8474,6 +8836,7 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
       //console.log("makeitlog[i].kitchen_percentage --->",makeitlog[i].kitchen_percentage);
     }  
   } 
+  console.log(makeitlog);
   return makeitlog; 
 };
 
@@ -8524,7 +8887,7 @@ Order.makeit_order_count = async function makeit_order_count(req,makeitloguser) 
   // var ordercount = await query(ordercountquery);
 
   ////Get sold quantity/////////
-  var ordercountquery = "select date(ord.created_at) as log_date,ord.makeit_user_id as makeit_id, COUNT(CASE WHEN ord.orderstatus=6 THEN ord.orderid END) as order_count, SUM(CASE WHEN ord.orderstatus=6 THEN ord.makeit_earnings END) as total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as breakfast_completed, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as lunch_completed, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as dinner_completed, SUM(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as breakfast_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as lunch_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as dinner_total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as breakfast_canceled, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as lunch_canceled, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as dinner_canceled, CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle1_soldqty, CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle2_soldqty, CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle3_soldqty from Orders as ord left join OrderItem as oi on oi.orderid= ord.orderid where ord.makeit_user_id IN("+makeitloguser+") and date(ord.created_at) between CURDATE()-1 and CURDATE() and ord.makeit_user_id!=0 and (ord.orderstatus=6 or ord.orderstatus=7) group by ord.makeit_user_id,  date(ord.created_at) order by ord.makeit_user_id,date(ord.created_at)"
+  var ordercountquery = "select date(ord.created_at) as log_date,ord.makeit_user_id as makeit_id, COUNT(CASE WHEN ord.orderstatus=6 THEN ord.orderid END) as order_count, SUM(CASE WHEN ord.orderstatus=6 THEN ord.makeit_earnings END) as total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as breakfast_completed, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as lunch_completed, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as dinner_completed, SUM(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as breakfast_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as lunch_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as dinner_total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as breakfast_canceled, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as lunch_canceled, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as dinner_canceled, CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle1_soldqty, CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle2_soldqty, CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle3_soldqty,COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<='09:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log0809_completed,COUNT(CASE WHEN time(ord.created_at)>='09:00:00' AND time(ord.created_at)<='10:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log0910_completed,COUNT(CASE WHEN time(ord.created_at)>='10:00:00' AND time(ord.created_at)<='11:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1011_completed,COUNT(CASE WHEN time(ord.created_at)>='11:00:00' AND time(ord.created_at)<='12:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1112_completed, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<='13:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1213_completed,COUNT(CASE WHEN time(ord.created_at)>='13:00:00' AND time(ord.created_at)<='14:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1314_completed,COUNT(CASE WHEN time(ord.created_at)>='14:00:00' AND time(ord.created_at)<='15:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1415_completed,COUNT(CASE WHEN time(ord.created_at)>='15:00:00' AND time(ord.created_at)<='16:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1516_completed,COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='17:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1617_completed,COUNT(CASE WHEN time(ord.created_at)>='17:00:00' AND time(ord.created_at)<='18:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1718_completed,COUNT(CASE WHEN time(ord.created_at)>='18:00:00' AND time(ord.created_at)<='19:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1819_completed,COUNT(CASE WHEN time(ord.created_at)>='19:00:00' AND time(ord.created_at)<='20:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1920_completed,COUNT(CASE WHEN time(ord.created_at)>='20:00:00' AND time(ord.created_at)<='21:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log2021_completed,COUNT(CASE WHEN time(ord.created_at)>='21:00:00' AND time(ord.created_at)<='22:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log2122_completed,COUNT(CASE WHEN time(ord.created_at)>='22:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log2223_completed,COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<='09:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log0809_canceled,COUNT(CASE WHEN time(ord.created_at)>='09:00:00' AND time(ord.created_at)<='10:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log0910_canceled,COUNT(CASE WHEN time(ord.created_at)>='10:00:00' AND time(ord.created_at)<='11:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1011_canceled,COUNT(CASE WHEN time(ord.created_at)>='11:00:00' AND time(ord.created_at)<='12:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1112_canceled,COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<='13:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1213_canceled,COUNT(CASE WHEN time(ord.created_at)>='13:00:00' AND time(ord.created_at)<='14:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1314_canceled,COUNT(CASE WHEN time(ord.created_at)>='14:00:00' AND time(ord.created_at)<='15:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1415_canceled,COUNT(CASE WHEN time(ord.created_at)>='15:00:00' AND time(ord.created_at)<='16:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1516_canceled,COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='17:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1617_canceled,COUNT(CASE WHEN time(ord.created_at)>='17:00:00' AND time(ord.created_at)<='18:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1718_canceled,COUNT(CASE WHEN time(ord.created_at)>='18:00:00' AND time(ord.created_at)<='19:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1819_canceled,COUNT(CASE WHEN time(ord.created_at)>='19:00:00' AND time(ord.created_at)<='20:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1920_canceled,COUNT(CASE WHEN time(ord.created_at)>='20:00:00' AND time(ord.created_at)<='21:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log2021_canceled,COUNT(CASE WHEN time(ord.created_at)>='21:00:00' AND time(ord.created_at)<='22:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log2122_canceled,COUNT(CASE WHEN time(ord.created_at)>='22:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log2223_canceled from Orders as ord left join OrderItem as oi on oi.orderid= ord.orderid where ord.makeit_user_id IN("+makeitloguser+") and date(ord.created_at) between CURDATE()-1 and CURDATE()-1 and ord.makeit_user_id!=0 and (ord.orderstatus=6 or ord.orderstatus=7) group by ord.makeit_user_id,  date(ord.created_at) order by ord.makeit_user_id,date(ord.created_at)"
   var ordercount = await query(ordercountquery);
 
   return ordercount;
@@ -8674,6 +9037,13 @@ Order.makeit_logtime = async function makeit_logtime(req) {
      var avgtimediffsec2122 = '';
      var seconds2122       = '';
      var avgtime2122       = '00:00:00';
+    /////// log2223/////////
+    var starttime2223     = '';
+    var endtime2223       = '';
+    var avgtimediff2223  = '';
+    var avgtimediffsec2223 = '';
+    var seconds2223       = '';
+    var avgtime2223       = '00:00:00';
     //////////////////////////////////////////////
 
     for (let l = 0; l < makeitlog.length; l++) { 
@@ -8703,6 +9073,7 @@ Order.makeit_logtime = async function makeit_logtime(req) {
           else if(hrstarttime >= "19:00:00" && hrstarttime < "20:00:00"){ starttime1920 = hrstarttime; }
           else if(hrstarttime >= "20:00:00" && hrstarttime < "21:00:00"){ starttime2021 = hrstarttime; }
           else if(hrstarttime >= "21:00:00" && hrstarttime < "22:00:00"){ starttime2122 = hrstarttime; }
+          else if(hrstarttime >= "22:00:00" && hrstarttime < "23:00:00"){ starttime2223 = hrstarttime; }
           //////////////////////////////
         }else if(makeitlog[l].type==0){
           endtime = makeitlog[l].logtime;
@@ -8729,6 +9100,7 @@ Order.makeit_logtime = async function makeit_logtime(req) {
           else if(hrendtime >= "19:00:00" && hrendtime < "20:00:00"){ endtime1920 = hrendtime; }
           else if(hrendtime >= "20:00:00" && hrendtime < "21:00:00"){ endtime2021 = hrendtime; }
           else if(hrendtime >= "21:00:00" && hrendtime < "22:00:00"){ endtime2122 = hrendtime; }
+          else if(hrendtime >= "22:00:00" && hrendtime < "23:00:00"){ endtime2223 = hrendtime; }
           //////////////////////////////
         }
         
@@ -8874,6 +9246,14 @@ Order.makeit_logtime = async function makeit_logtime(req) {
           starttime2122 = '';
           endtime2122   = '';
         }
+        if(starttime2223 !='' && endtime2223 !=''){
+          var avgtimediff2223    = moment.utc(moment(endtime2223, "HH:mm:ss").diff(moment(starttime2223, "HH:mm:ss"))).format("HH:mm:ss");
+          var avgtimediffsec2223 = avgtimediff2223.split(':'); 
+          var seconds2223        = (+avgtimediffsec2223[0]) * 60 * 60 + (+avgtimediffsec2223[1]) * 60 + (+avgtimediffsec2223[2]); 
+          avgtime2223        = moment(avgtime2223,"HH:mm:ss").add(seconds2223,'s').format("HH:mm:ss");
+          starttime2223 = '';
+          endtime2223   = '';
+        }
 
         hrstarttime ='';
         hrendtime ='';
@@ -8899,6 +9279,7 @@ Order.makeit_logtime = async function makeit_logtime(req) {
     makeitlogusers[k].log1920 = avgtime1920;
     makeitlogusers[k].log2021 = avgtime2021;
     makeitlogusers[k].log2122 = avgtime2122;
+    makeitlogusers[k].log2223 = avgtime2223;
     //////////////////////////////////
 
     if(avgtimecycle1 != '00:00:00'){
@@ -8946,13 +9327,61 @@ Order.makeit_logtime = async function makeit_logtime(req) {
     makeitlogusers[k].cycle2_soldqty = 0;
     makeitlogusers[k].cycle3_soldqty = 0;
     makeitlogusers[k].kitchen_percentage = 0;
+
+    makeitlogusers[k].log0809_count = 0;
+    makeitlogusers[k].log0910_count = 0;
+    makeitlogusers[k].log1011_count = 0;
+    makeitlogusers[k].log1112_count = 0;
+    makeitlogusers[k].log1213_count = 0;
+    makeitlogusers[k].log1314_count = 0;
+    makeitlogusers[k].log1415_count = 0;
+    makeitlogusers[k].log1516_count = 0;
+    makeitlogusers[k].log1617_count = 0;
+    makeitlogusers[k].log1718_count = 0;
+    makeitlogusers[k].log1819_count = 0;
+    makeitlogusers[k].log1920_count = 0;
+    makeitlogusers[k].log2021_count = 0;
+    makeitlogusers[k].log2122_count = 0;
+    makeitlogusers[k].log2223_count = 0;
+
+    makeitlogusers[k].log0809_completed = 0;
+    makeitlogusers[k].log0910_completed = 0;
+    makeitlogusers[k].log1011_completed = 0;
+    makeitlogusers[k].log1112_completed = 0;
+    makeitlogusers[k].log1213_completed = 0;
+    makeitlogusers[k].log1314_completed = 0;
+    makeitlogusers[k].log1415_completed = 0;
+    makeitlogusers[k].log1516_completed = 0;
+    makeitlogusers[k].log1617_completed = 0;
+    makeitlogusers[k].log1718_completed = 0;
+    makeitlogusers[k].log1819_completed = 0;
+    makeitlogusers[k].log1920_completed = 0;
+    makeitlogusers[k].log2021_completed = 0;
+    makeitlogusers[k].log2122_completed = 0;
+    makeitlogusers[k].log2223_completed = 0;
+
+    makeitlogusers[k].log0809_canceled = 0;
+    makeitlogusers[k].log0910_canceled = 0;
+    makeitlogusers[k].log1011_canceled = 0;
+    makeitlogusers[k].log1112_canceled = 0;
+    makeitlogusers[k].log1213_canceled = 0;
+    makeitlogusers[k].log1314_canceled = 0;
+    makeitlogusers[k].log1415_canceled = 0;
+    makeitlogusers[k].log1516_canceled = 0;
+    makeitlogusers[k].log1617_canceled = 0;
+    makeitlogusers[k].log1718_canceled = 0;
+    makeitlogusers[k].log1819_canceled = 0;
+    makeitlogusers[k].log1920_canceled = 0;
+    makeitlogusers[k].log2021_canceled = 0;
+    makeitlogusers[k].log2122_canceled = 0;
+    makeitlogusers[k].log2223_canceled = 0;
   } 
   return makeitlogusers;
 };
 
 ////Makeit Cycle Based Product Count///////
 Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req,makeitloguser) {
-  var liveproductcountquery = "select date(created_at) as log_date,makeit_id, COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' THEN (product_id) END) as breakfast_count, COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' THEN (product_id) END) as lunch_count, COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN (product_id) END) as dinner_count from Live_Product_History where makeit_id IN("+makeitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 group by makeit_id order by makeit_id";
+  var liveproductcountquery = "select date(created_at) as log_date,makeit_id, COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' THEN (product_id) END) as breakfast_count, COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' THEN (product_id) END) as lunch_count, COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN (product_id) END) as dinner_count,COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'09:00:00' THEN (product_id) END) as log0809,COUNT(distinct CASE WHEN time(created_at)>='09:00:00' AND time(created_at)<'10:00:00' THEN (product_id) END) as log0910,COUNT(distinct CASE WHEN time(created_at)>='10:00:00' AND time(created_at)<'11:00:00' THEN (product_id) END) as log1011,COUNT(distinct CASE WHEN time(created_at)>='11:00:00' AND time(created_at)<'12:00:00' THEN (product_id) END) as log1112,COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'13:00:00' THEN (product_id) END) as log1213,COUNT(distinct CASE WHEN time(created_at)>='13:00:00' AND time(created_at)<'14:00:00' THEN (product_id) END) as log1314,COUNT(distinct CASE WHEN time(created_at)>='14:00:00' AND time(created_at)<'15:00:00' THEN (product_id) END) as log1415,COUNT(distinct CASE WHEN time(created_at)>='15:00:00' AND time(created_at)<'16:00:00' THEN (product_id) END) as log1516,COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<'17:00:00' THEN (product_id) END) as log1617,COUNT(distinct CASE WHEN time(created_at)>='17:00:00' AND time(created_at)<'18:00:00' THEN (product_id) END) as log1718,COUNT(distinct CASE WHEN time(created_at)>='18:00:00' AND time(created_at)<'19:00:00' THEN (product_id) END) as log1819,COUNT(distinct CASE WHEN time(created_at)>='19:00:00' AND time(created_at)<'20:00:00' THEN (product_id) END) as log1920,COUNT(distinct CASE WHEN time(created_at)>='20:00:00' AND time(created_at)<'21:00:00' THEN (product_id) END) as log2021,COUNT(distinct CASE WHEN time(created_at)>='21:00:00' AND time(created_at)<'22:00:00' THEN (product_id) END) as log2122,COUNT(distinct CASE WHEN time(created_at)>='22:00:00' AND time(created_at)<'23:00:00' THEN (product_id) END) as log2223 from Live_Product_History where makeit_id IN("+makeitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 group by makeit_id order by makeit_id";
   var productcount = await query(liveproductcountquery);
 
   /////////Get Product Count////////
