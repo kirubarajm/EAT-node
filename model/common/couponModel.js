@@ -3,6 +3,7 @@
 var sql = require("../db.js");
 const util = require('util');
 const query = util.promisify(sql.query).bind(sql);
+var moment = require("moment");
 
 var Coupon = function(coupon) {
   this.coupon_name = coupon.coupon_name;
@@ -135,6 +136,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
 
           if (res.length !== 0 ) {
 
+          //  console.log("res");
               var kitchens =   await Coupon.getcouponlist(res,req)
 
 
@@ -165,10 +167,13 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
       req.cid = res[i].cid;
       req.coupon_name = res[i].coupon_name;
       req.numberoftimes = res[i].numberoftimes;
+      req.startdate = res[i].startdate;
+      req.expiry_date = res[i].expiry_date;
 
  
       var couponinfo = await query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? and active_status=1 ",[req.eatuserid,req.cid]);
-      //console.log(couponinfo[0].cnt);
+      // console.log("couponinfo[0].cnt",couponinfo[0].cnt);
+      // console.log("req.numberoftimes",req.numberoftimes);
       if(couponinfo[0].cnt < req.numberoftimes){
        res[i].couponstatus = true;
       }else{
@@ -177,17 +182,20 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
      // res.splice(i);
       }
 
-
-      if (req.coupon_type ==2 && res[i].couponstatus==true) {
-        
   
+      if (res[i].coupon_type == 2 && res[i].couponstatus==true) {
+ 
         var get_user_created_at = await query("select date(created_at) as created_at from User where userid="+req.eatuserid+"");
         
         
-        var dateFrom = "02/03/2020";
-        var dateTo = "30/03/2020";
-        var dateCheck = "02/03/2020";
+        var dateFrom = moment(req.startdate).format("DD/MM/YYYY")
+        var dateTo = moment(req.expiry_date).format("DD/MM/YYYY")
+        var dateCheck =  moment(get_user_created_at[0].created_at).format("DD/MM/YYYY");
 
+        console.log("dateFrom",dateFrom);
+        console.log("dateTo",dateTo);
+        console.log("dateCheck",dateCheck);
+        
         var d1 = dateFrom.split("/");
         var d2 = dateTo.split("/");
         var c = dateCheck.split("/");
@@ -196,8 +204,20 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
         var to   = new Date(d2[2], parseInt(d2[1])-1, d2[0]);
         var check = new Date(c[2], parseInt(c[1])-1, c[0]);
 
-        console.log(check > from && check < to)
+        if(check > from && check < to){
+         
+          res[i].couponstatus = true;
+        }else{
+          console.log("dateCheck1",dateCheck);
+          res[i].couponstatus = false;
+        }
 
+        // console.log(check)
+        // console.log(from)
+        // console.log(check)
+        // console.log(to)
+        // console.log("req.coupon_type-------------------->",res[i].coupon_type);
+        // console.log("res[i].couponstatus-------------------->", res[i].couponstatus);
 
       }
      
@@ -218,21 +238,60 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
         result(err, null);
       } else {
           if (res.length !== 0 ) {
-            sql.query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? and active_status=1  ",[req.userid,res[0].cid], function(err, couponinfo) {
+            sql.query("select COUNT(*) as cnt from CouponsUsed where userid=? and cid=? and active_status=1",[req.userid,res[0].cid],async function(err, couponinfo) {
               if (err) {
                 result(err, null);
               } else {
-                  if(couponinfo[0].cnt<res[0].numberoftimes)
-                  {
+                  if(couponinfo[0].cnt<res[0].numberoftimes){
+
+                    var message = '';
+                    res[0].couponstatus = true;
+                    if (res[0].coupon_type == 2) {
+ 
+                      var get_user_created_at = await query("select date(created_at) as created_at from User where userid="+req.userid+"");
+                      
+                      
+                      var dateFrom = moment(res[0].startdate).format("DD/MM/YYYY")
+                      var dateTo = moment(res[0].expiry_date).format("DD/MM/YYYY")
+                      var dateCheck =  moment(get_user_created_at[0].created_at).format("DD/MM/YYYY");
+              
+                      console.log("dateFrom",dateFrom);
+                      console.log("dateTo",dateTo);
+                      console.log("dateCheck",dateCheck);
+                      
+                      var d1 = dateFrom.split("/");
+                      var d2 = dateTo.split("/");
+                      var c = dateCheck.split("/");
+              
+                      var from = new Date(d1[2], parseInt(d1[1])-1, d1[0]);  // -1 because months are from 0 to 11
+                      var to   = new Date(d2[2], parseInt(d2[1])-1, d2[0]);
+                      var check = new Date(c[2], parseInt(c[1])-1, c[0]);
+              
+                      if(check > from && check < to){
+                       
+                        res[0].couponstatus = true;
+                         message= "Coupon valid"
+                      }else{
+                        console.log("dateCheck1",dateCheck);
+                        res[0].couponstatus = false;
+                         message= "Sorry! Your coupon not valid"
+                      }
+              
+                      
+              
+                    }
+
+
+
+
                     let resobj = {
                       success: true,
-                      status:true,
-                      result: res
+                      status:res[0].couponstatus,
+                      result: res,
+                      message:message
                     };
                     result(null, resobj);
-                  }
-                  else
-                  {
+                  }else{
                   let resobj = {
                     success:true,
                     status: false,
