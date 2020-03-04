@@ -165,6 +165,8 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
   Coupon.getcouponlist = async function(res,req){
 
     for (let i = 0; i < res.length; i++) {
+
+      console.log("res[i].cid",res[i].cid);
       req.cid = res[i].cid;
       req.coupon_name = res[i].coupon_name;
       req.numberoftimes = res[i].numberoftimes;
@@ -227,7 +229,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
 
           if (get_orders.length !=0) {
             
-            if (get_orders.length <= constant.user_montly_order) {
+            if (get_orders.length >= constant.user_montly_order) {
               res[i].couponstatus = true;
             } else{
               res[i].couponstatus = false;
@@ -235,7 +237,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
 
           }else{
 
-            res[i].couponstatus = true;
+            res[i].couponstatus = false;
 
 
           }
@@ -304,7 +306,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
               
                         if (get_orders.length !=0) {
                           
-                          if (get_orders.length <= constant.user_montly_order) {
+                          if (get_orders.length >= constant.user_montly_order) {
                             res[0].couponstatus = true;
                           } else{
                             res[0].couponstatus = false;
@@ -312,7 +314,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
               
                         }else{
               
-                          res[0].couponstatus = true;
+                          res[i].couponstatus = false
               
               
                         }
