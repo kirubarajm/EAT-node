@@ -24,13 +24,16 @@ var MoveitTimelog = function (moveittimelog) {
 MoveitTimelog.createMoveitTimelog = async function createMoveitTimelog(newMoveitTimelog, result) {
   var Moveittimelog= await query("select * from Moveit_Timelog where moveit_userid="+newMoveitTimelog.moveit_userid+" and date(created_at)=CURDATE() order by mt_id desc limit 1");
   //console.log("Moveittimelog -->",Moveittimelog); 
-  
+  console.log("Moveittimelog.length-->",Moveittimelog.length);
   if(Moveittimelog.length == 0){
     Moveittimelog.push({"type":0});
   }
-
-  //console.log("req",newMoveitTimelog.type,"-->query",Moveittimelog[0].type);
+//console.log("Moveittimelog --->",Moveittimelog);
+console.log("Moveittimelog --->",Moveittimelog[0].type);
+console.log("newMoveitTimelog --->",newMoveitTimelog.type);
+//  console.log("req",newMoveitTimelog.type,"-->query",Moveittimelog[0].type);
   if(newMoveitTimelog.type != Moveittimelog[0].type){
+    console.log("newMoveitTimelog -->",newMoveitTimelog); 
     sql.query("INSERT INTO Moveit_Timelog set ?", newMoveitTimelog, function (err, res1) {
       if (err) {
         console.log("error: ", err);
@@ -46,6 +49,8 @@ MoveitTimelog.createMoveitTimelog = async function createMoveitTimelog(newMoveit
       }
     }); 
   }else{
+    console.log("else");
+    console.log("newMoveitTimelog -->",newMoveitTimelog);
     var logstatus = "";
     if(Moveittimelog[0].type == 1){
       logstatus ="online";
