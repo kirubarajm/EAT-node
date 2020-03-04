@@ -8829,7 +8829,7 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
         makeitlog[i].complete_succession_count = completeses;
 
         if(makeitlog[i].cycle1 !="00:00:00" && makeitlog[i].breakfast_count >= 4){  
-          if(makeitlog[i].logtime >= cycle1totaltime){
+          if(makeitlog[i].cycle1 >= cycle1totaltime){
             completeses++;
             makeitlog[i].complete_succession_count = completeses;  
           }else{
@@ -8841,7 +8841,7 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
         }
         
         if(makeitlog[i].cycle2 !="00:00:00" && makeitlog[i].breakfast_count >= 4){  
-          if(makeitlog[i].logtime >= cycle2totaltime){
+          if(makeitlog[i].cycle2 >= cycle2totaltime){
             completeses++;
             makeitlog[i].complete_succession_count = completeses;  
           }else{
@@ -8853,7 +8853,7 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
         }
         
         if(makeitlog[i].cycle3 !="00:00:00" && makeitlog[i].breakfast_count >= 4){  
-          if(makeitlog[i].logtime >= cycle3totaltime){
+          if(makeitlog[i].cycle3 >= cycle3totaltime){
             completeses++;
             makeitlog[i].complete_succession_count = completeses;  
           }else{
@@ -9071,11 +9071,12 @@ Order.makeit_logtime = async function makeit_logtime(req) {
 
 ////Makeit Cycle Based Product Count///////
 Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req,makeitloguser) {
-  var liveproductcountquery = "select date(created_at) as log_date,makeit_id, COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' THEN (product_id) END) as breakfast_count, COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' THEN (product_id) END) as lunch_count, COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN (product_id) END) as dinner_count from Live_Product_History where makeit_id IN("+makeitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 group by makeit_id order by makeit_id";
+  var liveproductcountquery = "select date(lph.created_at) as log_date,lph.makeit_id, COUNT(distinct CASE WHEN time(lph.created_at)>='08:00:00' AND time(lph.created_at)<'12:00:00' AND prd.breakfast=1 THEN (lph.product_id) END) as breakfast_count, COUNT(distinct CASE WHEN time(lph.created_at)>='12:00:00' AND time(lph.created_at)<'16:00:00' AND prd.lunch=1 THEN (lph.product_id) END) as lunch_count, COUNT(distinct CASE WHEN time(lph.created_at)>='16:00:00' AND time(lph.created_at)<='23:00:00' AND prd.dinner=1 THEN (lph.product_id) END) as dinner_count from Live_Product_History as lph left join Product as prd on prd.productid=product_id where lph.makeit_id IN("+makeitloguser+") and date(lph.created_at) between CURDATE()-1 and CURDATE()-1 group by lph.makeit_id order by lph.makeit_id";
+
   var productcount = await query(liveproductcountquery);
 
   /////////Get Product Count////////
-  var cycle1productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)=CURDATE()-1 and time(created_at)>='08:00:00' and time(created_at)<'12:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
+  var cycle1productcountquery = "select *,MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as qty from Live_Product_History as lph left join Product as prd on prd.productid=product_id where date(lph.created_at)=CURDATE()-1 and time(lph.created_at)>='08:00:00' and time(lph.created_at)<'12:00:00' and prd.breakfast=1 and lph.makeit_id IN("+makeitloguser+") group by lph.product_id order by lph.makeit_id";
   var cycle1productcount = await query(cycle1productcountquery);
   
   for (let i = 0; i < productcount.length; i++) {
@@ -9088,7 +9089,7 @@ Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req
     productcount[i].cycle1_qty=count;  
   }
 
-  var cycle2productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)=CURDATE()-1 and time(created_at)>='12:00:00' and time(created_at)<'16:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
+  var cycle2productcountquery = "select *,MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as qty from Live_Product_History as lph left join Product as prd on prd.productid=product_id where date(lph.created_at)=CURDATE()-1 and time(lph.created_at)>='12:00:00' and time(lph.created_at)<'16:00:00' and prd.lunch=1 and lph.makeit_id IN("+makeitloguser+") group by lph.product_id order by lph.makeit_id";
   var cycle2productcount = await query(cycle2productcountquery);
 
   for (let i = 0; i < productcount.length; i++) {
@@ -9101,7 +9102,7 @@ Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req
     productcount[i].cycle2_qty=count;  
   }
 
-  var cycle3productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)=CURDATE()-1 and time(created_at)>='16:00:00' and time(created_at)<='23:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
+  var cycle3productcountquery = "select *,MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as qty from Live_Product_History as lph left join Product as prd on prd.productid=product_id where date(lph.created_at)=CURDATE()-1 and time(lph.created_at)>='16:00:00' and time(lph.created_at)<='23:00:00' and prd.dinner=1 and lph.makeit_id IN("+makeitloguser+") group by lph.product_id order by lph.makeit_id";
   var cycle3productcount = await query(cycle3productcountquery);
 
   for (let i = 0; i < productcount.length; i++) {
