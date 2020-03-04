@@ -4,6 +4,7 @@ var sql = require("../db.js");
 const util = require('util');
 const query = util.promisify(sql.query).bind(sql);
 var moment = require("moment");
+var constant = require("../constant");
 
 var Coupon = function(coupon) {
   this.coupon_name = coupon.coupon_name;
@@ -219,7 +220,27 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
         // console.log("req.coupon_type-------------------->",res[i].coupon_type);
         // console.log("res[i].couponstatus-------------------->", res[i].couponstatus);
 
-      }
+      }else if (res[i].coupon_type == 3 && res[i].couponstatus==true) {
+        
+        var get_orders = await query("select * from Orders where userid="+req.eatuserid+" and orderstatus=6 and created_at >= '"+req.startdate+"' AND created_at <= '"+req.expiry_date+"'");
+
+
+          if (get_orders.length !=0) {
+            
+            if (get_orders.length <= constant.user_montly_order) {
+              res[i].couponstatus = true;
+            } else{
+              res[i].couponstatus = false;
+            }
+
+          }else{
+
+            res[i].couponstatus = true;
+
+
+          }
+
+      } 
      
 
     }
@@ -255,9 +276,6 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
                       var dateTo = moment(res[0].expiry_date).format("DD/MM/YYYY")
                       var dateCheck =  moment(get_user_created_at[0].created_at).format("DD/MM/YYYY");
               
-                      console.log("dateFrom",dateFrom);
-                      console.log("dateTo",dateTo);
-                      console.log("dateCheck",dateCheck);
                       
                       var d1 = dateFrom.split("/");
                       var d2 = dateTo.split("/");
@@ -279,7 +297,28 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
               
                       
               
-                    }
+                    }else if(res[0].coupon_type == 3 && res[0].couponstatus==true) {
+        
+                      var get_orders = await query("select * from Orders where userid="+req.userid+" and orderstatus=6 and created_at >= '"+res[0].startdate+"' AND created_at <= '"+res[0].startdate+"'");
+              
+              
+                        if (get_orders.length !=0) {
+                          
+                          if (get_orders.length <= constant.user_montly_order) {
+                            res[0].couponstatus = true;
+                          } else{
+                            res[0].couponstatus = false;
+                          }
+              
+                        }else{
+              
+                          res[0].couponstatus = true;
+              
+              
+                        }
+              
+                    } 
+                   
 
 
 

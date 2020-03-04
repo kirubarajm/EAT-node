@@ -143,7 +143,8 @@ const calculate = {
     delivery_buffer_time : 5,
     Xfactor_status:false,
     Xfactor_moveit_count:5,
-    order_waiting_min:30 //min
+    order_waiting_min:30,
+    user_montly_order:10 //min
 
 }
 
