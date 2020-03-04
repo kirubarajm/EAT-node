@@ -689,11 +689,14 @@ const master = [
 
     {
         'apptype': [{
-                "aapptypeid": 1,
+            "apptypeid": 0,
+            "description": 'admin'
+        },{
+                "apptypeid": 1,
                 "description": 'android'
             },
             {
-                "addresstypeid": 2,
+                "apptypeid": 2,
                 "description": 'ios'
             }
 

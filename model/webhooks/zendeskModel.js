@@ -100,7 +100,7 @@ ZendeskWebhook.ZendeskController_webhooks_tickets =async function ZendeskControl
 
            if(select_tags.length>0){
             var type =get_zendesk_chat[0].type;
-            var tags_type= type==1?"CurrentOrder":"OldOrder"
+            var tags_type= type==1?"CurrentOrder":type==2?"OldOrder":"";
             select_tags.push(tags_type);
              var userdetails={
                  ticket:{

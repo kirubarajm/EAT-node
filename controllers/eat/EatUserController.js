@@ -758,9 +758,9 @@ exports.zendesk_requestcreate = function(req, res) {
 };
 
 ///Click to call api////
-exports.click_to_call = function(req, res) {
+exports.request_zendesk_ticket = function(req, res) {
   //console.log("moveitdaywisecyclereport");
-  Eatuser.click_to_call(req.body, function(err, result) {
+  Eatuser.request_zendesk_ticket(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });
