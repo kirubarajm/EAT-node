@@ -42,7 +42,6 @@ ZendeskWebhook.zendeskWebhookSendNotification =async function zendeskWebhookSend
 
 
 
-
 ZendeskWebhook.ZendeskController_webhooks_tickets =async function ZendeskController_webhooks_tickets(req, result) {
     var ticketid = req.tid;
     var getUrl="api/v2/tickets/"+ticketid+".json"

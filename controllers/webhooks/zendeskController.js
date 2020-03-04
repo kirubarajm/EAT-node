@@ -13,9 +13,8 @@ exports.ZendeskController_webhooks = function(req, res) {
 
 
 exports.ZendeskController_webhooks_tickets = function(req, res) {
-    zendeskWebhook.ZendeskController_webhooks_tickets(req.body, function(err, result) {
-        if (err) res.send(err);
-        res.json(result);
-      });
-    
+  zendeskWebhook.ZendeskController_webhooks_tickets(req.body, function(err, result) {
+      if (err) res.send(err);
+      res.json(result);
+    });
 };

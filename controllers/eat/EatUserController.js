@@ -756,3 +756,12 @@ exports.zendesk_requestcreate = function(req, res) {
     res.json(user);
   });
 };
+
+///Click to call api////
+exports.request_zendesk_ticket = function(req, res) {
+  //console.log("moveitdaywisecyclereport");
+  Eatuser.request_zendesk_ticket(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

@@ -27,6 +27,7 @@ module.exports = function(app) {
   var packageController = require("../controllers/common/PackagingBoxTrackingController");
   var packageInventoryController = require("../controllers/makeit/PackageInventoryController");
   var zone = require("../controllers/common/ZoneController");
+  var Zendeskissues = require("../controllers/common/ZendeskissuesController");
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));
@@ -330,7 +331,9 @@ app.route("/admin/reports/moveitlograwreport").post(routesVersioning({"1.0.0":or
 
 
 ///Click to call////
-app.route("/admin/clicktocall").post(routesVersioning({"1.0.0":orders.show_makeit_incentive_report}));
+app.route("/admin/request_zendesk_ticket").post(routesVersioning({"1.0.0":eatuser.request_zendesk_ticket}));
 
+///Issues list////
+app.route("/admin/zendesk/issues").post(routesVersioning({"1.0.0":Zendeskissues.getZendeskissues}));
 
 }
