@@ -286,7 +286,7 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
                       var from = new Date(d1[2], parseInt(d1[1])-1, d1[0]);  // -1 because months are from 0 to 11
                       var to   = new Date(d2[2], parseInt(d2[1])-1, d2[0]);
                       var check = new Date(c[2], parseInt(c[1])-1, c[0]);
-              
+                      console.log("dateCheck0",dateCheck);
                       if(check > from && check < to){
                        
                         res[0].couponstatus = true;
@@ -301,21 +301,29 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
               
                     }else if(res[0].coupon_type == 3 && res[0].couponstatus==true) {
         
-                      var get_orders = await query("select * from Orders where userid="+req.userid+" and orderstatus=6 and created_at >= '"+res[0].startdate+"' AND created_at <= '"+res[0].startdate+"'");
+                      var get_orders = await query("select * from Orders where userid="+req.userid+" and orderstatus=6 and created_at >= '"+res[0].startdate+"' AND created_at <= '"+res[0].expiry_date+"'");
               
-              
+                          console.log("---------",get_orders.length);
                         if (get_orders.length !=0) {
                           
                           if (get_orders.length >= constant.user_montly_order) {
+
                             res[0].couponstatus = true;
+                            message= "Coupon valid"
+                            console.log("---------",message);
                           } else{
                             res[0].couponstatus = false;
+                            message= "Sorry! Your coupon not valid"
+                            console.log("---------",message);
+
                           }
               
                         }else{
               
-                          res[i].couponstatus = false
-              
+                          res[0].couponstatus = false
+                          message= "Sorry! Your coupon not valid"
+                          console.log("---------1",message);
+
               
                         }
               
