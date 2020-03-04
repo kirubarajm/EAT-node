@@ -417,7 +417,7 @@ Product.productitemlist = function productitemlist(req, result) {
 };
 
 Product.admin_list_all_product = function admin_list_all_product(req, result) {
-  console.log(req);
+  
 
   var query =
     "Select * from Product where makeit_userid = '" +
@@ -436,7 +436,6 @@ Product.admin_list_all_product = function admin_list_all_product(req, result) {
   }
 
   
-  console.log(query);
 
   sql.query(query, function(err, res) {
     if (err) {
@@ -1164,7 +1163,6 @@ Product.admin_list_all__unapproval_product = function admin_list_all__unapproval
     "Select pd.*,mk.brandname,mk.name as makeit_name from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid  where pd.delete_status !=1 ";
 
   query =query +" and approved_status In (1,4) order by created_at desc";
-  console.log(query);
   sql.query(query, function(err, res) {
     if (err) {
       console.log("error: ", err);
