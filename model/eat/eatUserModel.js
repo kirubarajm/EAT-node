@@ -1401,7 +1401,7 @@ if (userdetails.length !=0) {
          //  kitchen_page_header=headers_list3;
            res[0].kitchen_page.push(headers_list3);
 
-           res[0].kitchen_page_header_content1=res[0].makeitusername + ' is based out of '+ res[0].regionname;
+           res[0].kitchen_page_header_content1=res[0].makeitusername + ' is based out of <b>'+ res[0].regionname+'</b>';
            res[0].kitchen_page_header_content2='Try out '+res[0].hometownname+' Best from the '+res[0].makeitbrandname;
             // console.log("----------------------------end----------------------------------->");
 

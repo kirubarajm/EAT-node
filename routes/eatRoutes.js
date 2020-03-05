@@ -152,7 +152,7 @@ app.route("/fav/:id").get(middleware.checkToken,routesVersioning({"1.0.0":fav.re
 app.route("/eat/coupon/validate").post(middleware.checkToken,routesVersioning({"1.0.0":coupon.coupons_code_validate}));
 app.route("/eat/coupon").post(middleware.checkToken,routesVersioning({"1.0.0":coupon.get_all_coupons_by_userid}));
 app.route("/eat/coupon/:eatuserid").get(middleware.checkToken,routesVersioning({"1.0.0":coupon.get_coupons_by_userid_new}));
-//app.route("/eat/collection").get(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection}));
+app.route("/eat/collection").get(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection}));
 //app.route("/eat/collectionlist").post(middleware.checkToken,routesVersioning({"1.0.0":collection.read_all_collection_by_userid}));
 app.route("/eat/collectiondetails").post(middleware.checkToken,routesVersioning({"1.0.0":collection.get_all_collection_by_cid,"2.0.0":collection.get_all_collection_by_cid_v2}));
 app.route("/eat/collection").post(middleware.checkToken,routesVersioning({"1.0.0":collection.list_all_collection}));
