@@ -146,7 +146,8 @@ const calculate = {
     order_waiting_min:30, //min
     zendesk_url:"https://tovogroup.zendesk.com/",
     Username:"tovologies@gmail.com",
-    Password:"Temptovo"
+    Password:"Temptovo",
+    isCronStart:false
 
 }
 
