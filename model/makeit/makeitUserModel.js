@@ -2134,13 +2134,8 @@ Makeituser.makeituser_user_referral_code = function makeituser_user_referral_cod
   );
 };
 
-Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(
-  newUser,
-  result
-) {
-  sql.query(
-    "Select * from MakeitUser where phoneno = '" + newUser.phoneno + "'",
-    function(err, res1) {
+Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(newUser,result) {
+  sql.query("Select * from MakeitUser where phoneno = '" + newUser.phoneno + "'",function(err, res1) {
       if (err) {
         console.log("error: ", err);
         result(err, null);
@@ -2189,12 +2184,7 @@ Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(
                 var responcecode = body.split("#");
 
                 if (responcecode[0] === "0") {
-                  sql.query(
-                    "insert into Otp(phone_number,apptype,otp)values('" +
-                      newUser.phoneno +
-                      "',4,'" +
-                      OTP +
-                      "')",
+                  sql.query("insert into Otp(phone_number,apptype,otp)values('" +newUser.phoneno +"',4,'" +OTP +"')",
                     function(err, res1) {
                       if (err) {
                         console.log("error: ", err);
@@ -2215,10 +2205,8 @@ Makeituser.makeit_user_send_otp_byphone = function makeit_user_send_otp_byphone(
                   let resobj = {
                     success: true,
                     status: false,
-                    message: responcecode[1],
-                    passwordstatus: passwordstatus,
-                    otpstatus: otpstatus,
-                    genderstatus: genderstatus
+                    message: responcecode[1]
+                
                   };
 
                   result(null, resobj);
@@ -2256,9 +2244,7 @@ Makeituser.makeit_user_otpverification = function makeit_user_otpverification(re
     } else {
       //  console.log(res[0].otp);
       if (res[0].otp == req.otp) {
-        sql.query(
-          "Select * from MakeitUser where phoneno = '" + req.phoneno + "'",
-          function(err, res1) {
+        sql.query("Select * from MakeitUser where phoneno = '" + req.phoneno + "'",function(err, res1) {
             if (err) {
               console.log("error: ", err);
               result(err, null);

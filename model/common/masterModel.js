@@ -28,6 +28,10 @@ masters.read_product_masters = function read_product_masters(req, result) {
  
 
   var product_tag_list = [
+     {
+      "product_tag": 0,
+      "product_tag_name": 'None'  
+    },
     {
         "product_tag": 1,
         "product_tag_name": 'Best Seller'  

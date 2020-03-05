@@ -169,7 +169,7 @@ Product.createProduct = async function createProduct(newProduct,itemlist,package
   // });
 };
 
-Product.getProductById = function getProductById(userId, result) {
+Product.getProductById = function getProductById(productid, result) {
   sql.query("Select * from Product where productid = ? ", userId, function(
     err,
     res
@@ -178,7 +178,18 @@ Product.getProductById = function getProductById(userId, result) {
       console.log("error: ", err);
       result(err, null);
     } else {
-      console.log("Menuitem : ", res);
+      
+  
+
+      if (res[0].product_tag==0) {
+        res[0].product_tag_name='None'
+      } else if (res[0].product_tag==1) {
+        res[0].product_tag_name='Best Seller'
+      }else{
+        res[0].product_tag_name='Top Rated'
+      }
+
+
       let sucobj = true;
       let resobj = {
         success: sucobj,
@@ -962,10 +973,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
   );
 };
 
-Product.productview_by_productid = function productview_by_productid(
-  req,
-  result
-) {
+Product.productview_by_productid = function productview_by_productid(req,result) {
   const items = [];
   sql.query(
     " select pd.*,cu.cuisinename,JSON_OBJECT('makeit_type',mk.makeit_type,'userid',mk.userid,'name',mk.name,'phoneno',mk.phoneno,'email',mk.email,'address',mk.address,'lat',mk.lat,'lon',mk.lon,'brandName',mk.brandName,'localityid',mk.localityid,'virtualkey',mk.virtualkey,'ka_status',mk.ka_status) as makeitdetail from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid join Cuisine cu on cu.cuisineid = pd.cuisine where productid = " + req.productid + "",
@@ -992,6 +1000,14 @@ Product.productview_by_productid = function productview_by_productid(
               res[0].makeitdetail = JSON.parse(res[0].makeitdetail);
               res[0].items = resProductItems;
               res[0].packageItems = resPackageItems;
+              
+              if (res[0].product_tag==0) {
+                res[0].product_tag_name='None'
+              } else if (res[0].product_tag==1) {
+                res[0].product_tag_name='Best Seller'
+              }else{
+                res[0].product_tag_name='Top Rated'
+              }
               let sucobj = true;
               let resobj = {
                 success: sucobj,

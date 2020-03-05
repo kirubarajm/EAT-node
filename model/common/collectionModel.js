@@ -1640,7 +1640,6 @@ Collection.list_all_active_collection_icons = function list_all_active_collectio
     if (err) {
       result(err, null);
     } else { 
-console.log("res =========>",res);
       var kitchens =   await Collection.get_collectionlist_infinity_screen(res,req);
 
       //console.log("first collection");
