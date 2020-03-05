@@ -127,10 +127,11 @@ QuickSearch.eat_explore_store_data_by_cron = async function eat_explore_store_da
 // This cron is to running all region and product and makeit to quick search  console.log('Before job instantiation');
 const quick_search_cron = new CronJob("0 */10 * * * *", async function(search, result) {
   var cronLogReq={
+    cron_id:1,
     cron_name:"Quick Search",
     cron_type:start_cron
   }
-  CronLog.createCronLog(cronLogReq);
+  //CronLog.createCronLog(cronLogReq);
   sql.query("Select * from QuickSearch", function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -168,10 +169,11 @@ const quick_search_cron = new CronJob("0 */10 * * * *", async function(search, r
               " ) group by mk.regionid ) and regionname IS NOT NULL  group by regionid"
           );
           var cronLogReq={
+            cron_id:1,
             cron_name:"Quick Search",
             cron_type:end_cron
           }
-          CronLog.createCronLog(cronLogReq);
+          //CronLog.createCronLog(cronLogReq);
         }
       });
     }
@@ -182,10 +184,12 @@ const quick_search_cron = new CronJob("0 */10 * * * *", async function(search, r
 //incomplete online and release product quantity and order release by user.
 const incomplete_order_relese_product_cron = new CronJob("*/3 * * * *", async function() {
   var cronLogReq={
+    cron_id:2,
     cron_name:"Incomplete Order Relese Product",
     cron_type:start_cron
   }
-  CronLog.createCronLog(cronLogReq);
+  //console.log("cronLogReq-->",cronLogReq);
+  //CronLog.createCronLog(cronLogReq);
   var res = await query(
     "select * from Orders where lock_status = 1 and payment_type = 1 and orderstatus = 0 "
   ); //and created_at > (NOW() - INTERVAL 10 MINUTE
@@ -226,10 +230,12 @@ const incomplete_order_relese_product_cron = new CronJob("*/3 * * * *", async fu
     }
   }
   var cronLogReq={
+    cron_id:2,
     cron_name:"Incomplete Order Relese Product",
     cron_type:end_cron
   }
-  CronLog.createCronLog(cronLogReq);
+  //console.log("cronLogReq-->",cronLogReq);
+  //CronLog.createCronLog(cronLogReq);
 });
 //incomplete_order_relese_product_cron.start();
 
@@ -263,12 +269,6 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
   req,
   result
 ) {
-  var cronLogReq={
-    cron_name:"Live Product History",
-    cron_type:start_cron
-  }
-  CronLog.createCronLog(cronLogReq);
-
   var breatfastcycle = constant.breatfastcycle;
   var lunchcycle = constant.lunchcycle;
   var dinnercyclestart = constant.dinnercycle;
@@ -347,19 +347,13 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
       }
     }
   }
-
-  var cronLogReq={
-    cron_name:"Live Product History",
-    cron_type:end_cron
-  }
-  CronLog.createCronLog(cronLogReq);
 });
-//liveproducthistory.start();
 
 //cron run by moveit user offline every night 2 AM.
 const moveitautologout_midnight = new CronJob("0 0 2 * * *", async function() {
   console.log("moveit offline");
   var cronLogReq={
+    cron_id:3,
     cron_name:"Driver Auto Logout EOD",
     cron_type:start_cron
   }
@@ -394,6 +388,7 @@ const moveitautologout_midnight = new CronJob("0 0 2 * * *", async function() {
   }
 
   var cronLogReq={
+    cron_id:3,
     cron_name:"Driver Auto Logout EOD",
     cron_type:end_cron
   }
@@ -856,7 +851,8 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
 
 const Package_tracking = new CronJob("0 0 7,0 * * * ", async function() {
   var cronLogReq={
-    cron_name:"Package Tracking Every Morning",
+    cron_id:4,
+    cron_name:"Package Tracking",
     cron_type:start_cron
   }
   CronLog.createCronLog(cronLogReq);
@@ -886,7 +882,8 @@ const Package_tracking = new CronJob("0 0 7,0 * * * ", async function() {
     }
   }
   var cronLogReq={
-    cron_name:"Package Tracking Every Morning",
+    cron_id:4,
+    cron_name:"Package Tracking",
     cron_type:end_cron
   }
   CronLog.createCronLog(cronLogReq);
@@ -931,6 +928,7 @@ const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async funct
 ////cron run by moveit user offline every cycle end.
 const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
   var cronLogReq={
+    cron_id:5,
     cron_name:"Driver Time Log",
     cron_type:start_cron
   }
@@ -965,6 +963,7 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
   }
 
   var cronLogReq={
+    cron_id:5,
     cron_name:"Driver Time Log",
     cron_type:end_cron
   }
@@ -976,6 +975,7 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
 ////CRON For Every day Moveit Log with Order///////
 const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
   var cronLogReq={
+    cron_id:6,
     cron_name:"Driver Day Wise",
     cron_type:start_cron
   }
@@ -989,6 +989,7 @@ const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
     }
   } 
   var cronLogReq={
+    cron_id:6,
     cron_name:"Driver Day Wise",
     cron_type:end_cron
   }
@@ -999,6 +1000,7 @@ const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
 ////CRON For Every day Makeit Log with Order///////
 const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
   var cronLogReq={
+    cron_id:7,
     cron_name:"Kitchen Day Wise",
     cron_type:start_cron
   }
@@ -1013,6 +1015,7 @@ const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
   } 
 
   var cronLogReq={
+    cron_id:7,
     cron_name:"Kitchen Day Wise",
     cron_type:end_cron
   }
@@ -1036,6 +1039,7 @@ const liveproducthistory_cycleend = new CronJob("0 55 11,15,22 * * *", async fun
 //////////Live Product History Cycle Start Cron Function//////////////
 QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycyclestart(){
   var cronLogReq={
+    cron_id:8,
     cron_name:"Live Product History Start",
     cron_type:start_cron
   }
@@ -1096,6 +1100,7 @@ QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycycl
     }    
   }
   var cronLogReq={
+    cron_id:8,
     cron_name:"Live Product History Start",
     cron_type:end_cron
   }
@@ -1107,6 +1112,7 @@ QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycycl
 //////////Live Product History Cycle End Cron Function//////////////
 QuickSearch.liveproducthistorycycleend = async function liveproducthistorycycleend(){
   var cronLogReq={
+    cron_id:9,
     cron_name:"Live Product History End",
     cron_type:start_cron
   }
@@ -1161,6 +1167,7 @@ QuickSearch.liveproducthistorycycleend = async function liveproducthistorycyclee
       }
     }
     var cronLogReq={
+      cron_id:9,
       cron_name:"Live Product History End",
       cron_type:end_cron
     }
@@ -1173,6 +1180,7 @@ QuickSearch.liveproducthistorycycleend = async function liveproducthistorycyclee
 const homemakertiering = new CronJob("0 0 3 * * *", async function() {
   //console.log("Homemaker Tiering");
   var cronLogReq={
+    cron_id:10,
     cron_name:"Home Maker Tiering",
     cron_type:start_cron
   }
@@ -1181,6 +1189,7 @@ const homemakertiering = new CronJob("0 0 3 * * *", async function() {
   var makeit_incentive = await Order.makeit_incentive_report();
 
   var cronLogReq={
+    cron_id:10,
     cron_name:"Home Maker Tiering",
     cron_type:end_cron
   }
@@ -1198,6 +1207,7 @@ if(currentday ==1 ){
 //const Makeit_lost_revenue_report = new CronJob("0 0 2 * * *", async function() {
 const Makeit_lost_revenue_report = new CronJob("0 0 4 * * *", async function(req, result) {
   var cronLogReq={
+    cron_id:11,
     cron_name:"Kitchen Lost Revenue",
     cron_type:start_cron
   }
@@ -1257,6 +1267,7 @@ const Makeit_lost_revenue_report = new CronJob("0 0 4 * * *", async function(req
   }
 
   var cronLogReq={
+    cron_id:11,
     cron_name:"Kitchen Lost Revenue",
     cron_type:end_cron
   }

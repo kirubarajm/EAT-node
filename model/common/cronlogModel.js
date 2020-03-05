@@ -6,6 +6,7 @@ const query = util.promisify(sql.query).bind(sql);
 
 //Task object constructor
 var cronlogModel = function(cron) {
+  this.cron_id = cron.cron_id;
   this.cron_name = cron.cron_name;
   this.cron_type = cron.cron_type;
 };
