@@ -1130,13 +1130,13 @@ if (userdetails.length !=0) {
     where_condition_query = where_condition_query + "and (pt.dinner = 1 OR  pt.breakfast = 1)";
   }
     
-  var productquery = " Select mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating rating,mk.regionid,mk.locality as localityname ,re.regionname,mk.costfortwo,mk.virutal_rating_count as rating_count,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,mk.unservicable,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+  var productquery = " Select mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating,mk.regionid,mk.locality as localityname ,re.regionname,hm.hometownname,mk.costfortwo,mk.virutal_rating_count as rating_count,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,mk.unservicable,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
     req.lat +
     "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
     req.lon +
     "') ) + sin( radians('" +
     req.lat +
-    "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(pt.productid) as plistid,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid', pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc,'next_available',IF("+ifconditionquery+",false,true),'next_available_time',IF("+scondcycle+",'"+nextcycle+"',IF("+thirdcycle+",'"+nextthirdcyclecycle+"','Available')),'breakfast',pt.breakfast,'lunch',pt.lunch,'dinner',pt.dinner)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+    "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(pt.productid) as plistid,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid', pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'product_tag',pt.product_tag,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc,'next_available',IF("+ifconditionquery+",false,true),'next_available_time',IF("+scondcycle+",'"+nextcycle+"',IF("+thirdcycle+",'"+nextthirdcyclecycle+"','Available')),'breakfast',pt.breakfast,'lunch',pt.lunch,'dinner',pt.dinner)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Hometown hm on hm.hometownid=mk.hometownid  left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
     req.eatuserid +
     "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
     req.eatuserid +
@@ -1149,7 +1149,7 @@ if (userdetails.length !=0) {
   }
 
   productquery = productquery + " order by "+ifconditionquery+"";      
-  //console.log("Request =====>",req);
+  console.log("productquery =====>",productquery);
   
   sql.query(productquery, async function(err, res) {
     if (err) {
@@ -1162,7 +1162,7 @@ if (userdetails.length !=0) {
       var productlistArray=[];
       if(productIds && productIds.length>0){
         productIds=productIds.toString();
-        var ptQuary = "Select pt.makeit_userid,pt.productid,pt.price,pt.product_name,pt.image as productimage,pt.image,pt.quantity,pt.vegtype,pt.prod_desc,pt.prod_desc,pt.breakfast,pt.lunch,pt.dinner,IF(faa.favid,1,0) as isfav,faa.favid, cu.cuisinename,IF("+ifconditionquery+",false,true) as next_available,IF("+scondcycle+",'"+nextcycle+"',IF("+thirdcycle+",'"+nextthirdcyclecycle+"','Available')) as next_available_time,IF("+ifconditionquery+"!=1,4,IF((pt.image IS NOT NULL AND pt.image!='null' AND pt.image!=''),0,IF(sum(1)>1,1,2))) as orderpro from Product pt left join Productitem pi on pi.productid=pt.productid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Fav faa on faa.productid = pt.productid and faa.eatuserid = " +req.eatuserid +" where pt.delete_status = 0 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1 and pt.productid in ("+productIds+") group by pt.productid order by orderpro asc,pt.price desc"
+        var ptQuary = "Select pt.makeit_userid,pt.productid,pt.price,pt.product_name,pt.image as productimage,pt.image,pt.quantity,pt.vegtype,pt.prod_desc,pt.product_tag,pt.prod_desc,pt.breakfast,pt.lunch,pt.dinner,IF(faa.favid,1,0) as isfav,faa.favid, cu.cuisinename,IF("+ifconditionquery+",false,true) as next_available,IF("+scondcycle+",'"+nextcycle+"',IF("+thirdcycle+",'"+nextthirdcyclecycle+"','Available')) as next_available_time,IF("+ifconditionquery+"!=1,4,IF((pt.image IS NOT NULL AND pt.image!='null' AND pt.image!=''),0,IF(sum(1)>1,1,2))) as orderpro from Product pt left join Productitem pi on pi.productid=pt.productid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Fav faa on faa.productid = pt.productid and faa.eatuserid = " +req.eatuserid +" where pt.delete_status = 0 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1 and pt.productid in ("+productIds+") group by pt.productid order by orderpro asc,pt.price desc"
         //console.log('ptQuary-->',ptQuary);
         productlistArray = await query(ptQuary);
       }
@@ -1296,10 +1296,24 @@ if (userdetails.length !=0) {
 
 
         ///////04-mar-2020 new https://tovologies.atlassian.net/browse/ES-48
+        console.log("---------------------------start------------------------------------>");
         var new_productlist = res[0].productlist;
+
+        for (let i = 0; i < new_productlist.length; i++) {
+          new_productlist[i].serviceablestatus=res[0].serviceablestatus
+          if (new_productlist[i].product_tag==1) {
+            new_productlist[i].product_tag_name="Best Seller"
+          }else if (new_productlist==2){
+            new_productlist[i].product_tag_name="Top Rated"
+          }else{
+            new_productlist[i].product_tag_name=""
+          }
+          
+        }
+        res[0].productlist=[];
         res[0].product = [];
-        var current_product_list    = new_productlist.filter(new_productlist => new_productlist.next_available < 1 && new_productlist.productimage);
-        var next_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1 && !new_productlist.productimage);
+        var current_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1 && new_productlist.productimage && new_productlist.productimage !==null);
+        var next_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1 && new_productlist.productimage == null);
   
         current_product_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
      
@@ -1309,50 +1323,87 @@ if (userdetails.length !=0) {
         // }
 
 
-        console.log("current_product_list---------------------->",current_product_list);
+    //    console.log("current_product_list---------------------->",current_product_list);
 
         var fav_dish_list= {};
-        fav_dish_list.current_product_list=current_product_list;
+        
         fav_dish_list.title="Faviourte Product";
         fav_dish_list.type=1;
+        fav_dish_list.product_list=current_product_list;
         res[0].product.push(fav_dish_list);
 
-        console.log("--------------------------------------------------------------->");
 
-        console.log("next_product_list-------------------------->",next_product_list);
+        var today_Menu_list=[];
+        var Other_Item_list= [];
+        var headers = {};
 
-          
           for (let i = 0; i < next_product_list.length; i++) {
             
             var get_product_item = await query("select * from Productitem where productid = '"+next_product_list[i].productid+"' and delete_status=0");
             
 
-            console.log("get_product_item----------------------->",get_product_item);
             if (get_product_item.length >1) {
-              
-              var today_Menu_list= {};
-              today_Menu_list.current_product_list=current_product_list;
-              today_Menu_list.title="Today Menu";
-              today_Menu_list.type=2;
-              today_Menu_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-              res[0].product.push(today_Menu_list);
 
+              
+             today_Menu_list.push(next_product_list[i]);
+         //    console.log("today_Menu_list-------------------------",today_Menu_list); 
             }else{
 
-              var Other_Item_list= {};
-              Other_Item_list.current_product_list=current_product_list;
-              Other_Item_list.title="Other Item";
-              Other_Item_list.type=2;
-              Other_Item_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-              res[0].product.push(Other_Item_list);
+              
+              Other_Item_list.push(next_product_list[i]);
+           
             }
           }
 
+          //console.log("today_Menu_list-------------------------",today_Menu_list);
+          today_Menu_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+          var today_Menu = {};
+          today_Menu.title="Today Menu";
+          today_Menu.type=2;
+          today_Menu.product_list= today_Menu_list;
+          res[0].product.push(today_Menu);
 
 
+          Other_Item_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+          var Other_Item={};
+          Other_Item.title="Other Item";
+          Other_Item.type=2;
+          Other_Item.product_list=Other_Item_list;
+          res[0].product.push(Other_Item);
 
-        console.log("--------------------------------------------------------------->");
+          kitchen_page_header=[];
+          res[0].kitchen_page=[];
 
+          var headers_list1={};
+          headers_list1.header_content="Home Food \n" + res[0].regionname
+          headers_list1.header_icon_url="https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1583388630694-kitchen%20new%20screen-%20ICONS-09.png"
+          headers_list1.header_color_code="#ff444444"
+         // res[0].kitchen_page=headers_list1;
+          res[0].kitchen_page.push(headers_list1);  
+
+           var headers_list2={};
+           if (res[0].unservicable==0) {
+            headers_list2.header_content= res[0].eta
+            headers_list2.header_color_code= "#ff444444"
+           }else{
+            headers_list2.header_content= "Unservicable"
+            headers_list2.header_color_code= "#d32f2f"
+           }
+           
+           headers_list2.header_icon_url="https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1583388513740-kitchen%20new%20screen-%20ICONS-10.png"
+         //  res[0].kitchen_page=headers_list2;
+           res[0].kitchen_page.push(headers_list2);
+
+           var headers_list3={};
+           headers_list3.header_content=''+res[0].rating + ' ('+res[0].rating_count+')'
+           headers_list3.header_icon_url="https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1583388581752-kitchen%20new%20screen-%20ICONS-11.png"
+           headers_list3.header_color_code="#ff444444"
+         //  kitchen_page_header=headers_list3;
+           res[0].kitchen_page.push(headers_list3);
+
+           res[0].kitchen_page_header_content1=res[0].makeitusername + ' is based out of '+ res[0].regionname;
+           res[0].kitchen_page_header_content2='Try out '+res[0].hometownname+' Best from the '+res[0].makeitbrandname;
+            // console.log("----------------------------end----------------------------------->");
 
         const specialitems = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 3 limit 4");
         const kitcheninfoimage = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 2 limit 4");
