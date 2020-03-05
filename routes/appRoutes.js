@@ -51,6 +51,7 @@ module.exports = function(app) {
   app.route("/repliesread").put(routesVersioning({"1.0.0":queryanswer.update_read_answer}));
   app.route("/masters").get(routesVersioning({"1.0.0":master.read_a_masters}));
   app.route("/masters/eat").get(routesVersioning({"1.0.0":master.read_eat_masters}));
+  app.route("/masters/producttag").get(routesVersioning({"1.0.0":master.read_product_masters}));
 
  // Others
   app.route("/faqs/:id").get(routesVersioning({"1.0.0":faq.list_all_faqbytype}));
