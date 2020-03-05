@@ -21,8 +21,10 @@ var MoveitDayWise = require("../../model/common/moveitdaywiseModel.js");
 var MakeitDayWise = require("../../model/common/makeitdaywiseModel.js");
 var Makeitlog =require("../../model/common/makeittimelogModel.js");
 var Makeittotalrevenue = require("../../model/common/MakeittotalrevenueModel");
+var CronLog = require("../../model/common/cronlogModel");
 
-
+const start_cron=1;
+const end_cron=2;
 const query = util.promisify(sql.query).bind(sql);
 var QuickSearch   = function(QuickSearch) {
   this.eatuserid  = QuickSearch.eatuserid;
@@ -123,7 +125,12 @@ QuickSearch.eat_explore_store_data_by_cron = async function eat_explore_store_da
 };
 
 // This cron is to running all region and product and makeit to quick search  console.log('Before job instantiation');
-const job = new CronJob("0 */10 * * * *", async function(search, result) {
+const quick_search_cron = new CronJob("0 */10 * * * *", async function(search, result) {
+  var cronLogReq={
+    cron_name:"Quick Search",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
   sql.query("Select * from QuickSearch", function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -160,15 +167,25 @@ const job = new CronJob("0 */10 * * * *", async function(search, result) {
               cyclequery +
               " ) group by mk.regionid ) and regionname IS NOT NULL  group by regionid"
           );
+          var cronLogReq={
+            cron_name:"Quick Search",
+            cron_type:end_cron
+          }
+          CronLog.createCronLog(cronLogReq);
         }
       });
     }
   });
 });
-//job.start();
+//quick_search_cron.start();
 
 //incomplete online and release product quantity and order release by user.
-const job1 = new CronJob("*/3 * * * *", async function() {
+const incomplete_order_relese_product_cron = new CronJob("*/3 * * * *", async function() {
+  var cronLogReq={
+    cron_name:"Incomplete Order Relese Product",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
   var res = await query(
     "select * from Orders where lock_status = 1 and payment_type = 1 and orderstatus = 0 "
   ); //and created_at > (NOW() - INTERVAL 10 MINUTE
@@ -208,8 +225,13 @@ const job1 = new CronJob("*/3 * * * *", async function() {
       }
     }
   }
+  var cronLogReq={
+    cron_name:"Incomplete Order Relese Product",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
 });
-//job1.start();
+//incomplete_order_relese_product_cron.start();
 
 QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(req, result) {
   // var searchquery = "select *, IF(type<3, IF(type=2, 'Kitchan', 'Product'), 'Region') as typename from QuickSearch where name LIKE  '%"+req.search+"%'";
@@ -241,6 +263,12 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
   req,
   result
 ) {
+  var cronLogReq={
+    cron_name:"Live Product History",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
   var breatfastcycle = constant.breatfastcycle;
   var lunchcycle = constant.lunchcycle;
   var dinnercyclestart = constant.dinnercycle;
@@ -319,12 +347,23 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
       }
     }
   }
+
+  var cronLogReq={
+    cron_name:"Live Product History",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
 });
 //liveproducthistory.start();
 
 //cron run by moveit user offline every night 2 AM.
-const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
+const moveitautologout_midnight = new CronJob("0 0 2 * * *", async function() {
   console.log("moveit offline");
+  var cronLogReq={
+    cron_name:"Driver Auto Logout EOD",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
   var res = await query(
     "select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1"
   ); //and created_at > (NOW() - INTERVAL 10 MINUTE
@@ -353,133 +392,14 @@ const job1moveitlogout = new CronJob("0 0 2 * * *", async function() {
       //  var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
     }
   }
+
+  var cronLogReq={
+    cron_name:"Driver Auto Logout EOD",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
 });
-//job1moveitlogout.start();
-
-// const order_auto_assign = new CronJob("1 7-23 * * * ", async function() {
-//   console.log("order_auto_assign");
-//   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
-//   var res = await query(
-//     "select oq.*,mk.makeithub_id,mk.userid,mk.lat,mk.lon from Orders_queue as oq join Orders as ors on ors.orderid=oq.orderid join MakeitUser as mk on mk.userid = ors.makeit_user_id where status = 0  order by oq.orderid desc"
-//   ); //and created_at > (NOW() - INTERVAL 10 MINUTE
-
-//   // console.log("cron for product revert online orders in-complete orders"+res);
-//   if (res.length !== 0) {
-//     for (let i = 0; i < res.length; i++) {
-//       var geoLocation = [];
-//       geoLocation.push(res[i].lat);
-//       geoLocation.push(res[i].lon);
-//       MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(
-//         geoLocation,
-//         constant.nearby_moveit_radius,
-//         async function(err, move_it_id_list) {
-//           if (err) {
-//             let error = {
-//               success: true,
-//               status: false,
-//               message: "No Move-it found,please after some time"
-//             };
-//             result(error, null);
-//           } else {
-//             var moveitlist = move_it_id_list.moveitid;
-
-//             if (moveitlist.length > 0) {
-//               //  console.log("moveitlist"+moveitlist.length);
-//               var moveitlistquery =
-//                 "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-//                 move_it_id_list.moveitid +
-//                 ") and mu.online_status = 1 and login_status=1 group by mu.userid";
-
-//               var nearbymoveit = await query(moveitlistquery);
-
-//               if (nearbymoveit.length !== 0) {
-//                 nearbymoveit.sort(
-//                   (a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout)
-//                 );
-
-//                 sql.query(
-//                   "UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",
-//                   [nearbymoveit[0].userid, assign_time, res[i].orderid],
-//                   async function(err, res2) {
-//                     if (err) {
-//                       result(err, null);
-//                     } else {
-//                       var moveit_offline_query = await query(
-//                         "update Orders_queue set status = 1 where orderid =" +
-//                           res[i].orderid +
-//                           ""
-//                       );
-
-//                       await Notification.orderMoveItPushNotification(
-//                         res[i].orderid,
-//                         PushConstant.pageidMoveit_Order_Assigned
-//                       );
-
-//                       // let resobj = {
-//                       //   success: true,
-//                       //   status:true,
-//                       //   message: "Order Assign Successfully",
-
-//                       // };
-//                       // result(null, resobj);
-//                     }
-//                   }
-//                 );
-//               }
-//               // else{
-
-//               // var new_Ordersqueue = new Ordersqueue(req);
-//               // new_Ordersqueue.status = 0;
-//               // Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
-//               //   if (err) {
-//               //     result(err, null);
-//               //   }else{
-
-//               //   //   let resobj = {
-//               //   //     success: true,
-//               //   //     status: true,
-//               //   //     message: "Order moved to Queue"
-//               //   // };
-
-//               //   // result(null, resobj);
-//               //   }
-//               // });
-//               // }
-//             }
-//             // else{
-
-//             //   var new_Ordersqueue = new Ordersqueue(req);
-//             //   new_Ordersqueue.status = 0;
-//             //   Ordersqueue.createOrdersqueue(new_Ordersqueue, function(err, res2) {
-//             //     if (err) {
-//             //       result(err, null);
-//             //     }else{
-
-//             //     //   let resobj = {
-//             //     //     success: true,
-//             //     //     status: true,
-//             //     //     message: "Order moved to Queue"
-//             //     // };
-
-//             //     // result(null, resobj);
-//             //     }
-//             //   });
-
-//             // }
-//           }
-//         }
-//       );
-
-//       //  var today = moment();
-//       //  var ordertime = moment(res[i].ordertime);
-//       //  var diffMs  = (today - ordertime);
-//       //  var diffDays = Math.floor(diffMs / 86400000);
-//       //  var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
-//       //  var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
-//     }
-//   }
-// });
-
+//moveitautologout_midnight.start();
 
 //dunzo_task_create
 QuickSearch.dunzo_task_create = function dunzo_task_create(orderid) {
@@ -523,172 +443,6 @@ QuickSearch.admin_order_cancel = function admin_order_cancel(order_cancel) {
     else return res;
   });
 };
-
-// QuickSearch.order_assign=async function order_assign(res,i){
-//   try{
-//   const delay = ms => new Promise(res => setTimeout(res, ms))
-//   isCronRun=true;
-//   console.log('i id-->',i)
-//   console.log('i res.length-->',res.length)
-//   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
-//   if (i<res.length) {
-//     //for (let i = 0; i < res.length; i++) {
-
-//     //dunzo code
-//     var today = moment();
-//     var makeit_accept_time = moment(res[i].makeit_accept_time);
-//     var diffMs = today - makeit_accept_time;
-//     // var diffDays = Math.floor(diffMs / 86400000);
-//     // var diffHrs = Math.floor((diffMs % 86400000) / 3600000);
-//     var diffMins = Math.round(((diffMs % 86400000) % 3600000) / 60000);
-
-//     var order_queue_update_time = moment(res[i].updated_at);
-//     var order_queue_diffMs = today - order_queue_update_time;
-
-//     var order_queue_diffMins = Math.round(((order_queue_diffMs % 86400000) % 3600000) / 60000);
-    
-//     console.log("order_queue_diffMins"+order_queue_diffMins);
-//     console.log("res[i].dunzo_req_count"+res[i].dunzo_req_count);
-//     console.log("diffMins"+diffMins);
-//     console.log("res[i].payment_type"+res[i].payment_type);
-//     console.log("res[i].status"+res[i].status);
- 
-//   if (dunzoconst.order_assign_dunzo==true  && diffMins >= dunzoconst.order_assign_dunzo_waiting_min && res[i].status == 0 ) {  
-//        // Dunzo.dunzo_task_create
-//        console.log("Dunzo.dunzo_task_create");
-//       //  await QuickSearch.dunzo_task_create(res[i].orderid);
-//       //  i++;
-//       //  order_assign(res,i);
-//       Dunzo.dunzo_task_create(res[i].orderid,async function(err,res3) {
-//         if (err) {
-//           i++;
-//           order_assign(res,i);
-//         } else {
-//           i++;
-//           order_assign(res,i);
-          
-//         }
-//       });
-//   }else if(res[i].zone_status == 2 && order_queue_diffMins >1 && res[i].status !=1 ){
-//     console.log("Dunzo xone dunzo_task_create");
-//       if (res[i].dunzo_req_count >= constant.Dunzo_max_req) {
-//         var order_cancel={};
-//         order_cancel.orderid = res[i].orderid;
-//         order_cancel.cancel_reason ='Dunzo failure to generate task id';
-//         await QuickSearch.admin_order_cancel(order_cancel);
-//         i++;
-//         order_assign(res,i);
-//       } else {
-//         Dunzo.dunzo_task_create(res[i].orderid,async function(err,res3) {
-//           if (err) {
-//             i++;
-//             order_assign(res,i);
-//           } else {
-//             i++;
-//             order_assign(res,i);
-            
-//           }
-//         });
-//       }
-      
-//   }else{
-
-//         var radius = constant.order_assign_first_radius + constant.order_assign_second_radius;
-//         var geoLocation = [];
-//         geoLocation.push(res[i].lat);
-//         geoLocation.push(res[i].lon);
-//         MoveitFireBase.geoFireGetKeyByGeomoveitbydistance(geoLocation,radius,async function(err, move_it_id_list) {
-//             if (err) {
-//               let error = {
-//                 success: true,
-//                 status: false,
-//                 message: "No Move-it found,please after some time"
-//               };
-//               console.log('Geo error->',err);
-//               i++;
-//               order_assign(res,i);
-//             } else {
-//               console.log("move_it_id_list.moveitid_below_2",move_it_id_list.moveitid_below_2);
-//               console.log("move_it_id_list.moveitid_above_2",move_it_id_list.moveitid_above_2);
-//               var nearbymoveit = [];
-              
-//          //     if (move_it_id_list.moveitid_below_2) {
-
-//             var get_zoneid = await query("select mk.zone from Orders ors join MakeitUser mk on ors.makeit_user_id=mk.userid where ors.orderid='"+res[i].orderid+"' ");
-               
-
-//                 if (move_it_id_list.moveitid_below_2) {
-            
-//                   var moveitlistquery =
-//                     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-//                     move_it_id_list.moveitid_below_2 +
-//                     ") and mu.online_status = 1 and login_status=1  and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
-//                      nearbymoveit = await query(moveitlistquery);
-
-//                 }
-                
-//                 if(move_it_id_list.moveitid_above_2 && nearbymoveit.length ==0){
-  
-//                   var moveitlistquery =
-//                     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-//                     move_it_id_list.moveitid_above_2 +
-//                     ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
-//                     nearbymoveit = await query(moveitlistquery);
-//                 }
-  
-//                   if (nearbymoveit.length !== 0) {
-//                   // nearbymoveit.sort(
-//                   //   (a, b) => parseFloat(a.ordercout) - parseFloat(b.ordercout)
-//                   // );
-//                   console.log('nearbymoveit id-->',nearbymoveit[0].userid);
-//                   sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, res[i].orderid],async function(err, res2) {
-//                       if (err) {
-//                          console.log('Order Update error->',err);
-//                         i++;
-//                         order_assign(res,i);
-//                       } else {
-//                         var moveit_offline_query = await query(
-//                           "update Orders_queue set status = 1 where orderid =" +
-//                             res[i].orderid +
-//                             ""
-//                         );
-//                          var req={};
-//                         req.state=1;
-//                         req.moveit_user_id=nearbymoveit[0].userid;
-//                         Order.update_moveit_lat_long(req);
-//                         await Notification.orderMoveItPushNotification(
-//                           res[i].orderid,
-//                           PushConstant.pageidMoveit_Order_Assigned
-//                         );
-//                        // delay(1000);
-//                        i++;
-//                        order_assign(res,i);
-//                       }
-//                     }
-//                   );
-//                 }else{
-//                   i++;
-//                   order_assign(res,i);
-//                 }
-//               // }else{
-//               //   i++;
-//               //   order_assign(res,i);
-    
-//               // }
-//             }
-//           }
-//         );
-
-//   }
-//   }else{
-//     isCronRun=false;
-//   }
-// }catch(e){
-//   console.log("e--->",e);
-//   isCronRun=false;
-// }
-
-// };
 
 QuickSearch.order_assign=async function order_assign(res,i){
   try{
@@ -1101,6 +855,12 @@ QuickSearch.Zone_order_assign= async function Zone_order_assign(res,i){
 };
 
 const Package_tracking = new CronJob("0 0 7,0 * * * ", async function() {
+  var cronLogReq={
+    cron_name:"Package Tracking Every Morning",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
   var day = moment().format("YYYY-MM-DD HH:mm:ss");
   var currenthour = moment(day).format("HH");
   var start_session=7;
@@ -1125,6 +885,11 @@ const Package_tracking = new CronJob("0 0 7,0 * * * ", async function() {
       PackageStockInventory.createpackageSession(packageStockInventory);
     }
   }
+  var cronLogReq={
+    cron_name:"Package Tracking Every Morning",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
 });
 //Package_tracking.start();
 
@@ -1165,7 +930,12 @@ const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async funct
 
 ////cron run by moveit user offline every cycle end.
 const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
-  console.log("moveit offline & online");
+  var cronLogReq={
+    cron_name:"Driver Time Log",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
   var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
   
   var day = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -1193,53 +963,84 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
       }     
     }
   }
+
+  var cronLogReq={
+    cron_name:"Driver Time Log",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
 });
 //moveitlog_outin.start();
 
 ////CRON For Every day Moveit Log with Order///////
 const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
-  console.log("Moveit Daywise Report");
+  var cronLogReq={
+    cron_name:"Driver Day Wise",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
   var moveit_daywise_data = await Order.moveit_daywise_report();
-  console.log("Moveit daywise Report length",moveit_daywise_data.length);
   if (moveit_daywise_data.length !=0) {    
     for (let i = 0; i < moveit_daywise_data.length; i++) {
       var new_moveit_daywise_data = new MoveitDayWise(moveit_daywise_data[i]);
       await MoveitDayWise.createmoveitdaywise(new_moveit_daywise_data);
     }
   } 
+  var cronLogReq={
+    cron_name:"Driver Day Wise",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
 });
 //moveitlog_everyday.start();
 
 ////CRON For Every day Makeit Log with Order///////
 const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
-  console.log("Makeit Daywise Report");
+  var cronLogReq={
+    cron_name:"Kitchen Day Wise",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
   var makeit_daywise_data = await Order.makeit_daywise_report();
-  console.log("makeit daywise Report length",makeit_daywise_data.length);
   if (makeit_daywise_data.length !=0) {    
     for (let i = 0; i < makeit_daywise_data.length; i++) {
       var new_makeit_daywise_data = new MakeitDayWise(makeit_daywise_data[i]);
       await MakeitDayWise.createmakeitdaywise(new_makeit_daywise_data);
     }
   } 
+
+  var cronLogReq={
+    cron_name:"Kitchen Day Wise",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
 });
 //makeitlog_everyday.start();
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
 const liveproducthistory_cyclestart = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {
-  console.log("Live Product History Cycle Start");
   await QuickSearch.liveproducthistorycyclestart();
 });
 //liveproducthistory_cyclestart.start();
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle End ///////////
 const liveproducthistory_cycleend = new CronJob("0 55 11,15,22 * * *", async function(req, result) {
-  console.log("Live Product History Cycle End");
   await QuickSearch.liveproducthistorycycleend();
 });
 //liveproducthistory_cycleend.start();
 
 //////////Live Product History Cycle Start Cron Function//////////////
 QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycyclestart(){
+  var cronLogReq={
+    cron_name:"Live Product History Start",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
   var breatfastcycle = constant.breatfastcycle;
   var lunchcycle = constant.lunchcycle;
   var dinnercyclestart = constant.dinnercycle;
@@ -1294,11 +1095,23 @@ QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycycl
       }
     }    
   }
+  var cronLogReq={
+    cron_name:"Live Product History Start",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
   return insertlog;
 }
 
 //////////Live Product History Cycle End Cron Function//////////////
 QuickSearch.liveproducthistorycycleend = async function liveproducthistorycycleend(){
+  var cronLogReq={
+    cron_name:"Live Product History End",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
   var day           = moment().format("YYYY-MM-DD HH:mm:ss");
   var currenthour   = moment(day).format("HH:mm");
   var CEselectquery = "";
@@ -1346,14 +1159,33 @@ QuickSearch.liveproducthistorycycleend = async function liveproducthistorycyclee
           var insertlog = await Makeitlog.createmakeittimelog(makeitlogce[i]);
         }
       }
-    }  
+    }
+    var cronLogReq={
+      cron_name:"Live Product History End",
+      cron_type:end_cron
+    }
+    CronLog.createCronLog(cronLogReq);
+
   return insertlog;
 }
 
 /////////Homemaker Tiering///////////////////////
 const homemakertiering = new CronJob("0 0 3 * * *", async function() {
   //console.log("Homemaker Tiering");
+  var cronLogReq={
+    cron_name:"Home Maker Tiering",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
   var makeit_incentive = await Order.makeit_incentive_report();
+
+  var cronLogReq={
+    cron_name:"Home Maker Tiering",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
 });
 
 var currentdatecheck = new Date();
@@ -1364,7 +1196,13 @@ if(currentday ==1 ){
 
 
 //const Makeit_lost_revenue_report = new CronJob("0 0 2 * * *", async function() {
-  const Makeit_lost_revenue_report = new CronJob("0 0 4 * * *", async function(req, result) {
+const Makeit_lost_revenue_report = new CronJob("0 0 4 * * *", async function(req, result) {
+  var cronLogReq={
+    cron_name:"Kitchen Lost Revenue",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
   var Makeit_lost_revenue = "SELECT a.makeit_id,sum(a.expected_revenue)as expected_revenue FROM( select pth.makeit_id,pth.product_id,Max(pth.actual_quantity+pth.pending_quantity+pth.ordered_quantity) as maxvalues, (Max(pth.actual_quantity+pth.pending_quantity+pth.ordered_quantity) * pt.original_price) as expected_revenue from Live_Product_History  pth left outer join Product pt on pt.productid=pth.product_id   where date(pth.created_at)=CURDATE()-1  group by pth.product_id )a GROUP by a.makeit_id";
 
   var Makeit_lost_revenue_list = await query(Makeit_lost_revenue);
@@ -1414,10 +1252,41 @@ if(currentday ==1 ){
     console.log("new_Makeittotalrevenue",new_Makeittotalrevenue);
     Makeittotalrevenue.createMakeittotalrevenue(new_Makeittotalrevenue);
 
+
     }
   }
+
+  var cronLogReq={
+    cron_name:"Kitchen Lost Revenue",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
  
 });
 //Makeit_lost_revenue_report.start();
+
+
+QuickSearch.onStartAllCron = function onStartAllCron(){
+    if(constant.isCronStart){
+      var currentdatecheck = new Date();
+      var currentday = currentdatecheck.getDay()
+      if(currentday ==1 ){
+        homemakertiering.start();
+      }
+      Makeit_lost_revenue_report.start();
+      liveproducthistory_cyclestart.start();
+      liveproducthistory_cycleend.start();
+      makeitlog_everyday.start();
+      moveitlog_everyday.start();
+      moveitlog_outin.start();
+      Package_tracking.start();
+      order_auto_assign_Change.start();
+      moveitautologout_midnight.start();
+      incomplete_order_relese_product_cron.start();
+      quick_search_cron.start();
+  }
+}
+
+QuickSearch.onStartAllCron();
 
 module.exports = QuickSearch;
