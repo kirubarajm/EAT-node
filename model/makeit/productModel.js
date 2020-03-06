@@ -38,6 +38,7 @@ var Product = function(product) {
   this.approved_status = product.approved_status || 1;
   this.prod_desc = product.prod_desc;
   this.product_desc_flag = product.product_desc_flag
+  this.product_tag = product.product_tag
 
   //  this.updated_at = new Date()
 };
