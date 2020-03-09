@@ -870,6 +870,52 @@ const master = [
                 "description": "Admin Unasign Logout"
             }
         ]
+    },{
+        'Cron_Type': [{
+                "cron_id": 1,
+                "description": "Quick Search"
+            },
+            {
+                "cron_id": 2,
+                "description": "Incomplete Order Relese Product"
+            },
+            {
+                "cron_id": 3,
+                "description": "Driver Auto Logout EOD"
+            },
+            {
+                "cron_id": 4,
+                "description": "Package Tracking Every Morning"
+            },
+            {
+                "cron_id": 5,
+                "description": "Driver Time Log"
+            },
+            {
+                "cron_id": 6,
+                "description": "Driver Day Wise"
+            },
+            {
+                "cron_id": 7,
+                "description": "Kitchen Day Wise"
+            },
+            {
+                "cron_id": 8,
+                "description": "Live Product History Start"
+            },
+            {
+                "cron_id": 9,
+                "description": "Live Product History End"
+            },
+            {
+                "cron_id": 10,
+                "description": "Home Maker Tiering"
+            },
+            {
+                "cron_id": 11,
+                "description": "Kitchen Lost Revenue"
+            }
+        ]
     },
 
 ]
