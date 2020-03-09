@@ -27,6 +27,7 @@ module.exports = function(app) {
   var packageController = require("../controllers/common/PackagingBoxTrackingController");
   var packageInventoryController = require("../controllers/makeit/PackageInventoryController");
   var zone = require("../controllers/common/ZoneController");
+  var coupon = require("../controllers/common/CouponController");
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));
@@ -327,5 +328,5 @@ app.route("/admin/user/orderlist").post(routesVersioning({"1.0.0":orders.eat_use
 app.route("/admin/reports/liveproducthistoryrawreport").post(routesVersioning({"1.0.0":orders.liveproducthistory_rawreport}));
 app.route("/admin/reports/makeitlograwreport").post(routesVersioning({"1.0.0":orders.makeitlog_rawreport}));
 app.route("/admin/reports/moveitlograwreport").post(routesVersioning({"1.0.0":orders.moveitlog_rawreport}));
-
+app.route("/admin/coupon").get(routesVersioning({"1.0.0":coupon.get_coupons_by_admin}));
 }

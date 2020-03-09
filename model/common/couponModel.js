@@ -124,6 +124,41 @@ Coupon.getAllcoupon_by_user = function getAllcoupon_by_user(userid,result) {
     });
   };
 
+  Coupon.get_coupons_by_admin = function get_coupons_by_admin(req,result) {
+
+    sql.query("Select * from Coupon where active_status= 1 and expiry_date > NOW() ", async function(err, res) {
+      if (err) {
+        result(err, null);
+      } else {
+
+      
+          if (res.length !== 0 ) {
+
+       ///       var kitchens =   await Coupon.getcouponlist(res,req)
+
+
+            let resobj = {
+              success: true,
+              status:true,
+              result: res
+            };
+            result(null, resobj);
+      
+          }else{
+
+            let resobj = {
+              success: true,
+              status:false,
+              message: "Sorry there is no coupon",
+              result: res
+            };
+            result(null, resobj);
+          }  
+      }
+    });
+  };
+
+
   Coupon.get_coupons_by_userid_new = function get_coupons_by_userid_new(eatuserid,result) {
 
     sql.query("Select * from Coupon where active_status= 1 and expiry_date > NOW() ", async function(err, res) {

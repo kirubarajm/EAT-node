@@ -68,3 +68,10 @@ exports.coupons_code_validate = function(req, res) {
   });
 }
 };
+
+exports.get_coupons_by_admin = function(req, res) {
+  Coupon.get_coupons_by_admin(req.params, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
