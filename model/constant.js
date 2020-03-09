@@ -107,7 +107,7 @@ const calculate = {
 
     //////////////Infinity/////////////
     infinity_kitchen_page_limit:5,
-    infinity_repeat_switch_loop:2,    
+    infinity_repeat_switch_loop:1,    
     infinity_first_collection_details_cid:24,
     cart_demand_value:70, /// ruppes
     minimum_cart_value:30,
