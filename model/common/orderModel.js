@@ -8840,7 +8840,7 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
           }
         }
         
-        if(makeitlog[i].cycle2 !="00:00:00" && makeitlog[i].breakfast_count >= 4){  
+        if(makeitlog[i].cycle2 !="00:00:00" && makeitlog[i].lunch_count >= 4){  
           if(makeitlog[i].cycle2 >= cycle2totaltime){
             completeses++;
             makeitlog[i].complete_succession_count = completeses;  
@@ -8852,7 +8852,7 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
           }
         }
         
-        if(makeitlog[i].cycle3 !="00:00:00" && makeitlog[i].breakfast_count >= 4){  
+        if(makeitlog[i].cycle3 !="00:00:00" && makeitlog[i].dinner_count >= 4){  
           if(makeitlog[i].cycle3 >= cycle3totaltime){
             completeses++;
             makeitlog[i].complete_succession_count = completeses;  
@@ -9230,13 +9230,13 @@ Order.makeit_incentive_report= async function makeit_incentive_report(req,inc_fr
         for (let i = 0; i < res.length; i++) {
           res[i].from_date  = inc_fromdate;
           res[i].to_date    = inc_todate;
-          if(res[i].com_ses_count >= 18 && res[i].cancel_count <=3 ){
+          if(res[i].complete_succession_count >= 18 && res[i].cancel_count <=3 ){
             res[i].eligibility = 1;
             res[i].incentive_amount = constant.makeit_tier3;
-          }else if(res[i].com_ses_count >= 15 && res[i].com_ses_count < 18 && res[i].cancel_count <=3 ){
+          }else if(res[i].complete_succession_count >= 15 && res[i].complete_succession_count < 18 && res[i].cancel_count <=3 ){
             res[i].eligibility = 1;
             res[i].incentive_amount = constant.makeit_tier2;
-          }else if(res[i].com_ses_count >= 12 && res[i].com_ses_count < 15 && res[i].cancel_count <=3 ){
+          }else if(res[i].complete_succession_count >= 12 && res[i].complete_succession_count < 15 && res[i].cancel_count <=3 ){
             res[i].eligibility = 1;
             res[i].incentive_amount = constant.makeit_tier1;
           }else{
