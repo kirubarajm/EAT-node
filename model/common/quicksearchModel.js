@@ -293,9 +293,7 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
         console.log(getproductdetailscs.err);
       } else {
         for (var i = 0; i < getproductdetailscs.length; i++) {
-          var inserthistory = await producthistory.createProducthistory(
-            getproductdetailscs[i]
-          );
+          var inserthistory = await producthistory.createProducthistory(getproductdetailscs[i]);
         }
       }
     }
@@ -312,9 +310,7 @@ const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
         console.log(getproductdetailsce.err);
       } else {
         for (var i = 0; i < getproductdetailsce.length; i++) {
-          var inserthistory = await producthistory.createProducthistory(
-            getproductdetailsce[i]
-          );
+          var inserthistory = await producthistory.createProducthistory(getproductdetailsce[i]);
         }
       }
     }
@@ -927,7 +923,7 @@ const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
     }
   } 
 });
-//moveitlog_everyday.start();
+moveitlog_everyday.start();
 
 ////CRON For Every day Makeit Log with Order///////
 const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
@@ -941,7 +937,7 @@ const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
     }
   } 
 });
-//makeitlog_everyday.start();
+makeitlog_everyday.start();
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
 const liveproducthistory_cyclestart = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {
@@ -967,8 +963,7 @@ QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycycl
   var currenthour = moment(day).format("HH");
   var CSselectquery = "";
   var CSwherequery = "";
-  var cyclestart = 0;
-  
+  var cyclestart = 0;  
   
   if (currenthour >= "08" && currenthour < "12") {
     cyclestart = 1;
@@ -1010,6 +1005,7 @@ QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycycl
         }
         var makeitlogcs = getmakeitlistcs.filter(log => log.type===1);
         for (var i=0; i<makeitlogcs.length; i++) {
+          makeitlogcs[i].action = 2;
           var insertlog = await Makeitlog.createmakeittimelog(makeitlogcs[i]);
         }
       }
@@ -1020,13 +1016,11 @@ QuickSearch.liveproducthistorycyclestart = async function liveproducthistorycycl
 
 //////////Live Product History Cycle End Cron Function//////////////
 QuickSearch.liveproducthistorycycleend = async function liveproducthistorycycleend(){
-  var day           = moment().format("YYYY-MM-DD 11:mm:ss");
+  var day           = moment().format("YYYY-MM-DD HH:mm:ss");
   var currenthour   = moment(day).format("HH");
   var CEselectquery = "";
   var CEwherequery  = "";
   var cycleend      = 0;
-
-  console.log("currenthour =->",currenthour);
 
   if (currenthour >= "08" && currenthour < "12") {
     cycleend = 1;
@@ -1053,10 +1047,9 @@ QuickSearch.liveproducthistorycycleend = async function liveproducthistorycyclee
           var inserthistory = await producthistory.createProducthistory(getproductdetailsce[i]);
         }
         const getmakeitlistce = await query("select distinct prd.makeit_userid as makeit_id from Product as prd left join Orders as ord on (ord.makeit_user_id = prd.makeit_userid and (Date(ord.ordertime)=CURDATE())) left join OrderItem as oi on (oi.orderid = ord.orderid and oi.productid=prd.productid) left join MakeitUser as mu on mu.userid = prd.makeit_userid where mu.unservicable=0 and prd.active_status = 1 and prd.delete_status !=1 " +CEwherequery +" group by prd.productid");
-        console.log("getmakeitlistce -->",getmakeitlistce);
         for(let j=0; j<getmakeitlistce.length; j++){
           getmakeitlistce[j].type = 1;
-          getmakeitlistcs[j].created_at= moment().format("YYYY-MM-DD "+currenthour+":59:00");
+          getmakeitlistce[j].created_at= moment().format("YYYY-MM-DD "+currenthour+":59:00");
           for (let k = 0; k<getproductdetailsce.length; k++) {
             if(getmakeitlistce[j].makeit_id == getproductdetailsce[k].makeit_id){
               if(getproductdetailsce[k].actual_quantity>0){
@@ -1069,7 +1062,7 @@ QuickSearch.liveproducthistorycycleend = async function liveproducthistorycyclee
         }
         var makeitlogce = getmakeitlistce.filter(log => log.type===0);
         for (var i=0; i<makeitlogce.length; i++) {
-          console.log("makeitlogce---->",makeitlogce[i]);
+          makeitlogce[i].action = 2;
           var insertlog = await Makeitlog.createmakeittimelog(makeitlogce[i]);
         }
       }
@@ -1146,23 +1139,23 @@ if(currentday ==1 ){
 });
 //Makeit_lost_revenue_report.start();
 
-///// 1 hr Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
-const liveproducthistory_cyclestart1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 * * *", async function(req, result) {
-  console.log("Live Product History Cycle Start 1hr");
-  await QuickSearch.liveproducthistorycyclestart();
-});
-liveproducthistory_cyclestart1hr.start();
-
 ///// 1 hr Cron For BreakFast, Lunch, Dinner Every Cycle End ///////////
-const liveproducthistory_cycleend1hr = new CronJob("0 59 8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 * * *", async function(req, result) {
-  console.log("Live Product History Cycle End 1hr");
+const liveproducthistory_cycleend1hr = new CronJob("0 59 7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 * * *", async function(req, result) {
+  console.log("Live Product History Cycle End 1hr  ---1");
   await QuickSearch.liveproducthistorycycleend();
 });
 liveproducthistory_cycleend1hr.start();
 
+///// 1 hr Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
+const liveproducthistory_cyclestart1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 * * *", async function(req, result) {
+  console.log("Live Product History Cycle Start 1hr ---1");
+  await QuickSearch.liveproducthistorycyclestart();
+});
+liveproducthistory_cyclestart1hr.start();
+
 //// 1 hr cron run by moveit user offline every cycle end.
 const moveitlog_out1hr = new CronJob("0 59 7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 * * *", async function() {
-  console.log("moveit offline");
+  console.log("moveit offline 1 hr");
   var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
   
   if (res.length !== 0) {
@@ -1178,9 +1171,9 @@ const moveitlog_out1hr = new CronJob("0 59 7,8,9,10,11,12,13,14,15,16,17,18,19,2
     }
   }
 });
-//moveitlog_out1hr.start();
+moveitlog_out1hr.start();
 
-//// 1 hr cron run by moveit user online every cycle end.
+//// 1 hr cron run by moveit user online every cycle start.
 const moveitlog_in1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 * * *", async function() {
   console.log("moveit online");
   var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
@@ -1198,68 +1191,68 @@ const moveitlog_in1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21
     }
   }
 });
-//moveitlog_in1hr.start();
+moveitlog_in1hr.start();
 
 //// 1 hr cron run by moveit user offline and online every cycle end.
-const moveitlog_out_in1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23 * * *", async function() {
-  console.log("moveit offline");
-  var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
+// const moveitlog_out_in1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23 * * *", async function() {
+//   console.log("moveit offline");
+//   var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
   
-  if (res.length !== 0) {
-    var day = moment().format("YYYY-MM-DD HH:mm:ss"); 
-    var currenthour = moment(day).format("HH");
-    var outhour = moment(day).subtract(60,'seconds').format("HH");
+//   if (res.length !== 0) {
+//     var day = moment().format("YYYY-MM-DD HH:mm:ss"); 
+//     var currenthour = moment(day).format("HH");
+//     var outhour = moment(day).subtract(60,'seconds').format("HH");
 
-    for (let i = 0; i < res.length; i++) {
-      /////////logout Moveit-Time log/////////////////
-      var req1={};
-      req1.type    = 0;
-      req1.moveit_userid = res[i].userid;
-      req1.action  = 2;
-      req1.created_at = moment().format("YYYY-MM-DD "+outhour+":59:59");
-      req1.logtime = moment().format("YYYY-MM-DD "+outhour+":59:59");
-      console.log("req1111 --->",req1);
-      //await Moveituser.create_createMoveitTimelog(req1);  
+//     for (let i = 0; i < res.length; i++) {
+//       /////////logout Moveit-Time log/////////////////
+//       var req1={};
+//       req1.type    = 0;
+//       req1.moveit_userid = res[i].userid;
+//       req1.action  = 2;
+//       req1.created_at = moment().format("YYYY-MM-DD "+outhour+":59:59");
+//       req1.logtime = moment().format("YYYY-MM-DD "+outhour+":59:59");
+//       console.log("req1111 --->",req1);
+//       //await Moveituser.create_createMoveitTimelog(req1);  
       
-      Moveituser.create_createMoveitTimelog(req1,async function(err,res3) {
-        if (err) {
-          //i++;
-          //order_assign(res,i);
-          console.log(err);
-        } else {
-          //i++;
-          //order_assign(res,i);
-          console.log(res3);
-        }
-      });
-    }
-console.log("-------------------------------------------");
-    for (let i = 0; i < res.length; i++) {      
-      /////////login Moveit-Time log/////////////////
-      var req2={};
-      req2.type    = 1;
-      req2.moveit_userid = res[i].userid;
-      req2.action  = 2;
-      req2.created_at = moment().format("YYYY-MM-DD "+currenthour+":00:00");
-      req2.logtime = moment().format("YYYY-MM-DD "+currenthour+":00:00");
-      console.log("req2222 --->",req2);
-      //await Moveituser.create_createMoveitTimelog(req2);
+//       Moveituser.create_createMoveitTimelog(req1,async function(err,res3) {
+//         if (err) {
+//           //i++;
+//           //order_assign(res,i);
+//           console.log(err);
+//         } else {
+//           //i++;
+//           //order_assign(res,i);
+//           console.log(res3);
+//         }
+//       });
+//     }
+// console.log("-------------------------------------------");
+//     for (let i = 0; i < res.length; i++) {      
+//       /////////login Moveit-Time log/////////////////
+//       var req2={};
+//       req2.type    = 1;
+//       req2.moveit_userid = res[i].userid;
+//       req2.action  = 2;
+//       req2.created_at = moment().format("YYYY-MM-DD "+currenthour+":00:00");
+//       req2.logtime = moment().format("YYYY-MM-DD "+currenthour+":00:00");
+//       console.log("req2222 --->",req2);
+//       //await Moveituser.create_createMoveitTimelog(req2);
 
-      Moveituser.create_createMoveitTimelog(req2,async function(err,res4) {
-        if (err) {
-          //i++;
-          //order_assign(res,i);
-          console.log(err);
-        } else {
-          //i++;
-          //order_assign(res,i);
-          console.log(res4);
-        }
-      });
+//       Moveituser.create_createMoveitTimelog(req2,async function(err,res4) {
+//         if (err) {
+//           //i++;
+//           //order_assign(res,i);
+//           console.log(err);
+//         } else {
+//           //i++;
+//           //order_assign(res,i);
+//           console.log(res4);
+//         }
+//       });
 
-    }
-  }
-});
+//     }
+//   }
+// });
 //moveitlog_out_in1hr.start();
 
 module.exports = QuickSearch;

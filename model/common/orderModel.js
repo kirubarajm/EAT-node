@@ -8239,12 +8239,13 @@ Order.moveit_daywise_report= async function moveit_daywise_report(req) {
       }    
     } 
   }  
+  console.log(moveitlog);
   return moveitlog; 
 };
 
 ////Moveit Order Count///////
 Order.moveit_order_count = async function moveit_order_count(req,moveitloguser) {
-  var ordercountquery = "select date(created_at) as date,moveit_user_id,count(orderid) as order_count, COUNT(CASE WHEN time(order_assigned_time)>='08:00:00' AND time(order_assigned_time)<'12:00:00' THEN orderid END) as breakfast, COUNT(CASE WHEN time(order_assigned_time)>='12:00:00' AND time(order_assigned_time)<'16:00:00' THEN orderid END) as lunch, COUNT(CASE WHEN time(order_assigned_time)>='16:00:00' AND time(order_assigned_time)<='23:59:59' THEN orderid END) as dinner,COUNT(CASE WHEN time(order_assigned_time)>='08:00:00' AND time(order_assigned_time)<'09:00:00' THEN orderid END) as log0809_count,COUNT(CASE WHEN time(order_assigned_time)>='09:00:00' AND time(order_assigned_time)<'10:00:00' THEN orderid END) as log0910_count, COUNT(CASE WHEN time(order_assigned_time)>='10:00:00' AND time(order_assigned_time)<'11:00:00' THEN orderid END) as log1011_count, COUNT(CASE WHEN time(order_assigned_time)>='11:00:00' AND time(order_assigned_time)<'12:00:00' THEN orderid END) as log1112_count, COUNT(CASE WHEN time(order_assigned_time)>='12:00:00' AND time(order_assigned_time)<'13:00:00' THEN orderid END) as log1213_count, COUNT(CASE WHEN time(order_assigned_time)>='13:00:00' AND time(order_assigned_time)<'14:00:00' THEN orderid END) as log1314_count, COUNT(CASE WHEN time(order_assigned_time)>='14:00:00' AND time(order_assigned_time)<'15:00:00' THEN orderid END) as log1415_count, COUNT(CASE WHEN time(order_assigned_time)>='15:00:00' AND time(order_assigned_time)<'16:00:00' THEN orderid END) as log1516_count, COUNT(CASE WHEN time(order_assigned_time)>='16:00:00' AND time(order_assigned_time)<'17:00:00' THEN orderid END) as log1617_count, COUNT(CASE WHEN time(order_assigned_time)>='17:00:00' AND time(order_assigned_time)<'18:00:00' THEN orderid END) as log1718_count, COUNT(CASE WHEN time(order_assigned_time)>='18:00:00' AND time(order_assigned_time)<'19:00:00' THEN orderid END) as log1819_count, COUNT(CASE WHEN time(order_assigned_time)>='19:00:00' AND time(order_assigned_time)<'20:00:00' THEN orderid END) as log1920_count, COUNT(CASE WHEN time(order_assigned_time)>='20:00:00' AND time(order_assigned_time)<'21:00:00' THEN orderid END) as log2021_count, COUNT(CASE WHEN time(order_assigned_time)>='21:00:00' AND time(order_assigned_time)<'22:00:00' THEN orderid END) as log2122_count,COUNT(CASE WHEN time(order_assigned_time)>='22:00:00' AND time(order_assigned_time)<'23:00:00' THEN orderid END) as log2223_count from Orders where moveit_user_id IN("+moveitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 and orderstatus=6 and moveit_user_id!=0 group by moveit_user_id,date(created_at) order by moveit_user_id,date(created_at)";
+  var ordercountquery = "select date(created_at) as date,moveit_user_id,count(orderid) as order_count, COUNT(CASE WHEN time(order_assigned_time)>='08:00:00' AND time(order_assigned_time)<'12:00:00' THEN orderid END) as breakfast, COUNT(CASE WHEN time(order_assigned_time)>='12:00:00' AND time(order_assigned_time)<'16:00:00' THEN orderid END) as lunch, COUNT(CASE WHEN time(order_assigned_time)>='16:00:00' AND time(order_assigned_time)<='23:59:59' THEN orderid END) as dinner,COUNT(CASE WHEN time(order_assigned_time)>='08:00:00' AND time(order_assigned_time)<'09:00:00' THEN orderid END) as log0809_count,COUNT(CASE WHEN time(order_assigned_time)>='09:00:00' AND time(order_assigned_time)<'10:00:00' THEN orderid END) as log0910_count, COUNT(CASE WHEN time(order_assigned_time)>='10:00:00' AND time(order_assigned_time)<'11:00:00' THEN orderid END) as log1011_count, COUNT(CASE WHEN time(order_assigned_time)>='11:00:00' AND time(order_assigned_time)<'12:00:00' THEN orderid END) as log1112_count, COUNT(CASE WHEN time(order_assigned_time)>='12:00:00' AND time(order_assigned_time)<'13:00:00' THEN orderid END) as log1213_count, COUNT(CASE WHEN time(order_assigned_time)>='13:00:00' AND time(order_assigned_time)<'14:00:00' THEN orderid END) as log1314_count, COUNT(CASE WHEN time(order_assigned_time)>='14:00:00' AND time(order_assigned_time)<'15:00:00' THEN orderid END) as log1415_count, COUNT(CASE WHEN time(order_assigned_time)>='15:00:00' AND time(order_assigned_time)<'16:00:00' THEN orderid END) as log1516_count, COUNT(CASE WHEN time(order_assigned_time)>='16:00:00' AND time(order_assigned_time)<'17:00:00' THEN orderid END) as log1617_count, COUNT(CASE WHEN time(order_assigned_time)>='17:00:00' AND time(order_assigned_time)<'18:00:00' THEN orderid END) as log1718_count, COUNT(CASE WHEN time(order_assigned_time)>='18:00:00' AND time(order_assigned_time)<'19:00:00' THEN orderid END) as log1819_count, COUNT(CASE WHEN time(order_assigned_time)>='19:00:00' AND time(order_assigned_time)<'20:00:00' THEN orderid END) as log1920_count, COUNT(CASE WHEN time(order_assigned_time)>='20:00:00' AND time(order_assigned_time)<'21:00:00' THEN orderid END) as log2021_count, COUNT(CASE WHEN time(order_assigned_time)>='21:00:00' AND time(order_assigned_time)<'22:00:00' THEN orderid END) as log2122_count,COUNT(CASE WHEN time(order_assigned_time)>='22:00:00' AND time(order_assigned_time)<'23:00:00' THEN orderid END) as log2223_count from Orders where moveit_user_id IN("+moveitloguser+") and date(created_at)= DATE_SUB(CURDATE(), INTERVAL 1 DAY) and orderstatus=6 and moveit_user_id!=0 group by moveit_user_id,date(created_at) order by moveit_user_id,date(created_at)";
   var ordercount = await query(ordercountquery);
   return ordercount;
 };
@@ -8252,13 +8253,13 @@ Order.moveit_order_count = async function moveit_order_count(req,moveitloguser) 
 ////Moveit Logtime perday///////////
 Order.moveit_logtime = async function moveit_logtime(req) {
   ///Get Moveit Log Dates///////
-  var moveitlogusersdatesquery = "select date(created_at) as log_date from Moveit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 group by date(created_at) order by date(created_at)";
+  var moveitlogusersdatesquery = "select date(created_at) as log_date from Moveit_Timelog where date(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) group by date(created_at) order by created_at";
   var moveitlogusersdates = await query(moveitlogusersdatesquery);
   ///Get Moveit Users list///////
-  var moveitlogusersquery = "select moveit_userid from Moveit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 group by moveit_userid order by moveit_userid";
+  var moveitlogusersquery = "select moveit_userid from Moveit_Timelog where date(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) group by moveit_userid order by moveit_userid";
   var moveitlogusers = await query(moveitlogusersquery);
   ///Get Moveit Logs///////
-  var moveitlogquery = "select date(logtime) as log_date,time(logtime) as logtime,type,moveit_userid from Moveit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 and action order by date(created_at),moveit_userid";
+  var moveitlogquery = "select date(logtime) as log_date,time(logtime) as logtime,type,moveit_userid from Moveit_Timelog where date(created_at) = DATE_SUB(CURDATE(), INTERVAL 1 DAY) and action order by moveit_userid,created_at";
   var moveitlog = await query(moveitlogquery);
 
   var moveitavg = [];
@@ -8268,7 +8269,6 @@ Order.moveit_logtime = async function moveit_logtime(req) {
     }    
   }
   
-  ///console.log("Kloop ==>",moveitlog);
   for (let k = 0; k < moveitavg.length; k++) {
     var starttime  = '';
     var endtime    = '';
@@ -8424,6 +8424,7 @@ Order.moveit_logtime = async function moveit_logtime(req) {
           } 
 
           //////////1 hr type-1/////////
+          hrstarttime = moveitlog[l].logtime;
           if(hrstarttime >= "08:00:00" && hrstarttime < "09:00:00"){ starttime0809 = hrstarttime; }
           else if(hrstarttime >= "09:00:00" && hrstarttime < "10:00:00"){ starttime0910 = hrstarttime; }
           else if(hrstarttime >= "10:00:00" && hrstarttime < "11:00:00"){ starttime1011 = hrstarttime; }
@@ -8451,6 +8452,7 @@ Order.moveit_logtime = async function moveit_logtime(req) {
           } 
 
           //////////1 hr type-2/////////
+          hrendtime = moveitlog[l].logtime;
           if(hrendtime >= "08:00:00" && hrendtime < "09:00:00"){ endtime0809 = hrendtime; }
           else if(hrendtime >= "09:00:00" && hrendtime < "10:00:00"){ endtime0910 = hrendtime; }
           else if(hrendtime >= "10:00:00" && hrendtime < "11:00:00"){ endtime1011 = hrendtime; }
@@ -8682,6 +8684,7 @@ Order.moveit_logtime = async function moveit_logtime(req) {
     moveitavg[k].log2122_count = 0;
     moveitavg[k].log2223_count = 0;
   } 
+  console.log("moveitavg -->",moveitavg);
   return moveitavg;
 };
 
@@ -8793,7 +8796,7 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
         makeitlog[i].complete_succession_count = completeses;
 
         if(makeitlog[i].cycle1 !="00:00:00" && makeitlog[i].breakfast_count >= 4){  
-          if(makeitlog[i].logtime >= cycle1totaltime){
+          if(makeitlog[i].cycle1 >= cycle1totaltime){
             completeses++;
             makeitlog[i].complete_succession_count = completeses;  
           }else{
@@ -8805,7 +8808,7 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
         }
         
         if(makeitlog[i].cycle2 !="00:00:00" && makeitlog[i].breakfast_count >= 4){  
-          if(makeitlog[i].logtime >= cycle2totaltime){
+          if(makeitlog[i].cycle2 >= cycle2totaltime){
             completeses++;
             makeitlog[i].complete_succession_count = completeses;  
           }else{
@@ -8817,7 +8820,7 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
         }
         
         if(makeitlog[i].cycle3 !="00:00:00" && makeitlog[i].breakfast_count >= 4){  
-          if(makeitlog[i].logtime >= cycle3totaltime){
+          if(makeitlog[i].cycle3 >= cycle3totaltime){
             completeses++;
             makeitlog[i].complete_succession_count = completeses;  
           }else{
@@ -8836,16 +8839,15 @@ Order.makeit_daywise_report= async function makeit_daywise_report(req) {
       //console.log("makeitlog[i].kitchen_percentage --->",makeitlog[i].kitchen_percentage);
     }  
   } 
-  console.log(makeitlog);
   return makeitlog; 
 };
 
 //////////Get Kitchen Percentage//////////
 Order.kitchen_percentage= async function kitchen_percentage(makeit_id){
   if(makeit_id){
-    var getmaxquantity = await query("select lph.makeit_id,lph.product_id,p.product_name,MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage,0 as kitchen_product_count_percentage,0 as kitchen_product_percentage from Live_Product_History lph left join Product as p on p.productid=lph.product_id where date(lph.created_at)=CURDATE()-1 and lph.makeit_id="+makeit_id+" group by lph.product_id order by lph.product_id ASC");
+    var getmaxquantity = await query("select lph.makeit_id,lph.product_id,p.product_name,MAX(lph.actual_quantity+lph.pending_quantity+lph.ordered_quantity) as total_quantity, 0 as sold_quantity,0 as product_percentage,0 as kitchen_product_count_percentage,0 as kitchen_product_percentage from Live_Product_History lph left join Product as p on p.productid=lph.product_id where date(lph.created_at)= DATE_SUB(CURDATE(), INTERVAL 1 DAY) and lph.makeit_id="+makeit_id+" group by lph.product_id order by lph.product_id ASC");
   
-    var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)=CURDATE()-1 and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+makeit_id+" group by oi.productid order by oi.productid ASC");
+    var getsoldquantity = await query("select ord.makeit_user_id,oi.productid, SUM(oi.quantity) as sold_quantity from OrderItem as oi left join Orders ord on ord.orderid= oi.orderid where date(oi.created_at)= DATE_SUB(CURDATE(), INTERVAL 1 DAY) and ord.orderstatus<=6 and ord.payment_status<2 and ord.makeit_user_id="+makeit_id+" group by oi.productid order by oi.productid ASC");
     //result(null, getsoldquantity);
     var product_count = 0;
     var kitchen_percentage = 0;
@@ -8883,11 +8885,8 @@ Order.kitchen_percentage= async function kitchen_percentage(makeit_id){
 };
 ////Makeit Order Count///////
 Order.makeit_order_count = async function makeit_order_count(req,makeitloguser) { 
-  // var ordercountquery = "select date(created_at) as log_date,makeit_user_id as makeit_id, count(orderid) as order_count,SUM(makeit_earnings) AS total_makeit_earnings, COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' AND orderstatus=6 THEN orderid END) as breakfast_completed, COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' AND orderstatus=6 THEN orderid END) as lunch_completed,  COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN orderid END) as dinner_completed,   SUM(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' AND orderstatus=6 THEN makeit_earnings END) as breakfast_total_makeit_earnings, SUM(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' AND orderstatus=6 THEN makeit_earnings END) as lunch_total_makeit_earnings,  SUM(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=6 THEN makeit_earnings END) as dinner_total_makeit_earnings,   COUNT(CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as breakfast_canceled,    COUNT(CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as lunch_canceled,     COUNT(CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' AND orderstatus=7 AND cancel_by=2 THEN orderid END) as dinner_canceled  from Orders where makeit_user_id IN("+makeitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 and orderstatus=6 and makeit_user_id!=0  group by makeit_user_id,  date(created_at) order by makeit_user_id,date(created_at)";
-  // var ordercount = await query(ordercountquery);
-
   ////Get sold quantity/////////
-  var ordercountquery = "select date(ord.created_at) as log_date,ord.makeit_user_id as makeit_id, COUNT(CASE WHEN ord.orderstatus=6 THEN ord.orderid END) as order_count, SUM(CASE WHEN ord.orderstatus=6 THEN ord.makeit_earnings END) as total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as breakfast_completed, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as lunch_completed, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as dinner_completed, SUM(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as breakfast_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as lunch_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as dinner_total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as breakfast_canceled, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as lunch_canceled, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as dinner_canceled, CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle1_soldqty, CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle2_soldqty, CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle3_soldqty,COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<='09:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log0809_completed,COUNT(CASE WHEN time(ord.created_at)>='09:00:00' AND time(ord.created_at)<='10:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log0910_completed,COUNT(CASE WHEN time(ord.created_at)>='10:00:00' AND time(ord.created_at)<='11:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1011_completed,COUNT(CASE WHEN time(ord.created_at)>='11:00:00' AND time(ord.created_at)<='12:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1112_completed, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<='13:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1213_completed,COUNT(CASE WHEN time(ord.created_at)>='13:00:00' AND time(ord.created_at)<='14:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1314_completed,COUNT(CASE WHEN time(ord.created_at)>='14:00:00' AND time(ord.created_at)<='15:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1415_completed,COUNT(CASE WHEN time(ord.created_at)>='15:00:00' AND time(ord.created_at)<='16:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1516_completed,COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='17:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1617_completed,COUNT(CASE WHEN time(ord.created_at)>='17:00:00' AND time(ord.created_at)<='18:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1718_completed,COUNT(CASE WHEN time(ord.created_at)>='18:00:00' AND time(ord.created_at)<='19:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1819_completed,COUNT(CASE WHEN time(ord.created_at)>='19:00:00' AND time(ord.created_at)<='20:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1920_completed,COUNT(CASE WHEN time(ord.created_at)>='20:00:00' AND time(ord.created_at)<='21:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log2021_completed,COUNT(CASE WHEN time(ord.created_at)>='21:00:00' AND time(ord.created_at)<='22:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log2122_completed,COUNT(CASE WHEN time(ord.created_at)>='22:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log2223_completed,COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<='09:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log0809_canceled,COUNT(CASE WHEN time(ord.created_at)>='09:00:00' AND time(ord.created_at)<='10:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log0910_canceled,COUNT(CASE WHEN time(ord.created_at)>='10:00:00' AND time(ord.created_at)<='11:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1011_canceled,COUNT(CASE WHEN time(ord.created_at)>='11:00:00' AND time(ord.created_at)<='12:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1112_canceled,COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<='13:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1213_canceled,COUNT(CASE WHEN time(ord.created_at)>='13:00:00' AND time(ord.created_at)<='14:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1314_canceled,COUNT(CASE WHEN time(ord.created_at)>='14:00:00' AND time(ord.created_at)<='15:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1415_canceled,COUNT(CASE WHEN time(ord.created_at)>='15:00:00' AND time(ord.created_at)<='16:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1516_canceled,COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='17:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1617_canceled,COUNT(CASE WHEN time(ord.created_at)>='17:00:00' AND time(ord.created_at)<='18:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1718_canceled,COUNT(CASE WHEN time(ord.created_at)>='18:00:00' AND time(ord.created_at)<='19:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1819_canceled,COUNT(CASE WHEN time(ord.created_at)>='19:00:00' AND time(ord.created_at)<='20:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1920_canceled,COUNT(CASE WHEN time(ord.created_at)>='20:00:00' AND time(ord.created_at)<='21:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log2021_canceled,COUNT(CASE WHEN time(ord.created_at)>='21:00:00' AND time(ord.created_at)<='22:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log2122_canceled,COUNT(CASE WHEN time(ord.created_at)>='22:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log2223_canceled from Orders as ord left join OrderItem as oi on oi.orderid= ord.orderid where ord.makeit_user_id IN("+makeitloguser+") and date(ord.created_at) between CURDATE()-1 and CURDATE()-1 and ord.makeit_user_id!=0 and (ord.orderstatus=6 or ord.orderstatus=7) group by ord.makeit_user_id,  date(ord.created_at) order by ord.makeit_user_id,date(ord.created_at)"
+  var ordercountquery = "select date(ord.created_at) as log_date,ord.makeit_user_id as makeit_id, COUNT(CASE WHEN ord.orderstatus=6 THEN ord.orderid END) as order_count, SUM(CASE WHEN ord.orderstatus=6 THEN ord.makeit_earnings END) as total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as breakfast_completed, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as lunch_completed, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as dinner_completed, SUM(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as breakfast_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as lunch_total_makeit_earnings, SUM(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.makeit_earnings END) as dinner_total_makeit_earnings, COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as breakfast_canceled, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as lunch_canceled, COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=7 AND ord.cancel_by=2 THEN ord.orderid END) as dinner_canceled, CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<'12:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle1_soldqty, CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<'16:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle2_soldqty, CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN SUM(oi.quantity) END as cycle3_soldqty,COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<='09:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log0809_completed,COUNT(CASE WHEN time(ord.created_at)>='09:00:00' AND time(ord.created_at)<='10:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log0910_completed,COUNT(CASE WHEN time(ord.created_at)>='10:00:00' AND time(ord.created_at)<='11:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1011_completed,COUNT(CASE WHEN time(ord.created_at)>='11:00:00' AND time(ord.created_at)<='12:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1112_completed, COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<='13:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1213_completed,COUNT(CASE WHEN time(ord.created_at)>='13:00:00' AND time(ord.created_at)<='14:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1314_completed,COUNT(CASE WHEN time(ord.created_at)>='14:00:00' AND time(ord.created_at)<='15:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1415_completed,COUNT(CASE WHEN time(ord.created_at)>='15:00:00' AND time(ord.created_at)<='16:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1516_completed,COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='17:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1617_completed,COUNT(CASE WHEN time(ord.created_at)>='17:00:00' AND time(ord.created_at)<='18:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1718_completed,COUNT(CASE WHEN time(ord.created_at)>='18:00:00' AND time(ord.created_at)<='19:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1819_completed,COUNT(CASE WHEN time(ord.created_at)>='19:00:00' AND time(ord.created_at)<='20:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log1920_completed,COUNT(CASE WHEN time(ord.created_at)>='20:00:00' AND time(ord.created_at)<='21:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log2021_completed,COUNT(CASE WHEN time(ord.created_at)>='21:00:00' AND time(ord.created_at)<='22:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log2122_completed,COUNT(CASE WHEN time(ord.created_at)>='22:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=6 THEN ord.orderid END) as log2223_completed,COUNT(CASE WHEN time(ord.created_at)>='08:00:00' AND time(ord.created_at)<='09:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log0809_canceled,COUNT(CASE WHEN time(ord.created_at)>='09:00:00' AND time(ord.created_at)<='10:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log0910_canceled,COUNT(CASE WHEN time(ord.created_at)>='10:00:00' AND time(ord.created_at)<='11:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1011_canceled,COUNT(CASE WHEN time(ord.created_at)>='11:00:00' AND time(ord.created_at)<='12:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1112_canceled,COUNT(CASE WHEN time(ord.created_at)>='12:00:00' AND time(ord.created_at)<='13:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1213_canceled,COUNT(CASE WHEN time(ord.created_at)>='13:00:00' AND time(ord.created_at)<='14:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1314_canceled,COUNT(CASE WHEN time(ord.created_at)>='14:00:00' AND time(ord.created_at)<='15:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1415_canceled,COUNT(CASE WHEN time(ord.created_at)>='15:00:00' AND time(ord.created_at)<='16:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1516_canceled,COUNT(CASE WHEN time(ord.created_at)>='16:00:00' AND time(ord.created_at)<='17:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1617_canceled,COUNT(CASE WHEN time(ord.created_at)>='17:00:00' AND time(ord.created_at)<='18:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1718_canceled,COUNT(CASE WHEN time(ord.created_at)>='18:00:00' AND time(ord.created_at)<='19:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1819_canceled,COUNT(CASE WHEN time(ord.created_at)>='19:00:00' AND time(ord.created_at)<='20:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log1920_canceled,COUNT(CASE WHEN time(ord.created_at)>='20:00:00' AND time(ord.created_at)<='21:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log2021_canceled,COUNT(CASE WHEN time(ord.created_at)>='21:00:00' AND time(ord.created_at)<='22:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log2122_canceled,COUNT(CASE WHEN time(ord.created_at)>='22:00:00' AND time(ord.created_at)<='23:00:00' AND ord.orderstatus=7 THEN ord.orderid END) as log2223_canceled from Orders as ord left join OrderItem as oi on oi.orderid= ord.orderid where ord.makeit_user_id IN("+makeitloguser+") and date(ord.created_at) between = DATE_SUB(CURDATE(), INTERVAL 1 DAY) and ord.makeit_user_id!=0 and (ord.orderstatus=6 or ord.orderstatus=7) group by ord.makeit_user_id,  date(ord.created_at) order by ord.makeit_user_id,date(ord.created_at)"
   var ordercount = await query(ordercountquery);
 
   return ordercount;
@@ -8896,10 +8895,10 @@ Order.makeit_order_count = async function makeit_order_count(req,makeitloguser) 
 ////Makeit Logtime perday///////////
 Order.makeit_logtime = async function makeit_logtime(req) {  
   ///Get Moveit Users list///////
-  var makeitlogusersquery = "select makeit_id,date(created_at) as log_date from Makeit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 group by makeit_id order by makeit_id";
+  var makeitlogusersquery = "select makeit_id,date(created_at) as log_date from Makeit_Timelog where date(created_at)= DATE_SUB(CURDATE(), INTERVAL 1 DAY) group by makeit_id order by makeit_id";
   var makeitlogusers = await query(makeitlogusersquery);
   ///Get Moveit Logs///////
-  var makeitlogquery = "select date(created_at) as log_date,time(created_at) as logtime,type,makeit_id from Makeit_Timelog where date(created_at) between CURDATE()-1 and CURDATE()-1 order by date(created_at),makeit_id";
+  var makeitlogquery = "select date(created_at) as log_date,time(created_at) as logtime,type,makeit_id from Makeit_Timelog where date(created_at)= DATE_SUB(CURDATE(), INTERVAL 1 DAY) order by date(created_at),makeit_id";
   var makeitlog = await query(makeitlogquery);  
   
   ///console.log("Kloop ==>",makeitlog);
@@ -9059,6 +9058,7 @@ Order.makeit_logtime = async function makeit_logtime(req) {
           }
           
           //////////1 hr type-1/////////
+          hrstarttime = makeitlog[l].logtime;
           if(hrstarttime >= "08:00:00" && hrstarttime < "09:00:00"){ starttime0809 = hrstarttime; }
           else if(hrstarttime >= "09:00:00" && hrstarttime < "10:00:00"){ starttime0910 = hrstarttime; }
           else if(hrstarttime >= "10:00:00" && hrstarttime < "11:00:00"){ starttime1011 = hrstarttime; }
@@ -9086,6 +9086,7 @@ Order.makeit_logtime = async function makeit_logtime(req) {
           } 
 
           //////////1 hr type-2/////////
+          hrendtime = makeitlog[l].logtime;
           if(hrendtime >= "08:00:00" && hrendtime < "09:00:00"){ endtime0809 = hrendtime; }
           else if(hrendtime >= "09:00:00" && hrendtime < "10:00:00"){ endtime0910 = hrendtime; }
           else if(hrendtime >= "10:00:00" && hrendtime < "11:00:00"){ endtime1011 = hrendtime; }
@@ -9381,11 +9382,11 @@ Order.makeit_logtime = async function makeit_logtime(req) {
 
 ////Makeit Cycle Based Product Count///////
 Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req,makeitloguser) {
-  var liveproductcountquery = "select date(created_at) as log_date,makeit_id, COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' THEN (product_id) END) as breakfast_count, COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' THEN (product_id) END) as lunch_count, COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN (product_id) END) as dinner_count,COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'09:00:00' THEN (product_id) END) as log0809,COUNT(distinct CASE WHEN time(created_at)>='09:00:00' AND time(created_at)<'10:00:00' THEN (product_id) END) as log0910,COUNT(distinct CASE WHEN time(created_at)>='10:00:00' AND time(created_at)<'11:00:00' THEN (product_id) END) as log1011,COUNT(distinct CASE WHEN time(created_at)>='11:00:00' AND time(created_at)<'12:00:00' THEN (product_id) END) as log1112,COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'13:00:00' THEN (product_id) END) as log1213,COUNT(distinct CASE WHEN time(created_at)>='13:00:00' AND time(created_at)<'14:00:00' THEN (product_id) END) as log1314,COUNT(distinct CASE WHEN time(created_at)>='14:00:00' AND time(created_at)<'15:00:00' THEN (product_id) END) as log1415,COUNT(distinct CASE WHEN time(created_at)>='15:00:00' AND time(created_at)<'16:00:00' THEN (product_id) END) as log1516,COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<'17:00:00' THEN (product_id) END) as log1617,COUNT(distinct CASE WHEN time(created_at)>='17:00:00' AND time(created_at)<'18:00:00' THEN (product_id) END) as log1718,COUNT(distinct CASE WHEN time(created_at)>='18:00:00' AND time(created_at)<'19:00:00' THEN (product_id) END) as log1819,COUNT(distinct CASE WHEN time(created_at)>='19:00:00' AND time(created_at)<'20:00:00' THEN (product_id) END) as log1920,COUNT(distinct CASE WHEN time(created_at)>='20:00:00' AND time(created_at)<'21:00:00' THEN (product_id) END) as log2021,COUNT(distinct CASE WHEN time(created_at)>='21:00:00' AND time(created_at)<'22:00:00' THEN (product_id) END) as log2122,COUNT(distinct CASE WHEN time(created_at)>='22:00:00' AND time(created_at)<'23:00:00' THEN (product_id) END) as log2223 from Live_Product_History where makeit_id IN("+makeitloguser+") and date(created_at) between CURDATE()-1 and CURDATE()-1 group by makeit_id order by makeit_id";
+  var liveproductcountquery = "select date(created_at) as log_date,makeit_id, COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'12:00:00' THEN (product_id) END) as breakfast_count, COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'16:00:00' THEN (product_id) END) as lunch_count, COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<='23:00:00' THEN (product_id) END) as dinner_count,COUNT(distinct CASE WHEN time(created_at)>='08:00:00' AND time(created_at)<'09:00:00' THEN (product_id) END) as log0809,COUNT(distinct CASE WHEN time(created_at)>='09:00:00' AND time(created_at)<'10:00:00' THEN (product_id) END) as log0910,COUNT(distinct CASE WHEN time(created_at)>='10:00:00' AND time(created_at)<'11:00:00' THEN (product_id) END) as log1011,COUNT(distinct CASE WHEN time(created_at)>='11:00:00' AND time(created_at)<'12:00:00' THEN (product_id) END) as log1112,COUNT(distinct CASE WHEN time(created_at)>='12:00:00' AND time(created_at)<'13:00:00' THEN (product_id) END) as log1213,COUNT(distinct CASE WHEN time(created_at)>='13:00:00' AND time(created_at)<'14:00:00' THEN (product_id) END) as log1314,COUNT(distinct CASE WHEN time(created_at)>='14:00:00' AND time(created_at)<'15:00:00' THEN (product_id) END) as log1415,COUNT(distinct CASE WHEN time(created_at)>='15:00:00' AND time(created_at)<'16:00:00' THEN (product_id) END) as log1516,COUNT(distinct CASE WHEN time(created_at)>='16:00:00' AND time(created_at)<'17:00:00' THEN (product_id) END) as log1617,COUNT(distinct CASE WHEN time(created_at)>='17:00:00' AND time(created_at)<'18:00:00' THEN (product_id) END) as log1718,COUNT(distinct CASE WHEN time(created_at)>='18:00:00' AND time(created_at)<'19:00:00' THEN (product_id) END) as log1819,COUNT(distinct CASE WHEN time(created_at)>='19:00:00' AND time(created_at)<'20:00:00' THEN (product_id) END) as log1920,COUNT(distinct CASE WHEN time(created_at)>='20:00:00' AND time(created_at)<'21:00:00' THEN (product_id) END) as log2021,COUNT(distinct CASE WHEN time(created_at)>='21:00:00' AND time(created_at)<'22:00:00' THEN (product_id) END) as log2122,COUNT(distinct CASE WHEN time(created_at)>='22:00:00' AND time(created_at)<'23:00:00' THEN (product_id) END) as log2223 from Live_Product_History where makeit_id IN("+makeitloguser+") and date(created_at)= DATE_SUB(CURDATE(), INTERVAL 1 DAY) group by makeit_id order by makeit_id";
   var productcount = await query(liveproductcountquery);
 
   /////////Get Product Count////////
-  var cycle1productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)=CURDATE()-1 and time(created_at)>='08:00:00' and time(created_at)<'12:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
+  var cycle1productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)= DATE_SUB(CURDATE(), INTERVAL 1 DAY) and time(created_at)>='08:00:00' and time(created_at)<'12:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
   var cycle1productcount = await query(cycle1productcountquery);
   
   for (let i = 0; i < productcount.length; i++) {
@@ -9398,7 +9399,7 @@ Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req
     productcount[i].cycle1_qty=count;  
   }
 
-  var cycle2productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)=CURDATE()-1 and time(created_at)>='12:00:00' and time(created_at)<'16:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
+  var cycle2productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)= DATE_SUB(CURDATE(), INTERVAL 1 DAY) and time(created_at)>='12:00:00' and time(created_at)<'16:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
   var cycle2productcount = await query(cycle2productcountquery);
 
   for (let i = 0; i < productcount.length; i++) {
@@ -9411,7 +9412,7 @@ Order.makeit_cycle_product_count = async function makeit_cycle_product_count(req
     productcount[i].cycle2_qty=count;  
   }
 
-  var cycle3productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)=CURDATE()-1 and time(created_at)>='16:00:00' and time(created_at)<='23:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
+  var cycle3productcountquery = "select *,MAX(actual_quantity+pending_quantity+ordered_quantity) as qty from Live_Product_History where date(created_at)= DATE_SUB(CURDATE(), INTERVAL 1 DAY) and time(created_at)>='16:00:00' and time(created_at)<='23:00:00' and makeit_id IN("+makeitloguser+") group by product_id order by makeit_id";
   var cycle3productcount = await query(cycle3productcountquery);
 
   for (let i = 0; i < productcount.length; i++) {
@@ -9469,13 +9470,13 @@ Order.makeit_incentive_report= async function makeit_incentive_report(req,inc_fr
         for (let i = 0; i < res.length; i++) {
           res[i].from_date  = inc_fromdate;
           res[i].to_date    = inc_todate;
-          if(res[i].com_ses_count >= 18 && res[i].cancel_count <=3 ){
+          if(res[i].complete_succession_count >= 18 && res[i].cancel_count <=3 ){
             res[i].eligibility = 1;
             res[i].incentive_amount = constant.makeit_tier3;
-          }else if(res[i].com_ses_count >= 15 && res[i].com_ses_count < 18 && res[i].cancel_count <=3 ){
+          }else if(res[i].complete_succession_count >= 15 && res[i].complete_succession_count < 18 && res[i].cancel_count <=3 ){
             res[i].eligibility = 1;
             res[i].incentive_amount = constant.makeit_tier2;
-          }else if(res[i].com_ses_count >= 12 && res[i].com_ses_count < 15 && res[i].cancel_count <=3 ){
+          }else if(res[i].complete_succession_count >= 12 && res[i].complete_succession_count < 15 && res[i].cancel_count <=3 ){
             res[i].eligibility = 1;
             res[i].incentive_amount = constant.makeit_tier1;
           }else{
