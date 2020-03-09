@@ -5206,7 +5206,6 @@ Eatuser.hub_based_userlist = async function hub_based_userlist(req, result) {
 Eatuser.user_based_notification = async function user_based_notification(req, result) {
  
 
-  console.log("---------------",req)
   if (req.type==0) {
 
     var getuserquery ="select userid,name from User";
@@ -5232,6 +5231,8 @@ Eatuser.user_based_notification = async function user_based_notification(req, re
       result(err, null);
     } else {
    
+ // var res = await query(getuserquery);
+  
       if (req.type==1) {
        var userlist = res.filter(re => re.with7day ===0);
      }else if(req.type==2){
@@ -5245,42 +5246,59 @@ Eatuser.user_based_notification = async function user_based_notification(req, re
       
    //   console.log(userlist.length);
       for (let i = 0; i < userlist.length; i++) {
-        
+
         user={};
-        user.userid=userlist[i].userid;
-        user.user_message = req.user_message;
-        user.title = req.title;
-        if (req.image) {
-          user.image = req.image;
+          user.userid=userlist[i].userid;
+          user.user_message = req.user_message;
+          user.title = req.title;
+          if (req.image) {
+            user.image = req.image;
+          }
+
+        if (req.type==3) {
+
+          req.userid = userlist[i].userid;
+          req.coupon_name = req.coupon.coupon_name;
+
+          Offers.coupons_validate_by_userid(req,async function(err,res3) {
+            if (err) {
+            console.log(err);
+            } else {
+             
+              if (res3.status != true) {
+                console.log("----------------coupon_status false-------->");
+
+              } else {
+                await Notification.orderEatPushNotification(null,user,PushConstant.Pageid_eat_send_notification);
+
+              }
+
+            }
+          });
+
+        }else{
+          
+          
+          console.log("----------------user-------->",user);
+
+          await Notification.orderEatPushNotification(null,user,PushConstant.Pageid_eat_send_notification);
+        }
+
+
+       
         }
        
-        await Notification.orderEatPushNotification(
-          null,
-          user,
-          PushConstant.Pageid_eat_send_notification
-        );
         
-      } 
-     
-  let resobj = {
-    success: true,
-    status: true,
-    message: "notification sent successfully"
-  };
-
-  result(null, resobj);
-   }
-  });
+        let resobj = {
+          success: true,
+          status: true,
+          message: "notification sent successfully"
+        };
   
-
-  // let resobj = {
-  //   success: true,
-  //   status: true,
-  //   message: "notification sent successfully"
-  // };
-
-  // result(null, resobj);
-
+      result(null, resobj);
+  
+    }
+  });
 };
 
 
