@@ -678,13 +678,19 @@ QuickSearch.order_assign=async function order_assign(res,i){
             }else{
 
 
-              // if ( dunzoconst.order_assign_dunzo==true && diffMins > constant.order_waiting_min && res[i].status !=1) {
-              //   var order_cancel={};
-              //   order_cancel.orderid = res[i].orderid;
-              //   order_cancel.cancel_reason ='Automatic cancel after 30 Min';
-              //   await QuickSearch.admin_order_cancel(order_cancel);
-              //   i++;
-              //   order_assign(res,i);
+              //  if ( dunzoconst.order_assign_dunzo==true && diffMins > constant.order_waiting_min && res[i].status !=1) {
+                // var order_cancel={};
+                // order_cancel.orderid = res[i].orderid;
+                // order_cancel.cancel_reason ='Automatic cancel after 30 Min';
+                // var Zendesk_issues =  await query("Select zi.id,zi.issues,zi.type,zi.department,zi.tid,zt.tag_name from Zendesk_issues zi join Zendesk_tag zt on zt.tid=zi.tid where zi.active_status=1 and zi.id='25'");
+                // var req={orderid:res[i].orderid,userid:res[i].userid,issues:Zendesk_issues}
+                // Eatuser.request_zendesk_ticket(req,function(err,res){
+                //  if(err) console.log("err-->",err);
+                //  else console.log("res-->",res);
+                // });
+                // await QuickSearch.admin_order_cancel(order_cancel);
+                // i++;
+                // order_assign(res,i);
               // } else {
               //   Dunzo.dunzo_task_create(res[i].orderid,async function(err,res3) {
               //     if (err) {

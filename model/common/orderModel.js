@@ -1967,7 +1967,7 @@ Order.get_today_vorders = function get_today_vorders(req, result) {
 
   //var query ="Select od.*,us.name as name,us.phoneno as phoneno,mk.name as makeit_name,mk.brandname as makeit_brandname from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mk on mk.userid=od.makeit_user_id where DATE(od.ordertime) = CURDATE() and mk.virtualkey = 1 and (od.payment_type=0 or (od.payment_type=1 and od.payment_status=1)) and od.lock_status=0 and od.orderstatus = "+orderstatus;
   var query =
-    "Select od.*,mk.name as makeit_name,mk.brandname as makeit_brandname,IF(((od.created_at+ INTERVAL 10 MINUTE) < now() && od.orderstatus=0),'1','0') as isAlert,JSON_OBJECT('productitem', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name))) AS items"+ 
+    "Select od.*,mk.name as makeit_name,mk.brandname as makeit_brandname,IF(((od.created_at+ INTERVAL 10 MINUTE) < now() && od.orderstatus=0),'1','0') as isAlert,JSON_OBJECT('productitem', JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name,'prod_desc',pt.prod_desc))) AS items"+ 
     " from Orders as od"+ 
     " left join MakeitUser as mk on mk.userid=od.makeit_user_id"+
     " left join OrderItem ci ON ci.orderid = od.orderid"+ 

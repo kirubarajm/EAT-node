@@ -336,4 +336,7 @@ app.route("/admin/request_zendesk_ticket").post(routesVersioning({"1.0.0":eatuse
 ///Issues list////
 app.route("/admin/zendesk/issues").post(routesVersioning({"1.0.0":Zendeskissues.getZendeskissues}));
 
+///Issues list////
+app.route("/admin/zoho").get(routesVersioning({"1.0.0":Zendeskissues.zohocode}));
+
 }
