@@ -140,7 +140,8 @@ const calculate = {
 
     order_assign_first_radius : 2.5,
     order_assign_second_radius : 0.5,
-    delivery_buffer_time : 5
+    delivery_buffer_time : 5,
+    moveit_max_order_amount:750
 
 }
 

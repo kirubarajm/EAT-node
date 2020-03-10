@@ -29,6 +29,7 @@ var dunzoconst = require('../../model/dunzo_constant');
 var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTrackingModel');
 var sendsms =  require("../common/smsModel");
 var MakeitIncentive = require("../../model/common/makeitincentiveModel.js");
+var MoveitcodOrders = require("../../model/moveit/MoveitcodordersModel");
 
 
 
@@ -2194,7 +2195,12 @@ Order.order_delivery_status_by_moveituser =async function(req, result) {
             req.status = 7
             await Order.insert_order_status(req); 
 
+            var get_moveit_cod  = await query("select sum(amount)as totalamount from Moveit_cod_orders where moveit_user_id='"+req.moveit_user_id+"' and payment_status=1");
 
+            if (get_moveit_cod[0].totalamount >= constant.moveit_max_order_amount) {
+              await query("UPDATE MoveitUser SET order_assign_status = 1 where userid='"+req.moveit_user_id+"'")
+            }
+            
             Order.eat_order_distance_calculation(req ,async function(err,res3) {
               if (err) {
                 result(err, null);
@@ -2317,31 +2323,37 @@ Order.moveit_kitchen_reached_status = function(req, result) {
   });
 };
 
+Order.insert_Moveit_codOrders = function insert_Moveit_codOrders(req) {
+  var new_MoveitcodOrders = new MoveitcodOrders(req);
+  MoveitcodOrders.create_Moveit_cod_Orders(new_MoveitcodOrders, function(err, res) {
+   if (err) return err;
+   else return res;
+ });
+};
+
 Order.order_payment_status_by_moveituser = function(req, result) {
-  sql.query(
-    "Select * from Orders where orderid = ? and moveit_user_id = ?",
-    [req.orderid, req.moveit_user_id],async function(err, res1) {
+  sql.query("Select * from Orders where orderid = ? and moveit_user_id = ?",[req.orderid, req.moveit_user_id],async function(err, res1) {
       if (err) {
         result(err, null);
       } else {
         if (res1.length > 0) {
           // check the payment status - 1 is paid
-          console.log(res1[0].payment_status);
+         // console.log(res1[0].payment_status);
           if (res1[0].payment_status == 0) {
 
             req.moveitid = req.moveit_user_id;
-            req.status = 6
-            await Order.insert_order_status(req); 
-
-            sql.query(
-              "UPDATE Orders SET payment_status = ? WHERE orderid = ? and moveit_user_id =?",
-              [req.payment_status, req.orderid, req.moveit_user_id],
-              function(err, res) {
+            req.status = 6;
+            req.amount = res1[0].price;
+            req.amounttype = 1;
+            await Order.insert_order_status(req); //moveit order status
+            await Order.insert_Moveit_codOrders(req); //moveit save moveit cod amount
+           
+            sql.query("UPDATE Orders SET payment_status = ? WHERE orderid = ? and moveit_user_id =?",[req.payment_status, req.orderid, req.moveit_user_id],function(err, res) {
                 if (err) {
                   result(err, null);
                 } else {
                   let resobj = {
-                    success: true,
+                    success:true,
                     status:true,
                     message: "Cash received successfully"
                   };
@@ -3964,11 +3976,7 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
           result(err, null);
         } else {
 
-          await Notification.orderEatPushNotification(
-            req.orderid,
-            null,
-            PushConstant.Pageid_eat_order_accept
-          );
+          await Notification.orderEatPushNotification(req.orderid,null,PushConstant.Pageid_eat_order_accept);
 
          
           req.orglat = orderdetails[0].makeit_lat;
@@ -6771,7 +6779,7 @@ Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
 //auto order assign to moveit 
 Order.auto_order_assign =async function auto_order_assign(req, result) {
  
-  var order_queue_query = await query("select * from Orders_queue where status = 0 and orderid =" +req.orderid+"");
+  var order_queue_query = await query("select * from Orders_queue where  orderid =" +req.orderid+"");
 
 if (order_queue_query.length ==0) {
   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
@@ -6792,10 +6800,7 @@ if (order_queue_query.length ==0) {
       result(error, null);
     }else{
  
-      //don't remove the commanded code 19-feb-2020
-      // var moveitlist = move_it_id_list.moveitid;
-      // console.log(move_it_id_list.moveitid_below_2);
-      // console.log(move_it_id_list.moveitid_above_2);
+
       var nearbymoveit = [];
       var near_by_moveit_data = [];
       move_it_id_list.sort(
@@ -6811,35 +6816,15 @@ if (order_queue_query.length ==0) {
       var get_zoneid = await query("select mk.zone from Orders ors join MakeitUser mk on ors.makeit_user_id=mk.userid where ors.orderid='"+req.orderid+"' ");
                
 
-      // if (move_it_id_list.moveitid_below_2) {
-  
-      //   var moveitlistquery =
-      //     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-      //     move_it_id_list.moveitid_below_2 +
-      //     ") and mu.online_status = 1 and login_status=1  and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
-      //      nearbymoveit = await query(moveitlistquery);
-
-      // }
-      
-      // if(move_it_id_list.moveitid_above_2 && nearbymoveit.length ==0){
-
-      //   var moveitlistquery =
-      //     "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-      //     move_it_id_list.moveitid_above_2 +
-      //     ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
-      //     nearbymoveit = await query(moveitlistquery);
-      // }
       var moveitlistquery =
       "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
       near_by_moveit_data +
-      ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+");";
+      ") and mu.online_status = 1 and mu.login_status=1 and mu.order_assign_status=0 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+")";
       nearbymoveit = await query(moveitlistquery);
 
       if (nearbymoveit.length !==0) {
         
         
-         console.log("nearbymoveit[0].userid"+nearbymoveit[0].userid);
- 
              sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, req.orderid],async function(err, res2) {
                  if (err) {
                    result(err, null);
@@ -6862,7 +6847,7 @@ if (order_queue_query.length ==0) {
              );
        
  
-       }else{
+      }else{
  
        // if (req.payment_type==1) {
           
@@ -6885,7 +6870,7 @@ if (order_queue_query.length ==0) {
 
       // }
        
-       }
+      }
 
     }
   })

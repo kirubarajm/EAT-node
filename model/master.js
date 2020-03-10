@@ -868,6 +868,17 @@ const master = [
             }
         ]
     },
+    {
+        'moveit_cod_amount_type': [{
+                "amounttype": 1,
+                "description": "cash received by order amount"
+            },
+            {
+                "amounttype": 2,
+                "description": "Upi payment"
+            }
+        ]
+    }
 
 ]
 module.exports = master;
