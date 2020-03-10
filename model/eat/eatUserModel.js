@@ -1310,7 +1310,7 @@ if (userdetails.length !=0) {
           }
           
         }
-       // res[0].productlist=[];
+        res[0].productlist=[];
         res[0].product = [];
         var current_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1  && (new_productlist.productimage !=="" && new_productlist.productimage !== "null" && new_productlist.productimage !== null));
         var next_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1 && (new_productlist.productimage === "" || new_productlist.productimage === "null" || new_productlist.productimage === null) );
