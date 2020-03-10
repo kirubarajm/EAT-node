@@ -1310,10 +1310,10 @@ if (userdetails.length !=0) {
           }
           
         }
-        res[0].productlist=[];
+       // res[0].productlist=[];
         res[0].product = [];
-        var current_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1 && new_productlist.productimage && new_productlist.productimage !==null);
-        var next_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1 && new_productlist.productimage == null);
+        var current_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1  && (new_productlist.productimage !=="" && new_productlist.productimage !== "null"));
+        var next_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1 &&( new_productlist.productimage === "" || new_productlist.productimage === "null") );
   
         current_product_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
      
@@ -1323,7 +1323,7 @@ if (userdetails.length !=0) {
         // }
 
 
-    //    console.log("current_product_list---------------------->",current_product_list);
+       console.log("current_product_list---------------------->",current_product_list);
 
         var fav_dish_list= {};
         
