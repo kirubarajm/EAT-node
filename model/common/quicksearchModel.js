@@ -923,7 +923,7 @@ const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
     }
   } 
 });
-moveitlog_everyday.start();
+//moveitlog_everyday.start();
 
 ////CRON For Every day Makeit Log with Order///////
 const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
@@ -937,7 +937,7 @@ const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
     }
   } 
 });
-makeitlog_everyday.start();
+//makeitlog_everyday.start();
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
 const liveproducthistory_cyclestart = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {
@@ -1144,14 +1144,14 @@ const liveproducthistory_cycleend1hr = new CronJob("0 59 7,8,9,10,11,12,13,14,15
   console.log("Live Product History Cycle End 1hr  ---1");
   await QuickSearch.liveproducthistorycycleend();
 });
-liveproducthistory_cycleend1hr.start();
+//liveproducthistory_cycleend1hr.start();
 
 ///// 1 hr Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
 const liveproducthistory_cyclestart1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 * * *", async function(req, result) {
   console.log("Live Product History Cycle Start 1hr ---1");
   await QuickSearch.liveproducthistorycyclestart();
 });
-liveproducthistory_cyclestart1hr.start();
+//liveproducthistory_cyclestart1hr.start();
 
 //// 1 hr cron run by moveit user offline every cycle end.
 const moveitlog_out1hr = new CronJob("0 59 7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 * * *", async function() {
@@ -1171,7 +1171,7 @@ const moveitlog_out1hr = new CronJob("0 59 7,8,9,10,11,12,13,14,15,16,17,18,19,2
     }
   }
 });
-moveitlog_out1hr.start();
+//moveitlog_out1hr.start();
 
 //// 1 hr cron run by moveit user online every cycle start.
 const moveitlog_in1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21,22 * * *", async function() {
@@ -1191,7 +1191,7 @@ const moveitlog_in1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21
     }
   }
 });
-moveitlog_in1hr.start();
+//moveitlog_in1hr.start();
 
 //// 1 hr cron run by moveit user offline and online every cycle end.
 // const moveitlog_out_in1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23 * * *", async function() {
