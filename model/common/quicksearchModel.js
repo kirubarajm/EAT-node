@@ -932,10 +932,10 @@ const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async funct
 //kpidashboardproducthistory.start();
 
 ////cron run by moveit user offline every cycle end.
-const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
+const moveitlog_out = new CronJob("0 59 7,11,15,22 * * *", async function() {
   var cronLogReq={
     cron_id:5,
-    cron_name:"Driver Time Log",
+    cron_name:"Driver Time Log out",
     cron_type:start_cron
   }
   CronLog.createCronLog(cronLogReq);
@@ -949,34 +949,62 @@ const moveitlog_outin = new CronJob("0 0 12,16,23 * * *", async function() {
   if (res.length !== 0) {
     for (let i = 0; i < res.length; i++) {
       /////////logout Moveit-Time log/////////////////
-      var req={};
-      
+      var req={};      
       req.type    = 0;
       req.moveit_userid = res[i].userid;
       req.action  = 2;
       req.created_at = moment().format("YYYY-MM-DD "+currentminus+":59:59");
       req.logtime = moment().format("YYYY-MM-DD "+currentminus+":59:59");
-      await Moveituser.create_createMoveitTimelog(req);
+      await Moveituser.create_createMoveitTimelog(req);          
+    }
+  }
+
+  var cronLogReq={
+    cron_id:5,
+    cron_name:"Driver Time Log out",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+});
+//moveitlog_out.start();
+
+////cron run by moveit user online every cycle end.
+const moveitlog_in = new CronJob("0 0 8,12,16,23 * * *", async function() {
+  var cronLogReq={
+    cron_id:11,
+    cron_name:"Driver Time Log in",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+
+  var res = await query("select name,Vehicle_no,address,email,phoneno,userid,online_status from MoveitUser where userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and online_status = 1");
+  
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");
+  var currenthour = moment(day).format("HH");
+  
+  if (res.length !== 0) {
+    for (let i = 0; i < res.length; i++) {
       /////////login Moveit-Time log/////////////////
       if(currenthour!=23){
         var req={};
         req.type    = 1;
         req.moveit_userid = res[i].userid;
         req.action  = 2;
+        req.created_at = moment().format("YYYY-MM-DD "+currenthour+":00:00");
+        req.logtime = moment().format("YYYY-MM-DD "+currenthour+":00:00");
         await Moveituser.create_createMoveitTimelog(req);
       }     
     }
   }
 
   var cronLogReq={
-    cron_id:5,
-    cron_name:"Driver Time Log",
+    cron_id:11,
+    cron_name:"Driver Time Log in",
     cron_type:end_cron
   }
   CronLog.createCronLog(cronLogReq);
-
 });
-//moveitlog_outin.start();
+//moveitlog_in.start();
 
 ////CRON For Every day Moveit Log with Order///////
 const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
@@ -1295,7 +1323,8 @@ QuickSearch.onStartAllCron = function onStartAllCron(){
       liveproducthistory_cycleend.start();
       makeitlog_everyday.start();
       moveitlog_everyday.start();
-      moveitlog_outin.start();
+      moveitlog_out.start();
+      moveitlog_in.start();
       Package_tracking.start();
       order_auto_assign_Change.start();
       moveitautologout_midnight.start();

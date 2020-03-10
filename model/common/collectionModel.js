@@ -1345,7 +1345,7 @@ Collection.get_all_collection_by_cid_getkichens_v2 = async function get_all_coll
 
 //////////////Infinity Screen Collection List///////////////////////
 Collection.list_all_active_collection_infinity_screen = function list_all_active_collection_infinity_screen(req,result) {
-  sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at,type,icon from Collections where active_status=1 and type =3",async function(err, res) {
+  sql.query("Select cid,query,name,active_status,category,img_url,heading,subheading,created_at,type,icon from Collections where active_status=1",async function(err, res) {
     if (err) {
       result(err, null);
     } else {
