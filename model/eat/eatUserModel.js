@@ -1149,7 +1149,7 @@ if (userdetails.length !=0) {
   }
 
   productquery = productquery + " order by "+ifconditionquery+"";      
-  console.log("productquery =====>",productquery);
+//  console.log("productquery =====>",productquery);
   
   sql.query(productquery, async function(err, res) {
     if (err) {
@@ -1259,9 +1259,11 @@ if (userdetails.length !=0) {
           //  res[0].distance = res[0].distance * constant.onemile;
           res[0].distance = res[0].distance.toFixed(2) ;
       
-          // 15min Food Preparation time , 3min 1 km
-          //  eta = 15 + 3 * res[i].distance;
-          var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * res[0].distance);
+          var eta_distance = Math.ceil(res[0].distance);
+          //console.log("res[i].distance",res[i].distance,res[i].makeituserid);
+          // var eta         = constant.delivery_buffer_time +foodpreparationtime + (onekm * eta_distance);
+          // res[i].eta      = Math.round(eta);  
+          var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * eta_distance);
           //15min Food Preparation time , 3min 1 km         
           res[0].eta = Math.round(eta);  
          
@@ -1312,9 +1314,12 @@ if (userdetails.length !=0) {
         }
         res[0].productlist=[];
         res[0].product = [];
+        //console.log("new_productlist---------------------->",unservicable_product_list);
+
         var current_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1  && (new_productlist.productimage !=="" && new_productlist.productimage !== "null" && new_productlist.productimage !== null));
         var next_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1 && (new_productlist.productimage === "" || new_productlist.productimage === "null" || new_productlist.productimage === null) );
-  
+        var unservicable_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available >0 );
+
         current_product_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
      
   
@@ -1323,13 +1328,13 @@ if (userdetails.length !=0) {
         // }
 
 
-       console.log("current_product_list---------------------->",current_product_list);
-       console.log("next_product_list---------------------->",next_product_list);
+       console.log("unservicable_product_list---------------------->",unservicable_product_list.length);
+       //console.log("next_product_list---------------------->",next_product_list);
 
 
         var fav_dish_list= {};
         
-        fav_dish_list.title="Faviourte Product";
+        fav_dish_list.title="Favorite";
         fav_dish_list.type=1;
         fav_dish_list.product_list=current_product_list;
         res[0].product.push(fav_dish_list);
@@ -1352,23 +1357,25 @@ if (userdetails.length !=0) {
             }else{
 
               
-              Other_Item_list.push(next_product_list[i]);
-           
+              Other_Item_list.push(next_product_list[i],);
             }
           }
+
 
           //console.log("today_Menu_list-------------------------",today_Menu_list);
           today_Menu_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
           var today_Menu = {};
-          today_Menu.title="Today Menu";
+          today_Menu.title="Today’s Combos";
           today_Menu.type=2;
           today_Menu.product_list= today_Menu_list;
           res[0].product.push(today_Menu);
 
 
           Other_Item_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+          Other_Item_list = Other_Item_list.concat(unservicable_product_list);
+
           var Other_Item={};
-          Other_Item.title="Other Item";
+          Other_Item.title="Other items";
           Other_Item.type=2;
           Other_Item.product_list=Other_Item_list;
           res[0].product.push(Other_Item);
@@ -1403,8 +1410,8 @@ if (userdetails.length !=0) {
          //  kitchen_page_header=headers_list3;
            res[0].kitchen_page.push(headers_list3);
 
-           res[0].kitchen_page_header_content1=res[0].makeitusername + ' is based out of <b>'+ res[0].regionname+'</b>';
-           res[0].kitchen_page_header_content2='Try out '+res[0].hometownname+' Best from the '+res[0].makeitbrandname;
+           res[0].kitchen_page_header_content1=res[0].makeitusername + ' is based out of <b>'+ res[0].hometownname+'</b>';
+           res[0].kitchen_page_header_content2='Try out '+res[0].regionname+' Best from the '+res[0].makeitbrandname;
             // console.log("----------------------------end----------------------------------->");
 
         const specialitems = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 3 limit 4");
