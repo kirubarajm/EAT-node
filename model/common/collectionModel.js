@@ -677,6 +677,7 @@ Collection.get_all_collection_by_cid_v2 = async function get_all_collection_by_c
                 let resobj = {
                   success: true,
                   status: true,
+                  collection_name:res[0].name,
                   result: res1
                 };
                 result(null, resobj);

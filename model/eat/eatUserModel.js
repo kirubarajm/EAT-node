@@ -1334,7 +1334,7 @@ if (userdetails.length !=0) {
 
         var fav_dish_list= {};
         
-        fav_dish_list.title="Favorite";
+        fav_dish_list.title="Favourites";
         fav_dish_list.type=1;
         fav_dish_list.product_list=current_product_list;
         res[0].product.push(fav_dish_list);
@@ -4940,7 +4940,7 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
     productquery = productquery + " and pt.dinner = 1";
   }
 
-  var nearbyregionquery = "Select distinct mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.member_type,mk.brandname as makeitbrandname,mk.unservicable,mk.rating rating,mk.regionid,re.regiontitle as regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+req.regionid+"  and  mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status = 2 and mk.verified_status = 1  and pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
+  var nearbyregionquery = "Select distinct mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.member_type,mk.brandname as makeitbrandname,mk.unservicable,mk.rating rating,mk.regionid,re.regiontitle as regionname,re.region_detail_image,re.tagline,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+req.regionid+"  and  mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status = 2 and mk.verified_status = 1  and pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
   sql.query(nearbyregionquery,async function (err, res) {
     if(err) {
       console.log("error: ", err);
@@ -5037,6 +5037,9 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
       let resobj = {
         success: true,
         status:true,
+        region_detail_image : res[0].regionname,
+        tagline:res[0].regionname,
+        regionname:res[0].regionname,
         userzoneid:userzoneid,
         zonename:zonename,
         result:res
