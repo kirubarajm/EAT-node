@@ -28,6 +28,7 @@ module.exports = function(app) {
   var packageInventoryController = require("../controllers/makeit/PackageInventoryController");
   var zone = require("../controllers/common/ZoneController");
   var Zendeskissues = require("../controllers/common/ZendeskissuesController");
+  var master = require("../controllers/common/MastersController");
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));
@@ -338,5 +339,7 @@ app.route("/admin/zendesk/issues").post(routesVersioning({"1.0.0":Zendeskissues.
 
 ///Issues list////
 app.route("/admin/zoho").get(routesVersioning({"1.0.0":Zendeskissues.zohocode}));
+
+app.route("/masters/producttag").get(routesVersioning({"1.0.0":master.read_product_masters}));
 
 }

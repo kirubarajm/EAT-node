@@ -867,7 +867,7 @@ const master = [
             },
             {
                 "action": 4,
-                "description": "Admin Unasign Logout"
+                "description": "Admin Unassign Logout"
             }
         ]
     },{

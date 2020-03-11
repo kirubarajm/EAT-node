@@ -993,6 +993,13 @@ Product.productview_by_productid = function productview_by_productid(
               res[0].makeitdetail = JSON.parse(res[0].makeitdetail);
               res[0].items = resProductItems;
               res[0].packageItems = resPackageItems;
+              if (res[0].product_tag==0) {
+                res[0].product_tag_name='None'
+              } else if (res[0].product_tag==1) {
+                res[0].product_tag_name='Best Seller'
+              }else{
+                res[0].product_tag_name='Top Rated'
+              }
               let sucobj = true;
               let resobj = {
                 success: sucobj,
