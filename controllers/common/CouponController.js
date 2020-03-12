@@ -41,22 +41,14 @@ exports.delete_a_Coupon = function(req, res) {
   });
 };
 
-exports.get_coupons_by_admin = function(req, res) {
-  Coupon.get_coupons_by_admin(req.params, function(err, result) {
-    if (err) res.send(err);
-    res.json(result);
-  });
-};
-
-
 exports.get_all_coupons_by_userid = function(req, res) {
   Coupon.get_coupons_by_userid(req.body, function(err, result) {
     if (err) res.send(err);
     res.json(result);
   });
 };
+
 exports.get_coupons_by_userid_new= function(req, res) {
-  console.log(req.params);
   Coupon.get_coupons_by_userid_new(req.params.eatuserid, function(err, result) {
     if (err) res.send(err);
     res.json(result);
@@ -75,4 +67,11 @@ exports.coupons_code_validate = function(req, res) {
     res.json(result);
   });
 }
+};
+
+exports.get_coupons_by_admin = function(req, res) {
+  Coupon.get_coupons_by_admin(req.params, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
 };

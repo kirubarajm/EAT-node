@@ -18,10 +18,10 @@ exports.read_eat_masters = function(req, res) {
   });
 };
 
+
 exports.read_product_masters = function(req, res) {
   master.read_product_masters(req.params, function(err, result) {
     if (err) res.send(err);
     res.send(result);
   });
 };
-
