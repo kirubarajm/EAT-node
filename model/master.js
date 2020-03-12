@@ -916,6 +916,56 @@ const master = [
                 "description": "Kitchen Lost Revenue"
             }
         ]
+    },{
+        'Order_action_log': [{
+                "cron_id": 1,
+                "description": "Unassign the Order"
+            },
+            {
+                "cron_id": 2,
+                "description": "Reassign the Order"
+            },
+            {
+                "cron_id": 3,
+                "description": "Manual assign"
+            },
+            {
+                "cron_id": 4,
+                "description": "Virtual Order Placed"
+            },
+            {
+                "cron_id": 5,
+                "description": "Raise Ticket"
+            },
+            {
+                "cron_id": 6,
+                "description": "Item Missing"
+            },
+            {
+                "cron_id": 7,
+                "description": "Order Cancel"
+            },
+            {
+                "cron_id": 8,
+                "description": "Prepared Order Cancel"
+            },
+            {
+                "cron_id": 9,
+                "description": "Deliver the Order"
+            },
+            {
+                "cron_id": 10,
+                "description": "Succeeding the Payment COD"
+            },
+            {
+                "cron_id": 11,
+                "description": "Pick up After cancel"
+            },
+            {
+                "cron_id": 12,
+                "description": "Refund"
+            }
+        ]
     },
 
 ]

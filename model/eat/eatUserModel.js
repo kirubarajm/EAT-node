@@ -17,6 +17,7 @@ var PushConstant = require("../../push/PushConstant.js");
 var Stories = require("../../model/common/storyModel");
 var Offers = require("../../model/common/couponModel");
 var Zendeskrequest = require("../../model/common/ZendeskRequestsModel");
+var orderactionlog = require("../../model/common/orderactionlog.js");
 
 
 // var instance = new Razorpay({
@@ -5581,7 +5582,7 @@ Eatuser.request_zendesk_ticket= async function request_zendesk_ticket(req,result
       }
     }
   }
-);
+  );
 };
 
 Eatuser.zendesk_ticket_create= async function zendesk_ticket_create(req,result) {
@@ -5629,10 +5630,18 @@ Eatuser.zendesk_ticket_create= async function zendesk_ticket_create(req,result) 
           req.type=3;
           var updateOrderQuery="update Orders set zendesk_ticketid= "+ticketid+" where orderid= "+req.orderid; 
           var update_orders=await query(updateOrderQuery);
-          for(var i=0;i<req.issues.length;i++){
-            req.issueid=req.issues[i].id;
-            Eatuser.new_zendesk_request_create(req);
-          }
+          
+          var orderactionlog={};
+          orderactionlog.orderid=req.orderid;
+          orderactionlog.app_type=req.app_type||0;
+          orderactionlog.userid=req.admin_id || 0;
+          orderactionlog.action=5;
+          await Eatuser.createOrderActionLog(orderactionlog);
+
+                for(var i=0;i<req.issues.length;i++){
+                  req.issueid=req.issues[i].id;
+                  Eatuser.new_zendesk_request_create(req);
+                }
 
           let resobj = {
             success: true,
@@ -5651,4 +5660,15 @@ Eatuser.zendesk_ticket_create= async function zendesk_ticket_create(req,result) 
      result(null, resobj);
   }
 }
+
+
+Eatuser.createOrderActionLog = function createOrderActionLog(logreq) {
+
+  var actionLog = new orderactionlog(logreq);
+ 
+  orderactionlog.createOrderActionLog(actionLog, function(err, res) {
+    if (err) return err;
+    else return res;
+  });
+};
 module.exports = Eatuser;

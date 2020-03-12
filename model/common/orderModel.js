@@ -29,6 +29,7 @@ var dunzoconst = require('../../model/dunzo_constant');
 var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTrackingModel');
 var sendsms =  require("../common/smsModel");
 var MakeitIncentive = require("../../model/common/makeitincentiveModel.js");
+var orderactionlog = require("../../model/common/orderactionlog.js");
 
 
 
@@ -143,7 +144,13 @@ Order.createOrder = async function createOrder(req, orderitems, result) {
                 PushConstant.pageidMakeit_Order_Post
               );
               ////Insert Order History////
-              
+                var orderactionlog={};
+                orderactionlog.orderid=res.orderid;
+                orderactionlog.app_type=req.app_type || 0;
+                orderactionlog.userid=req.admin_id || 0;
+                orderactionlog.action=4;
+                console.log("orderactionlog-->",orderactionlog);
+                await Order.createOrderActionLog(orderactionlog);
               ////////////////////////////
               result(null, res);
             }
@@ -2131,10 +2138,20 @@ Order.order_assign = function order_assign(req, result) {
                 //update to queue
                 var moveit_offline_query = await query("update Orders_queue set status = 1 where orderid =" +req.orderid+"");
 
+                var orderactionlog={};
+                orderactionlog.orderid=req.orderid;
+                orderactionlog.app_type=req.app_type || 0;
+                orderactionlog.userid=req.admin_id || 0;
+                orderactionlog.action=3;
+                await Order.createOrderActionLog(orderactionlog);
+
                 await Notification.orderMoveItPushNotification(req.orderid,PushConstant.pageidMoveit_Order_Assigned,res1[0]);
 
                  req.state=1;
                  Order.update_moveit_lat_long(req);
+
+                
+
                 let resobj = {
                   success: true,
                   status:true,
@@ -4858,6 +4875,13 @@ Order.admin_order_cancel = async function admin_order_cancel(req, result) {
               );
             }
           }
+
+                  var orderactionlog={};
+                  orderactionlog.orderid=req.orderid;
+                  orderactionlog.app_type=req.app_type || 0;
+                  orderactionlog.userid=req.admin_id || 0;
+                  orderactionlog.action=7;
+                  await Order.createOrderActionLog(orderactionlog);
          
           let response = {
             success: true,
@@ -4923,6 +4947,8 @@ Order.eat_order_item_missing_byuserid = async function eat_order_item_missing_by
                   result(err, null);
                 } else{
 
+                 
+
                   let response = {
                     success: true,
                     status: true,
@@ -4947,7 +4973,13 @@ Order.eat_order_item_missing_byuserid = async function eat_order_item_missing_by
              await Order.cod_create_refund_byonline(refundDetail);
              
             }
- 
+            ///Order Action Log By admin
+            var orderactionlog={};
+            orderactionlog.orderid=req.orderid;
+            orderactionlog.app_type=req.app_type || 0;
+            orderactionlog.userid=req.admin_id || 0;
+            orderactionlog.action=6;
+            await Order.createOrderActionLog(orderactionlog);
                 
               
                 let response = {
@@ -5270,6 +5302,17 @@ Order.createMoveitReassignedOrders = function createMoveitReassignedOrders(reass
   });
 };
 
+
+Order.createOrderActionLog = function createOrderActionLog(logreq) {
+
+  var actionLog = new orderactionlog(logreq);
+ 
+  orderactionlog.createOrderActionLog(actionLog, function(err, res) {
+    if (err) return err;
+    else return res;
+  });
+};
+
 Order.reassign_orders_by_id =async function reassign_orders_by_id(req, result) {
   var assign_time = moment().format("YYYY-MM-DD HH:mm:ss");
   var orderdetails = await query("select * from Orders where orderid = '"+req.orderid+"' ");
@@ -5281,11 +5324,7 @@ if (orderdetails[0].orderstatus <= 5) {
         result(err, null);
       } else {
         var online_status = res1[0].online_status;
-
-  
-
         if (online_status == 1) {
-
           var moveitstatusupdate = await query("update Moveit_status set moveitid = '"+req.moveit_user_id+"' where moveitid = '"+orderdetails[0].moveit_user_id+"'");
 
           sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ?,moveit_status=0 WHERE orderid = ?",[req.moveit_user_id, assign_time, req.orderid],async function(err, res2) {
@@ -5302,6 +5341,13 @@ if (orderdetails[0].orderstatus <= 5) {
 
 
                 await Order.createMoveitReassignedOrders(reassignorders);
+                
+                var orderactionlog={};
+                orderactionlog.orderid=req.orderid;
+                orderactionlog.app_type=req.app_type || 0;
+                orderactionlog.userid=req.admin_id || 0;
+                orderactionlog.action=2;
+                await Order.createOrderActionLog(orderactionlog);
 
                 await Notification.orderMoveItPushNotification(
                   req.orderid,
@@ -5658,6 +5704,13 @@ Order.order_delivery_status_by_admin =async function order_delivery_status_by_ad
           }
         }
       });
+
+          var orderactionlog={};
+          orderactionlog.orderid=req.orderid;
+          orderactionlog.app_type=req.app_type || 0;
+          orderactionlog.userid=req.admin_id || 0;
+          orderactionlog.action=9;
+          await Order.createOrderActionLog(orderactionlog);
   
                
                 
@@ -5716,10 +5769,17 @@ Order.admin_order_payment_status_by_moveituser = function(req, result) {
             sql.query(
               "UPDATE Orders SET payment_status = ? WHERE orderid = ? and moveit_user_id =?",
               [req.payment_status, req.orderid, req.moveit_user_id],
-              function(err, res) {
+              async function(err, res) {
                 if (err) {
                   result(err, null);
                 } else {
+                  var orderactionlog={};
+                  orderactionlog.orderid=req.orderid;
+                  orderactionlog.app_type=req.app_type || 0;
+                  orderactionlog.userid=req.admin_id || 0;
+                  orderactionlog.action=10;
+                  await Order.createOrderActionLog(orderactionlog);
+
                   let resobj = {
                     success: true,
                     status:true,
@@ -6631,6 +6691,13 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
            }
           }
  
+              var orderactionlog={};
+                orderactionlog.orderid=req.orderid;
+                orderactionlog.app_type=req.app_type || 0;
+                orderactionlog.userid=req.admin_id || 0;
+                orderactionlog.action=11;
+                await Order.createOrderActionLog(orderactionlog);
+
            await Notification.orderEatPushNotification(
              req.orderid,
              null,
@@ -6764,6 +6831,14 @@ Order.admin_order_pickup_cancel = async function admin_order_pickup_cancel(req, 
                null
              );
            }
+
+           var orderactionlog={};
+          orderactionlog.orderid=req.orderid;
+          orderactionlog.app_type=req.app_type || 0;
+          orderactionlog.userid=req.admin_id || 0;
+          orderactionlog.action=8;
+          await Order.createOrderActionLog(orderactionlog);
+
            let response = {
              success: true,
              status: true,
@@ -7368,8 +7443,16 @@ Order.order_move_to_queue_by_admin= function order_move_to_queue_by_admin(req, r
           reassignorders.notification_time = res[0].moveit_notification_time;
           reassignorders.accept_time = res[0].moveit_accept_time;
           reassignorders.reason = req.reason;
-
           await Order.createMoveitReassignedOrders(reassignorders);
+
+          var orderactionlog={};
+          orderactionlog.orderid=req.orderid;
+          orderactionlog.app_type=req.app_type || 0;
+          orderactionlog.userid=req.admin_id||0;
+          orderactionlog.action=1;
+          await Order.createOrderActionLog(orderactionlog);
+
+          
           var moveit_online_status_date = await query("Update MoveitUser set online_status = 0  where userid = '"+req.moveit_user_id+"'");
           var Orders_update_moveit = await query("update Orders set moveit_user_id = 0,moveit_status=0 where orderid =" +req.orderid+"");
 

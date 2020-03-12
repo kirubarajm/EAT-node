@@ -99,15 +99,20 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
     var refunded_by=req.refunded_by ||0;
     updatequery = "update Refund_Online set active_status= 0,refund_amt = '"+refund_amt+"',payment_id='"+data.id+"',refunded_by = '"+refunded_by+"',cancellation_charges='"+servicecharge+"' where rs_id ='" + req.rs_id + "'"
     
-    sql.query(updatequery, function (err, res) {
+    sql.query(updatequery, async function (err, res) {
         if(err) {
             console.log("error: ", err);
-              result(err, null);
+            result(err, null);
            }
-         else{   
-         
-             var  message = "Amount refunded successfully"
-          
+         else{  
+              var orderactionlog={};
+              orderactionlog.orderid=res.orderid || 0;
+              orderactionlog.app_type=req.app_type || 0;
+              orderactionlog.userid=req.admin_id || 0;
+              orderactionlog.action=12;
+              await Order.createOrderActionLog(orderactionlog);
+
+              var  message = "Amount refunded successfully"
               let sucobj=true;
               let resobj = {  
                 success: sucobj,
@@ -115,20 +120,18 @@ Razorpay.create_customerid_by_razorpay = async function create_customerid_by_raz
                 message:message,
                 result:data,
                 }; 
-  
              result(null, resobj);
               }
     }); 
 
   }).catch((error) => {
-    console.error('error-->',error)
+    console.log("error: ", error);
     let resobj = {
         success: true,
         status: false,
-        message:error.description//"Sorry! Payment not captured."
-        //result: error
+        message:error.error.description//"Sorry! Payment not captured."
     };
-    result(resobj,null);
+    result(null,resobj);
     // error
   })
 
