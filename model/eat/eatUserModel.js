@@ -1346,15 +1346,18 @@ if (userdetails.length !=0) {
 
           for (let i = 0; i < next_product_list.length; i++) {
             
-            var get_product_item = await query("select * from Productitem where productid = '"+next_product_list[i].productid+"' and delete_status=0");
+
+            var get_product_item = await query("select * from Productitem where productid = '"+next_product_list[i].productid+"' ");
             
 
             if (get_product_item.length >1) {
 
-              
+            console.log("today_Menu_list-------------------------",next_product_list[i],get_product_item.length); 
+
              today_Menu_list.push(next_product_list[i]);
          //    console.log("today_Menu_list-------------------------",today_Menu_list); 
             }else{
+             console.log("Other_Item_list-------------------------",next_product_list[i],get_product_item.length); 
 
               
               Other_Item_list.push(next_product_list[i],);
