@@ -38,6 +38,7 @@ var Product = function(product) {
   this.approved_status = product.approved_status || 1;
   this.prod_desc = product.prod_desc;
   this.product_desc_flag = product.product_desc_flag
+  this.product_tag = product.product_tag
 
   //  this.updated_at = new Date()
 };
@@ -169,8 +170,8 @@ Product.createProduct = async function createProduct(newProduct,itemlist,package
   // });
 };
 
-Product.getProductById = function getProductById(userId, result) {
-  sql.query("Select * from Product where productid = ? ", userId, function(
+Product.getProductById = function getProductById(productid, result) {
+  sql.query("Select * from Product where productid = ? ", productid, function(
     err,
     res
   ) {
@@ -178,7 +179,18 @@ Product.getProductById = function getProductById(userId, result) {
       console.log("error: ", err);
       result(err, null);
     } else {
-      console.log("Menuitem : ", res);
+      
+  
+
+      if (res[0].product_tag==0) {
+        res[0].product_tag_name='None'
+      } else if (res[0].product_tag==1) {
+        res[0].product_tag_name='Best Seller'
+      }else{
+        res[0].product_tag_name='Top Rated'
+      }
+
+
       let sucobj = true;
       let resobj = {
         success: sucobj,
@@ -417,7 +429,7 @@ Product.productitemlist = function productitemlist(req, result) {
 };
 
 Product.admin_list_all_product = function admin_list_all_product(req, result) {
-  console.log(req);
+  
 
   var query =
     "Select * from Product where makeit_userid = '" +
@@ -436,7 +448,6 @@ Product.admin_list_all_product = function admin_list_all_product(req, result) {
   }
 
   
-  console.log(query);
 
   sql.query(query, function(err, res) {
     if (err) {
@@ -963,10 +974,7 @@ Product.edit_product_by_makeit_userid = function(req, items, result) {
   );
 };
 
-Product.productview_by_productid = function productview_by_productid(
-  req,
-  result
-) {
+Product.productview_by_productid = function productview_by_productid(req,result) {
   const items = [];
   sql.query(
     " select pd.*,cu.cuisinename,JSON_OBJECT('makeit_type',mk.makeit_type,'userid',mk.userid,'name',mk.name,'phoneno',mk.phoneno,'email',mk.email,'address',mk.address,'lat',mk.lat,'lon',mk.lon,'brandName',mk.brandName,'localityid',mk.localityid,'virtualkey',mk.virtualkey,'ka_status',mk.ka_status) as makeitdetail from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid join Cuisine cu on cu.cuisineid = pd.cuisine where productid = " + req.productid + "",
@@ -1171,7 +1179,6 @@ Product.admin_list_all__unapproval_product = function admin_list_all__unapproval
     "Select pd.*,mk.brandname,mk.name as makeit_name from Product pd left join MakeitUser mk on mk.userid=pd.makeit_userid  where pd.delete_status !=1 ";
 
   query =query +" and approved_status In (1,4) order by created_at desc";
-  console.log(query);
   sql.query(query, function(err, res) {
     if (err) {
       console.log("error: ", err);
