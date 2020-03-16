@@ -95,7 +95,7 @@ module.exports = function(app) {
 
 
 // Eat
-app.route("/eat/products").post(middleware.checkToken,routesVersioning({"1.0.0": eatuser.eat_makeit_product_list,"2.0.0": eatuser.get_eat_makeit_product_list_v_2,"2.0.1": eatuser.get_eat_makeit_product_list_v_2_1}));
+app.route("/eat/products").post(middleware.checkToken,routesVersioning({"1.0.0": eatuser.eat_makeit_product_list,"2.0.0": eatuser.get_eat_makeit_product_list_v_2,"2.0.1": eatuser.get_eat_makeit_product_list_v_2_1,"2.0.2": eatuser.get_eat_makeit_product_list_v_2_2}));
 //app.route("/eat/placeorder").post(middleware.checkToken,routesVersioning({"1.0.0":orders.eatuser_order_create}));
 app.route("/eat/order/:orderid").get(middleware.checkToken,routesVersioning({"1.0.0":orders.order_view_eatuser}));
 app.route("/eat/orders/:userid").get(middleware.checkToken,routesVersioning({"1.0.0":orders.order_list_eatuser}));

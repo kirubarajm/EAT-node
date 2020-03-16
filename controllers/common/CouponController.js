@@ -49,7 +49,6 @@ exports.get_all_coupons_by_userid = function(req, res) {
 };
 
 exports.get_coupons_by_userid_new= function(req, res) {
-  console.log(req.params);
   Coupon.get_coupons_by_userid_new(req.params.eatuserid, function(err, result) {
     if (err) res.send(err);
     res.json(result);

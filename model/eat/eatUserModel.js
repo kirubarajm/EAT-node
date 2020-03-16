@@ -1071,6 +1071,416 @@ Eatuser.get_eat_makeit_product_list_v_2_1= async function(req, result) {
 };
 
 
+///version 2.2 https://tovologies.atlassian.net/browse/ES-48
+
+Eatuser.get_eat_makeit_product_list_v_2_2= async function(req, result) {
+
+  var foodpreparationtime = constant.foodpreparationtime;
+  var onekm = constant.onekm;
+  var radiuslimit = constant.radiuslimit;
+  var day = moment().format("YYYY-MM-DD HH:mm:ss");;
+  var currenthour  = moment(day).format("HH");
+  var tunnelkitchenliststatus = true;
+  const userdetails = await query("select * from User where userid = "+req.eatuserid+" ");
+  //console.log('userdetails-->',userdetails);
+//validate the user is available 
+if (userdetails.length !=0) {
+  
+  if (userdetails[0].first_tunnel == 1 ) {    
+    tunnelkitchenliststatus = false;
+  }
+
+
+  var breatfastcycle = constant.breatfastcycle;
+  var dinnercycle = constant.dinnercycle;
+  var lunchcycle = constant.lunchcycle;
+  var ifconditionquery;
+  var cycle = '' ;
+  var nextcycle ='';
+  var nextthirdcyclecycle = '';
+  var where_condition_query = '';
+  var scondcycle = '';
+  var thirdcycle = '';
+  
+  if (currenthour < lunchcycle) {
+    productquery = productquery + " and pt.breakfast = 1";
+    ifconditionquery = "pt.breakfast =1";
+    scondcycle = "pt.lunch=1";
+    thirdcycle = "pt.dinner =1";
+    cycle = constant.breatfastcycle + 'AM';
+    nextcycle = "Next available \n"+constant.lunchcycle + ' PM';
+    nextthirdcyclecycle = "Next available \n"+constant.dinnerstart + ' PM';
+    where_condition_query = where_condition_query + "and (pt.breakfast = 1 OR pt.lunch = 1)";
+  }else if(currenthour >= lunchcycle && currenthour < dinnercycle){
+    productquery = productquery + " and pt.lunch = 1";
+    ifconditionquery = "pt.lunch =1";
+    scondcycle = "pt.dinner=1";
+    thirdcycle = "pt.breakfast =1";
+    cycle =  "Next available \n"+ constant.lunchcycle + ' PM';
+    nextcycle = "Next available \n"+ constant.dinnerstart + ' PM';
+    nextthirdcyclecycle = "Next available \n"+ constant.breatfastcycle + ' AM,Tomorrow';
+    where_condition_query = where_condition_query + "and (pt.lunch = 1 OR pt.dinner = 1)";
+  }else if(currenthour >= dinnercycle){
+    productquery = productquery + " and pt.dinner = 1";
+    ifconditionquery = "pt.dinner =1";
+    scondcycle = "pt.breakfast=1";
+    thirdcycle = "pt.lunch =1";
+    cycle = constant.dinnercycle + 'PM';
+    nextcycle = "Next available \n"+ constant.breatfastcycle + ' AM,Tomorrow';
+    nextthirdcyclecycle ="Next available \n"+ constant.lunchcycle + ' PM,Tomorrow';
+    where_condition_query = where_condition_query + "and (pt.dinner = 1 OR  pt.breakfast = 1)";
+  }
+    
+  var productquery = " Select mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.member_type,mk.rating,mk.regionid,mk.locality as localityname ,re.regionname,hm.hometownname,mk.costfortwo,mk.virutal_rating_count as rating_count,mk.img1 as makeitimg,mk.about,mk.member_type,mk.locality,mk.unservicable,fa.favid,IF(fa.favid,'1','0') as isfav,( 3959 * acos( cos( radians('" +
+    req.lat +
+    "') ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians('" +
+    req.lon +
+    "') ) + sin( radians('" +
+    req.lat +
+    "') ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(pt.productid) as plistid,JSON_ARRAYAGG(JSON_OBJECT('makeit_userid', pt.makeit_userid,'quantity', pt.quantity,'productid', pt.productid,'price',pt.price,'product_name',pt.product_name,'productid',pt.productid,'productimage',pt.image,'product_tag',pt.product_tag,'vegtype',pt.vegtype,'cuisinename',cu.cuisinename,'isfav',IF(faa.favid,1,0),'favid',faa.favid,'prod_desc',pt.prod_desc,'next_available',IF("+ifconditionquery+",false,true),'next_available_time',IF("+scondcycle+",'"+nextcycle+"',IF("+thirdcycle+",'"+nextthirdcyclecycle+"','Available')),'breakfast',pt.breakfast,'lunch',pt.lunch,'dinner',pt.dinner)) AS productlist from MakeitUser mk left join Product pt on pt.makeit_userid = mk.userid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Region re on re.regionid = mk.regionid left join Locality ly on mk.localityid=ly.localityid left join Hometown hm on hm.hometownid=mk.hometownid  left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = '" +
+    req.eatuserid +
+    "' left join Fav faa on faa.productid = pt.productid and faa.eatuserid = '" +
+    req.eatuserid +
+    "'  where mk.userid = " +
+    req.makeit_userid +
+    " and mk.ka_status = 2 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1"
+
+  if (req.vegtype === "1") {
+    productquery = productquery + " and pt.vegtype= 0 ";
+  }
+
+  productquery = productquery + " order by "+ifconditionquery+"";      
+//  console.log("productquery =====>",productquery);
+  
+  sql.query(productquery, async function(err, res) {
+    if (err) {
+      console.log("error: ", err);
+      result(err, null);
+    } else {  
+      ////Zone Condition Make Array////
+
+      var productIds=JSON.parse(res[0].plistid);
+      var productlistArray=[];
+      if(productIds && productIds.length>0){
+        productIds=productIds.toString();
+        var ptQuary = "Select pt.makeit_userid,pt.productid,pt.price,pt.product_name,pt.image as productimage,pt.image,pt.quantity,pt.vegtype,pt.prod_desc,pt.product_tag,pt.prod_desc,pt.breakfast,pt.lunch,pt.dinner,IF(faa.favid,1,0) as isfav,faa.favid, cu.cuisinename,IF("+ifconditionquery+",false,true) as next_available,IF("+scondcycle+",'"+nextcycle+"',IF("+thirdcycle+",'"+nextthirdcyclecycle+"','Available')) as next_available_time,IF("+ifconditionquery+"!=1,4,IF((pt.image IS NOT NULL AND pt.image!='null' AND pt.image!=''),0,IF(sum(1)>1,1,2))) as orderpro from Product pt left join Productitem pi on pi.productid=pt.productid left join Cuisine cu on cu.cuisineid=pt.cuisine left join Fav faa on faa.productid = pt.productid and faa.eatuserid = " +req.eatuserid +" where pt.delete_status = 0 and pt.approved_status=2 and pt.active_status = 1 and pt.quantity != 0 and pt.delete_status != 1 and pt.productid in ("+productIds+") group by pt.productid order by orderpro asc,pt.price desc"
+        //console.log('ptQuary-->',ptQuary);
+        productlistArray = await query(ptQuary);
+      }
+
+      if(constant.zone_control){
+        ////Get User Zone////
+        var getzone = await zoneModel.check_boundaries({lat:req.lat,lon:req.lon});
+        var userzoneid ='';
+        var zonename ='';
+        var zonemakeitsrrsy = [];
+
+        if(getzone.zone_id){
+          userzoneid = getzone.zone_id;
+          zonename   = getzone.zone_name;
+                
+          if (currenthour < lunchcycle) {    
+            currentcycle = " and pt.breakfast = 1";
+          }else if(currenthour >= lunchcycle && currenthour < dinnercycle){    
+            currentcycle = " and pt.lunch = 1";
+          }else if( currenthour >= dinnercycle){              
+            currentcycle = " and pt.dinner = 1";
+          }
+          zonemakeitsrrsy = await query("select mu.userid from MakeitUser as mu left join Product as pt on pt.makeit_userid = mu.userid where mu.unservicable=0 and (mu.appointment_status = 3 and mu.ka_status = 2 and pt.approved_status=2 and mu.verified_status = 1 ) and (pt.active_status = 1 and pt.quantity != 0 and pt.delete_status !=1 ) "+currentcycle+" and zone="+userzoneid);
+        }
+      }   
+
+      if (res[0].makeituserid !== null) {
+      //  for (let i = 0; i < res.length; i++) {
+        if(res[0].member_type === 1) {
+          res[0].member_type_name = 'Gold';
+          res[0].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713720284-badges_makeit-01.png';
+        }else if(res[0].member_type === 2){
+          res[0].member_type_name = 'Silver';
+          res[0].member_type_icon = 'https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1565713745646-badges_makeit-02.png';
+        }else if(res[0].member_type === 3){
+          res[0].member_type_name = 'bronze';
+          res[0].member_type_icon = 'https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1565713778649-badges_makeit-03.png';
+        }
+
+        res[0].serviceablestatus = false;
+        ///console.log(res[0].unservicable);
+        if (res[0].unservicable == 0) {
+          res[0].serviceablestatus = true;
+        }
+        
+        //////////////Zone Condition//////////
+        if(constant.zone_control){
+          if (res[0].serviceablestatus !== false) {
+            if(zonemakeitsrrsy.length !=0 && res[0].zone==userzoneid){
+              res[0].serviceablestatus = true;
+              res[0].kitchenstatus = 0;
+            }else if (zonemakeitsrrsy.length ==0 && res[0].distance <= radiuslimit){
+              res[0].serviceablestatus = true;
+              res[0].kitchenstatus = 0;
+            }else{
+              res[0].serviceablestatus = false;
+              res[0].kitchenstatus = 1;
+            }
+          }
+        }else{
+          if (res[0].serviceablestatus !== false) {
+            if (res[0].distance <= radiuslimit) {
+              res[0].serviceablestatus = true;
+            }else{
+              res[0].serviceablestatus = false;
+            }
+          }
+        }
+       
+        if (tunnelkitchenliststatus == false) {      
+          res[0].serviceablestatus = true;        
+        }       
+
+        if (res[0].productlist) {
+          //array json parser
+          res[0].productlist = JSON.parse(res[0].productlist);
+
+          if ( tunnelkitchenliststatus == false) {      
+            res[0].serviceablestatus = true;            
+            var productlist = res[0].productlist         
+            productlist.map(function(x) { 
+              x.next_available = 0; 
+              return x
+            });
+            res[0].productlist = productlist              
+          }              
+        
+          res[0].productlist.sort((a, b) => parseFloat(a.next_available) - parseFloat(b.next_available));
+          // for (let i = 0; i < productlist.length; i++) {
+          //   var product_id_list= {};
+          //   product_id_list.map(productlist[i].productid);              
+          // }
+          //  console.log(product_id_list);
+          //  res[0].distance = res[0].distance * constant.onemile;
+          res[0].distance = res[0].distance.toFixed(2) ;
+      
+          var eta_distance = Math.ceil(res[0].distance);
+          //console.log("res[i].distance",res[i].distance,res[i].makeituserid);
+          // var eta         = constant.delivery_buffer_time +foodpreparationtime + (onekm * eta_distance);
+          // res[i].eta      = Math.round(eta);  
+          var eta = constant.delivery_buffer_time + foodpreparationtime + (onekm * eta_distance);
+          //15min Food Preparation time , 3min 1 km         
+          res[0].eta = Math.round(eta);  
+         
+          // if (res[0].distance <= radiuslimit) {
+          //   res[0].serviceablestatus = true;
+          // }
+
+          if (res[0].eta > 60) {
+            var hours =  res[0].eta / 60;
+            var rhours = Math.floor(hours);
+            var minutes = (hours - rhours) * 60;
+            var rminutes = Math.round(minutes);       
+            // res[i].eta =   +rhours+" hour and " +rminutes +" minute."
+            res[0].eta = "above 60 Mins"
+          }else{
+            res[0].eta = Math.round(eta) + " mins";
+          }
+          //  res[i].eta = Math.round(eta) + " mins";    
+        }
+
+        if(productlistArray&&productlistArray.length>0){
+          if ( tunnelkitchenliststatus == false) {      
+            res[0].serviceablestatus = true;            
+            productlistArray.map(function(x) { 
+              x.next_available = 0; 
+              return x
+            });
+          }
+           res[0].productlist = productlistArray;
+        }
+      //   }
+
+
+        ///////04-mar-2020 new https://tovologies.atlassian.net/browse/ES-48
+        console.log("---------------------------start------------------------------------>");
+        var new_productlist = res[0].productlist;
+
+        for (let i = 0; i < new_productlist.length; i++) {
+          new_productlist[i].serviceablestatus=res[0].serviceablestatus
+          if (new_productlist[i].product_tag==1) {
+            new_productlist[i].product_tag_name="Best Seller"
+          }else if (new_productlist==2){
+            new_productlist[i].product_tag_name="Top Rated"
+          }else{
+            new_productlist[i].product_tag_name=""
+          }
+          
+        }
+        res[0].productlist=[];
+        res[0].product = [];
+        //console.log("new_productlist---------------------->",unservicable_product_list);
+
+        var current_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1  && (new_productlist.productimage !=="" && new_productlist.productimage !== "null" && new_productlist.productimage !== null));
+        var next_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available < 1 && (new_productlist.productimage === "" || new_productlist.productimage === "null" || new_productlist.productimage === null) );
+        var unservicable_product_list  = new_productlist.filter(new_productlist => new_productlist.next_available >0 );
+
+        current_product_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+     
+  
+        // if (!req.sortid) {
+        //   unserviceablekitchenlist.sort((a, b) => parseFloat(a.etatime) - parseFloat(b.etatime));
+        // }
+
+
+       console.log("unservicable_product_list---------------------->",unservicable_product_list.length);
+       //console.log("next_product_list---------------------->",next_product_list);
+
+
+        var fav_dish_list= {};
+        
+        fav_dish_list.title="Favourites";
+        fav_dish_list.type=1;
+        fav_dish_list.product_list=current_product_list;
+        res[0].product.push(fav_dish_list);
+
+
+        var today_Menu_list=[];
+        var Other_Item_list= [];
+        var headers = {};
+
+          for (let i = 0; i < next_product_list.length; i++) {
+            
+
+            var get_product_item = await query("select * from Productitem where productid = '"+next_product_list[i].productid+"' ");
+            
+
+            if (get_product_item.length >1) {
+
+            console.log("today_Menu_list-------------------------",next_product_list[i],get_product_item.length); 
+
+             today_Menu_list.push(next_product_list[i]);
+         //    console.log("today_Menu_list-------------------------",today_Menu_list); 
+            }else{
+             console.log("Other_Item_list-------------------------",next_product_list[i],get_product_item.length); 
+
+              
+              Other_Item_list.push(next_product_list[i],);
+            }
+          }
+
+
+          //console.log("today_Menu_list-------------------------",today_Menu_list);
+          today_Menu_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+          var today_Menu = {};
+          today_Menu.title="Today's Combos";
+          today_Menu.type=2;
+          today_Menu.product_list= today_Menu_list;
+          res[0].product.push(today_Menu);
+
+
+          Other_Item_list.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+          Other_Item_list = Other_Item_list.concat(unservicable_product_list);
+
+          var Other_Item={};
+          Other_Item.title="Other items";
+          Other_Item.type=2;
+          Other_Item.product_list=Other_Item_list;
+          res[0].product.push(Other_Item);
+
+          kitchen_page_header=[];
+          res[0].kitchen_page=[];
+
+          var headers_list1={};
+          headers_list1.header_content="Home Food \n" + res[0].regionname
+          headers_list1.header_icon_url="https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1583388630694-kitchen%20new%20screen-%20ICONS-09.png"
+          headers_list1.header_color_code="#ff444444"
+         // res[0].kitchen_page=headers_list1;
+          res[0].kitchen_page.push(headers_list1);  
+
+           var headers_list2={};
+           if (res[0].serviceablestatus) {
+        //    console.log("res[0].serviceablestatus1------------------------>",res[0].serviceablestatus);
+
+            headers_list2.header_content= res[0].eta
+            headers_list2.header_color_code= "#ff444444"
+           }else{
+           // console.log("res[0].serviceablestatus2------------------------>",res[0].serviceablestatus);
+
+            headers_list2.header_content= "Unservicable"
+            headers_list2.header_color_code= "#d32f2f"
+           }
+           
+           headers_list2.header_icon_url="https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1583388513740-kitchen%20new%20screen-%20ICONS-10.png"
+         //  res[0].kitchen_page=headers_list2;
+        // console.log("res[0].headers_list2------------------------>",res[0].headers_list2);
+
+           res[0].kitchen_page.push(headers_list2);
+
+           var headers_list3={};
+           headers_list3.header_content=''+res[0].rating + ' ('+res[0].rating_count+')'
+           headers_list3.header_icon_url="https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1583388581752-kitchen%20new%20screen-%20ICONS-11.png"
+           headers_list3.header_color_code="#ff444444"
+         //  kitchen_page_header=headers_list3;
+           res[0].kitchen_page.push(headers_list3);
+
+           res[0].kitchen_page_header_content1=res[0].makeitusername + ' is based out of <b>'+ res[0].hometownname+'</b>';
+           res[0].kitchen_page_header_content2='Try out '+res[0].regionname+' Best from the '+res[0].makeitbrandname;
+            // console.log("----------------------------end----------------------------------->");
+
+        const specialitems = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 3 limit 4");
+        const kitcheninfoimage = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 2 limit 4");
+        const kitchenmenuimage = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 4 limit 4");
+        const kitchensignature = await query("select img_url,type from Makeit_images where makeitid="+req.makeit_userid+" and type = 1 limit 1");
+        const foodbadge  = await query("select mbm.Makeit_id,mbm.badge_id,mb.name,mb.url from Makeit_badges_mapping mbm join  Makeit_badges mb on mbm.badge_id = mb.id where mbm.makeit_id ="+req.makeit_userid+"");
+        // var special = await query("select * from Makeit_images ");
+        res[0].specialitems=specialitems;
+        res[0].kitcheninfoimage=kitcheninfoimage;
+        res[0].kitchenmenuimage=kitchenmenuimage;
+        res[0].kitchensignature =null
+        if (kitchensignature.length !== 0) {
+          res[0].kitchensignature=kitchensignature[0].img_url ;
+        }
+        // console.log(foodbadge);
+        res[0].foodbadge=foodbadge
+
+        // let sucobj = true;
+        let resobj = {
+          success: true,
+          status:true,
+          zoneId:userzoneid,
+          zoneName:zonename,
+          result: res
+        };
+        result(null, resobj);
+      } else {       
+        let message = "kitchen is not available!";
+        let resobj = {
+          success: true,
+          status:false,
+          zoneId:userzoneid,
+          zoneName:zonename,
+          message: message
+        };
+        result(null, resobj);
+      }
+    }
+    // }
+  });
+
+
+}else{
+
+  let message = "Sorry! User is not Available";
+  let resobj = {
+    success: true,
+    status:false,
+    message: message
+  };
+  result(null, resobj);
+
+}
+
+
+};
+
+
 Eatuser.get_eat_dish_list_sort_filter = function(req, result) {
 
   var foodpreparationtime = constant.foodpreparationtime;
@@ -4540,7 +4950,7 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
     productquery = productquery + " and pt.dinner = 1";
   }
 
-  var nearbyregionquery = "Select distinct mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.member_type,mk.brandname as makeitbrandname,mk.unservicable,mk.rating rating,mk.regionid,re.regiontitle as regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+req.regionid+"  and  mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status = 2 and mk.verified_status = 1  and pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
+  var nearbyregionquery = "Select distinct mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.member_type,mk.brandname as makeitbrandname,mk.unservicable,mk.rating rating,mk.regionid,re.regiontitle as regionname,re.region_detail_image,re.tagline,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+req.regionid+"  and  mk.appointment_status = 3 and mk.ka_status = 2 and pt.approved_status = 2 and mk.verified_status = 1  and pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc,distance";
   sql.query(nearbyregionquery,async function (err, res) {
     if(err) {
       console.log("error: ", err);
@@ -4637,6 +5047,9 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
       let resobj = {
         success: true,
         status:true,
+        region_detail_image : res[0].regionname,
+        tagline:res[0].regionname,
+        regionname:res[0].regionname,
         userzoneid:userzoneid,
         zonename:zonename,
         result:res

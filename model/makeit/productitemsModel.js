@@ -25,12 +25,7 @@ Productitem.createProductitems = function createProductitems(product_item,res) {
 
 Productitem.deleteProductitems = function deleteProductitems(productid,itemids,res) {
   sql.query(
-    "DELETE FROM Productitem where productid = " +
-      productid +
-      " and itemid NOT IN (" +
-      itemids +
-      ") ",
-    function(err, result) {
+    "DELETE FROM Productitem where productid = " +productid +" and itemid NOT IN (" +itemids +") ",function(err, result) {
       if (err) {
         console.log("error: ", err);
         res(null, err);

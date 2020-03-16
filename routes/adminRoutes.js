@@ -29,6 +29,7 @@ module.exports = function(app) {
   var zone = require("../controllers/common/ZoneController");
   var Zendeskissues = require("../controllers/common/ZendeskissuesController");
   var master = require("../controllers/common/MastersController");
+  var coupon = require("../controllers/common/CouponController");
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));

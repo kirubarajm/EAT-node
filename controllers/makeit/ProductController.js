@@ -176,10 +176,7 @@ exports.edit_product_by_makeit_userid = function(req, res) {
   }else if (!req.body.makeit_userid) {
     res.status(400).send({ error: true,status:false, message: "Please provide makeit_userid" });
   } else {
-  Product.edit_product_by_makeit_userid(req.body, items, function(
-    err,
-    product
-  ) {
+  Product.edit_product_by_makeit_userid(req.body, items, function(err,product) {
     if (err) res.send(err);
     res.json(product);
   });
