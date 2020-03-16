@@ -1839,6 +1839,7 @@ Order.get_all_orders = function get_all_orders(req, result) {
   var page = req.page || 1;
   var startlimit = (page - 1) * orderlimit;
 
+  var countQuery="Select count(*) as totalcount from Orders as od left join User as us on od.userid=us.userid join MakeitUser as mu on mu.userid=od.makeit_user_id where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
   var query =
   "Select od.*,us.*,mu.brandname,mu.virtualkey as kitchentype from Orders as od left join User as us on od.userid=us.userid join MakeitUser as mu on mu.userid=od.makeit_user_id where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
  // var query =
@@ -1855,16 +1856,20 @@ Order.get_all_orders = function get_all_orders(req, result) {
     "%'";
   if (req.virtualkey !== "all") {
     query = query + " and od.ordertype = '" + req.virtualkey + "'";
+    countQuery= countQuery + " and od.ordertype = '" + req.virtualkey + "'";
   }
 
   if (req.delivery_vendor !== "all"){
     query = query + " and od.delivery_vendor = '" + req.delivery_vendor + "'";
+    countQuery= countQuery + " and od.delivery_vendor = '" + req.delivery_vendor + "'";
   }
   //var search= req.search
   if (req.virtualkey !== "all" && req.search) {
     query = query + " and (" + searchquery + ")";
+    countQuery= countQuery + " and (" + searchquery + ")";
   } else if (req.search) {
     query = query + " and " + searchquery;
+    countQuery= countQuery + " and " + searchquery;
   }
 
   var limitquery =query +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
@@ -1875,14 +1880,16 @@ Order.get_all_orders = function get_all_orders(req, result) {
       result(err, null);
     } else {
       var totalcount = 0;
-      sql.query(query, function(err, res2) {
-        totalcount = res2.length;
+     // console.log("countQuery-->",countQuery);
+      sql.query(countQuery, function(err, res2) {
+        totalcount = res2[0].totalcount;
         let resobj = {
           success: true,
           status:true,
           totalorder: totalcount,
           result: res1
         };
+        console.log("totalcount-->",totalcount);
         result(null, resobj);
       });
     }
