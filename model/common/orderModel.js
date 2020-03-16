@@ -2346,40 +2346,48 @@ sql.query("select ors.*,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders or
               req.orglon = res1[0].makeit_lon;
               req.deslat = res1[0].cus_lat;
               req.deslon = res1[0].cus_lon;
+
+              let response = {
+                success: true,
+                status: true,
+                message: "Order Pickedup successfully.",
+             
+              };
+              result(null, response);
     
-              Order.eat_order_distance_calculation(req ,async function(err,res3) {
-                if (err) {
-                  result(err, null);
-                } else {
-                  if (res3.status != true) {
-                    result(null, res3);
-                  } else {
+              // Order.eat_order_distance_calculation(req ,async function(err,res3) {
+              //   if (err) {
+              //     result(err, null);
+              //   } else {
+              //     if (res3.status != true) {
+              //       result(null, res3);
+              //     } else {
         
                     
-                    var routes = res3.result;
-                    var caldistance = routes.routes;
-                    var deliverytimedata = caldistance[0].legs;
+              //       var routes = res3.result;
+              //       var caldistance = routes.routes;
+              //       var deliverytimedata = caldistance[0].legs;
                    
-                    req.distance = parseInt(deliverytimedata[0].distance.text);
-                     req.duration = parseInt(deliverytimedata[0].duration.text);
-                     req.duration = req.duration + constant.orderbuffertime;
-                     req.deliverytime  = moment()
-                     .add(0, "seconds")
-                     .add(req.duration, "minutes")
-                     .format("YYYY-MM-DD HH:mm:ss");
+              //       req.distance = parseInt(deliverytimedata[0].distance.text);
+              //        req.duration = parseInt(deliverytimedata[0].duration.text);
+              //        req.duration = req.duration + constant.orderbuffertime;
+              //        req.deliverytime  = moment()
+              //        .add(0, "seconds")
+              //        .add(req.duration, "minutes")
+              //        .format("YYYY-MM-DD HH:mm:ss");
     
-                     await Order.insert_delivery_time(req);
+              //        await Order.insert_delivery_time(req);
                                   
-                    let response = {
-                      success: true,
-                      status: true,
-                      message: "Order Pickedup successfully.",
+              //       let response = {
+              //         success: true,
+              //         status: true,
+              //         message: "Order Pickedup successfully.",
                    
-                    };
-                    result(null, response);
-                  }
-                }
-              });
+              //       };
+              //       result(null, response);
+              //     }
+              //   }
+              // });
               ////Insert Order History////
               
               ////////////////////////////
@@ -4337,95 +4345,101 @@ Order.makeit_order_accept = async function makeit_order_accept(req, result) {
           req.zone_status= orderdetails[0].zone_status;
           req.payment_type= orderdetails[0].payment_type;
 
-
-          Order.eat_order_distance_calculation(req ,async function(err,res3) {
-            if (err) {
-              result(err, null);
-            } else {
-              if (res3.status != true) {
-                result(null, res3);
-              } else {
+          let response = {
+            success: true,
+            status: true,
+            message: "Order accepted successfully.",
+  
+          };
+          result(null, response);
+          // Order.eat_order_distance_calculation(req ,async function(err,res3) {
+          //   if (err) {
+          //     result(err, null);
+          //   } else {
+          //     if (res3.status != true) {
+          //       result(null, res3);
+          //     } else {
     
-                var routes = res3.result;
-                var caldistance = routes.routes;
-                var deliverytimedata = caldistance[0].legs;
+          //       var routes = res3.result;
+          //       var caldistance = routes.routes;
+          //       var deliverytimedata = caldistance[0].legs;
                
-                req.distance = parseInt(deliverytimedata[0].distance.text);
-                req.duration = parseInt(deliverytimedata[0].duration.text);
+          //       req.distance = parseInt(deliverytimedata[0].distance.text);
+          //       req.duration = parseInt(deliverytimedata[0].duration.text);
 
               
-                 req.duration = constant.foodpreparationtime + req.duration + constant.orderbuffertime;
-                 req.deliverytime  = moment().add(0, "seconds").add(req.duration, "minutes").format("YYYY-MM-DD HH:mm:ss");
+          //        req.duration = constant.foodpreparationtime + req.duration + constant.orderbuffertime;
+          //        req.deliverytime  = moment().add(0, "seconds").add(req.duration, "minutes").format("YYYY-MM-DD HH:mm:ss");
 
-                 await Order.insert_delivery_time(req);
+          //        await Order.insert_delivery_time(req);
 
               
-                 if (constant.order_assign_status==true) {
-                  Order.auto_order_assign_byadmin_makeit(req);
+          //        if (constant.order_assign_status==true) {
+          //         Order.auto_order_assign_byadmin_makeit(req);
 
-                 let response = {
-                   success: true,
-                   status: true,
-                   message: "Order accepted successfully.",
+          //        let response = {
+          //          success: true,
+          //          status: true,
+          //          message: "Order accepted successfully.",
          
-                 };
-                 result(null, response);
+          //        };
+          //        result(null, response);
         
 
-                } else {
+          //       } else {
                   
-                 let response = {
-                 success: true,
-                 status: true,
-                 message: "Order accepted successfully.",
+          //        let response = {
+          //        success: true,
+          //        status: true,
+          //        message: "Order accepted successfully.",
        
-               };
-               result(null, response);
-                }
-                // if (constant.order_assign_status==true) {
+          //      };
+          //      result(null, response);
+          //       }
+          //       // if (constant.order_assign_status==true) {
            
-                //   Order.auto_order_assign(req ,async function(err,auto_order_data) {
-                //     if (err) {
-                //       result(err, null);
-                //     } else {
-                //       if (auto_order_data.status != true) {
-                //         result(null, auto_order_data);
-                //       } else {
+          //       //   Order.auto_order_assign(req ,async function(err,auto_order_data) {
+          //       //     if (err) {
+          //       //       result(err, null);
+          //       //     } else {
+          //       //       if (auto_order_data.status != true) {
+          //       //         result(null, auto_order_data);
+          //       //       } else {
     
-                //         // let response = {
-                //         //   success: true,
-                //         //   status: true,
-                //         //   message: "Order accepted successfully."
-                //         //  // result :deliverytimedata 
-                //         // };
-                //         // result(null, response);
-                //       }
-                //     }
-                //   });
+          //       //         // let response = {
+          //       //         //   success: true,
+          //       //         //   status: true,
+          //       //         //   message: "Order accepted successfully."
+          //       //         //  // result :deliverytimedata 
+          //       //         // };
+          //       //         // result(null, response);
+          //       //       }
+          //       //     }
+          //       //   });
 
-                //   let response = {
-                //     success: true,
-                //     status: true,
-                //     message: "Order accepted successfully."
-                //    // result :deliverytimedata 
-                //   };
-                //   result(null, response);
-                //  } else {
+          //       //   let response = {
+          //       //     success: true,
+          //       //     status: true,
+          //       //     message: "Order accepted successfully."
+          //       //    // result :deliverytimedata 
+          //       //   };
+          //       //   result(null, response);
+          //       //  } else {
                    
-                //   let response = {
-                //   success: true,
-                //   status: true,
-                //   message: "Order accepted successfully.",
+          //       //   let response = {
+          //       //   success: true,
+          //       //   status: true,
+          //       //   message: "Order accepted successfully.",
         
-                // };
-                // result(null, response);
-                //  }
+          //       // };
+          //       // result(null, response);
+          //       //  }
 
 
              
-              }
-            }
-          });
+          //     }
+          //   }
+          // });
           ////Insert Order History////
           
           ////////////////////////////
@@ -7357,15 +7371,18 @@ if (order_queue_query.length ==0) {
       //     ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid order by ordercount";
       //     nearbymoveit = await query(moveitlistquery);
       // }
+      console.log("near_by_moveit_data---------------->",near_by_moveit_data);
       var moveitlistquery =
       "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
       near_by_moveit_data +
-      ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+")";
+      ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+") ";
+      console.log(moveitlistquery);
       nearbymoveit = await query(moveitlistquery);
 
-      if (nearbymoveit.length !==0) {
+      if (nearbymoveit.length !==0) {yield
         
-        
+   
+
          console.log("nearbymoveit[0].userid"+nearbymoveit[0].userid);
  
              sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, req.orderid],async function(err, res2) {
