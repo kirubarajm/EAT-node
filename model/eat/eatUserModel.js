@@ -1395,16 +1395,22 @@ if (userdetails.length !=0) {
           res[0].kitchen_page.push(headers_list1);  
 
            var headers_list2={};
-           if (res[0].unservicable==0) {
+           if (res[0].serviceablestatus) {
+        //    console.log("res[0].serviceablestatus1------------------------>",res[0].serviceablestatus);
+
             headers_list2.header_content= res[0].eta
             headers_list2.header_color_code= "#ff444444"
            }else{
+           // console.log("res[0].serviceablestatus2------------------------>",res[0].serviceablestatus);
+
             headers_list2.header_content= "Unservicable"
             headers_list2.header_color_code= "#d32f2f"
            }
            
            headers_list2.header_icon_url="https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1583388513740-kitchen%20new%20screen-%20ICONS-10.png"
          //  res[0].kitchen_page=headers_list2;
+        // console.log("res[0].headers_list2------------------------>",res[0].headers_list2);
+
            res[0].kitchen_page.push(headers_list2);
 
            var headers_list3={};
