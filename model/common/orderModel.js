@@ -8332,6 +8332,9 @@ Order.moveit_daywise_report= async function moveit_daywise_report(req) {
       moveitloguser.push(moveitlog[i].moveit_userid);
     }
     var moveitorders = await Order.moveit_order_count(req,moveitloguser);
+
+    //var moveitbusyhr = await Order.moveit_busy_hours(req,moveitloguser); 
+
     for (let i = 0; i < moveitlog.length; i++) {
       for (let j = 0; j < moveitorders.length; j++) {
         if(moveitlog[i].date == moveitorders[j].date && moveitlog[i].moveit_userid == moveitorders[j].moveit_user_id){
@@ -8340,12 +8343,27 @@ Order.moveit_daywise_report= async function moveit_daywise_report(req) {
             moveitlog[i].breakfast  = moveitorders[j].breakfast;
             moveitlog[i].lunch      = moveitorders[j].lunch;
             moveitlog[i].dinner     = moveitorders[j].dinner;
+            moveitlog[i].log0809_count = moveitorders[j].log0809_count;
+            moveitlog[i].log0910_count = moveitorders[j].log0910_count;
+            moveitlog[i].log1011_count = moveitorders[j].log1011_count;
+            moveitlog[i].log1112_count = moveitorders[j].log1112_count;
+            moveitlog[i].log1213_count = moveitorders[j].log1213_count;
+            moveitlog[i].log1314_count = moveitorders[j].log1314_count;
+            moveitlog[i].log1415_count = moveitorders[j].log1415_count;
+            moveitlog[i].log1516_count = moveitorders[j].log1516_count;
+            moveitlog[i].log1617_count = moveitorders[j].log1617_count;
+            moveitlog[i].log1718_count = moveitorders[j].log1718_count;
+            moveitlog[i].log1819_count = moveitorders[j].log1819_count;
+            moveitlog[i].log1920_count = moveitorders[j].log1920_count;
+            moveitlog[i].log2021_count = moveitorders[j].log2021_count;
+            moveitlog[i].log2122_count = moveitorders[j].log2122_count;
+            moveitlog[i].log2223_count = moveitorders[j].log2223_count;            
           }        
         }
       }    
     } 
   }  
-  console.log(moveitlog);
+  //console.log(moveitlog);
   return moveitlog; 
 };
 
@@ -8356,7 +8374,54 @@ Order.moveit_order_count = async function moveit_order_count(req,moveitloguser) 
   return ordercount;
 };
 
+////Moveit Busy Hours///////
+Order.moveit_busy_hours = async function moveit_busy_hours(req,moveitloguser) {
+  var ordersquery = "select moveit_user_id,ordertime,moveit_actual_delivered_time from Orders where orderstatus=6 and date(created_at) between '2020-02-01' and '2020-03-17';";
+  var orders = await query(ordersquery);
 
+console.log("orders --->",orders);
+
+  var busyhr_0809 ='00:00:00';
+  var busyhr_0910 ='00:00:00';
+  var busyhr_1011 ='00:00:00';
+  var busyhr_1112 ='00:00:00';
+  var busyhr_1213 ='00:00:00';
+  var busyhr_1314 ='00:00:00';
+  var busyhr_1415 ='00:00:00';
+  var busyhr_1516 ='00:00:00';
+  var busyhr_1617 ='00:00:00';
+  var busyhr_1718 ='00:00:00';
+  var busyhr_1819 ='00:00:00';
+  var busyhr_1920 ='00:00:00';
+  var busyhr_2021 ='00:00:00';
+  var busyhr_2122 ='00:00:00';
+  var busyhr_2223 ='00:00:00';
+
+  for(let i=0; orders.length>i; i++){
+    var starttime = orders[i].ordertime;
+    var endtime   = orders[i].moveit_actual_delivered_time;
+
+    var starttime = moment(orders[i].ordertime).format("HH:mm:ss");
+    var endtime = moment(orders[i].moveit_actual_delivered_time).format("HH:mm:ss");
+    
+    var starthour = moment(starttime).format("HH");
+    var endhour = moment(endtime).format("HH");
+
+    //console.log("starthour -->",starthour);
+    //console.log("endhour -->",endhour);
+
+    if(starthour == endhour){
+
+    }else if(starthour != endhour){
+
+    }
+
+    
+
+  }
+
+  return ordercount;
+};
 
 ////Moveit Logtime perday///////////
 Order.moveit_logtime = async function moveit_logtime(req) {
