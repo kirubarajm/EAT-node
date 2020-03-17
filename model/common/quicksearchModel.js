@@ -944,8 +944,7 @@ const moveitlog_out = new CronJob("0 59 7,11,15,22 * * *", async function() {
   
   var day = moment().format("YYYY-MM-DD HH:mm:ss");
   var currenthour = moment(day).format("HH");
-  var currentminus = currenthour-1;
-
+  
   if (res.length !== 0) {
     for (let i = 0; i < res.length; i++) {
       /////////logout Moveit-Time log/////////////////
@@ -953,8 +952,8 @@ const moveitlog_out = new CronJob("0 59 7,11,15,22 * * *", async function() {
       req.type    = 0;
       req.moveit_userid = res[i].userid;
       req.action  = 2;
-      req.created_at = moment().format("YYYY-MM-DD "+currentminus+":59:59");
-      req.logtime = moment().format("YYYY-MM-DD "+currentminus+":59:59");
+      req.created_at = moment().format("YYYY-MM-DD "+currenthour+":59:59");
+      req.logtime = moment().format("YYYY-MM-DD "+currenthour+":59:59");
       await Moveituser.create_createMoveitTimelog(req);          
     }
   }
