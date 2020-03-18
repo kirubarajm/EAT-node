@@ -8356,6 +8356,8 @@ Order.moveit_order_count = async function moveit_order_count(req,moveitloguser) 
   return ordercount;
 };
 
+
+
 ////Moveit Logtime perday///////////
 Order.moveit_logtime = async function moveit_logtime(req) {
   ///Get Moveit Log Dates///////
