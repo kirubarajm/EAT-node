@@ -3609,11 +3609,13 @@ Makeituser.makeit_quantity_check = async function makeit_quantity_check(req,resu
     var new_Makeittimelog = {};
     new_Makeittimelog.type=0;
     new_Makeittimelog.makeit_id=req.makeit_userid;
+    new_Makeittimelog.action = 1;
     Makeittimelog.createmakeittimelog(new_Makeittimelog);
   }else{
     var new_Makeittimelog = {};
     new_Makeittimelog.type=1;
     new_Makeittimelog.makeit_id=req.makeit_userid;
+    new_Makeittimelog.action = 1;
     Makeittimelog.createmakeittimelog(new_Makeittimelog);
   }
   
