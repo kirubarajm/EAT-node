@@ -30,6 +30,7 @@
     "razorpay": "^2.0.4",
     "redis": "^2.8.0",
     "request": "^2.88.0",
+    "sessionstorage": "^0.1.0",
     "util": "^0.11.1"
   },
   "devDependencies": {

@@ -3,6 +3,7 @@ var sql = require("../db.js");
 const util = require('util');
 const query = util.promisify(sql.query).bind(sql);
 const constant = require('../constant.js');
+const request = require('request');
 
 //Task object constructor
 var Zendeskrequest = function(zendeskrequest) {

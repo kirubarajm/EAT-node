@@ -3,6 +3,8 @@ var sql = require("../db.js");
 const util = require('util');
 const query = util.promisify(sql.query).bind(sql);
 const constant = require('../constant.js');
+const sessionstorage = require('sessionstorage');
+const request = require('request');
 
 //Task object constructor
 var ZohoBookModel = function(zohoreq) {
@@ -22,14 +24,27 @@ ZohoBookModel.createZohoAccessToken =function createZohoAccessToken(req, result)
 ZohoBookModel.createZohoRefreshToken =function createZohoRefreshToken(req, result) {
   var headers= {
     'Content-Type': 'application/json',
-    'Authorization': constant.zoho_refresh_token,
    };
-   request.post({headers: headers, url:ticketURL, json: userdetails,method: 'POST'},async function (e, r, body) {
+   var userdetails={
+    refresh_token:constant.zoho_refresh_token,
+    client_id:constant.zoho_client_id,
+    client_secret:constant.zoho_client_secret,
+    grant_type:constant.zoho_grant_type
+   }
+   request.post({headers: headers, url:constant.zoho_auth_api, json: userdetails,method: 'POST'},async function (e, r, body) {
+     console.log("body-->",body);
+     console.log("e-->",e);
+     console.log("r-->",r);
+     sessionstorage.setItem("access_token_responce",body);
   });
 };
 
-ZohoBookModel.createZohoCustomer =function createZohoCustomer(req, result) {
+ZohoBookModel.createZohoCustomer =async function createZohoCustomer(req, result) {
   
+  await ZohoBookModel.createZohoRefreshToken();
+  var session=sessionstorage.getItem("access_token_responce");
+  console.log("session-->",session);
+  //ZohoBookModel.createZohoRefreshToken
 };
 
 

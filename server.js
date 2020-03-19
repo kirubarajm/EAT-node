@@ -21,6 +21,7 @@ app.use(cors());
 app.use(fileUpload());
 app.use(express.static(__dirname));
 
+
 var routes = require("./routes/appRoutes"); //importing route
 var eatRoutes = require("./routes/eatRoutes"); //importing eat route
 var makeitRoutes = require("./routes/makeitRoutes"); //importing makeit route

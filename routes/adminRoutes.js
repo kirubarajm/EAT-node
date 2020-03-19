@@ -30,6 +30,7 @@ module.exports = function(app) {
   var Zendeskissues = require("../controllers/common/ZendeskissuesController");
   var master = require("../controllers/common/MastersController");
   var coupon = require("../controllers/common/CouponController");
+  var ZohoBook = require("../controllers/common/ZohoBookController");
 /*Admin Api*/
 app.route("/admin/eatuser/add").post(routesVersioning({"1.0.0":eatuser.create_a_eatuser}));
 app.route("/admin/eatusers/").post(routesVersioning({"1.0.0":eatuser.list_all_virtual_eatuser}));
@@ -344,7 +345,9 @@ app.route("/admin/zoho").get(routesVersioning({"1.0.0":Zendeskissues.zohocode}))
 app.route("/masters/producttag").get(routesVersioning({"1.0.0":master.read_product_masters}));
 
 //////Zone Level Performance/////
-app.route("/admin/reports/zonelevelperformancereport").get(routesVersioning({"1.0.0":orders.zone_level_performance_report}));
+//app.route("/admin/reports/zonelevelperformancereport").get(routesVersioning({"1.0.0":orders.zone_level_performance_report}));
 
+//////Zoho create customer/////
+app.route("/admin/zohobook/create_customer").get(routesVersioning({"1.0.0":ZohoBook.createZohoCustomer}));
 
 }
