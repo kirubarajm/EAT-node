@@ -343,4 +343,8 @@ app.route("/admin/zoho").get(routesVersioning({"1.0.0":Zendeskissues.zohocode}))
 
 app.route("/masters/producttag").get(routesVersioning({"1.0.0":master.read_product_masters}));
 
+//////Zone Level Performance/////
+app.route("/admin/reports/zonelevelperformancereport").get(routesVersioning({"1.0.0":orders.zone_level_performance_report}));
+
+
 }
