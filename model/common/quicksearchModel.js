@@ -931,7 +931,7 @@ const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async funct
 });
 //kpidashboardproducthistory.start();
 
-////cron run by moveit user offline every cycle end.
+//// Not Working cron run by moveit user offline every cycle end.
 const moveitlog_out = new CronJob("0 59 7,11,15,22 * * *", async function() {
   var cronLogReq={
     cron_id:5,
@@ -967,7 +967,7 @@ const moveitlog_out = new CronJob("0 59 7,11,15,22 * * *", async function() {
 });
 //moveitlog_out.start();
 
-////cron run by moveit user online every cycle end.
+//// Not working cron run by moveit user online every cycle end.
 const moveitlog_in = new CronJob("0 0 8,12,16,23 * * *", async function() {
   var cronLogReq={
     cron_id:11,
@@ -1057,13 +1057,13 @@ const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
 });
 //makeitlog_everyday.start();
 
-///// Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
+///// Not Working Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
 const liveproducthistory_cyclestart = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {
   await QuickSearch.liveproducthistorycyclestart();
 });
 //liveproducthistory_cyclestart.start();
 
-///// Cron For BreakFast, Lunch, Dinner Every Cycle End ///////////
+///// Not Working Cron For BreakFast, Lunch, Dinner Every Cycle End ///////////
 const liveproducthistory_cycleend = new CronJob("0 55 11,15,22 * * *", async function(req, result) {
   await QuickSearch.liveproducthistorycycleend();
 });
@@ -1233,13 +1233,6 @@ const homemakertiering = new CronJob("0 0 3 * * *", async function() {
   CronLog.createCronLog(cronLogReq);
 
 });
-
-var currentdatecheck = new Date();
-var currentday = currentdatecheck.getDay()
-if(currentday ==1 ){
- // homemakertiering.start();
-}
-
 
 //const Makeit_lost_revenue_report = new CronJob("0 0 2 * * *", async function() {
 const Makeit_lost_revenue_report = new CronJob("0 0 4 * * *", async function(req, result) {
