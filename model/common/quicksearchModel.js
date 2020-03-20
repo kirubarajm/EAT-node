@@ -648,7 +648,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
             var moveitlistquery =
                   "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
                   near_by_moveit_data +
-                  ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+");";
+                  ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+") ";
                   nearbymoveit = await query(moveitlistquery);
             
 
@@ -676,6 +676,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
                   }
                 );
             }else{
+              console.log('dunzo_task_create-->');
 
 
               //  if ( dunzoconst.order_assign_dunzo==true && diffMins > constant.order_waiting_min && res[i].status !=1) {
@@ -706,6 +707,7 @@ QuickSearch.order_assign=async function order_assign(res,i){
 
               Dunzo.dunzo_task_create(res[i].orderid,async function(err,res3) {
                 if (err) {
+                  console.log('error->',err);
                   i++;
                   order_assign(res,i);
                 } else {

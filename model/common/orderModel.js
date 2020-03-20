@@ -1537,7 +1537,7 @@ Order.updateOrderStatus = async function updateOrderStatus(req, result) {
       ];
       updatequery =
         "Update Orders set orderstatus = ?,makeit_expected_preparing_time= ?,makeit_accept_time=?,makeit_status=1 where orderid = ? ";
-    } else if (req.orderstatus === PushConstant.masteridOrder_Prepared) {
+    }else if (req.orderstatus === PushConstant.masteridOrder_Prepared) {
 
       req.makeit_userid=orderdetails[0].makeit_user_id;
       Makeituser.makeit_quantity_check(req);
@@ -7345,7 +7345,6 @@ if (order_queue_query.length ==0) {
           );
 
       for (let i = 0; i < move_it_id_list.length; i++) {
-      
         
         near_by_moveit_data.push(move_it_id_list[i].moveit_id);
       }
@@ -7379,7 +7378,7 @@ if (order_queue_query.length ==0) {
       console.log(moveitlistquery);
       nearbymoveit = await query(moveitlistquery);
 
-      if (nearbymoveit.length !==0) {yield
+      if (nearbymoveit.length !==0) {
         
    
 

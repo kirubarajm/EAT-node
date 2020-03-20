@@ -1384,6 +1384,49 @@ Product.croncreateliveproductstatushistory = async function(req, result) {
 
 
 
+Product.admin_all_virtual_product = function admin_all_virtual_product(req, result) {
+  
+  var productlimit = 20;
+  var page = req.page || 1;
+  var startlimit = (page - 1) * productlimit;
 
+  var productquery ="select pt.*,mk.brandname,mk.name from Product as pt left join MakeitUser mk on mk.userid=pt.makeit_userid  where pt.delete_status !=1 and mk.virtualkey=1";
+ 
+  var product_total_count ="select count(*) as total from Product as pt left join MakeitUser mk on mk.userid=pt.makeit_userid  where pt.delete_status !=1 and mk.virtualkey=1";
+
+  if (req.makeithub_id) {
+    productquery =productquery +" and mk.makeithub_id = "+req.makeithub_id+"";
+    product_total_count =product_total_count +" and mk.makeithub_id = "+req.makeithub_id+"";
+  } 
+  if (req.search) {
+    productquery =productquery +" and pt.product_name LIKE  '%" + req.search +"%' or mk.brandname LIKE '%"+req.search+"%'";
+    product_total_count =product_total_count +" and pt.product_name LIKE  '%" + req.search +"%' or mk.brandname LIKE '%"+req.search+"%'";
+  }
+
+  //console.log("productquery: ", productquery);
+  var limitquery =productquery +" order by pt.productid desc limit " +startlimit +"," +productlimit +" ";
+
+    console.log("productquery: ------------------------------>", limitquery);
+
+  sql.query(limitquery,async function(err, res) {
+    if (err) {
+      console.log("error: ", err);
+      result(null, err);
+    } else {
+
+      var total_count = await query(product_total_count);
+      let resobj = {
+        success: true,
+        status: true,
+        total_count:total_count[0].total,
+        productlimit:productlimit,
+        result: res,
+        limitquery:limitquery
+      };
+
+      result(null, resobj);
+    }
+  });
+};
 
 module.exports = Product;
