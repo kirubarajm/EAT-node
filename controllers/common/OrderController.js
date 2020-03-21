@@ -1238,9 +1238,9 @@ exports.moveitlog_rawreport = function(req, res) {
 };
 
 //////Zone Level Performance/////
-// exports.zone_level_performance_report = function(req, res) {
-//   Order.zone_level_performance_report(req.body, function(err, result) {
-//     if (err) res.send(err);
-//     res.json(result);
-//   });
-// };
+exports.zone_level_performance_report = function(req, res) {
+  // Order.zone_level_performance_report(req.body, function(err, result) {
+  //   if (err) res.send(err);
+  //   res.json(result);
+  // });
+};
