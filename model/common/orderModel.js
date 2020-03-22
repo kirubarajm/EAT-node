@@ -10051,13 +10051,13 @@ Order.makeit_incentive_report= async function makeit_incentive_report(req,inc_fr
   var inc_todate    = moment().subtract(1, "days").format("YYYY-MM-DD");
   var inc_fromdate  = moment().subtract(7, "days").format("YYYY-MM-DD");
 
-  var query="select makeit_id,if(SUM(complete_succession_count),SUM(complete_succession_count),0) as complete_succession_count, if(SUM(cancel_order_count),SUM(cancel_order_count),0) as cancel_count  from Makeit_daywise_report where date(date) between '"+inc_fromdate+"' and '"+inc_todate+"' group by makeit_id";
+  var req_query="select makeit_id,if(SUM(complete_succession_count),SUM(complete_succession_count),0) as complete_succession_count, if(SUM(cancel_order_count),SUM(cancel_order_count),0) as cancel_count  from Makeit_daywise_report where date(date) between '"+inc_fromdate+"' and '"+inc_todate+"' group by makeit_id";
   //console.log("query---------->",query);
-  sql.query(query,async function(err, res) {
+  sql.query(req_query,async function(err, res) {
     if (err) {
       //result(err, null);
-    } else {      
-      if (res.length !== 0) {
+    } else {   
+      if (res.length !== 0) { 
         for (let i = 0; i < res.length; i++) {
           res[i].from_date  = inc_fromdate;
           res[i].to_date    = inc_todate;
@@ -10075,13 +10075,41 @@ Order.makeit_incentive_report= async function makeit_incentive_report(req,inc_fr
             res[i].incentive_amount = 0;
           }
         }
-      }
-      //////////Insert Makeit Incentive//////////////
-      for (let j = 0; j < res.length; j++) {
-        var makeitincentive = await MakeitIncentive.createmakeitincentive(res[j]);
-      }
 
-      return makeitincentive;
+        //////////Get Makeit Earnings//////////////////////
+        var makeitearningsquery = "select makeit_user_id as makeit_id,SUM(makeit_earnings) as makeit_earnings from Orders where date(created_at) between '"+inc_fromdate+"' and '"+inc_todate+"' and orderstatus=6 group by makeit_user_id";
+        var makeitearnings = await query(makeitearningsquery);
+
+        /////////Get Makeit After Cancel Earnings//////////
+        var aftercancelearningsquery = "select makeit_user_id as makeit_id,SUM(makeit_earnings) as aftercancel_earnings from Orders where date(created_at) between '"+inc_fromdate+"' and '"+inc_todate+"' and orderstatus=7 and makeit_actual_preparing_time IS NOT NULL group by makeit_user_id";
+        var aftercancelearnings = await query(aftercancelearningsquery);      
+        
+        for(let i=0; i<makeitearnings.length; i++){
+          for(let j=0; j<aftercancelearnings.length; j++){
+            if(makeitearnings[i].makeit_id == aftercancelearnings[j].makeit_id){
+              makeitearnings[i].makeit_aftercancel_earnings=aftercancelearnings[j].aftercancel_earnings || 0;
+            }            
+          }
+        }  
+        
+        //////////Insert Makeit Incentive//////////////
+        for(let i=0; i<res.length; i++){
+          for (let l = 0; l < makeitearnings.length; l++) {
+            if(res[i].makeit_id == makeitearnings[l].makeit_id){
+              res[i].makeit_earnings = makeitearnings[l].makeit_earnings;
+              res[i].makeit_aftercancel_earnings = makeitearnings[l].makeit_aftercancel_earnings || 0;
+            }           
+          }  
+        }
+
+        /////////////////////////////////////////////
+        for(let i=0; i<res.length; i++){
+          //console.log("makeitearnings -->",res[i]);
+          var makeitincentive = await MakeitIncentive.createmakeitincentive(res[i]);
+        }
+              
+      }      
+      return makeitearnings;
     }
   });
 };
