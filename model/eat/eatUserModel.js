@@ -1403,7 +1403,7 @@ if (userdetails.length !=0) {
            }else{
            // console.log("res[0].serviceablestatus2------------------------>",res[0].serviceablestatus);
 
-            headers_list2.header_content= "Unservicable"
+            headers_list2.header_content= "Unserviceable"
             headers_list2.header_color_code= "#d32f2f"
            }
            
@@ -5047,7 +5047,7 @@ Eatuser.get_eat_region_kitchen_list_show_more_v2 = async function get_eat_region
       let resobj = {
         success: true,
         status:true,
-        region_detail_image : res[0].regionname,
+        region_detail_image : res[0].region_detail_image,
         tagline:res[0].regionname,
         regionname:res[0].regionname,
         userzoneid:userzoneid,
