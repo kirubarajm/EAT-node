@@ -1390,7 +1390,7 @@ Product.admin_all_virtual_product = function admin_all_virtual_product(req, resu
   var page = req.page || 1;
   var startlimit = (page - 1) * productlimit;
 
-  var productquery ="select pt.*,mk.brandname,mk.name from Product as pt left join MakeitUser mk on mk.userid=pt.makeit_userid  where pt.delete_status !=1 and mk.virtualkey=1";
+  var productquery ="select pt.*,mk.brandname,mk.name,pt.quantity as editquantity,false as isEdit from Product as pt left join MakeitUser mk on mk.userid=pt.makeit_userid  where pt.delete_status !=1 and mk.virtualkey=1";
  
   var product_total_count ="select count(*) as total from Product as pt left join MakeitUser mk on mk.userid=pt.makeit_userid  where pt.delete_status !=1 and mk.virtualkey=1";
 
