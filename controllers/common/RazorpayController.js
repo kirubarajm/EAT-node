@@ -39,3 +39,11 @@ exports.razorpaycapture = function(req, res) {
       res.send(result);
   }); 
 };
+
+//Razorpay Capture
+exports.razorpaysettlement = function(req, res) {
+  Razorpay.razorpaysettlement(req.body,function(err, result) {
+      if (err) res.send(err);
+      res.send(result);
+  }); 
+};

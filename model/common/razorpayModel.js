@@ -2,7 +2,10 @@
 var sql = require("../db.js");
 const util = require("util");
 const Rpay = require("razorpay");
+var moment = require("moment");
+var request = require('request');
 var constant = require("../constant.js");
+const razorpaySettlement= require("./razorpaySettlementModel")
 
 // var instance = new Rpay({
 //     key_id: "rzp_test_3cduMl5T89iR9G",
@@ -183,6 +186,68 @@ Razorpay.razorpaycapture = async function razorpaycapture(req, result) {
  const getprice = await query("select price from Orders where orderid ='" +orderid+"'");
  console.log(getprice[0].price);
  */
+
+};
+function toDateTime(secs) {
+  var t = new Date(1970, 0, 1); // Epoch
+  t.setSeconds(secs);
+  return t;
+}
+
+//Razorpay settlement Fuction  /**Praveen*/
+Razorpay.razorpaysettlement  = async function razorpaysettlement(req, result) {
+  // instance.payments
+  // .all({
+  //   from: '2020-03-01',
+  //   to: '2020-03-01',
+  // })
+  // .then(response => {
+  //   // handle success
+  //   console.log("response-->",response);
+  //   result(null, response);
+  // })
+  // .catch(error => {
+  //   // handle error
+  //   console.log("error-->",error);
+  // });
+  var auth = "Basic " + Buffer.from(constant.razorpay_key_id + ":" + constant.razorpay_key_secret).toString("base64");
+        var headers= {
+          'Content-Type': 'application/json',
+          'Authorization': auth,
+         };
+  var settlement_url="https://api.razorpay.com/v1/settlements/recon/combined?year="+req.year+"&month="+req.month+"&day="+req.day
+  request.get({headers: headers, url:settlement_url,method: 'GET'},async function (e, r, body) {
+    
+    var Jsonvalur= JSON.parse(body);
+    if(Jsonvalur.count !== 0){
+      var items=Jsonvalur.items;
+      for(var i=0; i<items.length;i++){
+        //var insertquery= "Select orderid from Orders where transactionid='"+items[i].payment_id+"'";
+        //console.log(insertquery);
+        //const insertwebhooks = await query(insertquery);
+        //
+        //items[i].orderid=insertwebhooks[0].orderid;
+        var ctimestamp = moment.unix(items[i].created_at);
+        items[i].created_at= ctimestamp.format("YYYY-MM-DD HH:mm:ss");//moment().format("YYYY-MM-DD HH:mm:ss");
+
+        var stimestamp = moment.unix(items[i].settled_at);
+        items[i].settled_at= stimestamp.format("YYYY-MM-DD HH:mm:ss");
+
+        if(items[i].description){
+        var  orderid = items[i].description.replace( /[^\d.]/g, '' ); 
+        items[i].orderid=orderid;
+        }else if(items[i].notes){
+          var note= JSON.parse(items[i].notes);
+          var  orderid = 0; 
+          if(note.note1) orderid= note.note1.replace( /[^\d.]/g, '' ); 
+          items[i].orderid=orderid;
+          }
+      }
+      razorpaySettlement.createRazorpaySettlementBulk(items)
+      result(null, items);
+      //console.log("items-->",items);
+    }
+});
 
 };
 
