@@ -227,7 +227,7 @@ ZohoBookModel.createZohoItem =async function createZohoItem(req, result) {
           payment_gateways:[{gateway_name:"razorpay"}]
         }
       }
-      ZohoBookModel.createZohoInVoice(invoiceReq,result);
+      ZohoBookModel.createZohoInVoice(invoiceReq,req.orderid,result);
       
     });
      
@@ -254,7 +254,7 @@ ZohoBookModel.updateShippingAddress =async function updateShippingAddress(req, r
   var formData = querystring.stringify(userdetails);
   var Contact_url=constant.zoho_base_api+"contacts/"+req.customer_id+"/address/"+req.address_id+"?organization_id="+constant.organization_id;
   console.log("userdetails-->",Contact_url);
-  request.post({headers: headers, url:Contact_url, form: formData,method: 'POST'},async function (e, r, body) {
+  request.put({headers: headers, url:Contact_url, form: formData,method: 'PUT'},async function (e, r, body) {
     console.log("body-->",body);
     var Jsonvalur= JSON.parse(body);
       if(Jsonvalur.code === 57){
@@ -268,7 +268,7 @@ ZohoBookModel.updateShippingAddress =async function updateShippingAddress(req, r
   });
 };
 
-ZohoBookModel.createZohoInVoice =async function createZohoInVoice(req, result) {
+ZohoBookModel.createZohoInVoice =async function createZohoInVoice(req,orderid,result) {
   var session=sessionstorage.getItem("access_token_responce");
   var headers= {
     'Content-Type': 'application/json',
@@ -285,17 +285,21 @@ ZohoBookModel.createZohoInVoice =async function createZohoInVoice(req, result) {
     var Jsonvalur= JSON.parse(body);
       if(Jsonvalur.code === 57){
         ZohoBookModel.createZohoRefreshToken(function(){
-          ZohoBookModel.createZohoInVoice(req, result);
+          ZohoBookModel.createZohoInVoice(req, orderid,result);
         });
       }else{
+
+        if(Jsonvalur.code === 0&&Jsonvalur.invoice&&Jsonvalur.invoice.invoice_id){
+          var updatedetails = await query("update Orders set zoho_book_invoice_id= '"+Jsonvalur.invoice.invoice_id+"' where orderid = "+orderid+ " ")
+        }
         let resobj = {
           success: true,
           status: true,
           Jsonvalur:Jsonvalur,
           result : req,
         };
-         result(null, resobj);
-         return;
+         if(result) result(null, resobj);
+        
       }
   });
 };

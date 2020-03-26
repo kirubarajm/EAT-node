@@ -30,7 +30,7 @@ var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTracki
 var sendsms =  require("../common/smsModel");
 var MakeitIncentive = require("../../model/common/makeitincentiveModel.js");
 var orderactionlog = require("../../model/common/orderactionlog.js");
-
+var ZohoBookModel= require("../../model/common/ZohoBookModel")
 
 
 // var instance = new Razorpay({
@@ -5732,7 +5732,8 @@ Order.order_delivery_status_by_admin =async function order_delivery_status_by_ad
           orderactionlog.userid=req.admin_id || 0;
           orderactionlog.action=9;
           await Order.createOrderActionLog(orderactionlog);
-  
+          var invoice={orderid:req.orderid}
+          ZohoBookModel.createZohoCustomer(invoice);
                
                 
           } else {
