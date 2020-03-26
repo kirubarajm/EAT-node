@@ -13,7 +13,7 @@ var razorpaySettlement = function(settlement) {
 };
 
 razorpaySettlement.createRazorpaySettlement = function createRazorpaySettlement(req, result) {
-  sql.query("INSERT INTO Zoho_settlements  set ?", req, function(err, res) {
+  sql.query("INSERT INTO Razorpay_settlements  set ?", req, function(err, res) {
     if (err) {
       result(err, null);
     } else {
@@ -27,7 +27,7 @@ razorpaySettlement.createRazorpaySettlement = function createRazorpaySettlement(
 };
 
 razorpaySettlement.createRazorpaySettlementBulk = function createRazorpaySettlementBulk(items, result) {
-  sql.query("INSERT INTO Zoho_settlements  (orderid, payment_id, type,settlement_id,settlement_utr,payment_settled_at,payment_created_at) VALUES ?", [items.map(item => [item.orderid, item.entity_id, item.type,item.settlement_id, item.settlement_utr, item.settled_at,item.created_at])], function(err, res) {
+  sql.query("INSERT INTO Razorpay_settlements  (orderid, payment_id, type,settlement_id,settlement_utr,payment_settled_at,payment_created_at) VALUES ?", [items.map(item => [item.orderid, item.entity_id, item.type,item.settlement_id, item.settlement_utr, item.settled_at,item.created_at])], function(err, res) {
     if (err) {
       console.log(err)
       result(err, null);

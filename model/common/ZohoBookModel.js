@@ -46,20 +46,21 @@ ZohoBookModel.createZohoRefreshToken =function createZohoRefreshToken(callback) 
 ZohoBookModel.createZohoCustomer =async function createZohoCustomer(req, result) {
   console.log("createZohoCustomer-->");
   
-   var getUserDetail = await query("select ors.userid,us.zoho_book_customer_id,us.name,us.email,us.phoneno,pt.productid,pt.product_name,ori.quantity,ori.price,(ori.quantity*ori.price) AS amount,ors.payment_type from Orders ors left join User us on us.userid=ors.userid left join OrderItem ori on ori.orderid=ors.orderid left join Product pt on pt.productid=ori.productid where ors.orderid="+req.orderid);
+   var getUserDetail = await query("select ors.userid,us.zoho_book_customer_id,zoho_book_address_id,us.name,us.email,us.phoneno,pt.productid,pt.product_name,ori.quantity,ori.price,(ori.quantity*ori.price) AS amount,ors.payment_type,ors.cus_address,ors.cus_pincode,ors.locality from Orders ors left join User us on us.userid=ors.userid left join OrderItem ori on ori.orderid=ors.orderid left join Product pt on pt.productid=ori.productid where ors.orderid="+req.orderid);
    if(getUserDetail[0].zoho_book_customer_id){
     req.userdetails=getUserDetail[0];
     req.items=getUserDetail;
     req.customer_id=getUserDetail[0].zoho_book_customer_id;
+    req.address_id=getUserDetail[0].zoho_book_address_id;
     console.log("req-->",req);
-    ZohoBookModel.zohoGetItemList(req,result);
+    ZohoBookModel.updateShippingAddress(req,result);
    }else{
     req.userdetails=getUserDetail[0];
     req.items=getUserDetail;
     var session=sessionstorage.getItem("access_token_responce");
     if(!session){
         ZohoBookModel.createZohoRefreshToken(function(){
-          ZohoBookModel.zohoGenrateCustomer(req,result);
+          ZohoBookModel.createZohoCustomer(req,result);
         });
      }else{
         ZohoBookModel.zohoGenrateCustomer(req,result);
@@ -67,8 +68,9 @@ ZohoBookModel.createZohoCustomer =async function createZohoCustomer(req, result)
    }
 };
 ZohoBookModel.zohoGenrateCustomer =async function zohoGenrateCustomer(req, result) {
-  var userdetails={JSONString:'{"contact_name":"'+req.userdetails.name+'","contact_type":"customer","gst_treatment":"consumer","place_of_contact":"TN","customer_sub_type":"individual","contact_persons":[{"first_name":"'+req.userdetails.name+'","last_name":"","email":"'+req.userdetails.email+'","mobile":"'+req.userdetails.phoneno+'","is_primary_contact":true}]}'}
-
+  //cus_address,ors.cus_pincode,ors.locality
+  var userdetails={JSONString:'{"contact_name":"'+req.userdetails.name+'","contact_type":"customer","gst_treatment":"consumer","place_of_contact":"TN","customer_sub_type":"individual","shipping_address":{"address":"'+req.userdetails.cus_address+'","zip":"'+req.userdetails.cus_pincode+'","city":"chennai","state":"TN","country":"India"},"contact_persons":[{"first_name":"'+req.userdetails.name+'","last_name":"","email":"'+req.userdetails.email+'","mobile":"'+req.userdetails.phoneno+'","is_primary_contact":true}]}'}
+  console.log("userdetails-->",userdetails);
   var formData = querystring.stringify(userdetails);
   var Contact_url=constant.zoho_base_api+"contacts?organization_id="+constant.organization_id;
   var session=sessionstorage.getItem("access_token_responce");
@@ -78,7 +80,7 @@ ZohoBookModel.zohoGenrateCustomer =async function zohoGenrateCustomer(req, resul
    };
 
   request.post({headers: headers, url:Contact_url, form: formData,method: 'POST'},async function (e, r, body) {
-    
+    console.log("body-->",body);
       var Jsonvalur= JSON.parse(body);
       if(Jsonvalur.code === 57){
         ZohoBookModel.createZohoRefreshToken(function(){
@@ -86,8 +88,10 @@ ZohoBookModel.zohoGenrateCustomer =async function zohoGenrateCustomer(req, resul
         });
       }else{
         var customer_id=Jsonvalur.contact.contact_id;
-        var updatedetails = await query("update User set zoho_book_customer_id= '"+customer_id+"' where userid = "+req.userdetails.userid+ " ")
+        var address_id=Jsonvalur.contact.shipping_address.address_id;
+        var updatedetails = await query("update User set zoho_book_customer_id= '"+customer_id+"',zoho_book_address_id= '"+address_id+"' where userid = "+req.userdetails.userid+ " ")
         req.customer_id=customer_id;
+        req.address_id=address_id;
         ZohoBookModel.zohoGetItemList(req,result);
       }
   });
@@ -228,6 +232,42 @@ ZohoBookModel.createZohoItem =async function createZohoItem(req, result) {
     });
      
 };
+ZohoBookModel.updateShippingAddress =async function updateShippingAddress(req, result) {
+  var session=sessionstorage.getItem("access_token_responce");
+  var headers= {
+    'Content-Type': 'application/json',
+    'Authorization':'Zoho-oauthtoken '+session
+   };
+   //{"address":"'+req.cus_address+'","zip":"'+req.cus_pincode+'",city":"chennai","state":"TN","country":"India"},
+   var address={
+    address:req.userdetails.cus_address,
+    zip:req.userdetails.cus_pincode,
+    city:"chennai",
+    state:"TN",
+    country:"India"
+   }
+   var myJSON = JSON.stringify(address);
+   var userdetails={JSONString:myJSON}
+   //req.customer_id=customer_id;
+       // req.address_id=address_id;
+  //var userdetails={JSONString:'{"customer_id":"'+req.customer_id+'","line_items":"'+req.line_items+'"}'}
+  var formData = querystring.stringify(userdetails);
+  var Contact_url=constant.zoho_base_api+"contacts/"+req.customer_id+"/address/"+req.address_id+"?organization_id="+constant.organization_id;
+  console.log("userdetails-->",Contact_url);
+  request.post({headers: headers, url:Contact_url, form: formData,method: 'POST'},async function (e, r, body) {
+    console.log("body-->",body);
+    var Jsonvalur= JSON.parse(body);
+      if(Jsonvalur.code === 57){
+        ZohoBookModel.createZohoRefreshToken(function(){
+          ZohoBookModel.updateShippingAddress(req, result);
+        });
+      }else{
+        console.log("Jsonvalur-->",Jsonvalur);
+        ZohoBookModel.zohoGetItemList(req,result);
+      }
+  });
+};
+
 ZohoBookModel.createZohoInVoice =async function createZohoInVoice(req, result) {
   var session=sessionstorage.getItem("access_token_responce");
   var headers= {
