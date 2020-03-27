@@ -10,6 +10,15 @@ exports.createZohoCustomer = function(req, res) {
   });
 };
 
+exports.invoiceUpdate = function(req, res) {
+  ZohoBookModel.updateZohoInVoiceEach(req.body ,function(err, faq) {
+    if (err) res.send(err);
+    console.log("res", faq);
+    res.send(faq);
+  });
+};
+
+
 
 
 

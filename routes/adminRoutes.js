@@ -349,6 +349,8 @@ app.route("/admin/reports/zonelevelperformancereport").get(routesVersioning({"1.
 
 //////Zoho create customer/////
 app.route("/admin/zohobook/invoices").post(routesVersioning({"1.0.0":ZohoBook.createZohoCustomer}));
+//////Zoho create customer/////
+app.route("/admin/zohobook/invoices/update").post(routesVersioning({"1.0.0":ZohoBook.invoiceUpdate}));
 
 //////Zoho book/////
 app.route("/admin/razorpay/getsettelment").post(routesVersioning({"1.0.0":Razorpay.razorpaysettlement}));

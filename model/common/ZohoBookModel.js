@@ -303,33 +303,64 @@ ZohoBookModel.createZohoInVoice =async function createZohoInVoice(req,orderid,re
       }
   });
 };
-
-
-ZohoBookModel.updateZohoInVoice =async function updateZohoInVoice(req,result) {
-  var session=sessionstorage.getItem("access_token_responce");
-  var headers= {
-    'Content-Type': 'application/json',
-    'Authorization':'Zoho-oauthtoken '+session
-   };
-   var myJSON = JSON.stringify(req);
-   //var userdetails={JSONString:myJSON}
-  var userdetails={JSONString:'{"reference_number":"'+req.settlement_utr+'"}'}
-  var formData = querystring.stringify(userdetails);
-  var Contact_url=constant.zoho_base_api+"invoices/"+req.invoice_id+"?organization_id="+constant.organization_id;
-  request.put({headers: headers, url:Contact_url, form: formData,method: 'PUT'},async function (e, r, body) {
-    var Jsonvalur= JSON.parse(body);
-      if(Jsonvalur.code === 57){
-        ZohoBookModel.createZohoRefreshToken(function(){
-          ZohoBookModel.updateZohoInVoice(req,result);
-        });
-      }else{
-        let resobj = {
-          success: true,
-          status: true,
-        };
-         if(result) result(null, resobj);
+ZohoBookModel.updateZohoInVoice =async function updateZohoInVoice(Items,i,result) {
+  if(i<Items.length){
+    var item=Items[i];
+    var req={
+      orderid:item.orderid,
+      settlement_utr:item.settlement_utr,
+    }
+    ZohoBookModel.updateZohoInVoiceEach(req,function(e,res){
+      if(res.success){
+        i=i++;
+        ZohoBookModel.updateZohoInVoice(Items,i,result);
       }
-  });
+    })
+  }else{
+    let resobj = {
+      success: true,
+      status: true,
+    };
+    if(result) result(null, resobj);
+  }
+}
+
+ZohoBookModel.updateZohoInVoiceEach =async function updateZohoInVoiceEach(req,result) {
+  var getZohoDetail = await query("select zoho_book_invoice_id from Orders ors where ors.orderid="+req.orderid);
+  var invoice_id=getZohoDetail[0].zoho_book_invoice_id;
+  if(invoice_id){
+    var session=sessionstorage.getItem("access_token_responce");
+    var headers= {
+      'Content-Type': 'application/json',
+      'Authorization':'Zoho-oauthtoken '+session
+     };
+     //var myJSON = JSON.stringify(req);
+     //var userdetails={JSONString:myJSON}
+    var userdetails={JSONString:'{"reference_number":"'+req.settlement_utr+'"}'}
+    var formData = querystring.stringify(userdetails);
+    var Contact_url=constant.zoho_base_api+"invoices/"+invoice_id+"?organization_id="+constant.organization_id;
+    request.put({headers: headers, url:Contact_url, form: formData,method: 'PUT'},async function (e, r, body) {
+      var Jsonvalur= JSON.parse(body);
+        if(Jsonvalur.code === 57){
+          ZohoBookModel.createZohoRefreshToken(function(){
+            ZohoBookModel.updateZohoInVoice(req,result);
+          });
+        }else{
+          let resobj = {
+            success: true,
+            status: true,
+          };
+          if(result) result(null, resobj);
+        }
+    });
+  }else{
+    let resobj = {
+      success: true,
+      status: false,
+    };
+     if(result) result(null, resobj);
+  }
+  
 };
 
 module.exports = ZohoBookModel;

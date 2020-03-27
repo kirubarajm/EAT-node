@@ -6,7 +6,7 @@ var moment = require("moment");
 var request = require('request');
 var constant = require("../constant.js");
 const razorpaySettlement= require("./razorpaySettlementModel")
-
+const ZohoBookModel= require("./ZohoBookModel")
 // var instance = new Rpay({
 //     key_id: "rzp_test_3cduMl5T89iR9G",
 //     key_secret: "BSdpKV1M07sH9cucL5uzVnol"
@@ -243,8 +243,9 @@ Razorpay.razorpaysettlement  = async function razorpaysettlement(req, result) {
           items[i].orderid=orderid;
           }
       }
-      razorpaySettlement.createRazorpaySettlementBulk(items)
+      await razorpaySettlement.createRazorpaySettlementBulk(items);
       result(null, items);
+      ZohoBookModel.updateZohoInVoice(items,0);
       //console.log("items-->",items);
     }
 });
