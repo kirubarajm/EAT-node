@@ -304,4 +304,32 @@ ZohoBookModel.createZohoInVoice =async function createZohoInVoice(req,orderid,re
   });
 };
 
+
+ZohoBookModel.updateZohoInVoice =async function updateZohoInVoice(req,result) {
+  var session=sessionstorage.getItem("access_token_responce");
+  var headers= {
+    'Content-Type': 'application/json',
+    'Authorization':'Zoho-oauthtoken '+session
+   };
+   var myJSON = JSON.stringify(req);
+   //var userdetails={JSONString:myJSON}
+  var userdetails={JSONString:'{"reference_number":"'+req.settlement_utr+'"}'}
+  var formData = querystring.stringify(userdetails);
+  var Contact_url=constant.zoho_base_api+"invoices/"+req.invoice_id+"?organization_id="+constant.organization_id;
+  request.put({headers: headers, url:Contact_url, form: formData,method: 'PUT'},async function (e, r, body) {
+    var Jsonvalur= JSON.parse(body);
+      if(Jsonvalur.code === 57){
+        ZohoBookModel.createZohoRefreshToken(function(){
+          ZohoBookModel.updateZohoInVoice(req,result);
+        });
+      }else{
+        let resobj = {
+          success: true,
+          status: true,
+        };
+         if(result) result(null, resobj);
+      }
+  });
+};
+
 module.exports = ZohoBookModel;
