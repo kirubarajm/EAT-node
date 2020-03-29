@@ -10,12 +10,7 @@ var Dunzomoveitdetails = require("../../model/common/dunzomoveitdetailsModel");
 var moment = require("moment");
 var Notification = require("../../model/common/notificationModel.js");
 var PushConstant = require("../../push/PushConstant.js");
-
-
-
-
-
-
+var ZohoBookModel= require("../../model/common/ZohoBookModel");
 
 //Task object constructor
 var Dunzo = function(dunzo){
@@ -506,7 +501,8 @@ Dunzo.dunzo_nex_state_update_by_taskid =async function dunzo_nex_state_update_by
         
                    
                result(null, deliverd);
-
+               var invoice={orderid:orderdetails[0].orderid};
+               ZohoBookModel.createZohoCustomer(invoice);
       
         break;
     case dunzoconst.cancelled:

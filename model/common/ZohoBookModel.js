@@ -46,7 +46,7 @@ ZohoBookModel.createZohoRefreshToken =function createZohoRefreshToken(callback) 
 ZohoBookModel.createZohoCustomer =async function createZohoCustomer(req, result) {
   console.log("createZohoCustomer-->");
   
-   var getUserDetail = await query("select ors.userid,us.zoho_book_customer_id,zoho_book_address_id,us.name,us.email,us.phoneno,pt.productid,pt.product_name,ori.quantity,ori.price,(ori.quantity*ori.price) AS amount,ors.payment_type,ors.cus_address,ors.cus_pincode,ors.locality from Orders ors left join User us on us.userid=ors.userid left join OrderItem ori on ori.orderid=ors.orderid left join Product pt on pt.productid=ori.productid where ors.orderid="+req.orderid);
+   var getUserDetail = await query("select ors.userid,us.zoho_book_customer_id,zoho_book_address_id,us.name,us.email,us.phoneno,pt.productid,pt.product_name,ori.quantity,ori.price,(ori.quantity*ori.price) AS amount,ors.payment_type,ors.delivery_vendor,ors.cus_address,ors.cus_pincode,ors.locality from Orders ors left join User us on us.userid=ors.userid left join OrderItem ori on ori.orderid=ors.orderid left join Product pt on pt.productid=ori.productid where ors.orderid="+req.orderid);
    if(getUserDetail[0].zoho_book_customer_id){
     req.userdetails=getUserDetail[0];
     req.items=getUserDetail;
@@ -139,7 +139,7 @@ ZohoBookModel.getItemIds =function getItemIds(Items,reqZohoItems,i,zohoitems,res
       itemIN.item_id=zohoflItem[0].item_id;
       itemIN.account_id=zohoflItem[0].account_id;
       itemIN.quantity=item.quantity;
-      itemIN.tax_id="248845000000007222"
+      itemIN.tax_id="248845000000007222";
       zohoitems.push(itemIN);
       if(i!==(Items.length-1)){
         i++;
@@ -165,7 +165,7 @@ ZohoBookModel.getItemIds =function getItemIds(Items,reqZohoItems,i,zohoitems,res
               itemIN.item_id=Jsonvalur.item.item_id;
               itemIN.account_id=Jsonvalur.item.account_id;
               itemIN.quantity=item.quantity;
-              itemIN.tax_id="248845000000007222"
+              itemIN.tax_id="248845000000007222";
               zohoitems.push(itemIN);
             if(i!==(Items.length-1)){
               i++;
@@ -191,7 +191,7 @@ ZohoBookModel.getItemIds =function getItemIds(Items,reqZohoItems,i,zohoitems,res
             itemIN.item_id=Jsonvalur.item.item_id;
             itemIN.account_id=Jsonvalur.item.account_id;
             itemIN.quantity=item.quantity;
-            itemIN.tax_id="248845000000007222"
+            itemIN.tax_id="248845000000007222";
             zohoitems.push(itemIN);
           if(i!==(Items.length-1)){
             i++;
@@ -215,20 +215,28 @@ ZohoBookModel.createZohoItem =async function createZohoItem(req, result) {
         customer_id:req.customer_id,
         line_items:line_items,
         payment_terms_label:"Due on Receipt",
-        payment_terms:0
+        payment_terms:0,
+        custom_fields: [
+          {
+              customfield_id: "248845000000057137",
+              value: req.orderid,//req.payment_type=='0'?"COD":"Online"
+          }
+      ]
       }
-      if(req.payment_type=='0'){
-        invoiceReq.quick_create_payment={
-          account_id:"248845000000000459",
-          payment_mode:"Cash"
-        } 
+      console.log("req.userdetails.payment_type-->",req.userdetails.payment_type)
+      if(req.userdetails.payment_type=='0'){
+        if(req.userdetails.delivery_vendor==1) invoiceReq.reference_number="Dunzo_COD";
+        else invoiceReq.reference_number="Eat_COD";
+        // invoiceReq.quick_create_payment={
+        //   //account_id:"248845000000000459",
+        //   //payment_mode:"Cash"
+        // } 
       }else{
         invoiceReq.payment_options={
           payment_gateways:[{gateway_name:"razorpay"}]
         }
       }
       ZohoBookModel.createZohoInVoice(invoiceReq,req.orderid,result);
-      
     });
      
 };
@@ -276,9 +284,10 @@ ZohoBookModel.createZohoInVoice =async function createZohoInVoice(req,orderid,re
    };
    var myJSON = JSON.stringify(req);
    var userdetails={JSONString:myJSON}
+   //+"&is_quick_create=true"
   //var userdetails={JSONString:'{"customer_id":"'+req.customer_id+'","line_items":"'+req.line_items+'"}'}
   var formData = querystring.stringify(userdetails);
-  var Contact_url=constant.zoho_base_api+"invoices?organization_id="+constant.organization_id+"&is_quick_create=true";
+  var Contact_url=constant.zoho_base_api+"invoices?organization_id="+constant.organization_id;
   console.log("userdetails-->",userdetails);
   request.post({headers: headers, url:Contact_url, form: formData,method: 'POST'},async function (e, r, body) {
     console.log("body-->",body);
@@ -288,7 +297,6 @@ ZohoBookModel.createZohoInVoice =async function createZohoInVoice(req,orderid,re
           ZohoBookModel.createZohoInVoice(req, orderid,result);
         });
       }else{
-
         if(Jsonvalur.code === 0&&Jsonvalur.invoice&&Jsonvalur.invoice.invoice_id){
           var updatedetails = await query("update Orders set zoho_book_invoice_id= '"+Jsonvalur.invoice.invoice_id+"' where orderid = "+orderid+ " ")
         }
@@ -304,6 +312,7 @@ ZohoBookModel.createZohoInVoice =async function createZohoInVoice(req,orderid,re
   });
 };
 ZohoBookModel.updateZohoInVoice =async function updateZohoInVoice(Items,i,result) {
+  console.log("i... ",i);
   if(i<Items.length){
     var item=Items[i];
     var req={
@@ -312,7 +321,7 @@ ZohoBookModel.updateZohoInVoice =async function updateZohoInVoice(Items,i,result
     }
     ZohoBookModel.updateZohoInVoiceEach(req,function(e,res){
       if(res.success){
-        i=i++;
+        i++;
         ZohoBookModel.updateZohoInVoice(Items,i,result);
       }
     })
@@ -327,8 +336,11 @@ ZohoBookModel.updateZohoInVoice =async function updateZohoInVoice(Items,i,result
 
 ZohoBookModel.updateZohoInVoiceEach =async function updateZohoInVoiceEach(req,result) {
   var getZohoDetail = await query("select zoho_book_invoice_id from Orders ors where ors.orderid="+req.orderid);
+  console.log("orderid ",req.orderid);
   var invoice_id=getZohoDetail[0].zoho_book_invoice_id;
+  
   if(invoice_id){
+    console.log("invoice_id-->in ",invoice_id);
     var session=sessionstorage.getItem("access_token_responce");
     var headers= {
       'Content-Type': 'application/json',
@@ -343,7 +355,7 @@ ZohoBookModel.updateZohoInVoiceEach =async function updateZohoInVoiceEach(req,re
       var Jsonvalur= JSON.parse(body);
         if(Jsonvalur.code === 57){
           ZohoBookModel.createZohoRefreshToken(function(){
-            ZohoBookModel.updateZohoInVoice(req,result);
+            ZohoBookModel.updateZohoInVoiceEach(req,result);
           });
         }else{
           let resobj = {
@@ -354,6 +366,7 @@ ZohoBookModel.updateZohoInVoiceEach =async function updateZohoInVoiceEach(req,re
         }
     });
   }else{
+    console.log("invoice_id--> not in ",invoice_id);
     let resobj = {
       success: true,
       status: false,

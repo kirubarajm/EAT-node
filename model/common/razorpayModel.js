@@ -244,7 +244,7 @@ Razorpay.razorpaysettlement  = async function razorpaysettlement(req, result) {
           }
       }
       await razorpaySettlement.createRazorpaySettlementBulk(items);
-      result(null, items);
+      if(result) result(null, items);
       ZohoBookModel.updateZohoInVoice(items,0);
       //console.log("items-->",items);
     }

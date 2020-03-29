@@ -22,6 +22,7 @@ var MakeitDayWise = require("../../model/common/makeitdaywiseModel.js");
 var Makeitlog =require("../../model/common/makeittimelogModel.js");
 var Makeittotalrevenue = require("../../model/common/MakeittotalrevenueModel");
 var CronLog = require("../../model/common/cronlogModel");
+const RazorpayModel= require("./razorpayModel")
 
 const start_cron=1;
 const end_cron=2;
@@ -1393,6 +1394,35 @@ const moveitlog_in1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21
   CronLog.createCronLog(cronLogReq);
 });
 //moveitlog_in1hr.start();
+
+//// 1 hr cron run by moveit user online every cycle start.
+const razorpaySettlement = new CronJob("0 0 1 * * *", async function() {
+  var cronLogReq={
+    cron_id:13,
+    cron_name:"Razorpay settlement",
+    cron_type:start_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+  var yesterday = moment().subtract(1, 'days').format("YYYY-MM-DD");
+  console.log(yesterday);
+  var month = moment(yesterday).format('M');
+  var day   = moment(yesterday).format('D');
+  var year  = moment(yesterday).format('YYYY');
+  console.log(month,day,year);
+ var req={
+  year:year,
+  month:month,
+  day:day
+ }
+  RazorpayModel.razorpaysettlement(req);
+  var cronLogReq={
+    cron_id:13,
+    cron_name:"Razorpay settlement",
+    cron_type:end_cron
+  }
+  CronLog.createCronLog(cronLogReq);
+});
+
 
 QuickSearch.onStartAllCron = function onStartAllCron(){
     if(constant.isCronStart){
