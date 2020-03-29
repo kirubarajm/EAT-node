@@ -1013,7 +1013,7 @@ const moveitlog_everyday = new CronJob("0 0 2 * * *", async function() {
     cron_type:start_cron
   }
   CronLog.createCronLog(cronLogReq);
-
+  
   var moveit_daywise_data = await Order.moveit_daywise_report();
   if (moveit_daywise_data.length !=0) {    
     for (let i = 0; i < moveit_daywise_data.length; i++) {

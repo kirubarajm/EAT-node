@@ -8731,6 +8731,9 @@ Order.moveit_daywise_report= async function moveit_daywise_report(req) {
       moveitloguser.push(moveitlog[i].moveit_userid);
     }
     var moveitorders = await Order.moveit_order_count(req,moveitloguser);
+    
+    var moveitbusyhr = await Order.moveit_busy_hr(req,moveitloguser);
+
     for (let i = 0; i < moveitlog.length; i++) {
       for (let j = 0; j < moveitorders.length; j++) {
         if(moveitlog[i].date == moveitorders[j].date && moveitlog[i].moveit_userid == moveitorders[j].moveit_user_id){
@@ -8756,7 +8759,26 @@ Order.moveit_daywise_report= async function moveit_daywise_report(req) {
             moveitlog[i].log2223_count = moveitorders[j].log2223_count;            
           }        
         }
-      }    
+      }
+      for(let k=0; k<moveitbusyhr.length; k++){
+        if(moveitlog[i].moveit_userid == moveitbusyhr[k].moveit_user_id){
+          moveitlog[i].busy_0809 = moveitbusyhr[k].busy_0809;
+          moveitlog[i].busy_0910 = moveitbusyhr[k].busy_0910;
+          moveitlog[i].busy_1011 = moveitbusyhr[k].busy_1011;
+          moveitlog[i].busy_1112 = moveitbusyhr[k].busy_1112;
+          moveitlog[i].busy_1213 = moveitbusyhr[k].busy_1213;
+          moveitlog[i].busy_1314 = moveitbusyhr[k].busy_1314;
+          moveitlog[i].busy_1415 = moveitbusyhr[k].busy_1415;
+          moveitlog[i].busy_1516 = moveitbusyhr[k].busy_1516;
+          moveitlog[i].busy_1617 = moveitbusyhr[k].busy_1617;
+          moveitlog[i].busy_1718 = moveitbusyhr[k].busy_1718;
+          moveitlog[i].busy_1819 = moveitbusyhr[k].busy_1819;
+          moveitlog[i].busy_1920 = moveitbusyhr[k].busy_1920;
+          moveitlog[i].busy_2021 = moveitbusyhr[k].busy_2021;
+          moveitlog[i].busy_2122 = moveitbusyhr[k].busy_2122;
+          moveitlog[i].busy_2223 = moveitbusyhr[k].busy_2223; 
+        }
+      }
     } 
   }  
   return moveitlog; 
@@ -8772,13 +8794,13 @@ Order.moveit_order_count = async function moveit_order_count(req,moveitloguser) 
 ////Moveit Logtime perday///////////
 Order.moveit_logtime = async function moveit_logtime(req) {
   ///Get Moveit Log Dates///////
-  var moveitlogusersdatesquery = "select date(created_at) as log_date from Moveit_Timelog where date(created_at)=DATE_SUB(CURDATE(),INTERVAL 1 DAY) group by date(created_at) order by date(created_at)";
+  var moveitlogusersdatesquery = "select date(created_at) as log_date from Moveit_Timelog where date(created_at)=DATE_SUB(CURDATE(), INTERVAL 1 DAY) group by date(created_at) order by date(created_at)";
   var moveitlogusersdates = await query(moveitlogusersdatesquery);
   ///Get Moveit Users list///////
-  var moveitlogusersquery = "select moveit_userid from Moveit_Timelog where date(created_at)=DATE_SUB(CURDATE(),INTERVAL 1 DAY) group by moveit_userid order by moveit_userid";
+  var moveitlogusersquery = "select moveit_userid from Moveit_Timelog where date(created_at)=DATE_SUB(CURDATE(), INTERVAL 1 DAY) group by moveit_userid order by moveit_userid";
   var moveitlogusers = await query(moveitlogusersquery);
   ///Get Moveit Logs///////
-  var moveitlogquery = "select date(logtime) as log_date,time(logtime) as logtime,type,moveit_userid from Moveit_Timelog where date(created_at)=DATE_SUB(CURDATE(),INTERVAL 1 DAY) and action order by date(created_at),moveit_userid";
+  var moveitlogquery = "select date(logtime) as log_date,time(logtime) as logtime,type,moveit_userid from Moveit_Timelog where date(created_at)=DATE_SUB(CURDATE(), INTERVAL 1 DAY) and action order by date(created_at),moveit_userid";
   var moveitlog = await query(moveitlogquery);
 
   var moveitavg = [];
@@ -9203,8 +9225,382 @@ Order.moveit_logtime = async function moveit_logtime(req) {
     moveitavg[k].log2021_count = 0;
     moveitavg[k].log2122_count = 0;
     moveitavg[k].log2223_count = 0;
+
+    moveitavg[k].busy_0809 = '00:00:00';
+    moveitavg[k].busy_0910 = '00:00:00';
+    moveitavg[k].busy_1011 = '00:00:00';
+    moveitavg[k].busy_1112 = '00:00:00';
+    moveitavg[k].busy_1213 = '00:00:00';
+    moveitavg[k].busy_1314 = '00:00:00';
+    moveitavg[k].busy_1415 = '00:00:00';
+    moveitavg[k].busy_1516 = '00:00:00';
+    moveitavg[k].busy_1617 = '00:00:00';
+    moveitavg[k].busy_1718 = '00:00:00';
+    moveitavg[k].busy_1819 = '00:00:00';
+    moveitavg[k].busy_1920 = '00:00:00';
+    moveitavg[k].busy_2021 = '00:00:00';
+    moveitavg[k].busy_2122 = '00:00:00';
+    moveitavg[k].busy_2223 = '00:00:00';
   } 
   return moveitavg;
+};
+
+////Moveit Order Count///////
+Order.moveit_busy_hr = async function moveit_busy_hr(req,moveitloguser) {
+  var bysyhr = new Array();
+  for(let k=0; k<moveitloguser.length; k++){
+    bysyhr.push({'moveit_user_id':moveitloguser[k]});
+  }
+  
+  var moveitordersquery = "select orderid,moveit_user_id,time(order_assigned_time) as assignedtime,time(moveit_actual_delivered_time) as moveit_actual_delivered_time from Orders where moveit_user_id IN("+moveitloguser+") and date(created_at)=DATE_SUB(CURDATE(), INTERVAL 1 DAY) and orderstatus=6 order by moveit_user_id";
+  var moveitorders = await query(moveitordersquery);  
+
+  for(let i=0; i<bysyhr.length; i++){  
+    bysyhr[i].busy_0809 = '00:00:00';
+    bysyhr[i].busy_0910 = '00:00:00';
+    bysyhr[i].busy_1011 = '00:00:00';
+    bysyhr[i].busy_1112 = '00:00:00';
+    bysyhr[i].busy_1213 = '00:00:00';
+    bysyhr[i].busy_1314 = '00:00:00';
+    bysyhr[i].busy_1415 = '00:00:00';
+    bysyhr[i].busy_1516 = '00:00:00';
+    bysyhr[i].busy_1617 = '00:00:00';
+    bysyhr[i].busy_1718 = '00:00:00';
+    bysyhr[i].busy_1819 = '00:00:00';
+    bysyhr[i].busy_1920 = '00:00:00';
+    bysyhr[i].busy_2021 = '00:00:00';
+    bysyhr[i].busy_2122 = '00:00:00';
+    bysyhr[i].busy_2223 = '00:00:00';
+
+    for(let j=0; j<moveitorders.length; j++){  
+      if(bysyhr[i].moveit_user_id==moveitorders[j].moveit_user_id){
+        var AHH = moment.utc(moveitorders[j].assignedtime,"HH").format("HH");
+        var DHH = moment.utc(moveitorders[j].moveit_actual_delivered_time,"HH").format("HH");     
+        switch(AHH) {
+          //console.log("switch",AHH);
+          case '8':
+            if(AHH == DHH){
+              //bysyhr[i].busy_0809  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff0809    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec0809 = avgtimediff0809.split(':'); 
+              let seconds0809        = (+avgtimediffsec0809[0]) * 60 * 60 + (+avgtimediffsec0809[1]) * 60 + (+avgtimediffsec0809[2]); 
+              bysyhr[i].busy_0809    = moment(bysyhr[i].busy_0809,"HH:mm:ss").add(seconds0809,'s').format("HH:mm:ss");
+              
+            }else{
+              //bysyhr[i].busy_0809  = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff0809    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec0809 = avgtimediff0809.split(':'); 
+              let seconds0809        = (+avgtimediffsec0809[0]) * 60 * 60 + (+avgtimediffsec0809[1]) * 60 + (+avgtimediffsec0809[2]); 
+              bysyhr[i].busy_0809    = moment(bysyhr[i].busy_0809,"HH:mm:ss").add(seconds0809,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_0910  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff0910    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec0910 = avgtimediff0910.split(':'); 
+              let seconds0910        = (+avgtimediffsec0910[0]) * 60 * 60 + (+avgtimediffsec0910[1]) * 60 + (+avgtimediffsec0910[2]); 
+              bysyhr[i].busy_0910    = moment(bysyhr[i].busy_0910,"HH:mm:ss").add(seconds0910,'s').format("HH:mm:ss");
+
+            }
+            break;
+          case '9':
+            if(AHH == DHH){
+              //bysyhr[i].busy_0910  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff0910    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec0910 = avgtimediff0910.split(':'); 
+              let seconds0910        = (+avgtimediffsec0910[0]) * 60 * 60 + (+avgtimediffsec0910[1]) * 60 + (+avgtimediffsec0910[2]); 
+              bysyhr[i].busy_0910    = moment(bysyhr[i].busy_0910,"HH:mm:ss").add(seconds0910,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_0910 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff0910    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec0910 = avgtimediff0910.split(':'); 
+              let seconds0910        = (+avgtimediffsec0910[0]) * 60 * 60 + (+avgtimediffsec0910[1]) * 60 + (+avgtimediffsec0910[2]); 
+              bysyhr[i].busy_0910    = moment(bysyhr[i].busy_0910,"HH:mm:ss").add(seconds0910,'s').format("HH:mm:ss");
+
+
+              //bysyhr[i].busy_1011 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1011    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1011 = avgtimediff1011.split(':'); 
+              let seconds1011        = (+avgtimediffsec1011[0]) * 60 * 60 + (+avgtimediffsec1011[1]) * 60 + (+avgtimediffsec1011[2]); 
+              bysyhr[i].busy_1011    = moment(bysyhr[i].busy_1011,"HH:mm:ss").add(seconds1011,'s').format("HH:mm:ss");
+            }
+            break;
+          case '10':
+            if(AHH == DHH){
+              //bysyhr[i].busy_1011  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1011    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1011 = avgtimediff1011.split(':'); 
+              let seconds1011        = (+avgtimediffsec1011[0]) * 60 * 60 + (+avgtimediffsec1011[1]) * 60 + (+avgtimediffsec1011[2]); 
+              bysyhr[i].busy_1011    = moment(bysyhr[i].busy_1011,"HH:mm:ss").add(seconds1011,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_1011 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1011    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1011 = avgtimediff1011.split(':'); 
+              let seconds1011        = (+avgtimediffsec1011[0]) * 60 * 60 + (+avgtimediffsec1011[1]) * 60 + (+avgtimediffsec1011[2]); 
+              bysyhr[i].busy_1011    = moment(bysyhr[i].busy_1011,"HH:mm:ss").add(seconds1011,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_1112 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1112    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1112 = avgtimediff1112.split(':'); 
+              let seconds1112        = (+avgtimediffsec1112[0]) * 60 * 60 + (+avgtimediffsec1112[1]) * 60 + (+avgtimediffsec1112[2]); 
+              bysyhr[i].busy_1112    = moment(bysyhr[i].busy_1112,"HH:mm:ss").add(seconds1112,'s').format("HH:mm:ss");
+            }
+            break;
+          case '11':
+            if(AHH == DHH){
+              //bysyhr[i].busy_1112  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1112    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1112 = avgtimediff1112.split(':'); 
+              let seconds1112        = (+avgtimediffsec1112[0]) * 60 * 60 + (+avgtimediffsec1112[1]) * 60 + (+avgtimediffsec1112[2]); 
+              bysyhr[i].busy_1112    = moment(bysyhr[i].busy_1112,"HH:mm:ss").add(seconds1112,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_1112 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1112    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1112 = avgtimediff1112.split(':'); 
+              let seconds1112        = (+avgtimediffsec1112[0]) * 60 * 60 + (+avgtimediffsec1112[1]) * 60 + (+avgtimediffsec1112[2]); 
+              bysyhr[i].busy_1112    = moment(bysyhr[i].busy_1112,"HH:mm:ss").add(seconds1112,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_1213 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1213    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1213 = avgtimediff1213.split(':'); 
+              let seconds1213        = (+avgtimediffsec1213[0]) * 60 * 60 + (+avgtimediffsec1213[1]) * 60 + (+avgtimediffsec1213[2]); 
+              bysyhr[i].busy_1213    = moment(bysyhr[i].busy_1213,"HH:mm:ss").add(seconds1213,'s').format("HH:mm:ss");
+            }
+            break;
+          case '12':
+            if(AHH == DHH){
+              //bysyhr[i].busy_1213  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1213    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1213 = avgtimediff1213.split(':'); 
+              let seconds1213        = (+avgtimediffsec1213[0]) * 60 * 60 + (+avgtimediffsec1213[1]) * 60 + (+avgtimediffsec1213[2]); 
+              bysyhr[i].busy_1213    = moment(bysyhr[i].busy_1213,"HH:mm:ss").add(seconds1213,'s').format("HH:mm:ss");
+            }else{
+              let avgtimediff1213    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1213 = avgtimediff1213.split(':'); 
+              let seconds1213        = (+avgtimediffsec1213[0]) * 60 * 60 + (+avgtimediffsec1213[1]) * 60 + (+avgtimediffsec1213[2]); 
+              bysyhr[i].busy_1213    = moment(bysyhr[i].busy_1213,"HH:mm:ss").add(seconds1213,'s').format("HH:mm:ss");
+              
+              let avgtimediff1314    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1314 = avgtimediff1314.split(':'); 
+              let seconds1314        = (+avgtimediffsec1314[0]) * 60 * 60 + (+avgtimediffsec1314[1]) * 60 + (+avgtimediffsec1314[2]); 
+              bysyhr[i].busy_1314    = moment(bysyhr[i].busy_1314,"HH:mm:ss").add(seconds1314,'s').format("HH:mm:ss");
+            }
+            break;
+          case '13':
+            if(AHH == DHH){
+              let avgtimediff1314    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1314 = avgtimediff1314.split(':'); 
+              let seconds1314        = (+avgtimediffsec1314[0]) * 60 * 60 + (+avgtimediffsec1314[1]) * 60 + (+avgtimediffsec1314[2]); 
+              bysyhr[i].busy_1314    = moment(bysyhr[i].busy_1314,"HH:mm:ss").add(seconds1314,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_1314 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1314    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1314 = avgtimediff1314.split(':'); 
+              let seconds1314        = (+avgtimediffsec1314[0]) * 60 * 60 + (+avgtimediffsec1314[1]) * 60 + (+avgtimediffsec1314[2]); 
+              bysyhr[i].busy_1314    = moment(bysyhr[i].busy_1314,"HH:mm:ss").add(seconds1314,'s').format("HH:mm:ss");
+
+
+              //bysyhr[i].busy_1415 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1415    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1415 = avgtimediff1415.split(':'); 
+              let seconds1415        = (+avgtimediffsec1415[0]) * 60 * 60 + (+avgtimediffsec1415[1]) * 60 + (+avgtimediffsec1415[2]); 
+              bysyhr[i].busy_1415    = moment(bysyhr[i].busy_1415,"HH:mm:ss").add(seconds1415,'s').format("HH:mm:ss");
+            }
+            break;
+          case '14':
+            if(AHH == DHH){
+              //bysyhr[i].busy_1415  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1415    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1415 = avgtimediff1415.split(':'); 
+              let seconds1415        = (+avgtimediffsec1415[0]) * 60 * 60 + (+avgtimediffsec1415[1]) * 60 + (+avgtimediffsec1415[2]); 
+              bysyhr[i].busy_1415    = moment(bysyhr[i].busy_1415,"HH:mm:ss").add(seconds1415,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_1415 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1415    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1415 = avgtimediff1415.split(':'); 
+              let seconds1415        = (+avgtimediffsec1415[0]) * 60 * 60 + (+avgtimediffsec1415[1]) * 60 + (+avgtimediffsec1415[2]); 
+              bysyhr[i].busy_1415    = moment(bysyhr[i].busy_1415,"HH:mm:ss").add(seconds1415,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_1516 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1516    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1516 = avgtimediff1516.split(':'); 
+              let seconds1516        = (+avgtimediffsec1516[0]) * 60 * 60 + (+avgtimediffsec1516[1]) * 60 + (+avgtimediffsec1516[2]); 
+              bysyhr[i].busy_1516    = moment(bysyhr[i].busy_1516,"HH:mm:ss").add(seconds1516,'s').format("HH:mm:ss");
+            }
+            break;
+          case '15':
+            if(AHH == DHH){
+              //bysyhr[i].busy_1516  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1516    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1516 = avgtimediff1516.split(':'); 
+              let seconds1516        = (+avgtimediffsec1516[0]) * 60 * 60 + (+avgtimediffsec1516[1]) * 60 + (+avgtimediffsec1516[2]); 
+              bysyhr[i].busy_1516    = moment(bysyhr[i].busy_1516,"HH:mm:ss").add(seconds1516,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_1516 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1516    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1516 = avgtimediff1516.split(':'); 
+              let seconds1516        = (+avgtimediffsec1516[0]) * 60 * 60 + (+avgtimediffsec1516[1]) * 60 + (+avgtimediffsec1516[2]); 
+              bysyhr[i].busy_1516    = moment(bysyhr[i].busy_1516,"HH:mm:ss").add(seconds1516,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_1617 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1617    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1617 = avgtimediff1617.split(':'); 
+              let seconds1617        = (+avgtimediffsec1617[0]) * 60 * 60 + (+avgtimediffsec1617[1]) * 60 + (+avgtimediffsec1617[2]); 
+              bysyhr[i].busy_1617    = moment(bysyhr[i].busy_1617,"HH:mm:ss").add(seconds1617,'s').format("HH:mm:ss");
+            }
+            break;
+          case '16':
+            if(AHH == DHH){
+              //bysyhr[i].busy_1617  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1617    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1617 = avgtimediff1617.split(':'); 
+              let seconds1617        = (+avgtimediffsec1617[0]) * 60 * 60 + (+avgtimediffsec1617[1]) * 60 + (+avgtimediffsec1617[2]); 
+              bysyhr[i].busy_1617    = moment(bysyhr[i].busy_1617,"HH:mm:ss").add(seconds1617,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_1617 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1617    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1617 = avgtimediff1617.split(':'); 
+              let seconds1617        = (+avgtimediffsec1617[0]) * 60 * 60 + (+avgtimediffsec1617[1]) * 60 + (+avgtimediffsec1617[2]); 
+              bysyhr[i].busy_1617    = moment(bysyhr[i].busy_1617,"HH:mm:ss").add(seconds1617,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_1718 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1718    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1718 = avgtimediff1718.split(':'); 
+              let seconds1718        = (+avgtimediffsec1718[0]) * 60 * 60 + (+avgtimediffsec1718[1]) * 60 + (+avgtimediffsec1718[2]); 
+              bysyhr[i].busy_1718    = moment(bysyhr[i].busy_1718,"HH:mm:ss").add(seconds1718,'s').format("HH:mm:ss");
+            }
+            break;
+          case '17':
+            if(AHH == DHH){
+              //bysyhr[i].busy_1718  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1718    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1718 = avgtimediff1718.split(':'); 
+              let seconds1718        = (+avgtimediffsec1718[0]) * 60 * 60 + (+avgtimediffsec1718[1]) * 60 + (+avgtimediffsec1718[2]); 
+              bysyhr[i].busy_1718    = moment(bysyhr[i].busy_1718,"HH:mm:ss").add(seconds1718,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_1718 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1718    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1718 = avgtimediff1718.split(':'); 
+              let seconds1718        = (+avgtimediffsec1718[0]) * 60 * 60 + (+avgtimediffsec1718[1]) * 60 + (+avgtimediffsec1718[2]); 
+              bysyhr[i].busy_1718    = moment(bysyhr[i].busy_1718,"HH:mm:ss").add(seconds1718,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_1819 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1819    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1819 = avgtimediff1819.split(':'); 
+              let seconds1819        = (+avgtimediffsec1819[0]) * 60 * 60 + (+avgtimediffsec1819[1]) * 60 + (+avgtimediffsec1819[2]); 
+              bysyhr[i].busy_1819    = moment(bysyhr[i].busy_1819,"HH:mm:ss").add(seconds1819,'s').format("HH:mm:ss");
+            }
+            break;
+          case '18':
+            if(AHH == DHH){
+              //bysyhr[i].busy_1819  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1819    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1819 = avgtimediff1819.split(':'); 
+              let seconds1819        = (+avgtimediffsec1819[0]) * 60 * 60 + (+avgtimediffsec1819[1]) * 60 + (+avgtimediffsec1819[2]); 
+              bysyhr[i].busy_1819    = moment(bysyhr[i].busy_1819,"HH:mm:ss").add(seconds1819,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_1819 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1819    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1819 = avgtimediff1819.split(':'); 
+              let seconds1819        = (+avgtimediffsec1819[0]) * 60 * 60 + (+avgtimediffsec1819[1]) * 60 + (+avgtimediffsec1819[2]); 
+              bysyhr[i].busy_1819    = moment(bysyhr[i].busy_1819,"HH:mm:ss").add(seconds1819,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_1920 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1920    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1920 = avgtimediff1920.split(':'); 
+              let seconds1920        = (+avgtimediffsec1920[0]) * 60 * 60 + (+avgtimediffsec1920[1]) * 60 + (+avgtimediffsec1920[2]); 
+              bysyhr[i].busy_1920    = moment(bysyhr[i].busy_1920,"HH:mm:ss").add(seconds1920,'s').format("HH:mm:ss");
+            }
+            break;
+          case '19':
+            if(AHH == DHH){
+              //bysyhr[i].busy_1920  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1920    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1920 = avgtimediff1920.split(':'); 
+              let seconds1920        = (+avgtimediffsec1920[0]) * 60 * 60 + (+avgtimediffsec1920[1]) * 60 + (+avgtimediffsec1920[2]); 
+              bysyhr[i].busy_1920    = moment(bysyhr[i].busy_1920,"HH:mm:ss").add(seconds1920,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_1920 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff1920    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec1920 = avgtimediff1920.split(':'); 
+              let seconds1920        = (+avgtimediffsec1920[0]) * 60 * 60 + (+avgtimediffsec1920[1]) * 60 + (+avgtimediffsec1920[2]); 
+              bysyhr[i].busy_1920    = moment(bysyhr[i].busy_1920,"HH:mm:ss").add(seconds1920,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_2021 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff2021    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec2021 = avgtimediff2021.split(':'); 
+              let seconds2021        = (+avgtimediffsec2021[0]) * 60 * 60 + (+avgtimediffsec2021[1]) * 60 + (+avgtimediffsec2021[2]); 
+              bysyhr[i].busy_2021    = moment(bysyhr[i].busy_2021,"HH:mm:ss").add(seconds2021,'s').format("HH:mm:ss");
+            }
+            break;
+          case '20':
+            if(AHH == DHH){
+              //bysyhr[i].busy_2021  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff2021    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec2021 = avgtimediff2021.split(':'); 
+              let seconds2021        = (+avgtimediffsec2021[0]) * 60 * 60 + (+avgtimediffsec2021[1]) * 60 + (+avgtimediffsec2021[2]); 
+              bysyhr[i].busy_2021    = moment(bysyhr[i].busy_2021,"HH:mm:ss").add(seconds2021,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_2021 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff2021    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec2021 = avgtimediff2021.split(':'); 
+              let seconds2021        = (+avgtimediffsec2021[0]) * 60 * 60 + (+avgtimediffsec2021[1]) * 60 + (+avgtimediffsec2021[2]); 
+              bysyhr[i].busy_2021    = moment(bysyhr[i].busy_2021,"HH:mm:ss").add(seconds2021,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_2122 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff2122    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec2122 = avgtimediff2122.split(':'); 
+              let seconds2122        = (+avgtimediffsec2122[0]) * 60 * 60 + (+avgtimediffsec2122[1]) * 60 + (+avgtimediffsec2122[2]); 
+              bysyhr[i].busy_2122    = moment(bysyhr[i].busy_2122,"HH:mm:ss").add(seconds2122,'s').format("HH:mm:ss");
+            }
+            break;
+          case '21':
+            if(AHH == DHH){
+              //bysyhr[i].busy_2122  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff2122    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec2122 = avgtimediff2122.split(':'); 
+              let seconds2122        = (+avgtimediffsec2122[0]) * 60 * 60 + (+avgtimediffsec2122[1]) * 60 + (+avgtimediffsec2122[2]); 
+              bysyhr[i].busy_2122    = moment(bysyhr[i].busy_2122,"HH:mm:ss").add(seconds2122,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_2122 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff2122    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec2122 = avgtimediff2122.split(':'); 
+              let seconds2122        = (+avgtimediffsec2122[0]) * 60 * 60 + (+avgtimediffsec2122[1]) * 60 + (+avgtimediffsec2122[2]); 
+              bysyhr[i].busy_2122    = moment(bysyhr[i].busy_2122,"HH:mm:ss").add(seconds2122,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_2223 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff2223    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec2223 = avgtimediff2223.split(':'); 
+              let seconds2223        = (+avgtimediffsec2223[0]) * 60 * 60 + (+avgtimediffsec2223[1]) * 60 + (+avgtimediffsec2223[2]); 
+              bysyhr[i].busy_2223    = moment(bysyhr[i].busy_2223,"HH:mm:ss").add(seconds2223,'s').format("HH:mm:ss");
+            }
+            break;
+          case '22':
+            if(AHH == DHH){
+              //bysyhr[i].busy_2223  = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff2223    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(moveitorders[j].assignedtime, "HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec2223 = avgtimediff2223.split(':'); 
+              let seconds2223        = (+avgtimediffsec2223[0]) * 60 * 60 + (+avgtimediffsec2223[1]) * 60 + (+avgtimediffsec2223[2]); 
+              bysyhr[i].busy_2223    = moment(bysyhr[i].busy_2223,"HH:mm:ss").add(seconds2223,'s').format("HH:mm:ss");
+            }else{
+              //bysyhr[i].busy_2223 = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff2223    = moment.utc(moment(""+DHH+":00:00","HH:mm:ss").diff(moment(moveitorders[j].assignedtime,"HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec2223 = avgtimediff2223.split(':'); 
+              let seconds2223        = (+avgtimediffsec2223[0]) * 60 * 60 + (+avgtimediffsec2223[1]) * 60 + (+avgtimediffsec2223[2]); 
+              bysyhr[i].busy_2223    = moment(bysyhr[i].busy_2223,"HH:mm:ss").add(seconds2223,'s').format("HH:mm:ss");
+
+              //bysyhr[i].busy_2324 = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediff2324    = moment.utc(moment(moveitorders[j].moveit_actual_delivered_time, "HH:mm:ss").diff(moment(""+DHH+":00:00","HH:mm:ss"))).format("HH:mm:ss");
+              let avgtimediffsec2324 = avgtimediff2324.split(':'); 
+              let seconds2324        = (+avgtimediffsec2324[0]) * 60 * 60 + (+avgtimediffsec2324[1]) * 60 + (+avgtimediffsec2324[2]); 
+              bysyhr[i].busy_2324    = moment(bysyhr[i].busy_2324,"HH:mm:ss").add(seconds2324,'s').format("HH:mm:ss");
+            }
+            break;
+          default:
+            //console.log("default",AHH);
+        }
+      }
+    }
+  }
+  return bysyhr;
 };
 
 ///Makeit Succession Report////
@@ -11108,7 +11504,7 @@ Order.zone_level_performance_report= async function zone_level_performance_repor
     var makeitimatrixquery ="select date,mu.zone as zone_id,zo.Zonename,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log0809))/60*60) as ops_hr_0809,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log0910))/60*60) as ops_hr_0910,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1011))/60*60) as ops_hr_1011,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1112))/60*60) as ops_hr_1112,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1213))/60*60) as ops_hr_1213,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1314))/60*60) as ops_hr_1314,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1415))/60*60) as ops_hr_1415,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1516))/60*60) as ops_hr_1516,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1617))/60*60) as ops_hr_1617,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1718))/60*60) as ops_hr_1718,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1819))/60*60) as ops_hr_1819,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1920))/60*60) as ops_hr_1920,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2021))/60*60) as ops_hr_2021,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2122))/60*60) as ops_hr_2122,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2223))/60*60) as ops_hr_2223, COUNT(CASE WHEN mdr.log0809!='00:00:00' AND mdr.log0809_count!=0 THEN makeit_id END) as log0809_live_kitchencount,COUNT(CASE WHEN mdr.log0910!='00:00:00' AND mdr.log0910_count!=0 THEN makeit_id END) as log0910_live_kitchencount,COUNT(CASE WHEN mdr.log1011!='00:00:00' AND mdr.log1011_count!=0 THEN makeit_id END) as log1011_live_kitchencount,COUNT(CASE WHEN mdr.log1112!='00:00:00' AND mdr.log1112_count!=0 THEN makeit_id END) as log1112_live_kitchencount,COUNT(CASE WHEN mdr.log1213!='00:00:00' AND mdr.log1213_count!=0 THEN makeit_id END) as log1213_live_kitchencount,COUNT(CASE WHEN mdr.log1314!='00:00:00' AND mdr.log1314_count!=0 THEN makeit_id END) as log1314_live_kitchencount,COUNT(CASE WHEN mdr.log1415!='00:00:00' AND mdr.log1415_count!=0 THEN makeit_id END) as log1415_live_kitchencount,COUNT(CASE WHEN mdr.log1516!='00:00:00' AND mdr.log1516_count!=0 THEN makeit_id END) as log1516_live_kitchencount,COUNT(CASE WHEN mdr.log1617!='00:00:00' AND mdr.log1617_count!=0 THEN makeit_id END) as log1617_live_kitchencount,COUNT(CASE WHEN mdr.log1718!='00:00:00' AND mdr.log1718_count!=0 THEN makeit_id END) as log1718_live_kitchencount,COUNT(CASE WHEN mdr.log1819!='00:00:00' AND mdr.log1819_count!=0 THEN makeit_id END) as log1819_live_kitchencount,COUNT(CASE WHEN mdr.log1920!='00:00:00' AND mdr.log1920_count!=0 THEN makeit_id END) as log1920_live_kitchencount,COUNT(CASE WHEN mdr.log2021!='00:00:00' AND mdr.log2021_count!=0 THEN makeit_id END) as log2021_live_kitchencount,COUNT(CASE WHEN mdr.log2122!='00:00:00' AND mdr.log2122_count!=0 THEN makeit_id END) as log2122_live_kitchencount,COUNT(CASE WHEN mdr.log2223!='00:00:00' AND mdr.log2223_count!=0 THEN makeit_id END) as log2223_live_kitchencount from Makeit_daywise_report as mdr left join MakeitUser as mu on mu.userid=mdr.makeit_id left join Zone as zo on zo.id=mu.zone where date(mdr.date) between DATE_SUB(CURDATE(), INTERVAL 1 DAY) and DATE_SUB(CURDATE(), INTERVAL 1 DAY) group by date(mdr.date),mu.zone";
     var makeitmatrix = await query(makeitimatrixquery);
   
-    var moveitmatrixquery = "select date,mu.zone as zone_id,zo.Zonename,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log0809))/60*60) as login_hr_0809,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log0910))/60*60) as login_hr_0910,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1011))/60*60) as login_hr_1011,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1112))/60*60) as login_hr_1112,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1213))/60*60) as login_hr_1213,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1314))/60*60) as login_hr_1314,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1415))/60*60) as login_hr_1415,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1516))/60*60) as login_hr_1516,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1617))/60*60) as login_hr_1617,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1718))/60*60) as login_hr_1718,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1819))/60*60) as login_hr_1819,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1920))/60*60) as login_hr_1920,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2021))/60*60) as login_hr_2021,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2122))/60*60) as login_hr_2122,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2223))/60*60) as login_hr_2223,COUNT(CASE WHEN mdr.log0809!='00:00:00' THEN moveit_userid END) as log0809_live_moveitcount,COUNT(CASE WHEN mdr.log0910!='00:00:00' THEN moveit_userid END) as log0910_live_moveitcount,COUNT(CASE WHEN mdr.log1011!='00:00:00' THEN moveit_userid END) as log1011_live_moveitcount,COUNT(CASE WHEN mdr.log1112!='00:00:00' THEN moveit_userid END) as log1112_live_moveitcount,COUNT(CASE WHEN mdr.log1213!='00:00:00' THEN moveit_userid END) as log1213_live_moveitcount,COUNT(CASE WHEN mdr.log1314!='00:00:00' THEN moveit_userid END) as log1314_live_moveitcount,COUNT(CASE WHEN mdr.log1415!='00:00:00' THEN moveit_userid END) as log1415_live_moveitcount,COUNT(CASE WHEN mdr.log1516!='00:00:00' THEN moveit_userid END) as log1516_live_moveitcount,COUNT(CASE WHEN mdr.log1617!='00:00:00' THEN moveit_userid END) as log1617_live_moveitcount,COUNT(CASE WHEN mdr.log1718!='00:00:00' THEN moveit_userid END) as log1718_live_moveitcount,COUNT(CASE WHEN mdr.log1819!='00:00:00' THEN moveit_userid END) as log1819_live_moveitcount,COUNT(CASE WHEN mdr.log1920!='00:00:00' THEN moveit_userid END) as log1920_live_moveitcount,COUNT(CASE WHEN mdr.log2021!='00:00:00' THEN moveit_userid END) as log2021_live_moveitcount,COUNT(CASE WHEN mdr.log2122!='00:00:00' THEN moveit_userid END) as log2122_live_moveitcount,COUNT(CASE WHEN mdr.log2223!='00:00:00' THEN moveit_userid END) as log2223_live_moveitcount from Moveit_daywise_report as mdr left join MoveitUser as mu on mu.userid=mdr.moveit_userid left join Zone as zo on zo.id=mu.zone where date(mdr.date) between DATE_SUB(CURDATE(), INTERVAL 1 DAY) and DATE_SUB(CURDATE(), INTERVAL 1 DAY) group by date(mdr.date),mu.zone";
+    var moveitmatrixquery = "select date,mu.zone as zone_id,zo.Zonename,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log0809))/60*60) as login_hr_0809,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log0910))/60*60) as login_hr_0910,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1011))/60*60) as login_hr_1011,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1112))/60*60) as login_hr_1112,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1213))/60*60) as login_hr_1213,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1314))/60*60) as login_hr_1314,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1415))/60*60) as login_hr_1415,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1516))/60*60) as login_hr_1516,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1617))/60*60) as login_hr_1617,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1718))/60*60) as login_hr_1718,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1819))/60*60) as login_hr_1819,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1920))/60*60) as login_hr_1920,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2021))/60*60) as login_hr_2021,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2122))/60*60) as login_hr_2122,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2223))/60*60) as login_hr_2223, SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_0809))/60*60) as busy_hr_0809,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_0910))/60*60) as busy_hr_0910,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_1011))/60*60) as busy_hr_1011,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_1112))/60*60) as busy_hr_1112,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_1213))/60*60) as busy_hr_1213,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_1314))/60*60) as busy_hr_1314,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_1415))/60*60) as busy_hr_1415,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_1516))/60*60) as busy_hr_1516,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_1617))/60*60) as busy_hr_1617,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_1718))/60*60) as busy_hr_1718,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_1819))/60*60) as busy_hr_1819,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_1920))/60*60) as busy_hr_1920,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_2021))/60*60) as busy_hr_2021,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_2122))/60*60) as busy_hr_2122,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.busy_2223))/60*60) as busy_hr_2223,COUNT(CASE WHEN mdr.log0809!='00:00:00' THEN moveit_userid END) as log0809_live_moveitcount,COUNT(CASE WHEN mdr.log0910!='00:00:00' THEN moveit_userid END) as log0910_live_moveitcount,COUNT(CASE WHEN mdr.log1011!='00:00:00' THEN moveit_userid END) as log1011_live_moveitcount,COUNT(CASE WHEN mdr.log1112!='00:00:00' THEN moveit_userid END) as log1112_live_moveitcount,COUNT(CASE WHEN mdr.log1213!='00:00:00' THEN moveit_userid END) as log1213_live_moveitcount,COUNT(CASE WHEN mdr.log1314!='00:00:00' THEN moveit_userid END) as log1314_live_moveitcount,COUNT(CASE WHEN mdr.log1415!='00:00:00' THEN moveit_userid END) as log1415_live_moveitcount,COUNT(CASE WHEN mdr.log1516!='00:00:00' THEN moveit_userid END) as log1516_live_moveitcount,COUNT(CASE WHEN mdr.log1617!='00:00:00' THEN moveit_userid END) as log1617_live_moveitcount,COUNT(CASE WHEN mdr.log1718!='00:00:00' THEN moveit_userid END) as log1718_live_moveitcount,COUNT(CASE WHEN mdr.log1819!='00:00:00' THEN moveit_userid END) as log1819_live_moveitcount,COUNT(CASE WHEN mdr.log1920!='00:00:00' THEN moveit_userid END) as log1920_live_moveitcount,COUNT(CASE WHEN mdr.log2021!='00:00:00' THEN moveit_userid END) as log2021_live_moveitcount,COUNT(CASE WHEN mdr.log2122!='00:00:00' THEN moveit_userid END) as log2122_live_moveitcount,COUNT(CASE WHEN mdr.log2223!='00:00:00' THEN moveit_userid END) as log2223_live_moveitcount from Moveit_daywise_report as mdr left join MoveitUser as mu on mu.userid=mdr.moveit_userid left join Zone as zo on zo.id=mu.zone where date(mdr.date) between DATE_SUB(CURDATE(), INTERVAL 1 DAY) and DATE_SUB(CURDATE(), INTERVAL 1 DAY) group by date(mdr.date),mu.zone";
     var moveitmatrix = await query(moveitmatrixquery);
 
     var ordermatrixquery = "select date(created_at),COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=0  THEN orderid END) as log0809_orderstatus0,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=1  THEN orderid END) as log0809_orderstatus1,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=2  THEN orderid END) as log0809_orderstatus2,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=3  THEN orderid END) as log0809_orderstatus3,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=4  THEN orderid END) as log0809_orderstatus4,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=5  THEN orderid END) as log0809_orderstatus5,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=6  THEN orderid END) as log0809_orderstatus6,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=7  THEN orderid END) as log0809_orderstatus7,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=8  THEN orderid END) as log0809_orderstatus8,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=9  THEN orderid END) as log0809_orderstatus9,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=10  THEN orderid END) as log0809_orderstatus10,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=11  THEN orderid END) as log0809_orderstatus11,COUNT(CASE WHEN time(created_at)>='08:00:00' and time(created_at)<'09:00:00' and orderstatus=12  THEN orderid END) as log0809_orderstatus12,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=0  THEN orderid END) as log0910_orderstatus0,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=1  THEN orderid END) as log0910_orderstatus1,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=2  THEN orderid END) as log0910_orderstatus2,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=3  THEN orderid END) as log0910_orderstatus3,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=4  THEN orderid END) as log0910_orderstatus4,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=5  THEN orderid END) as log0910_orderstatus5,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=6  THEN orderid END) as log0910_orderstatus6,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=7  THEN orderid END) as log0910_orderstatus7,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=8  THEN orderid END) as log0910_orderstatus8,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=9  THEN orderid END) as log0910_orderstatus9,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=10  THEN orderid END) as log0910_orderstatus10,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=11  THEN orderid END) as log0910_orderstatus11,COUNT(CASE WHEN time(created_at)>='09:00:00' and time(created_at)<'10:00:00' and orderstatus=12  THEN orderid END) as log0910_orderstatus12,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=0  THEN orderid END) as log1011_orderstatus0,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=1  THEN orderid END) as log1011_orderstatus1,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=2  THEN orderid END) as log1011_orderstatus2,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=3  THEN orderid END) as log1011_orderstatus3,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=4  THEN orderid END) as log1011_orderstatus4,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=5  THEN orderid END) as log1011_orderstatus5,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=6  THEN orderid END) as log1011_orderstatus6,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=7  THEN orderid END) as log1011_orderstatus7,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=8  THEN orderid END) as log1011_orderstatus8,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=9  THEN orderid END) as log1011_orderstatus9,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=10  THEN orderid END) as log1011_orderstatus10,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=11  THEN orderid END) as log1011_orderstatus11,COUNT(CASE WHEN time(created_at)>='10:00:00' and time(created_at)<'11:00:00' and orderstatus=12  THEN orderid END) as log1011_orderstatus12,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=0  THEN orderid END) as log1112_orderstatus0,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=1  THEN orderid END) as log1112_orderstatus1,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=2  THEN orderid END) as log1112_orderstatus2,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=3  THEN orderid END) as log1112_orderstatus3,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=4  THEN orderid END) as log1112_orderstatus4,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=5  THEN orderid END) as log1112_orderstatus5,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=6  THEN orderid END) as log1112_orderstatus6,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=7  THEN orderid END) as log1112_orderstatus7,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=8  THEN orderid END) as log1112_orderstatus8,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=9  THEN orderid END) as log1112_orderstatus9,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=10  THEN orderid END) as log1112_orderstatus10,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=11  THEN orderid END) as log1112_orderstatus11,COUNT(CASE WHEN time(created_at)>='11:00:00' and time(created_at)<'12:00:00' and orderstatus=12  THEN orderid END) as log1112_orderstatus12,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=0  THEN orderid END) as log1213_orderstatus0,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=1  THEN orderid END) as log1213_orderstatus1,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=2  THEN orderid END) as log1213_orderstatus2,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=3  THEN orderid END) as log1213_orderstatus3,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=4  THEN orderid END) as log1213_orderstatus4,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=5  THEN orderid END) as log1213_orderstatus5,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=6  THEN orderid END) as log1213_orderstatus6,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=7  THEN orderid END) as log1213_orderstatus7,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=8  THEN orderid END) as log1213_orderstatus8,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=9  THEN orderid END) as log1213_orderstatus9,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=10  THEN orderid END) as log1213_orderstatus10,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=11  THEN orderid END) as log1213_orderstatus11,COUNT(CASE WHEN time(created_at)>='12:00:00' and time(created_at)<'13:00:00' and orderstatus=12  THEN orderid END) as log1213_orderstatus12,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=0  THEN orderid END) as log1314_orderstatus0,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=1  THEN orderid END) as log1314_orderstatus1,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=2  THEN orderid END) as log1314_orderstatus2,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=3  THEN orderid END) as log1314_orderstatus3,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=4  THEN orderid END) as log1314_orderstatus4,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=5  THEN orderid END) as log1314_orderstatus5,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=6  THEN orderid END) as log1314_orderstatus6,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=7  THEN orderid END) as log1314_orderstatus7,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=8  THEN orderid END) as log1314_orderstatus8,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=9  THEN orderid END) as log1314_orderstatus9,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=10  THEN orderid END) as log1314_orderstatus10,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=11  THEN orderid END) as log1314_orderstatus11,COUNT(CASE WHEN time(created_at)>='13:00:00' and time(created_at)<'14:00:00' and orderstatus=12  THEN orderid END) as log1314_orderstatus12,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=0  THEN orderid END) as log1415_orderstatus0,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=1  THEN orderid END) as log1415_orderstatus1,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=2  THEN orderid END) as log1415_orderstatus2,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=3  THEN orderid END) as log1415_orderstatus3,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=4  THEN orderid END) as log1415_orderstatus4,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=5  THEN orderid END) as log1415_orderstatus5,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=6  THEN orderid END) as log1415_orderstatus6,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=7  THEN orderid END) as log1415_orderstatus7,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=8  THEN orderid END) as log1415_orderstatus8,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=9  THEN orderid END) as log1415_orderstatus9,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=10  THEN orderid END) as log1415_orderstatus10,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=11  THEN orderid END) as log1415_orderstatus11,COUNT(CASE WHEN time(created_at)>='14:00:00' and time(created_at)<'15:00:00' and orderstatus=12  THEN orderid END) as log1415_orderstatus12,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=0  THEN orderid END) as log1516_orderstatus0,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=1  THEN orderid END) as log1516_orderstatus1,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=2  THEN orderid END) as log1516_orderstatus2,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=3  THEN orderid END) as log1516_orderstatus3,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=4  THEN orderid END) as log1516_orderstatus4,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=5  THEN orderid END) as log1516_orderstatus5,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=6  THEN orderid END) as log1516_orderstatus6,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=7  THEN orderid END) as log1516_orderstatus7,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=8  THEN orderid END) as log1516_orderstatus8,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=9  THEN orderid END) as log1516_orderstatus9,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=10  THEN orderid END) as log1516_orderstatus10,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=11  THEN orderid END) as log1516_orderstatus11,COUNT(CASE WHEN time(created_at)>='15:00:00' and time(created_at)<'16:00:00' and orderstatus=12  THEN orderid END) as log1516_orderstatus12,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=0  THEN orderid END) as log1617_orderstatus0,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=1  THEN orderid END) as log1617_orderstatus1,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=2  THEN orderid END) as log1617_orderstatus2,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=3  THEN orderid END) as log1617_orderstatus3,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=4  THEN orderid END) as log1617_orderstatus4,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=5  THEN orderid END) as log1617_orderstatus5,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=6  THEN orderid END) as log1617_orderstatus6,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=7  THEN orderid END) as log1617_orderstatus7,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=8  THEN orderid END) as log1617_orderstatus8,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=9  THEN orderid END) as log1617_orderstatus9,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=10  THEN orderid END) as log1617_orderstatus10,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=11  THEN orderid END) as log1617_orderstatus11,COUNT(CASE WHEN time(created_at)>='16:00:00' and time(created_at)<'17:00:00' and orderstatus=12  THEN orderid END) as log1617_orderstatus12,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=0  THEN orderid END) as log1718_orderstatus0,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=1  THEN orderid END) as log1718_orderstatus1,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=2  THEN orderid END) as log1718_orderstatus2,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=3  THEN orderid END) as log1718_orderstatus3,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=4  THEN orderid END) as log1718_orderstatus4,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=5  THEN orderid END) as log1718_orderstatus5,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=6  THEN orderid END) as log1718_orderstatus6,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=7  THEN orderid END) as log1718_orderstatus7,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=8  THEN orderid END) as log1718_orderstatus8,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=9  THEN orderid END) as log1718_orderstatus9,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=10  THEN orderid END) as log1718_orderstatus10,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=11  THEN orderid END) as log1718_orderstatus11,COUNT(CASE WHEN time(created_at)>='17:00:00' and time(created_at)<'18:00:00' and orderstatus=12  THEN orderid END) as log1718_orderstatus12,COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=0  THEN orderid END) as log1819_orderstatus0, COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=1  THEN orderid END) as log1819_orderstatus1, COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=2  THEN orderid END) as log1819_orderstatus2, COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=3  THEN orderid END) as log1819_orderstatus3, COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=4  THEN orderid END) as log1819_orderstatus4,COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=5  THEN orderid END) as log1819_orderstatus5,COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=6  THEN orderid END) as log1819_orderstatus6,COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=7  THEN orderid END) as log1819_orderstatus7,COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=8  THEN orderid END) as log1819_orderstatus8,COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=9  THEN orderid END) as log1819_orderstatus9,COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=10  THEN orderid END) as log1819_orderstatus10,COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=11  THEN orderid END) as log1819_orderstatus11,COUNT(CASE WHEN time(created_at)>='18:00:00' and time(created_at)<'19:00:00' and orderstatus=12  THEN orderid END) as log1819_orderstatus12,COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=0  THEN orderid END) as log1920_orderstatus0, COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=1  THEN orderid END) as log1920_orderstatus1, COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=2  THEN orderid END) as log1920_orderstatus2, COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=3  THEN orderid END) as log1920_orderstatus3, COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=4  THEN orderid END) as log1920_orderstatus4,COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=5  THEN orderid END) as log1920_orderstatus5,COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=6  THEN orderid END) as log1920_orderstatus6,COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=7  THEN orderid END) as log1920_orderstatus7,COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=8  THEN orderid END) as log1920_orderstatus8,COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=9  THEN orderid END) as log1920_orderstatus9,COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=10  THEN orderid END) as log1920_orderstatus10,COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=11  THEN orderid END) as log1920_orderstatus11,COUNT(CASE WHEN time(created_at)>='19:00:00' and time(created_at)<'20:00:00' and orderstatus=12  THEN orderid END) as log1920_orderstatus12,COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=0  THEN orderid END) as log2021_orderstatus0, COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=1  THEN orderid END) as log2021_orderstatus1, COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=2  THEN orderid END) as log2021_orderstatus2, COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=3  THEN orderid END) as log2021_orderstatus3, COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=4  THEN orderid END) as log2021_orderstatus4,COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=5  THEN orderid END) as log2021_orderstatus5,COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=6  THEN orderid END) as log2021_orderstatus6,COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=7  THEN orderid END) as log2021_orderstatus7,COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=8  THEN orderid END) as log2021_orderstatus8,COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=9  THEN orderid END) as log2021_orderstatus9,COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=10  THEN orderid END) as log2021_orderstatus10,COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=11  THEN orderid END) as log2021_orderstatus11,COUNT(CASE WHEN time(created_at)>='20:00:00' and time(created_at)<'21:00:00' and orderstatus=12  THEN orderid END) as log2021_orderstatus12,COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=0  THEN orderid END) as log2122_orderstatus0, COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=1  THEN orderid END) as log2122_orderstatus1, COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=2  THEN orderid END) as log2122_orderstatus2, COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=3  THEN orderid END) as log2122_orderstatus3, COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=4  THEN orderid END) as log2122_orderstatus4,COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=5  THEN orderid END) as log2122_orderstatus5,COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=6  THEN orderid END) as log2122_orderstatus6,COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=7  THEN orderid END) as log2122_orderstatus7,COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=8  THEN orderid END) as log2122_orderstatus8,COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=9  THEN orderid END) as log2122_orderstatus9,COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=10  THEN orderid END) as log2122_orderstatus10,COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=11  THEN orderid END) as log2122_orderstatus11,COUNT(CASE WHEN time(created_at)>='21:00:00' and time(created_at)<'22:00:00' and orderstatus=12  THEN orderid END) as log2122_orderstatus12,COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=0  THEN orderid END) as log2223_orderstatus0, COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=1  THEN orderid END) as log2223_orderstatus1, COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=2  THEN orderid END) as log2223_orderstatus2, COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=3  THEN orderid END) as log2223_orderstatus3, COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=4  THEN orderid END) as log2223_orderstatus4,COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=5  THEN orderid END) as log2223_orderstatus5,COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=6  THEN orderid END) as log2223_orderstatus6,COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=7  THEN orderid END) as log2223_orderstatus7,COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=8  THEN orderid END) as log2223_orderstatus8,COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=9  THEN orderid END) as log2223_orderstatus9,COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=10  THEN orderid END) as log2223_orderstatus10,COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=11  THEN orderid END) as log2223_orderstatus11,COUNT(CASE WHEN time(created_at)>='22:00:00' and time(created_at)<'23:00:00' and orderstatus=12  THEN orderid END) as log2223_orderstatus12 from Orders where date(created_at) between DATE_SUB(CURDATE(), INTERVAL 1 DAY) and DATE_SUB(CURDATE(), INTERVAL 1 DAY) group by date(created_at)";

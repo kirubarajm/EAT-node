@@ -46,6 +46,22 @@ var Moveitdaywise = function(moveitdaywise) {
   this.log2122_count = moveitdaywise.log2122_count;
   this.log2223_count = moveitdaywise.log2223_count;
 
+  this.busy_0809 = moveitdaywise.busy_0809;
+  this.busy_0910 = moveitdaywise.busy_0910;
+  this.busy_1011 = moveitdaywise.busy_1011;
+  this.busy_1112 = moveitdaywise.busy_1112;
+  this.busy_1213 = moveitdaywise.busy_1213;
+  this.busy_1314 = moveitdaywise.busy_1314;
+  this.busy_1415 = moveitdaywise.busy_1415;
+  this.busy_1516 = moveitdaywise.busy_1516;
+  this.busy_1617 = moveitdaywise.busy_1617;
+  this.busy_1718 = moveitdaywise.busy_1718;
+  this.busy_1819 = moveitdaywise.busy_1819;
+  this.busy_1920 = moveitdaywise.busy_1920;
+  this.busy_2021 = moveitdaywise.busy_2021;
+  this.busy_2122 = moveitdaywise.busy_2122;
+  this.busy_2223 = moveitdaywise.busy_2223;
+
 };
 
 Moveitdaywise.createmoveitdaywise = function createmoveitdaywise(req) {
