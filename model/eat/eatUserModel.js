@@ -3904,6 +3904,7 @@ Eatuser.eatuser_otpverification =async function eatuser_otpverification(req,resu
       emailstatus:true,
       otpstatus: true,
       genderstatus: true,
+      passwordstatus: false,
       userid: 135,
       result: userdetails
     };

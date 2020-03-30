@@ -1244,3 +1244,23 @@ exports.zone_level_performance_report = function(req, res) {
     res.json(result);
   });
 };
+
+//dashboard orders
+exports.list_all_dashboar_orders = function(req, res) {
+  Order.get_all_dashboard_orders(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+};
+
+//dashboard orders count
+exports.crm_dashboard_orders_filter_count = function(req, res) {
+  Order.crm_dashboard_orders_filter_count(req.body, function(err, user) {
+    console.log("controller");
+    if (err) res.send(err);
+    console.log("res", user);
+    res.send(user);
+  });
+};

@@ -11114,4 +11114,283 @@ Order.zone_level_performance_report= async function zone_level_performance_repor
   }    
 };
 
+Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) {
+
+  var orderlimit = 20;
+  var page = req.page || 1;
+  var startlimit = (page - 1) * orderlimit;
+
+  var countQuery="Select count(*) as totalcount from Orders as od left join User as us on od.userid=us.userid join MakeitUser as mu on mu.userid=od.makeit_user_id where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
+  var orderquery ="Select od.orderid as tripid,TIMEDIFF(NOW(),od.created_at) as timediff,IF(od.delivery_vendor=0, 'eat', 'dunzo') as delivery_partner_type,od.*,us.*,mu.brandname,mu.virtualkey as kitchentype,mu.phoneno as homemakerphoneno,mk.name as moveitname,mk.phoneno as moveitphoneno,us.name as customername,mh.address,ze.Zonename,oq.status as order_queue_status,oq.created_at as queue_created_at from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mu on mu.userid=od.makeit_user_id left join MoveitUser as mk on mk.userid=od.moveit_user_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id left join Zone as ze on ze.id=mu.zone  left join Orders_queue as oq on oq.orderid=od.orderid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
+ // var query =
+    //"Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status>0) )and orderstatus < 9";
+  var searchquery =
+    "mu.phoneno LIKE  '%" +
+    req.search +
+    "%' OR mu.email LIKE  '%" +
+    req.search +
+    "%' or mu.name LIKE  '%" +
+    req.search +
+    "%'  or od.orderid LIKE  '%" +
+    req.search +
+    "%'";
+
+
+
+  // if (req.virtualkey !== "all") {
+  //   orderquery = orderquery + " and od.ordertype = '" + req.virtualkey + "'";
+  //   countQuery= countQuery + " and od.ordertype = '" + req.virtualkey + "'";
+  // }
+
+
+  
+  if (req.makeithub_id) {
+    orderquery = orderquery + " and mu.makeithub_id = '" + req.makeithub_id + "'";
+    countQuery= countQuery + " and mu.makeithub_id = '" + req.virtualkey + "'";
+  }
+
+  if (req.virtualkey == 1){
+//reached kitchen
+    orderquery = orderquery + " and od.moveit_reached_time is not null and od.orderstatus <3";
+    countQuery= countQuery + "  and od.moveit_reached_time is not null and od.orderstatus <3";
+
+  }else if (req.virtualkey == 2){
+//prepared but queued
+    orderquery = orderquery + " and  oq.status=0 and od.orderstatus =3 ";
+    countQuery= countQuery + "  and  oq.status=0 and od.orderstatus =3 ";
+  }else if (req.virtualkey == 3){
+//Reched kitchen but not prepared
+    orderquery = orderquery + " and od.moveit_reached_time is not null and od.orderstatus <3 ";
+    countQuery= countQuery + "  and od.moveit_reached_time is not null and od.orderstatus <3 ";
+
+  }else if (req.virtualkey == 4){
+  //Reched but not deliverd 
+    orderquery = orderquery + "and od.moveit_reached_time is not null and od.orderstatus <6 ";
+    countQuery= countQuery + "and od.moveit_reached_time is not null and od.orderstatus <6 ";
+
+  }else if (req.virtualkey == 5){
+ // deliverd 
+    orderquery = orderquery + "and od.orderstatus =6 ";
+    countQuery= countQuery + "and od.orderstatus =6 ";
+  }else if (req.virtualkey == 6){
+// return 
+    orderquery = orderquery + "and od.moveit_pickup_time is not null and od.orderstatus =7  ";
+    countQuery= countQuery + "and od.moveit_pickup_time is not null and od.orderstatus =7  ";
+  }else if (req.virtualkey == 7){
+    // cancelled 
+    orderquery = orderquery + "and  od.moveit_pickup_time is null and od.orderstatus =7";
+    countQuery= countQuery + "and  od.moveit_pickup_time is null and od.orderstatus =7";
+  }
+
+
+
+
+  if (req.delivery_vendor !== "all"){
+    orderquery = orderquery + " and od.delivery_vendor = '" + req.delivery_vendor + "'";
+    countQuery= countQuery + " and od.delivery_vendor = '" + req.delivery_vendor + "'";
+  }
+  //var search= req.search
+  if (req.virtualkey !== "all" && req.search) {
+    orderquery = orderquery + " and (" + searchquery + ")";
+    countQuery= countQuery + " and (" + searchquery + ")";
+  } else if (req.search) {
+    orderquery = orderquery + " and " + searchquery;
+    countQuery= countQuery + " and " + searchquery;
+  }
+
+  var limitquery =orderquery +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
+
+ 
+  sql.query(limitquery,async function(err, res1) {
+    if (err) {
+      result(err, null);
+    } else {
+      
+      for (let i = 0; i < res1.length; i++) {
+        
+
+        if (res1[i].delivery_vendor===1) {
+          res1[i].moveitname= res1[i].runner_name;
+          res1[i].moveitphoneno= res1[i].runner_phone_number;
+        } 
+
+        var countDownDate= '';
+        if (res1[i].orderstatus==1) {
+          countDownDate = res1[i].makeit_expected_preparing_time;
+        }else if(res1[i].orderstatus==5) {
+          countDownDate = res1[i].moveit_expected_delivered_time;
+        }
+        
+//         if (countDownDate) {
+//           countDownDate=moment(countDownDate).format("YYYY-MM-DD HH:mm:ss");
+//          // console.log(countDownDate);
+//           var now = moment().format("YYYY-MM-DD HH:mm:ss");
+//           //console.log(now);
+//           // Find the distance between now and the count down date
+//           var distance = countDownDate - now;
+//           var duration = moment.duration(countDownDate.diff(now));
+//           console.log(duration);
+
+// //console.log(distance);
+//           // Time calculations for days, hours, minutes and seconds
+//           var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+//           var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+//           var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+//           var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+//           console.log(minutes);
+//           console.log(seconds);
+
+//           // Output the result in an element with id="demo"
+//           // document.getElementById("demo").innerHTML = days + "d " + hours + "h "
+//           // + minutes + "m " + seconds + "s ";
+//           res1[i].countDownDate_timer= minutes + "m " + seconds + "s ";
+//           // If the count down is over, write some text 
+//           if ( res1[i].countDownDate_timer < 0) {
+//            // clearInterval(x);
+//             res1[i].countDownDate_timer=days = "EXPIRED";
+//           }
+//         }
+
+        if (res1[i].orderstatus ===0) {
+          res1[i].delivery_status="Order Post";
+          res1[i].delivery_code=1;
+          res1[i].delivery_status_time=res1[i].created_at;
+        }else if (res1[i].orderstatus ===1 || res1[i].orderstatus ===3){
+
+          
+            if (res1[i].order_queue_status ==0) {
+              res1[i].delivery_status="Queue";
+              res1[i].delivery_status_time=res1[i].queue_created_at;
+              res1[i].delivery_code=2;
+            }else if (res1[i].moveit_accept_time !=null) {
+              res1[i].delivery_status="accept";
+              res1[i].delivery_code=3;
+              res1[i].delivery_status_time=res1[i].moveit_accept_time;
+            }else if (res1[i].order_assigned_time !=null){
+              res1[i].delivery_status="Assigned";
+              res1[i].delivery_code=4;
+              res1[i].delivery_status_time=res1[i].order_assigned_time;
+            }else{
+              res1[i].delivery_status="Post";
+              res1[i].delivery_code=1;
+              res1[i].delivery_status_time=res1[i].created_at;
+            }
+
+        }else if (res1[i].orderstatus ===5 || res1[i].orderstatus ===6){
+
+           if (res1[i].moveit_actual_delivered_time !=null) {
+            res1[i].delivery_status="Delivered";
+            res1[i].delivery_code=8;
+            res1[i].delivery_status_time=res1[i].moveit_actual_delivered_time;
+          }else if (res1[i].moveit_customerlocation_reached_time !=null){
+            res1[i].delivery_status="customer Location Reached";
+            res1[i].delivery_code=7;
+            res1[i].delivery_status_time=res1[i].moveit_customerlocation_reached_time;
+          }else if (res1[i].moveit_pickup_time !=null){
+            res1[i].delivery_status="Pickuped";
+            res1[i].delivery_code=6;
+            res1[i].delivery_status_time=res1[i].moveit_pickup_time;
+          }else if (res1[i].moveit_reached_time !=null){
+            res1[i].delivery_status="Kitchen Reached";
+            res1[i].delivery_code=5;
+            res1[i].delivery_status_time=res1[i].moveit_reached_time;
+          }
+
+        }else{
+          res1[i].delivery_status="Cancelled";
+          res1[i].delivery_code=9;
+          res1[i].delivery_status_time=res1[i].cancel_time;
+
+        }
+        
+      }
+      var totalcount = 0;
+     // console.log("countQuery-->",countQuery);
+     var res2 = await query(countQuery);
+      totalcount = res2[0].totalcount;
+     let resobj = {
+       success: true,
+       status:true,
+       totalorder: totalcount,
+       result: res1
+     };
+     console.log("totalcount-->",totalcount);
+     result(null, resobj);
+    }
+  });
+};
+
+
+Order.crm_dashboard_orders_filter_count =async function crm_dashboard_orders_filter_count(req, result) {
+
+  var reached_kitchen_count= await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and moveit_reached_time is not null and orderstatus <=3  group by orderid order by orderid");
+  var preared_but_queue_count = await query("select count(ors.orderid)as count from Orders as ors left join Orders_queue oq on oq.orderid=ors.orderid where (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2)) and oq.status=0 and ors.orderstatus =3  group by ors.orderid order by ors.orderid");
+  var kitchen_reached_not_prepared_count = await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and moveit_reached_time is  null and orderstatus <6  group by orderid order by orderid");
+  var location_reached_not_delivered_count = await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and moveit_customerlocation_reached_time is  null and orderstatus <6  group by orderid order by orderid");
+  var delivered_count = await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and  orderstatus =6  group by orderid order by orderid");
+  var return_count = await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and moveit_pickup_time is not null and orderstatus =7  group by orderid order by orderid");
+  var cancelled_count = await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and moveit_pickup_time is null and orderstatus =7  group by orderid order by orderid");
+
+
+  var newaray = {};
+  var res =[];
+  if (reached_kitchen_count.length !==0) {
+    newaray.reached_kitchen_count=reached_kitchen_count[0].count;
+  }else{
+    newaray.reached_kitchen_count=0;
+
+  }
+
+ 
+  if (preared_but_queue_count.length !=0) {
+    newaray.preared_but_queue_count=preared_but_queue_count[0].count;
+
+  }else{
+    newaray.preared_but_queue_count=0;
+
+  }
+
+  ///console.log(kitchen_reached_not_prepared_count.length);
+  if (kitchen_reached_not_prepared_count.length !=0) {
+    newaray.kitchen_reached_not_prepared_count = kitchen_reached_not_prepared_count.length;
+  }else{
+    newaray.kitchen_reached_not_prepared_count=0;
+
+  }
+
+  if (location_reached_not_delivered_count.length !=0) {
+    newaray.location_reached_not_delivered_count=location_reached_not_delivered_count[0].count;
+
+  }else{
+    newaray.location_reached_not_delivered_count=0;
+
+  }
+
+  if (return_count.length !=0) {
+    newaray.return_count=return_count[0].count;
+
+  }else{
+    newaray.return_count=0;
+
+  }
+
+  if (cancelled_count.length !=0) {
+    newaray.cancelled_count=cancelled_count[0].count;
+
+  }else{
+    newaray.cancelled_count=0;
+
+  }
+
+  res.push(newaray);
+  let resobj = {
+    success: true,
+    status:true,
+    result:res
+  };
+  result(null, resobj);
+
+};
+
 module.exports = Order;

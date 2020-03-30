@@ -1235,7 +1235,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
             // var grandtotal = gstcharge+totalamount+delivery_charge;
             //*this code is commaned due to business
   
-            //new gst implemented 14-jan-2019
+            //new gst implemented 14-jan-2020
       
            
               var othercharges = delivery_charge + convenience_charge ;
