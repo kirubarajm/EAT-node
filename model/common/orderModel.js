@@ -11311,8 +11311,8 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
       }
       var totalcount = 0;
      // console.log("countQuery-->",countQuery);
-     var res2 = await query(countQuery);
-      totalcount = res2[0].totalcount;
+     //var res2 = await query(countQuery);
+      totalcount =100;// res2[0].totalcount;
      let resobj = {
        success: true,
        status:true,
