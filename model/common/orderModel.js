@@ -11119,8 +11119,8 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
   var orderlimit = 20;
   var page = req.page || 1;
   var startlimit = (page - 1) * orderlimit;
-
-  var countQuery="Select count(*) as totalcount from Orders as od left join User as us on od.userid=us.userid join MakeitUser as mu on mu.userid=od.makeit_user_id where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
+  // count(*) as totalcount
+  var countQuery="Select  count(od.orderid) as totalcount from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mu on mu.userid=od.makeit_user_id left join MoveitUser as mk on mk.userid=od.moveit_user_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id left join Zone as ze on ze.id=mu.zone  left join Orders_queue as oq on oq.orderid=od.orderid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
   var orderquery ="Select od.orderid as tripid,TIMEDIFF(NOW(),od.created_at) as timediff,IF(od.delivery_vendor=0, 'eat', 'dunzo') as delivery_partner_type,od.*,us.*,mu.brandname,mu.virtualkey as kitchentype,mu.phoneno as homemakerphoneno,mk.name as moveitname,mk.phoneno as moveitphoneno,us.name as customername,mh.address,ze.Zonename,oq.status as order_queue_status,oq.created_at as queue_created_at from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mu on mu.userid=od.makeit_user_id left join MoveitUser as mk on mk.userid=od.moveit_user_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id left join Zone as ze on ze.id=mu.zone  left join Orders_queue as oq on oq.orderid=od.orderid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
  // var query =
     //"Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status>0) )and orderstatus < 9";
@@ -11146,7 +11146,7 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
   
   if (req.makeithub_id) {
     orderquery = orderquery + " and mu.makeithub_id = '" + req.makeithub_id + "'";
-    countQuery= countQuery + " and mu.makeithub_id = '" + req.virtualkey + "'";
+    countQuery= countQuery + " and mu.ordertype = '" + req.virtualkey + "'";
   }
 
   if (req.virtualkey == 1){
@@ -11156,8 +11156,11 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
 
   }else if (req.virtualkey == 2){
 //prepared but queued
+
+
     orderquery = orderquery + " and  oq.status=0 and od.orderstatus =3 ";
     countQuery= countQuery + "  and  oq.status=0 and od.orderstatus =3 ";
+  
   }else if (req.virtualkey == 3){
 //Reched kitchen but not prepared
     orderquery = orderquery + " and od.moveit_reached_time is not null and od.orderstatus <3 ";
@@ -11185,10 +11188,10 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
 
 
 
-  if (req.delivery_vendor !== "all"){
-    orderquery = orderquery + " and od.delivery_vendor = '" + req.delivery_vendor + "'";
-    countQuery= countQuery + " and od.delivery_vendor = '" + req.delivery_vendor + "'";
-  }
+  // if (req.delivery_vendor !== "all"){
+  //   orderquery = orderquery + " and od.delivery_vendor = '" + req.delivery_vendor + "'";
+  //   countQuery= countQuery + " and od.delivery_vendor = '" + req.delivery_vendor + "'";
+  // }
   //var search= req.search
   if (req.virtualkey !== "all" && req.search) {
     orderquery = orderquery + " and (" + searchquery + ")";
@@ -11199,7 +11202,8 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
   }
 
   var limitquery =orderquery +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
-
+  
+  // console.log("prepared but queued",orderquery);
  
   sql.query(limitquery,async function(err, res1) {
     if (err) {
