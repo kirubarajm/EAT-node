@@ -11146,40 +11146,40 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
   
   if (req.makeithub_id) {
     orderquery = orderquery + " and mu.makeithub_id = '" + req.makeithub_id + "'";
-    countQuery= countQuery + " and mu.ordertype = '" + req.virtualkey + "'";
+    countQuery= countQuery + " and mu.makeithub_id = '" + req.makeithub_id + "'";
   }
 
-  if (req.virtualkey == 1){
+  if (req.tabid == 1){
 //reached kitchen
     orderquery = orderquery + " and od.moveit_reached_time is not null and od.orderstatus <3";
     countQuery= countQuery + "  and od.moveit_reached_time is not null and od.orderstatus <3";
 
-  }else if (req.virtualkey == 2){
+  }else if (req.tabid == 2){
 //prepared but queued
 
 
     orderquery = orderquery + " and  oq.status=0 and od.orderstatus =3 ";
     countQuery= countQuery + "  and  oq.status=0 and od.orderstatus =3 ";
   
-  }else if (req.virtualkey == 3){
+  }else if (req.tabid == 3){
 //Reched kitchen but not prepared
-    orderquery = orderquery + " and od.moveit_reached_time is not null and od.orderstatus <3 ";
-    countQuery= countQuery + "  and od.moveit_reached_time is not null and od.orderstatus <3 ";
+    orderquery = orderquery + " and od.moveit_reached_time is  null and od.orderstatus <3 ";
+    countQuery= countQuery + "  and od.moveit_reached_time is  null and od.orderstatus <3 ";
 
-  }else if (req.virtualkey == 4){
+  }else if (req.tabid == 4){
   //Reched but not deliverd 
     orderquery = orderquery + "and od.moveit_reached_time is not null and od.orderstatus <6 ";
     countQuery= countQuery + "and od.moveit_reached_time is not null and od.orderstatus <6 ";
 
-  }else if (req.virtualkey == 5){
+  }else if (req.tabid == 5){
  // deliverd 
     orderquery = orderquery + "and od.orderstatus =6 ";
     countQuery= countQuery + "and od.orderstatus =6 ";
-  }else if (req.virtualkey == 6){
+  }else if (req.tabid == 6){
 // return 
     orderquery = orderquery + "and od.moveit_pickup_time is not null and od.orderstatus =7  ";
     countQuery= countQuery + "and od.moveit_pickup_time is not null and od.orderstatus =7  ";
-  }else if (req.virtualkey == 7){
+  }else if (req.tabid == 7){
     // cancelled 
     orderquery = orderquery + "and  od.moveit_pickup_time is null and od.orderstatus =7";
     countQuery= countQuery + "and  od.moveit_pickup_time is null and od.orderstatus =7";
@@ -11193,7 +11193,7 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
   //   countQuery= countQuery + " and od.delivery_vendor = '" + req.delivery_vendor + "'";
   // }
   //var search= req.search
-  if (req.virtualkey !== "all" && req.search) {
+  if (req.tabid !== "all" && req.search) {
     orderquery = orderquery + " and (" + searchquery + ")";
     countQuery= countQuery + " and (" + searchquery + ")";
   } else if (req.search) {
@@ -11203,7 +11203,7 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
 
   var limitquery =orderquery +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
   
-  // console.log("prepared but queued",orderquery);
+   console.log("prepared but queued",orderquery);
  
   sql.query(limitquery,async function(err, res1) {
     if (err) {
@@ -11327,18 +11327,27 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
 
 
 Order.crm_dashboard_orders_filter_count =async function crm_dashboard_orders_filter_count(req, result) {
-
+  var order_count= await query("select * from Orders where (payment_type=0 or (payment_type=1 and payment_status<2))  group by orderid order by orderid");
   var reached_kitchen_count= await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and moveit_reached_time is not null and orderstatus <=3  group by orderid order by orderid");
   var preared_but_queue_count = await query("select count(ors.orderid)as count from Orders as ors left join Orders_queue oq on oq.orderid=ors.orderid where (ors.payment_type=0 or (ors.payment_type=1 and ors.payment_status<2)) and oq.status=0 and ors.orderstatus =3  group by ors.orderid order by ors.orderid");
-  var kitchen_reached_not_prepared_count = await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and moveit_reached_time is  null and orderstatus <6  group by orderid order by orderid");
+  var kitchen_reached_not_prepared_count = await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and moveit_reached_time is null and orderstatus < 3  group by orderid order by orderid");
   var location_reached_not_delivered_count = await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and moveit_customerlocation_reached_time is  null and orderstatus <6  group by orderid order by orderid");
-  var delivered_count = await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and  orderstatus =6  group by orderid order by orderid");
+  var delivered_count = await query("select * from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and  orderstatus =6  group by orderid order by orderid");
   var return_count = await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and moveit_pickup_time is not null and orderstatus =7  group by orderid order by orderid");
   var cancelled_count = await query("select count(orderid)as count from Orders where (payment_type=0 or (payment_type=1 and payment_status<2)) and moveit_pickup_time is null and orderstatus =7  group by orderid order by orderid");
 
 
   var newaray = {};
   var res =[];
+
+
+  if (order_count.length !==0) {
+    newaray.order_count=order_count.length;
+  }else{
+    newaray.order_count=0;
+
+  }
+
   if (reached_kitchen_count.length !==0) {
     newaray.reached_kitchen_count=reached_kitchen_count[0].count;
   }else{
@@ -11371,8 +11380,17 @@ Order.crm_dashboard_orders_filter_count =async function crm_dashboard_orders_fil
 
   }
 
+  if (delivered_count.length !=0) {
+    newaray.delivered_count=delivered_count.length;
+
+  }else{
+    newaray.delivered_count=0;
+
+  }
+
+
   if (return_count.length !=0) {
-    newaray.return_count=return_count[0].count;
+    newaray.return_count=return_count.length;
 
   }else{
     newaray.return_count=0;
@@ -11380,7 +11398,7 @@ Order.crm_dashboard_orders_filter_count =async function crm_dashboard_orders_fil
   }
 
   if (cancelled_count.length !=0) {
-    newaray.cancelled_count=cancelled_count[0].count;
+    newaray.cancelled_count=cancelled_count.length;
 
   }else{
     newaray.cancelled_count=0;
