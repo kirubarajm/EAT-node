@@ -46,7 +46,8 @@ ZohoBookModel.createZohoRefreshToken =function createZohoRefreshToken(callback) 
 ZohoBookModel.createZohoCustomer =async function createZohoCustomer(req, result) {
   console.log("createZohoCustomer-->");
   
-   var getUserDetail = await query("select ors.userid,us.zoho_book_customer_id,zoho_book_address_id,us.name,us.email,us.phoneno,pt.productid,pt.product_name,ori.quantity,ori.price,(ori.quantity*ori.price) AS amount,ors.payment_type,ors.delivery_vendor,ors.cus_address,ors.cus_pincode,ors.locality from Orders ors left join User us on us.userid=ors.userid left join OrderItem ori on ori.orderid=ors.orderid left join Product pt on pt.productid=ori.productid where ors.orderid="+req.orderid);
+   var getUserDetail = await query("select ors.userid,us.zoho_book_customer_id,zoho_book_address_id,us.name,us.email,us.phoneno,pt.productid,pt.product_name,ori.quantity,ori.price,(ori.quantity*ori.price) AS amount,ors.payment_type,ors.delivery_vendor,ors.cus_address,ors.cus_pincode,ors.locality,mu.virtualkey,mu.makeit_type from Orders ors left join User us on us.userid=ors.userid left join OrderItem ori on ori.orderid=ors.orderid left join MakeitUser mu on mu.userid=ors.makeit_user_id left join Product pt on pt.productid=ori.productid where ors.orderid="+req.orderid);
+
    if(getUserDetail[0].zoho_book_customer_id){
     req.userdetails=getUserDetail[0];
     req.items=getUserDetail;
@@ -139,7 +140,11 @@ ZohoBookModel.getItemIds =function getItemIds(Items,reqZohoItems,i,zohoitems,res
       itemIN.item_id=zohoflItem[0].item_id;
       itemIN.account_id=zohoflItem[0].account_id;
       itemIN.quantity=item.quantity;
-      itemIN.tax_id="248845000000007222";
+      
+      if(item.virtualkey===0 && item.makeit_type===1){
+         itemIN.tax_id=constant.zoho_tax_id_5;
+      }else itemIN.tax_id=constant.zoho_tax_id_0;
+
       zohoitems.push(itemIN);
       if(i!==(Items.length-1)){
         i++;
@@ -165,7 +170,7 @@ ZohoBookModel.getItemIds =function getItemIds(Items,reqZohoItems,i,zohoitems,res
               itemIN.item_id=Jsonvalur.item.item_id;
               itemIN.account_id=Jsonvalur.item.account_id;
               itemIN.quantity=item.quantity;
-              itemIN.tax_id="248845000000007222";
+              itemIN.tax_id=constant.zoho_tax_id_5;
               zohoitems.push(itemIN);
             if(i!==(Items.length-1)){
               i++;
@@ -218,7 +223,7 @@ ZohoBookModel.createZohoItem =async function createZohoItem(req, result) {
         payment_terms:0,
         custom_fields: [
           {
-              customfield_id: "248845000000057137",
+              customfield_id: constant.zoho_custom_field_id,
               value: req.orderid,//req.payment_type=='0'?"COD":"Online"
           }
       ]

@@ -156,8 +156,10 @@ const calculate = {
     zoho_grant_type_code:"authorization_code",
     zoho_auth_api:"https://accounts.zoho.in/oauth/v2/token?",
     zoho_base_api:"https://books.zoho.in/api/v3/",
+    zoho_custom_field_id:"248845000000057137",
+    zoho_tax_id_5:"248845000000007222",
+    zoho_tax_id_0:"248845000000007208",
     organization_id:60003668682,
-    
     isCronStart:false,
 }
 
