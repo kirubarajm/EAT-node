@@ -493,7 +493,10 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
                   var isEdit=true;
                   req.active_status=res1[0].active_status;
                   if(res1[0].makeit_type===0){
+                    console.log("No ...");
                     Product.Check_Package(req,isEdit,result);
+                  }else if(res1[0].makeit_type===1){
+                    Product.Check_caters_package(req,isEdit,result);
                   }else{
                     Product.update_quantity_valid_package(req,isEdit,result);
                   } 
@@ -616,9 +619,11 @@ Product.update_quantity_product_byid = async function update_quantity_product_by
 
             console.log("res1[0].makeit_type-->",res1[0].makeit_type)
             var isEdit=false;
-            if(res1[0].makeit_type===0||res1[0].makeit_type===1){
+            if(res1[0].makeit_type===0){
               console.log("No ...");
               Product.Check_Package(req,isEdit,result);
+            }else if(res1[0].makeit_type===1){
+              Product.Check_caters_package(req,isEdit,result);
             }else{
               Product.update_quantity_valid_package(req,isEdit,result);
             } 
@@ -770,6 +775,45 @@ Product.Check_Package=async function(req,isEdit,result){
     result(null,resObj);
   }
 }
+
+Product.Check_caters_package=async function(req,isEdit,result){
+  sql.query("select sum(pt.quantity) as total_product from Product pt where makeit_userid="+req.makeit_userid,
+  async function(err, res) {
+      if (err) {
+        result(null, err);
+      } else {
+        var isProductLive=false;
+        var currentcount=parseInt(req.quantity);
+        var total_product= res.length>0?res[0].total_product:0;
+        var sum_of_count=currentcount+total_product;
+        var stockPackageCountQuery = await query("SELECT it.packageid,it.remaining_count FROM InventoryTracking it where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id="+req.makeit_userid +" and packageid in ("+constant.order_cover_package_id+") GROUP BY packageid) order by packageid");
+        
+        // console.log("sum_of_count-->",sum_of_count);
+        // console.log("total_product-->",total_product);
+        // console.log("currentcount-->",currentcount);
+
+        var eatcoverCount=0;
+        if(stockPackageCountQuery.length>0){
+          var remaining_count =stockPackageCountQuery[0].remaining_count;
+          console.log("remaining_count-->",stockPackageCountQuery);
+          if(sum_of_count<=remaining_count) isProductLive=true;
+          eatcoverCount=remaining_count-total_product;
+        } 
+        if(isProductLive){
+          Product.update_quantity_valid_package(req,isEdit,result);
+         }else{
+          var resObj={
+            success:true,
+            status:false,
+            message:"Eat cover only available count is "+eatcoverCount+". Please contact admin."
+          }
+          result(null,resObj);
+         }
+      }
+    }
+  );
+};
+
 
 Product.quantitydecrease = function(orderlist,isEdit,result) {
   sql.query(
