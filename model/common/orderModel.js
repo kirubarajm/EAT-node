@@ -11311,6 +11311,8 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
 
         }
         
+        res1[i].action_dropdown_status=false;
+
       }
       var totalcount = 0;
      // console.log("countQuery-->",countQuery);
