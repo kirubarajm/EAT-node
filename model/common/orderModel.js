@@ -11203,7 +11203,7 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
 
   var limitquery =orderquery +" order by od.orderid desc limit " +startlimit +"," +orderlimit +" ";
   
-   console.log("prepared but queued",orderquery);
+ ///  console.log("prepared but queued",orderquery);
  
   sql.query(limitquery,async function(err, res1) {
     if (err) {
@@ -11218,43 +11218,46 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
           res1[i].moveitphoneno= res1[i].runner_phone_number;
         } 
 
-        var countDownDate= '';
         if (res1[i].orderstatus==1) {
-          countDownDate = res1[i].makeit_expected_preparing_time;
+          // countDownDate = res1[i].makeit_expected_preparing_time;
+          var startDate = new Date();
+          
+          // Do your operations
+          var endDate   = new Date(res1[i].makeit_expected_preparing_time);
+
+          if (startDate > endDate) {
+            res1[i].countDown = 'Expaired';
+          }else{
+  
+          var seconds = (endDate.getTime() - startDate.getTime()) / 1000;
+            var d = Math.floor(seconds / (3600*24));
+            var h = Math.floor(seconds % (3600*24) / 3600);
+            var m = Math.floor(seconds % 3600 / 60);
+            var s = Math.floor(seconds % 60);
+            res1[i].countDown = m +"mins";
+       
+          }
+
         }else if(res1[i].orderstatus==5) {
-          countDownDate = res1[i].moveit_expected_delivered_time;
+          var startDate = new Date();
+          // Do your operations
+          var endDate   = new Date(res1[i].moveit_expected_delivered_time);
+          
+          if (startDate > endDate) {
+            res1[i].countDown = 'Expaired';
+          }else{
+  
+          var seconds = (endDate.getTime() - startDate.getTime()) / 1000;
+            var d = Math.floor(seconds / (3600*24));
+            var h = Math.floor(seconds % (3600*24) / 3600);
+            var m = Math.floor(seconds % 3600 / 60);
+            var s = Math.floor(seconds % 60);
+            res1[i].countDown = m +"mins";
+       
+          }
         }
+
         
-//         if (countDownDate) {
-//           countDownDate=moment(countDownDate).format("YYYY-MM-DD HH:mm:ss");
-//          // console.log(countDownDate);
-//           var now = moment().format("YYYY-MM-DD HH:mm:ss");
-//           //console.log(now);
-//           // Find the distance between now and the count down date
-//           var distance = countDownDate - now;
-//           var duration = moment.duration(countDownDate.diff(now));
-//           console.log(duration);
-
-// //console.log(distance);
-//           // Time calculations for days, hours, minutes and seconds
-//           var days = Math.floor(distance / (1000 * 60 * 60 * 24));
-//           var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-//           var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-//           var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            
-//           console.log(minutes);
-//           console.log(seconds);
-
-//           // Output the result in an element with id="demo"
-//           // document.getElementById("demo").innerHTML = days + "d " + hours + "h "
-//           // + minutes + "m " + seconds + "s ";
-//           res1[i].countDownDate_timer= minutes + "m " + seconds + "s ";
-//           // If the count down is over, write some text 
-//           if ( res1[i].countDownDate_timer < 0) {
-//            // clearInterval(x);
-//             res1[i].countDownDate_timer=days = "EXPIRED";
-//           }
-//         }
 
         if (res1[i].orderstatus ===0) {
           res1[i].delivery_status="Order Post";
@@ -11311,8 +11314,8 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
       }
       var totalcount = 0;
      // console.log("countQuery-->",countQuery);
-     //var res2 = await query(countQuery);
-      totalcount =100;// res2[0].totalcount;
+     var res2 = await query(countQuery);
+      totalcount =res2[0].totalcount;
      let resobj = {
        success: true,
        status:true,
