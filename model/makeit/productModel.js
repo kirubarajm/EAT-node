@@ -616,7 +616,7 @@ Product.update_quantity_product_byid = async function update_quantity_product_by
 
             console.log("res1[0].makeit_type-->",res1[0].makeit_type)
             var isEdit=false;
-            if(res1[0].makeit_type===0){
+            if(res1[0].makeit_type===0||res1[0].makeit_type===1){
               console.log("No ...");
               Product.Check_Package(req,isEdit,result);
             }else{
@@ -698,11 +698,11 @@ Product.Check_Package=async function(req,isEdit,result){
   var currentProductPackageIDQuery = "SELECT pp.package_id from ProductPackaging pp where pp.product_id="+req.productid+" and pp.makeit_id="+req.makeit_userid;
   var currentProductPackageID = await query(currentProductPackageIDQuery);
   if(currentProductPackageID.length>0){
-    //console.log("currentProductPackageIDQuery-->",currentProductPackageID);
+    console.log("currentProductPackageIDQuery-->",currentProductPackageID);
     var liveProductListWithpackage = await query("SELECT pp.package_id,sum(pp.count*pt.quantity) as sumcount from Product pt left join ProductPackaging pp on pp.product_id=pt.productid where pt.active_status=1 and pt.productid !="+req.productid+" and pt.makeit_userid="+req.makeit_userid +" and pp.package_id in ("+currentProductPackageIDQuery+") GROUP BY pp.package_id");
-    //console.log("liveProductListWithpackage-->",liveProductListWithpackage);
+    console.log("liveProductListWithpackage-->",liveProductListWithpackage);
     var currentProductPackageCountQuery = await query("SELECT pp.package_id,pp.count from ProductPackaging pp where pp.product_id="+req.productid+" and pp.makeit_id="+req.makeit_userid);
-   // console.log("currentProductPackageCountQuery-->",currentProductPackageCountQuery);
+    console.log("currentProductPackageCountQuery-->",currentProductPackageCountQuery);
 
     for(var i=0;i<currentProductPackageCountQuery.length;i++){
       if(liveProductListWithpackage.length>0){
@@ -725,22 +725,26 @@ Product.Check_Package=async function(req,isEdit,result){
       
     }
 
-    //console.log("cuPackageCount->",currentProductPackageCountQuery);
+    console.log("cuPackageCount->",currentProductPackageCountQuery);
     var stockPackageCountQuery = await query("SELECT it.packageid,it.remaining_count FROM InventoryTracking it where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id="+req.makeit_userid +" and packageid in ("+currentProductPackageIDQuery+") GROUP BY packageid) order by packageid");
-    //console.log("stockPackageCountQuery-->",stockPackageCountQuery);
+    console.log("stockPackageCountQuery-->",stockPackageCountQuery);
     var isProductLive=true;
-    for(var i=0;i<currentProductPackageCountQuery.length;i++){
-      for(var j=0;j<stockPackageCountQuery.length;j++){
-        var currentPgid =currentProductPackageCountQuery[i].package_id;
-        var stockPgid =stockPackageCountQuery[j].packageid;
-        //console.log("currentPgid==livedPgid-->",currentPgid+"==="+stockPgid);
-        if(currentPgid==stockPgid){
-          var currentCount =parseInt(currentProductPackageCountQuery[i].count);
-          var stockCount =parseInt(stockPackageCountQuery[j].remaining_count);
-         // console.log("currentCount==livedCount-->",currentCount+"==="+stockCount);
-          if(currentCount>stockCount) {
-            isProductLive =false;
-            //console.log("isProductLive-->",isProductLive);
+    if(stockPackageCountQuery.length!==currentProductPackageCountQuery.length){
+      isProductLive=false;
+    }else{
+      for(var i=0;i<currentProductPackageCountQuery.length;i++){
+        for(var j=0;j<stockPackageCountQuery.length;j++){
+          var currentPgid =currentProductPackageCountQuery[i].package_id;
+          var stockPgid =stockPackageCountQuery[j].packageid;
+          console.log("currentPgid==livedPgid-->",currentPgid+"==="+stockPgid);
+          if(currentPgid==stockPgid){
+            var currentCount =parseInt(currentProductPackageCountQuery[i].count);
+            var stockCount =parseInt(stockPackageCountQuery[j].remaining_count);
+            console.log("currentCount==livedCount-->",currentCount+"==="+stockCount);
+            if(currentCount>stockCount) {
+              isProductLive =false;
+              console.log("isProductLive-->",isProductLive);
+            }
           }
         }
       }

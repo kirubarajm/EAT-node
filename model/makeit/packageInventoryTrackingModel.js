@@ -189,7 +189,8 @@ PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTr
         for (var i = 0; i < res.length; i++) {
           var productpackingItem = res[i];
           console.log("productpackingItem-->",productpackingItem.package_id);
-          if (productpackingItem.package_id &&productpackingItem.package_id!==constant.order_cover_package_id) {
+          //&&productpackingItem.package_id!==constant.order_cover_package_id
+          if (productpackingItem.package_id) {
             var productPackageQuery =
               "SELECT * FROM InventoryTracking where makeit_id = " +makeit_id +" and packageid =" +productpackingItem.package_id +" order by id desc limit 1";
               productpackingItem.orderid=orderid;
@@ -218,25 +219,25 @@ PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTr
           }
         }
       }
-      var orderPackageQuery = "SELECT * FROM InventoryTracking where makeit_id = " +makeit_id +" and packageid = "+constant.order_cover_package_id+" order by id desc limit 1";
-      const orderpack = await query(orderPackageQuery);
-      if (orderpack && orderpack.length > 0) {
-        var orderPackageInventoryRemainCount = orderpack[0].remaining_count;
-        var UpdateCount = 0;
-        if (orderPackageInventoryRemainCount >= 1)
-          UpdateCount = orderPackageInventoryRemainCount - 1;
-        var orderPackageinvetory = {};
-        orderPackageinvetory.remaining_count = UpdateCount;
-        orderPackageinvetory.makeit_id = makeit_id;
-        orderPackageinvetory.packageid = orderpack[0].packageid;
-        var order_package_inventory_tracking = new PackageInvetoryTracking(
-          orderPackageinvetory
-        );
-        PackageInvetoryTracking.createPackageInventoryTracking(
-          order_package_inventory_tracking,
-          result
-        );
-      }
+      // var orderPackageQuery = "SELECT * FROM InventoryTracking where makeit_id = " +makeit_id +" and packageid = "+constant.order_cover_package_id+" order by id desc limit 1";
+      // const orderpack = await query(orderPackageQuery);
+      // if (orderpack && orderpack.length > 0) {
+      //   var orderPackageInventoryRemainCount = orderpack[0].remaining_count;
+      //   var UpdateCount = 0;
+      //   if (orderPackageInventoryRemainCount >= 1)
+      //     UpdateCount = orderPackageInventoryRemainCount - 1;
+      //   var orderPackageinvetory = {};
+      //   orderPackageinvetory.remaining_count = UpdateCount;
+      //   orderPackageinvetory.makeit_id = makeit_id;
+      //   orderPackageinvetory.packageid = orderpack[0].packageid;
+      //   var order_package_inventory_tracking = new PackageInvetoryTracking(
+      //     orderPackageinvetory
+      //   );
+      //   PackageInvetoryTracking.createPackageInventoryTracking(
+      //     order_package_inventory_tracking,
+      //     result
+      //   );
+      // }
     }
   });
 };
