@@ -777,7 +777,7 @@ Product.Check_Package=async function(req,isEdit,result){
 }
 
 Product.Check_caters_package=async function(req,isEdit,result){
-  sql.query("select sum(pt.quantity) as total_product from Product pt where makeit_userid="+req.makeit_userid,
+  sql.query("select sum(pt.quantity) as total_product from Product pt where delete_status!=1 and makeit_userid="+req.makeit_userid,
   async function(err, res) {
       if (err) {
         result(null, err);
@@ -788,14 +788,14 @@ Product.Check_caters_package=async function(req,isEdit,result){
         var sum_of_count=currentcount+total_product;
         var stockPackageCountQuery = await query("SELECT it.packageid,it.remaining_count FROM InventoryTracking it where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id="+req.makeit_userid +" and packageid in ("+constant.order_cover_package_id+") GROUP BY packageid) order by packageid");
         
-        // console.log("sum_of_count-->",sum_of_count);
-        // console.log("total_product-->",total_product);
-        // console.log("currentcount-->",currentcount);
+         //console.log("sum_of_count-->",sum_of_count);
+         //console.log("total_product-->",total_product);
+         //console.log("currentcount-->",currentcount);
 
         var eatcoverCount=0;
         if(stockPackageCountQuery.length>0){
           var remaining_count =stockPackageCountQuery[0].remaining_count;
-          console.log("remaining_count-->",stockPackageCountQuery);
+          //console.log("remaining_count-->",stockPackageCountQuery);
           if(sum_of_count<=remaining_count) isProductLive=true;
           eatcoverCount=remaining_count-total_product;
         } 
