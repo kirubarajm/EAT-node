@@ -441,6 +441,7 @@ QuickSearch.admin_order_cancel = function admin_order_cancel(order_cancel) {
 
 QuickSearch.order_assign=async function order_assign(res,i){
   try{
+    console.log("order assign");
   const delay = ms => new Promise(res => setTimeout(res, ms))
   isCronRun=true;
   console.log('i id-->',i)
@@ -641,17 +642,19 @@ QuickSearch.order_assign=async function order_assign(res,i){
               near_by_moveit_data.push(move_it_id_list[i].moveit_id);
             }
            
-            var nearbymoveit = [];
-
             var get_zoneid = await query("select mk.zone from Orders ors join MakeitUser mk on ors.makeit_user_id=mk.userid where ors.orderid='"+res[i].orderid+"' ");
-              
-            var moveitlistquery =
-                  "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-                  near_by_moveit_data +
-                  ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+") ";
-                  nearbymoveit = await query(moveitlistquery);
-            
 
+            var nearbymoveit = [];
+            if (near_by_moveit_data.length !=0) {
+              
+              var moveitlistquery =
+              "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+              near_by_moveit_data +
+              ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+") ";
+              nearbymoveit = await query(moveitlistquery);
+            }
+              
+       
             if (nearbymoveit.length !== 0) {
                 console.log('nearbymoveit id-->',nearbymoveit[0].userid);
                 sql.query("UPDATE Orders SET moveit_user_id = ?,order_assigned_time = ? WHERE orderid = ?",[nearbymoveit[0].userid, assign_time, res[i].orderid],async function(err, res2) {

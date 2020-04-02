@@ -5274,16 +5274,10 @@ Order.eat_order_distance_calculation = async function eat_order_distance_calcula
   "https://maps.googleapis.com/maps/api/directions/json?origin="+req.orglat+","+req.orglon+"&destination="+req.deslat+","+req.deslon+"&key="+constant.distanceapiKey+"";
 
   
-  request(  
-    {
-      method: "GET",
-      rejectUnauthorized: false,
-      url: diatnceurl
-    },
-    function(error,data) {
+  request(  {method: "GET",rejectUnauthorized: false,url: diatnceurl},function(error,data) {
       if (error) {
-        console.log("error: ", err);
-        result(null, err);
+        console.log("error: ", error);
+        result(null, error);
       } else {
       
         if (data.statusCode === 200) {
@@ -7320,6 +7314,7 @@ Order.checkOrdersinQueue = function checkOrdersinQueue(req, result) {
 //auto order assign to moveit 
 Order.auto_order_assign =async function auto_order_assign(req, result) {
  
+  console.log("------------------------>",req);
   var order_queue_query = await query("select * from Orders_queue where status = 0 and orderid =" +req.orderid+"");
 
 if (order_queue_query.length ==0) {
@@ -7378,12 +7373,18 @@ if (order_queue_query.length ==0) {
       //     nearbymoveit = await query(moveitlistquery);
       // }
       console.log("near_by_moveit_data---------------->",near_by_moveit_data);
-      var moveitlistquery =
-      "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
-      near_by_moveit_data +
-      ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+") ";
-      console.log(moveitlistquery);
-      nearbymoveit = await query(moveitlistquery);
+      if (near_by_moveit_data.length !=0) {
+        
+        var moveitlistquery =
+        "select mu.name,mu.Vehicle_no,mu.address,mu.email,mu.phoneno,mu.userid,mu.online_status,count(ord.orderid) as ordercount from MoveitUser as mu left join Orders as ord on (ord.moveit_user_id=mu.userid and ord.orderstatus=6 and DATE(ord.ordertime) = CURDATE()) where mu.userid NOT IN(select moveit_user_id from Orders where orderstatus < 6 and DATE(ordertime) = CURDATE()) and mu.userid IN(" +
+        near_by_moveit_data +
+        ") and mu.online_status = 1 and login_status=1 and mu.zone = "+get_zoneid[0].zone+" group by mu.userid ORDER BY FIELD(mu.userid,"+near_by_moveit_data+") ";
+        console.log(moveitlistquery);
+
+        nearbymoveit = await query(moveitlistquery);
+      }
+     
+     
 
       if (nearbymoveit.length !==0) {
         
@@ -11143,11 +11144,13 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
   // }
 
 
-  
   if (req.makeithub_id) {
     orderquery = orderquery + " and mu.makeithub_id = '" + req.makeithub_id + "'";
     countQuery= countQuery + " and mu.makeithub_id = '" + req.makeithub_id + "'";
   }
+
+  
+
 
   if (req.tabid == 1){
 //reached kitchen
@@ -11185,6 +11188,28 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
     countQuery= countQuery + "and  od.moveit_pickup_time is null and od.orderstatus =7";
   }
 
+  if (req.orderid) {
+    orderquery = orderquery + " and  od.orderid = '" + req.orderid + "'";
+    countQuery= countQuery + " and  od.orderid = '" + req.orderid + "'";
+  }
+
+  if (req.makeit_user_id) {
+    orderquery = orderquery + " and  od.makeit_user_id = '" + req.makeit_user_id + "'";
+    countQuery= countQuery + " and  od.makeit_user_id = '" + req.makeit_user_id + "'";
+  }
+
+
+  if (req.phoneno) {
+    orderquery = orderquery + " and  us.phoneno = '" + req.phoneno + "'";
+    countQuery= countQuery + " and  us.phoneno = '" + req.phoneno + "'";
+  }
+
+  if (req.driver_phone_number	) {
+    orderquery = orderquery + " and mk.phoneno = '" + req.driver_phone_number + "'";
+    countQuery= countQuery + " and  mk.phoneno = '" + req.driver_phone_number + "'";
+  }
+
+ 
 
 
 
@@ -11224,6 +11249,7 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
           
           // Do your operations
           var endDate   = new Date(res1[i].makeit_expected_preparing_time);
+          res1[i].countDown=0;
 
           if (startDate > endDate) {
             res1[i].countDown = 'Expaired';
