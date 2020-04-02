@@ -29,6 +29,7 @@ const PushConstant={
     pageidMakeit_Order_Post:1,
     pageidMakeit_Order_Cancel:2,
     pageidMakeit_Replies:4,
+    pageidMakeit_Package_limit:5,
 
     pageid_eat_razorpay_payment_success:11,
 

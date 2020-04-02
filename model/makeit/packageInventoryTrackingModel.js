@@ -4,7 +4,7 @@ const util = require("util");
 const constant = require("../constant");
 const query = util.promisify(sql.query).bind(sql);
 const OrderPackageInventory= require("../common/orderpackageModel");
-
+const Notification = require("../../model/common/notificationModel.js");
 //Task object constructor
 var PackageInvetoryTracking = function(packageinvetory) {
   this.makeit_id = packageinvetory.makeit_id;
@@ -185,14 +185,16 @@ PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTr
       console.log('InventoryTracking-->',err);
      // result(null, err);
     } else {
+      var limt_exited_package_name="";
+      var isLimitExited=false;
       if (res.length > 0) {
         for (var i = 0; i < res.length; i++) {
           var productpackingItem = res[i];
           console.log("productpackingItem-->",productpackingItem.package_id);
-          //&&productpackingItem.package_id!==constant.order_cover_package_id
-          if (productpackingItem.package_id) {
+          //
+          if (productpackingItem.package_id&&productpackingItem.package_id!==constant.order_cover_package_id) {
             var productPackageQuery =
-              "SELECT * FROM InventoryTracking where makeit_id = " +makeit_id +" and packageid =" +productpackingItem.package_id +" order by id desc limit 1";
+              "SELECT it.*,pb.name FROM InventoryTracking it left join PackagingBox pb on pb.id=it.packageid where it.makeit_id = " +makeit_id +" and it.packageid =" +productpackingItem.package_id +" order by it.id desc limit 1";
               productpackingItem.orderid=orderid;
               var orderPackageInventory = new OrderPackageInventory(productpackingItem);
               await OrderPackageInventory.createorderpackage(orderPackageInventory,result);
@@ -215,29 +217,46 @@ PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTr
                 package_inventory_tracking,
                 result
               );
+              if(UpdateCount<constant.makeit_package_alert_count){
+                limt_exited_package_name=limt_exited_package_name+","+respack[0].name;
+                isLimitExited=true;
+              }
             }
           }
         }
       }
-      // var orderPackageQuery = "SELECT * FROM InventoryTracking where makeit_id = " +makeit_id +" and packageid = "+constant.order_cover_package_id+" order by id desc limit 1";
-      // const orderpack = await query(orderPackageQuery);
-      // if (orderpack && orderpack.length > 0) {
-      //   var orderPackageInventoryRemainCount = orderpack[0].remaining_count;
-      //   var UpdateCount = 0;
-      //   if (orderPackageInventoryRemainCount >= 1)
-      //     UpdateCount = orderPackageInventoryRemainCount - 1;
-      //   var orderPackageinvetory = {};
-      //   orderPackageinvetory.remaining_count = UpdateCount;
-      //   orderPackageinvetory.makeit_id = makeit_id;
-      //   orderPackageinvetory.packageid = orderpack[0].packageid;
-      //   var order_package_inventory_tracking = new PackageInvetoryTracking(
-      //     orderPackageinvetory
-      //   );
-      //   PackageInvetoryTracking.createPackageInventoryTracking(
-      //     order_package_inventory_tracking,
-      //     result
-      //   );
-      // }
+      var orderPackageQuery = "SELECT it.*,pb.name FROM InventoryTracking it left join PackagingBox pb on pb.id=it.packageid where it.makeit_id = " +makeit_id +" and it.packageid ="+constant.order_cover_package_id+" order by it.id desc limit 1";
+      const orderpack = await query(orderPackageQuery);
+      if (orderpack && orderpack.length > 0) {
+        var orderPackageInventoryRemainCount = orderpack[0].remaining_count;
+        var UpdateCount = 0;
+        if (orderPackageInventoryRemainCount >= 1)
+          UpdateCount = orderPackageInventoryRemainCount - 1;
+        var orderPackageinvetory = {};
+        orderPackageinvetory.remaining_count = UpdateCount;
+        orderPackageinvetory.makeit_id = makeit_id;
+        orderPackageinvetory.packageid = orderpack[0].packageid;
+
+        if(UpdateCount<constant.makeit_package_alert_count){
+          limt_exited_package_name=limt_exited_package_name+","+orderpack[0].name;
+          isLimitExited=true;
+        }
+
+        var order_package_inventory_tracking = new PackageInvetoryTracking(
+          orderPackageinvetory
+        );
+        PackageInvetoryTracking.createPackageInventoryTracking(
+          order_package_inventory_tracking,
+          result
+        );
+      }
+
+      if(isLimitExited){
+        await Notification.orderMakeItPackagePushNotification(
+          req.makeit_user_id,limt_exited_package_name +" Package limit is exited.",
+          PushConstant.pageidMakeit_Package_limit
+        );
+      }
     }
   });
 };

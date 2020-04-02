@@ -160,6 +160,9 @@ const calculate = {
     zoho_tax_id_5:"248845000000007222",
     zoho_tax_id_0:"248845000000007208",
     organization_id:60003668682,
+
+    makeit_package_alert_count:25,
+    makeit_live_quantity_restrict_count:10,
     isCronStart:false,
 }
 

@@ -44,6 +44,11 @@ Notification.getMovieitDetail = async function(userid) {
   return MoveitUser[0];
 };
 
+Notification.getMakeitDetail = async function(userid) {
+  var MakeitUser = await query("SELECT * FROM MakeitUser where userid = " + userid);
+  return MakeitUser[0];
+};
+
 Notification.orderEatPushNotification = async function(orderid,userid,pageid) {
   if (orderid) {
     var orders = await Notification.getPushOrderDetail(orderid);
@@ -229,6 +234,41 @@ Notification.orderMakeItPushNotification = async function(
     var pushDetail = await Notification.getVirtualMakeitPushId(makeituser.userid);
     console.log("Web->", pushDetail.push_token);
     if(pushDetail.push_token) FCM_ADMIN.sendNotificationWEB(pushDetail.push_token, data);
+  }
+};
+
+Notification.orderMakeItPackagePushNotification = async function(makeit_userid,messgae,pageid) {
+    var makeit = await Notification.getMakeitDetail(makeit_userid);
+    var makeituser=makeit[0];
+
+  var data = null;
+  switch (pageid) {
+    case PushConstant.pageidMakeit_Package_limit:
+      data = {
+        title: "Package Alert",
+        message: messgae,
+        pageid: "" + pageid,
+        app: "Make-it",
+        orderid: "" + orderid,
+        notification_type: "1"
+      };
+      break;
+  }
+
+  if (data == null) return;
+
+  if (makeituser && makeituser.virtualkey===0) {
+    if (makeituser.pushid_android) {
+      data.app_type = 1;
+      console.log("Android->", makeituser.pushid_android);
+      FCM_Makeit.sendNotificationAndroid(makeituser.pushid_android, data);
+    } 
+
+    if (makeituser.pushid_ios) {
+      data.app_type = 2;
+      console.log("ios->", makeituser.pushid_ios);
+      FCM_Makeit.sendNotificationAndroid(makeituser.pushid_ios, data);
+    }
   }
 };
 
