@@ -169,7 +169,7 @@ Notification.orderEatPushNotification = async function(orderid,userid,pageid) {
 
  
   //const user = await Notification.getEatUserDetail(userid);
-   console.log("data->", data);
+  // console.log("data->", data);
   if (user && user.pushid_android) {
     FCM_EAT.sendNotificationAndroid(user.pushid_android, data,1 );
   }
@@ -238,8 +238,7 @@ Notification.orderMakeItPushNotification = async function(
 };
 
 Notification.orderMakeItPackagePushNotification = async function(makeit_userid,messgae,pageid) {
-    var makeit = await Notification.getMakeitDetail(makeit_userid);
-    var makeituser=makeit[0];
+    var makeituser = await Notification.getMakeitDetail(makeit_userid);
 
   var data = null;
   switch (pageid) {
@@ -249,14 +248,15 @@ Notification.orderMakeItPackagePushNotification = async function(makeit_userid,m
         message: messgae,
         pageid: "" + pageid,
         app: "Make-it",
-        orderid: "" + orderid,
         notification_type: "1"
       };
       break;
   }
 
   if (data == null) return;
-
+  console.log("data->", data);
+  console.log("makeituser->", makeituser);
+  console.log("makeituser.virtualkey->", makeituser.virtualkey);
   if (makeituser && makeituser.virtualkey===0) {
     if (makeituser.pushid_android) {
       data.app_type = 1;

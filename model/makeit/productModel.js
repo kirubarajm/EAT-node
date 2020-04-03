@@ -478,7 +478,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
           let resobj = {
             success: true,
             status: false,
-            message:"Sorry Product live limit is exitded.only set 3."
+            message:"Sorry Product live limit is exceeded.only set 3."
           };
           result(null, resobj);
         }else if (res[0].approved_status !== 0) {
@@ -612,7 +612,7 @@ Product.update_quantity_product_byid = async function update_quantity_product_by
             let resobj = {
               success: true,
               status: false,
-              message:"Sorry Product live limit is exitded. only set 3."
+              message:"Sorry Product live limit is exceeded. only set 3."
             };
             result(null, resobj);
           }else if (res1[0].approved_status !== 0) {
@@ -749,8 +749,8 @@ Product.Check_Package=async function(req,isEdit,result){
             console.log("currentCount==livedCount-->",currentCount+"==="+stockCount);
             if(currentCount>stockCount) {
               isProductLive =false;
-              package_name=package_name+","+currentProductPackageCountQuery[i].name;
-              console.log("isProductLive-->",isProductLive);
+              package_name=package_name?package_name+","+currentProductPackageCountQuery[i].name:currentProductPackageCountQuery[i].name;
+              console.log("isProductLive-->",package_name);
             }
           }
         }
@@ -764,7 +764,7 @@ Product.Check_Package=async function(req,isEdit,result){
       var resObj={
         success:true,
         status:false,
-        message:package_name+"package limit exited."
+        message:package_name+"package limit is exceeded."
       }
       result(null,resObj);
      }

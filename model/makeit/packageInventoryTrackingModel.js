@@ -5,6 +5,7 @@ const constant = require("../constant");
 const query = util.promisify(sql.query).bind(sql);
 const OrderPackageInventory= require("../common/orderpackageModel");
 const Notification = require("../../model/common/notificationModel.js");
+const PushConstant = require("../../push/PushConstant.js");
 //Task object constructor
 var PackageInvetoryTracking = function(packageinvetory) {
   this.makeit_id = packageinvetory.makeit_id;
@@ -218,7 +219,7 @@ PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTr
                 result
               );
               if(UpdateCount<constant.makeit_package_alert_count){
-                limt_exited_package_name=limt_exited_package_name+","+respack[0].name;
+                limt_exited_package_name=limt_exited_package_name?limt_exited_package_name+","+respack[0].name:respack[0].name;
                 isLimitExited=true;
               }
             }
@@ -238,7 +239,7 @@ PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTr
         orderPackageinvetory.packageid = orderpack[0].packageid;
 
         if(UpdateCount<constant.makeit_package_alert_count){
-          limt_exited_package_name=limt_exited_package_name+","+orderpack[0].name;
+          limt_exited_package_name=limt_exited_package_name?limt_exited_package_name+","+respack[0].name:respack[0].name;
           isLimitExited=true;
         }
 
@@ -253,7 +254,7 @@ PackageInvetoryTracking.orderbasedpackageTracking = function orderbasedpackageTr
 
       if(isLimitExited){
         await Notification.orderMakeItPackagePushNotification(
-          req.makeit_user_id,limt_exited_package_name +" Package limit is exited.",
+          makeit_id,limt_exited_package_name +" Package limit is exceeded.",
           PushConstant.pageidMakeit_Package_limit
         );
       }
