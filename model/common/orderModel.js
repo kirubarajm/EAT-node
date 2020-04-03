@@ -7530,22 +7530,6 @@ Order.order_move_to_queue_by_admin= function order_move_to_queue_by_admin(req, r
               });
 
           }
-
-
-          // if(res[0]&&res[0].moveit_user_id){
-          //   await Notification.orderMoveItPushNotification(
-          //     req.orderid,
-          //     PushConstant.pageidMoveit_Order_Cancel,
-          //     null
-          //   );
-          // }
-
-          // let resobj = {
-          //   success: true,
-          //   status:true,
-          //   result:res
-          // };
-          // result(null, resobj);
         }else {
           let resobj = {
             success: true,
@@ -11121,7 +11105,7 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
   var startlimit = (page - 1) * orderlimit;
   // count(*) as totalcount
   var countQuery="Select  count(od.orderid) as totalcount from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mu on mu.userid=od.makeit_user_id left join MoveitUser as mk on mk.userid=od.moveit_user_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id left join Zone as ze on ze.id=mu.zone  left join Orders_queue as oq on oq.orderid=od.orderid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
-  var orderquery ="Select od.orderid as tripid,TIMEDIFF(NOW(),od.created_at) as timediff,IF(od.delivery_vendor=0, 'eat', 'dunzo') as delivery_partner_type,od.*,us.*,mu.brandname,mu.virtualkey as kitchentype,mu.phoneno as homemakerphoneno,mk.name as moveitname,mk.phoneno as moveitphoneno,us.name as customername,mh.address,ze.Zonename,oq.status as order_queue_status,oq.created_at as queue_created_at from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mu on mu.userid=od.makeit_user_id left join MoveitUser as mk on mk.userid=od.moveit_user_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id left join Zone as ze on ze.id=mu.zone  left join Orders_queue as oq on oq.orderid=od.orderid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
+  var orderquery ="Select od.orderid as tripid,TIMEDIFF(NOW(),od.created_at) as timediff,IF(od.delivery_vendor=0, 'eat', 'dunzo') as delivery_partner_type,od.*,us.*,mu.brandname,mu.lat as makeit_lat,mu.lon as makeit_lon,mu.zone as makeit_zone_id,mu.virtualkey as kitchentype,mu.phoneno as homemakerphoneno,mk.name as moveitname,mk.phoneno as moveitphoneno,us.name as customername,mh.address,ze.Zonename,oq.status as order_queue_status,oq.created_at as queue_created_at from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mu on mu.userid=od.makeit_user_id left join MoveitUser as mk on mk.userid=od.moveit_user_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id left join Zone as ze on ze.id=mu.zone  left join Orders_queue as oq on oq.orderid=od.orderid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
  // var query =
     //"Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status>0) )and orderstatus < 9";
   var searchquery =
