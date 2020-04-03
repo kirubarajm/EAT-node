@@ -478,7 +478,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
           let resobj = {
             success: true,
             status: false,
-            message:"Sorry Product live limit is exitded.only set 3."
+            message:"Sorry Product live limit is exceeded.only set 3."
           };
           result(null, resobj);
         }else if (res[0].approved_status !== 0) {
@@ -492,11 +492,14 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
                
                   var isEdit=true;
                   req.active_status=res1[0].active_status;
-                  // if(res1[0].makeit_type===0){
-                  //   Product.Check_Package(req,isEdit,result);
-                  // }else{
+                  if(res1[0].makeit_type===0){
+                    console.log("No ...");
+                    Product.Check_Package(req,isEdit,result);
+                  }else if(res1[0].makeit_type===1){
+                    Product.Check_cover_package(req,isEdit,result);
+                  }else{
                     Product.update_quantity_valid_package(req,isEdit,result);
-                  //} 
+                  } 
               }
             }
           );
@@ -609,19 +612,21 @@ Product.update_quantity_product_byid = async function update_quantity_product_by
             let resobj = {
               success: true,
               status: false,
-              message:"Sorry Product live limit is exitded. only set 3."
+              message:"Sorry Product live limit is exceeded. only set 3."
             };
             result(null, resobj);
           }else if (res1[0].approved_status !== 0) {
 
             console.log("res1[0].makeit_type-->",res1[0].makeit_type)
             var isEdit=false;
-            // if(res1[0].makeit_type===0){
-            //   console.log("No ...");
-            //   Product.Check_Package(req,isEdit,result);
-            // }else{
+            if(res1[0].makeit_type===0){
+              console.log("No ...");
+              Product.Check_Package(req,isEdit,result);
+            }else if(res1[0].makeit_type===1){
+              Product.Check_cover_package(req,isEdit,result);
+            }else{
               Product.update_quantity_valid_package(req,isEdit,result);
-            //} 
+            } 
             
           } else if (res1[0].approved_status === 0) {
            
@@ -700,9 +705,9 @@ Product.Check_Package=async function(req,isEdit,result){
   if(currentProductPackageID.length>0){
     //console.log("currentProductPackageIDQuery-->",currentProductPackageID);
     var liveProductListWithpackage = await query("SELECT pp.package_id,sum(pp.count*pt.quantity) as sumcount from Product pt left join ProductPackaging pp on pp.product_id=pt.productid where pt.active_status=1 and pt.productid !="+req.productid+" and pt.makeit_userid="+req.makeit_userid +" and pp.package_id in ("+currentProductPackageIDQuery+") GROUP BY pp.package_id");
-    //console.log("liveProductListWithpackage-->",liveProductListWithpackage);
-    var currentProductPackageCountQuery = await query("SELECT pp.package_id,pp.count from ProductPackaging pp where pp.product_id="+req.productid+" and pp.makeit_id="+req.makeit_userid);
-   // console.log("currentProductPackageCountQuery-->",currentProductPackageCountQuery);
+   // console.log("liveProductListWithpackage-->",liveProductListWithpackage);
+    var currentProductPackageCountQuery = await query("SELECT pp.package_id,pp.count,pb.name from ProductPackaging pp left join PackagingBox pb on pb.id=pp.package_id where pp.product_id="+req.productid+" and pp.makeit_id="+req.makeit_userid);
+    //console.log("currentProductPackageCountQuery-->",currentProductPackageCountQuery);
 
     for(var i=0;i<currentProductPackageCountQuery.length;i++){
       if(liveProductListWithpackage.length>0){
@@ -729,30 +734,37 @@ Product.Check_Package=async function(req,isEdit,result){
     var stockPackageCountQuery = await query("SELECT it.packageid,it.remaining_count FROM InventoryTracking it where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id="+req.makeit_userid +" and packageid in ("+currentProductPackageIDQuery+") GROUP BY packageid) order by packageid");
     //console.log("stockPackageCountQuery-->",stockPackageCountQuery);
     var isProductLive=true;
-    for(var i=0;i<currentProductPackageCountQuery.length;i++){
-      for(var j=0;j<stockPackageCountQuery.length;j++){
-        var currentPgid =currentProductPackageCountQuery[i].package_id;
-        var stockPgid =stockPackageCountQuery[j].packageid;
-        //console.log("currentPgid==livedPgid-->",currentPgid+"==="+stockPgid);
-        if(currentPgid==stockPgid){
-          var currentCount =parseInt(currentProductPackageCountQuery[i].count);
-          var stockCount =parseInt(stockPackageCountQuery[j].remaining_count);
-         // console.log("currentCount==livedCount-->",currentCount+"==="+stockCount);
-          if(currentCount>stockCount) {
-            isProductLive =false;
-            //console.log("isProductLive-->",isProductLive);
+    var package_name="";
+    if(stockPackageCountQuery.length!==currentProductPackageCountQuery.length){
+      isProductLive=false;
+    }else{
+      for(var i=0;i<currentProductPackageCountQuery.length;i++){
+        for(var j=0;j<stockPackageCountQuery.length;j++){
+          var currentPgid =currentProductPackageCountQuery[i].package_id;
+          var stockPgid =stockPackageCountQuery[j].packageid;
+          console.log("currentPgid==livedPgid-->",currentPgid+"==="+stockPgid);
+          if(currentPgid==stockPgid){
+            var currentCount =parseInt(currentProductPackageCountQuery[i].count);
+            var stockCount =parseInt(stockPackageCountQuery[j].remaining_count);
+            console.log("currentCount==livedCount-->",currentCount+"==="+stockCount);
+            if(currentCount>stockCount) {
+              isProductLive =false;
+              package_name=package_name?package_name+","+currentProductPackageCountQuery[i].name:currentProductPackageCountQuery[i].name;
+              console.log("isProductLive-->",package_name);
+            }
           }
         }
       }
     }
     //console.log("isProductLive if -->",isProductLive);
      if(isProductLive){
-      Product.update_quantity_valid_package(req,isEdit,result);
+      Product.Check_cover_package(req,isEdit,result);
+      //Product.update_quantity_valid_package(req,isEdit,result);
      }else{
       var resObj={
         success:true,
         status:false,
-        message:"Sorry your packing count is limit exited. Please contact admin."
+        message:package_name+"package limit is exceeded."
       }
       result(null,resObj);
      }
@@ -766,6 +778,57 @@ Product.Check_Package=async function(req,isEdit,result){
     result(null,resObj);
   }
 }
+
+Product.Check_cover_package=async function(req,isEdit,result){
+  var stockPackageCountQuery = await query("SELECT it.packageid,it.remaining_count FROM InventoryTracking it where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id="+req.makeit_userid +" and packageid in ("+constant.order_cover_package_id+") GROUP BY packageid) order by packageid");
+  console.log("stockPackageCountQuery[0].remaining_count--->",stockPackageCountQuery[0].remaining_count)
+  if(stockPackageCountQuery.length!=0&&stockPackageCountQuery[0].remaining_count<=constant.makeit_live_quantity_restrict_count){
+  sql.query("select sum(pt.quantity) as total_product from Product pt where delete_status!=1 and active_status=1 and makeit_userid="+req.makeit_userid+" and productid !='"+ req.productid +"'",
+  async function(err, res) {
+      if (err) {
+        result(null, err);
+      } else {
+        var isProductLive=false;
+        var currentcount=parseInt(req.quantity);
+        var total_product= res.length>0?res[0].total_product:0;
+        var sum_of_count=currentcount+total_product;
+         //console.log("sum_of_count-->",sum_of_count);
+         console.log("total_product-->",total_product);
+         //console.log("currentcount-->",currentcount);
+
+        var eatcoverCount=0;
+        if(stockPackageCountQuery.length>0){
+          var remaining_count =stockPackageCountQuery[0].remaining_count;
+          if(sum_of_count<=remaining_count) isProductLive=true;
+          eatcoverCount=remaining_count-total_product;
+        } 
+        if(isProductLive){
+          Product.update_quantity_valid_package(req,isEdit,result);
+         }else{
+          var resObj={
+            success:true,
+            status:false,
+            message:"Eat cover only available count is "+eatcoverCount+". Please contact admin."
+          }
+          result(null,resObj);
+         }
+      }
+    }
+  );
+  }else{
+    if(stockPackageCountQuery.length==0){
+      var resObj={
+        success:true,
+        status:false,
+        message:"Eat cover not provided. Please contact admin."
+      }
+      result(null,resObj);
+    }else{
+      Product.update_quantity_valid_package(req,isEdit,result);
+    }
+  }
+};
+
 
 Product.quantitydecrease = function(orderlist,isEdit,result) {
   sql.query(
@@ -831,8 +894,8 @@ for (var i = 0; i < packageItems.length; i++) {
   var package_item = new Packageitem(packageItems[i]);
   package_id = package_id + packageItems[i].id + ",";
   package_item.product_id = req.productid;
-  package_item.package_id=packageItems[i].id ;
-  package_item.makeit_id=req.makeit_userid
+  package_item.package_id=packageItems[i].id;
+  package_item.makeit_id=req.makeit_userid;
   Packageitem.updatePackageitems(package_item, function(err, result) {
     if (err) res.send(err);
   });
