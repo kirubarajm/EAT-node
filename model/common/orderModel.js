@@ -11105,8 +11105,8 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
   var page = req.page || 1;
   var startlimit = (page - 1) * orderlimit;
   // count(*) as totalcount
-  var countQuery="Select  count(od.orderid) as totalcount from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mu on mu.userid=od.makeit_user_id left join MoveitUser as mk on mk.userid=od.moveit_user_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id left join Zone as ze on ze.id=mu.zone  left join Orders_queue as oq on oq.orderid=od.orderid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
-  var orderquery ="Select od.orderid as tripid,TIMEDIFF(NOW(),od.created_at) as timediff,IF(od.delivery_vendor=0, 'eat', 'dunzo') as delivery_partner_type,od.*,us.*,mu.brandname,mu.lat as makeit_lat,mu.lon as makeit_lon,mu.zone as makeit_zone_id,mu.virtualkey as kitchentype,mu.phoneno as homemakerphoneno,mk.name as moveitname,mk.phoneno as moveitphoneno,us.name as customername,mh.address,ze.Zonename,oq.status as order_queue_status,oq.created_at as queue_created_at from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mu on mu.userid=od.makeit_user_id left join MoveitUser as mk on mk.userid=od.moveit_user_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id left join Zone as ze on ze.id=mu.zone  left join Orders_queue as oq on oq.orderid=od.orderid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
+  var countQuery="Select  count(od.orderid) as totalcount from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mu on mu.userid=od.makeit_user_id left join MoveitUser as mk on mk.userid=od.moveit_user_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id left join Zone as ze on ze.id=mu.zone  left join Orders_queue as oq on oq.orderid=od.orderid left join Refund_Online as ro on ro.orderid=od.orderid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
+  var orderquery ="Select od.orderid as tripid,TIMEDIFF(NOW(),od.created_at) as timediff,IF(od.delivery_vendor=0, 'eat', 'dunzo') as delivery_partner_type,od.*,us.*,mu.brandname,mu.lat as makeit_lat,mu.lon as makeit_lon,mu.zone as makeit_zone_id,mu.virtualkey as kitchentype,mu.phoneno as homemakerphoneno,mk.name as moveitname,mk.phoneno as moveitphoneno,us.name as customername,mh.address,ze.Zonename,oq.status as order_queue_status,oq.created_at as queue_created_at,ro.payment_id,ro.active_status as refund_status from Orders as od left join User as us on od.userid=us.userid left join MakeitUser as mu on mu.userid=od.makeit_user_id left join MoveitUser as mk on mk.userid=od.moveit_user_id left join Makeit_hubs as mh on mh.makeithub_id=mu.makeithub_id left join Zone as ze on ze.id=mu.zone  left join Orders_queue as oq on oq.orderid=od.orderid left join Refund_Online as ro on ro.orderid=od.orderid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status<2))";
  // var query =
     //"Select * from Orders as od left join User as us on od.userid=us.userid where (od.payment_type=0 or (od.payment_type=1 and od.payment_status>0) )and orderstatus < 9";
   var searchquery =
@@ -11226,6 +11226,16 @@ Order.get_all_dashboard_orders = function get_all_dashboard_orders(req, result) 
           res1[i].moveitname= res1[i].runner_name;
           res1[i].moveitphoneno= res1[i].runner_phone_number;
         } 
+
+        res1[i].isrefund=false;
+        if (res1[i].orrderstatus===6 || res1[i].orrderstatus===7) {
+          
+          if (res1[i].refund_status==1) {
+            res1[i].isrefund=true;
+          }
+          
+        } 
+
 
         if (res1[i].orderstatus==1) {
           // countDownDate = res1[i].makeit_expected_preparing_time;
