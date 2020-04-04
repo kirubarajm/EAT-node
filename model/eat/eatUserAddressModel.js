@@ -94,6 +94,7 @@ EatuserAddress.getaddressById = function getaddressById(userId, result) {
                 let resobj = {  
                 success: true,
                 status:status,
+                location_radius:3,
                 result: res
                 }; 
 
