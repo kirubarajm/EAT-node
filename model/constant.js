@@ -155,7 +155,10 @@ const calculate = {
     zoho_grant_type:"refresh_token",
     zoho_grant_type_code:"authorization_code",
     zoho_auth_api:"https://accounts.zoho.in/oauth/v2/token?",
-    zoho_base_api:"https://books.zoho.in/api/v3/"
+    zoho_base_api:"https://books.zoho.in/api/v3/",
+
+    makeit_package_alert_count:25,
+    makeit_live_quantity_restrict_count:10,
 }
 
 
