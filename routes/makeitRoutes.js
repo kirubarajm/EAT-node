@@ -80,5 +80,26 @@ app.route("/makeit/order/cancellist").post(middleware.checkToken,routesVersionin
 ////Makeit Live Session/////////////
 app.route("/makeit/makeitlivesession").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_live_session}));
 
+/////// ====> Makeit Incentive New  <=====//////////
+////Weekly makeit earnings and incentives/////////////
+app.route("/makeit/earningsandincentives").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_earnings_incentives}));
+////Day wise makeit earnings and incentives/////////////
+app.route("/makeit/daywiseearnings").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_daywise_earnings}));
+////Weekly visiability makeit incentives/////////////
+app.route("/makeit/visibilitymakeitincentive").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.visibility_makeit_incentive}));
+////Day wise complete session count/////////////
+app.route("/makeit/daywisecompletesession").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.daywise_complete_session}));
+////Day wise average product/////////////
+app.route("/makeit/daywiseaverageproduct").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.daywise_avg_product}));
+////Day wise cancel orders/////////////
+app.route("/makeit/daywisecancelorders").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.daywise_cancelorders}));
+////Makeit Order History/////////////
+app.route("/makeit/makeitorderhistory").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_order_history}));
+////Referral Makeit Details/////////////
+app.route("/makeit/referralmakeitdetails").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.referral_makeit_details}));
+////Makeit Referral list/////////////
+app.route("/makeit/referralmakeitlist").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.referral_makeit_list}));
+
+
 
 }

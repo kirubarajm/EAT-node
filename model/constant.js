@@ -155,7 +155,15 @@ const calculate = {
     zoho_grant_type:"refresh_token",
     zoho_grant_type_code:"authorization_code",
     zoho_auth_api:"https://accounts.zoho.in/oauth/v2/token?",
-    zoho_base_api:"https://books.zoho.in/api/v3/"
+    zoho_base_api:"https://books.zoho.in/api/v3/",
+
+    ////Makeit Incentive////////
+    makeit_referral_daycount_x:14,
+    makeit_referral_completesession_percentage_y:67,
+    makeit_referral_cancelcount_z:4,
+    makeit_referral_avg_product_p:10,
+    makeit_referral_ordercount_o:100,
+    makeit_referral_amount:1000
 }
 
 

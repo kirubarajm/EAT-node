@@ -22,6 +22,7 @@ var MakeitDayWise = require("../../model/common/makeitdaywiseModel.js");
 var Makeitlog =require("../../model/common/makeittimelogModel.js");
 var Makeittotalrevenue = require("../../model/common/MakeittotalrevenueModel");
 var CronLog = require("../../model/common/cronlogModel");
+var Makeituser = require("../makeit/makeitUserModel.js");
 
 const start_cron=1;
 const end_cron=2;
@@ -1048,6 +1049,8 @@ const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
       await MakeitDayWise.createmakeitdaywise(new_makeit_daywise_data);
     }
   } 
+  
+  var makeit_referral_incentive = await Makeituser.makeit_referral_incentive();
 
   var cronLogReq={
     cron_id:7,
@@ -1226,6 +1229,7 @@ const homemakertiering = new CronJob("0 0 3 * * *", async function() {
   CronLog.createCronLog(cronLogReq);
 
   var makeit_incentive = await Order.makeit_incentive_report();
+  
 
   var cronLogReq={
     cron_id:10,

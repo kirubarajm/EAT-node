@@ -686,3 +686,75 @@ exports.makeit_live_session = function(req, res) {
     res.json(user);
   });
 };
+
+////Weekly Makeit earnings and incentives/////////////
+exports.makeit_earnings_incentives = function(req, res) {
+  Makeituser.makeit_earnings_incentives(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Day wise Makeit earnings and incentives/////////////
+exports.makeit_daywise_earnings = function(req, res) {
+  Makeituser.makeit_daywise_earnings(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Weekly day wise visiability Makeit incentives/////////////
+exports.visibility_makeit_incentive = function(req, res) {
+  Makeituser.visibility_makeit_incentive(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Day wise complete session count/////////////
+exports.daywise_complete_session = function(req, res) {
+  Makeituser.daywise_complete_session(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Day wise average product/////////////
+exports.daywise_avg_product = function(req, res) {
+  Makeituser.daywise_avg_product(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Day wise cancel orders/////////////
+exports.daywise_cancelorders = function(req, res) {
+  Makeituser.daywise_cancelorders(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Makeit Order History/////////////
+exports.makeit_order_history = function(req, res) {
+  Makeituser.makeit_order_history(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Referral Makeit Details/////////////
+exports.referral_makeit_details = function(req, res) {
+  Makeituser.referral_makeit_details(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Makeit Referral list/////////////
+exports.referral_makeit_list = function(req, res) {
+  Makeituser.referral_makeit_list(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};

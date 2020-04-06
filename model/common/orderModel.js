@@ -10472,6 +10472,21 @@ Order.makeit_incentive_report= async function makeit_incentive_report(req,inc_fr
           }
         }
       }
+
+      //////////////////////////////////////////////////////////////
+      var sumofreferredquery="SELECT referred_makeit_id,SUM(referrel_incentive_amount) as makeit_referral_earnings FROM Makeit_referral_history WHERE date(created_at) between '"+inc_fromdate+"' and '"+inc_todate+"' group by referred_makeit_id";
+      var sumofreferred = await query(sumofreferredquery);
+      if(sumofreferred.length>0){
+        for (let i = 0; i < res.length; i++) {
+          for (let j = 0; j < sumofreferred.length; j++) {
+            if(res[i].makeit_id == sumofreferred[j].referred_makeit_id){
+              res[i].makeit_referral_earnings=sumofreferred[j].makeit_referral_earnings;
+            }
+          }
+        }
+      }
+      ////////////////////////////////////////////////////////////////////
+      
       //////////Insert Makeit Incentive//////////////
       for (let j = 0; j < res.length; j++) {
         var makeitincentive = await MakeitIncentive.createmakeitincentive(res[j]);
@@ -10603,7 +10618,6 @@ Order.moveit_utilization_report= async function moveit_utilization_report(req,re
   }
   
 };
-
 
 ////OPE METRICS Report///
 Order.ope_metrics_report= async function ope_metrics_report(req,result) { 
@@ -10752,7 +10766,6 @@ Order.ope_metrics_report= async function ope_metrics_report(req,result) {
   }
   
 };
-
 
 ////OPE METRICS Report new format///
 Order.ope_metrics_report_format= async function ope_metrics_report_format(req,result) { 
@@ -11054,7 +11067,6 @@ function hhmmss_to_minutes(hms){
   return to_minutes.toFixed(2);
 }
 
-
 Order.sales_metrics_report= async function sales_metrics_report(req,result) { 
   var currentdateminus=1;
   var makeitonboardquery = "Select "+constant.virtual_kitchen_onboarded_count+" as drak_kitchen_onboarded,sum(if((mu.virtualkey=0 and mu.makeit_type=1),1,0)) as caterers_kitchen_onboarded,sum(if((mu.virtualkey=0 and mu.makeit_type=0),1,0)) as homemaker_kitchen_onboarded from MakeitUser mu where mu.appointment_status=3 and mu.verified_status=1 and mu.ka_status = 2 and mu.delete_status=0";
@@ -11298,6 +11310,7 @@ function secondsToDhms(seconds) {
 
   return  h +":"+ m +":"+ s;
 }
+
 ///Show makeit_incentive_report////
 Order.show_makeit_incentive_report= async function show_makeit_incentive_report(req,result) {   
   if(req.eligibility && req.eligibility!=''){
@@ -11324,7 +11337,6 @@ Order.show_makeit_incentive_report= async function show_makeit_incentive_report(
     result(null, resobj);
   }    
 };
-
 
 ///Eat users orders list////
 Order.eat_user_order_list= async function eat_user_order_list(req,result) {   
@@ -11470,8 +11482,8 @@ Order.moveitlog_rawreport= async function moveitlog_rawreport(req,result) {
   }    
 };
 
-  //////Zone Level Performance/////
-  Order.zone_level_performance_report= async function zone_level_performance_report(req,result) {   
+//////Zone Level Performance/////
+Order.zone_level_performance_report= async function zone_level_performance_report(req,result) {   
   
     var makeitimatrixquery ="select date,mu.zone as zone_id,zo.Zonename,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log0809))/60*60) as ops_hr_0809,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log0910))/60*60) as ops_hr_0910,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1011))/60*60) as ops_hr_1011,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1112))/60*60) as ops_hr_1112,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1213))/60*60) as ops_hr_1213,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1314))/60*60) as ops_hr_1314,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1415))/60*60) as ops_hr_1415,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1516))/60*60) as ops_hr_1516,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1617))/60*60) as ops_hr_1617,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1718))/60*60) as ops_hr_1718,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1819))/60*60) as ops_hr_1819,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log1920))/60*60) as ops_hr_1920,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2021))/60*60) as ops_hr_2021,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2122))/60*60) as ops_hr_2122,SEC_TO_TIME(SUM(TIME_TO_SEC(mdr.log2223))/60*60) as ops_hr_2223, COUNT(CASE WHEN mdr.log0809!='00:00:00' AND mdr.log0809_count!=0 THEN makeit_id END) as log0809_live_kitchencount,COUNT(CASE WHEN mdr.log0910!='00:00:00' AND mdr.log0910_count!=0 THEN makeit_id END) as log0910_live_kitchencount,COUNT(CASE WHEN mdr.log1011!='00:00:00' AND mdr.log1011_count!=0 THEN makeit_id END) as log1011_live_kitchencount,COUNT(CASE WHEN mdr.log1112!='00:00:00' AND mdr.log1112_count!=0 THEN makeit_id END) as log1112_live_kitchencount,COUNT(CASE WHEN mdr.log1213!='00:00:00' AND mdr.log1213_count!=0 THEN makeit_id END) as log1213_live_kitchencount,COUNT(CASE WHEN mdr.log1314!='00:00:00' AND mdr.log1314_count!=0 THEN makeit_id END) as log1314_live_kitchencount,COUNT(CASE WHEN mdr.log1415!='00:00:00' AND mdr.log1415_count!=0 THEN makeit_id END) as log1415_live_kitchencount,COUNT(CASE WHEN mdr.log1516!='00:00:00' AND mdr.log1516_count!=0 THEN makeit_id END) as log1516_live_kitchencount,COUNT(CASE WHEN mdr.log1617!='00:00:00' AND mdr.log1617_count!=0 THEN makeit_id END) as log1617_live_kitchencount,COUNT(CASE WHEN mdr.log1718!='00:00:00' AND mdr.log1718_count!=0 THEN makeit_id END) as log1718_live_kitchencount,COUNT(CASE WHEN mdr.log1819!='00:00:00' AND mdr.log1819_count!=0 THEN makeit_id END) as log1819_live_kitchencount,COUNT(CASE WHEN mdr.log1920!='00:00:00' AND mdr.log1920_count!=0 THEN makeit_id END) as log1920_live_kitchencount,COUNT(CASE WHEN mdr.log2021!='00:00:00' AND mdr.log2021_count!=0 THEN makeit_id END) as log2021_live_kitchencount,COUNT(CASE WHEN mdr.log2122!='00:00:00' AND mdr.log2122_count!=0 THEN makeit_id END) as log2122_live_kitchencount,COUNT(CASE WHEN mdr.log2223!='00:00:00' AND mdr.log2223_count!=0 THEN makeit_id END) as log2223_live_kitchencount from Makeit_daywise_report as mdr left join MakeitUser as mu on mu.userid=mdr.makeit_id left join Zone as zo on zo.id=mu.zone where date(mdr.date) between DATE_SUB(CURDATE(), INTERVAL 1 DAY) and DATE_SUB(CURDATE(), INTERVAL 1 DAY) group by date(mdr.date),mu.zone";
     var makeitmatrix = await query(makeitimatrixquery);
