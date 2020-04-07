@@ -1264,3 +1264,11 @@ exports.crm_dashboard_orders_filter_count = function(req, res) {
     res.send(user);
   });
 };
+
+///Admin Raw Data Report -> moveitlog_rawreport////
+exports.homemakeravgtime = function(req, res) {
+  Order.homemakeravgtime(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};

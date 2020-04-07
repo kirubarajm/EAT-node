@@ -349,6 +349,6 @@ app.route("/admin/reports/zonelevelperformancereport").get(routesVersioning({"1.
 
 app.route("/admin/dashboard/orders").post(routesVersioning({"1.0.0":orders.list_all_dashboar_orders}));
 app.route("/admin/dashboard/orderscount").post(routesVersioning({"1.0.0":orders.crm_dashboard_orders_filter_count}));
-
+app.route("/admin/report/homemakerdaytime").post(routesVersioning({"1.0.0":orders.homemakeravgtime}));
 
 }

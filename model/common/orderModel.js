@@ -11440,4 +11440,49 @@ Order.crm_dashboard_orders_filter_count =async function crm_dashboard_orders_fil
 
 };
 
+
+///Admin Home maker Report -> homemakeravgtime////
+Order.homemakeravgtime= async function homemakeravgtime(req,result) {
+  var curDate=new Date();
+  curDate.setDate(curDate.getDate()-7);
+  var todate =moment().format("YYYY-MM-DD");
+  var fromdate=moment(curDate).format("YYYY-MM-DD");
+
+  if(req.fromdate) fromdate=req.fromdate;
+  if(req.todate) todate=req.todate;
+
+  if(req.fromdate !='' && req.todate !=''){
+    var moveitlogquery ="select date,mr.makeit_id,mu.brandname,mr.logtime as livetime_day,if(mu.makeit_type=0,'Home Maker','Home Cater') as makeit_type from Makeit_daywise_report mr left join MakeitUser mu on mu.userid=mr.makeit_id where mu.virtualkey=0 and date(date) between '"+fromdate+"' and '"+todate+"'";
+    
+    if(req.makeit_type==0 || req.makeit_type==1){
+      moveitlogquery=moveitlogquery+" and mu.makeit_type= "+req.makeit_type;
+    }
+
+    var res = await query(moveitlogquery); 
+  
+    if (res.length !== 0) {
+      let resobj = {
+        success: true,
+        status:true,
+        result:res
+      };
+      result(null, resobj);
+    }else {
+      let resobj = {
+        success: true,
+        message: "Sorry! no data found.",
+        status:false
+      };
+      result(null, resobj);
+    }  
+  }else{
+    let resobj = {
+      success: false,
+      status:false,
+      message: "please check all required fields",
+    };
+    result(null, resobj);
+  }    
+};
+
 module.exports = Order;
