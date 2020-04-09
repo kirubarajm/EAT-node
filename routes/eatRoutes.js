@@ -184,6 +184,10 @@ app.route("/eat/zendesk/issuesdetails").post(middleware.checkToken,routesVersion
 app.route("/eat/zendesk/requestcreate").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.zendesk_requestcreate}));
 
 
+app.route("/eat/productunlive").get(middleware.checkToken,routesVersioning({"1.0.0":quicksearch.manual_product_unlive}));
+
+
+
 
 
 }

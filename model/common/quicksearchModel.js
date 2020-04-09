@@ -1389,6 +1389,63 @@ const moveitlog_in1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21
 });
 //moveitlog_in1hr.start();
 
+const product_unlive = new CronJob("* */1 7-23 * * * ", async function() {
+ /// QuickSearch.product_unlive =  async function product_unlive(req,result) {
+
+var  cur_hr = moment().format("HH:mm");
+console.log("1",cur_hr);
+
+if ( cur_hr == '09:00' ||  cur_hr == '14:00' ||  cur_hr == '20:05') {
+  console.log("2",cur_hr);
+
+  var productlist = await query("select productid from Product where active_status=1");
+  console.log("4",productlist.length);
+  if (productlist.length !=0) {
+    console.log("3",productlist.length);
+    var update_product = await query("update Product SET active_status=0 ");
+
+  }
+ }
+
+
+ let resobj = {
+  success: true,
+  status: true,
+  message: 'Product Unlive sucessfully'
+};
+//result(null, resobj);
+});
+
+
+QuickSearch.manual_product_unlive = async function manual_product_unlive(req, result) {
+
+
+  var  cur_hr = moment().format("HH:mm");
+  console.log("1",cur_hr);
+  
+  // ( cur_hr == '09:00' ||  cur_hr == '14:00' ||  cur_hr == '20:05') {
+    console.log("2",cur_hr);
+  
+    var productlist = await query("select productid from Product where active_status=1");
+    console.log("4",productlist.length);
+    if (productlist.length !=0) {
+      console.log("3",productlist.length);
+      var update_product = await query("update Product SET active_status=0 ");
+  
+    }
+   //}
+  
+  
+   let resobj = {
+    success: true,
+    status: true,
+    message: 'Product Unlive sucessfully'
+  };
+  result(null, resobj);
+  
+  };
+  
+
 QuickSearch.onStartAllCron = function onStartAllCron(){
     if(constant.isCronStart){
       var currentdatecheck = new Date();
@@ -1408,6 +1465,7 @@ QuickSearch.onStartAllCron = function onStartAllCron(){
       moveitautologout_midnight.start();
       incomplete_order_relese_product_cron.start();
       quick_search_cron.start();
+      product_unlive.start();
   }
 }
 
