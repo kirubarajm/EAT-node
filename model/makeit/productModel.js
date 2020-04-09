@@ -492,10 +492,11 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
                
                   var isEdit=true;
                   req.active_status=res1[0].active_status;
-                  if(res1[0].makeit_type===0){
+                  if(res1[0].virtualkey===0&&res1[0].makeit_type===0){
                     console.log("No ...");
                     Product.Check_Package(req,isEdit,result);
-                  }else if(res1[0].makeit_type===1){
+                  }else if(res1[0].virtualkey===0&&res1[0].makeit_type===1){
+                    console.log("Check_cover_package ...");
                     Product.Check_cover_package(req,isEdit,result);
                   }else{
                     Product.update_quantity_valid_package(req,isEdit,result);
@@ -503,34 +504,7 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
               }
             }
           );
-          // sql.query(
-          //   "UPDATE Product SET quantity = ? WHERE productid = ? and makeit_userid = ?",
-          //   [req.quantity, req.productid, req.makeit_userid],
-          //   function(err, res) {
-          //     if (err) {
-          //       console.log("error: ", err);
-          //       result(null, err);
-          //     } else {
-          //       /////=Edit Live Product History =//////////
-          //       req.action=2;
-          //       Product.createliveproductstatushistory(req, function(err,result2){
-          //         if (err) {
-          //             result(err, null);
-          //         } else{
-          //             console.log(result2);
-          //         }
-          //       });
-          //       //////////////////////////////////////////
-          //       let message = "Quantity added successfully";
-          //       let resobj = {
-          //         success: true,
-          //         status : true,
-          //         message: message
-          //       };
-          //       result(null, resobj);
-          //     }
-          //   }
-          // );
+          
         } else if (res[0].approved_status == 0) {
           console.log("product live");
           let resobj = {
@@ -619,10 +593,11 @@ Product.update_quantity_product_byid = async function update_quantity_product_by
 
             console.log("res1[0].makeit_type-->",res1[0].makeit_type)
             var isEdit=false;
-            if(res1[0].makeit_type===0){
+            if(res1[0].virtualkey===0&&res1[0].makeit_type===0){
               console.log("No ...");
               Product.Check_Package(req,isEdit,result);
-            }else if(res1[0].makeit_type===1){
+            }else if(res1[0].virtualkey===0&&res1[0].makeit_type===1){
+              console.log("Check_cover_package ...");
               Product.Check_cover_package(req,isEdit,result);
             }else{
               Product.update_quantity_valid_package(req,isEdit,result);
@@ -781,7 +756,6 @@ Product.Check_Package=async function(req,isEdit,result){
 
 Product.Check_cover_package=async function(req,isEdit,result){
   var stockPackageCountQuery = await query("SELECT it.packageid,it.remaining_count FROM InventoryTracking it where it.id in (SELECT max(id) FROM InventoryTracking where makeit_id="+req.makeit_userid +" and packageid in ("+constant.order_cover_package_id+") GROUP BY packageid) order by packageid");
-  console.log("stockPackageCountQuery[0].remaining_count--->",stockPackageCountQuery[0].remaining_count)
   if(stockPackageCountQuery.length!=0&&stockPackageCountQuery[0].remaining_count<=constant.makeit_live_quantity_restrict_count){
   sql.query("select sum(pt.quantity) as total_product from Product pt where delete_status!=1 and active_status=1 and makeit_userid="+req.makeit_userid+" and productid !='"+ req.productid +"'",
   async function(err, res) {
