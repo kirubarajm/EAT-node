@@ -2748,6 +2748,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
     kitchenquery = kitchenquery + " GROUP BY pt.productid  ORDER BY mk.unservicable = 0 desc ";
   }
 
+  console.log("kitchen",kitchenquery);
   sql.query(kitchenquery, async function(err, res) {
     if (err) {
       result(err, null);
@@ -3690,7 +3691,6 @@ Eatuser.eatuser_login = function eatuser_login(newUser, result) {
         console.log("error: ", err);
         result(err, null);
       } else {
-        console.log(res);
         if (res.length === 0) {
           console.log("validate password");
 
@@ -4664,9 +4664,13 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
         }
 
         if (res1.length !== 0) {
-          var getregionlistquery = "select re.regionid,re.regiontitle as regionname,re.stateid,re.lat,re.lon,re.region_image,re.slider_title,re.slider_content,re.region_detail_image,re.special_dish_img,re.identity_img,re.tagline,re.specialities_food_content,re.active_status,re.region_infinity_img,re.region_collection_img,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid join MakeitUser mk on mk.regionid =re.regionid join Product pt on mk.userid = pt.makeit_userid  where pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" group by re.regionid order by distance ASC limit 8";
+          console.log("1-------------------------->",res1.length );
+
+          var getregionlistquery = "select re.regionid,re.regiontitle as regionname,re.stateid,re.lat,re.lon,re.region_image,re.slider_title,re.slider_content,re.region_detail_image,re.special_dish_img,re.identity_img,re.tagline,re.specialities_food_content,re.active_status,re.region_infinity_img,re.region_collection_img,st.statename,( 3959 * acos( cos( radians('"+res1[0].lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+res1[0].lon+"') ) + sin( radians('"+res1[0].lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid join MakeitUser mk on mk.regionid =re.regionid join Product pt on mk.userid = pt.makeit_userid  where pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1  group by re.regionid order by distance ASC limit 8";
         }else if(res1.length === 0){
-          var getregionlistquery = "select re.regionid,re.regiontitle as regionname,re.stateid,re.lat,re.lon,re.region_image,re.slider_title,re.slider_content,re.region_detail_image,re.special_dish_img,re.identity_img,re.tagline,re.specialities_food_content,re.active_status,re.region_infinity_img,re.region_collection_img,st.statename,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid join MakeitUser mk on mk.regionid =re.regionid join Product pt on mk.userid = pt.makeit_userid  where pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" group by re.regionid order by distance ASC ";
+          console.log("2-------------------------->");
+
+          var getregionlistquery = "select re.regionid,re.regiontitle as regionname,re.stateid,re.lat,re.lon,re.region_image,re.slider_title,re.slider_content,re.region_detail_image,re.special_dish_img,re.identity_img,re.tagline,re.specialities_food_content,re.active_status,re.region_infinity_img,re.region_collection_img,st.statename,( 3959 * acos( cos( radians('"+req.lat+"') ) * cos( radians( re.lat ) )  * cos( radians( re.lon ) - radians('"+req.lon+"') ) + sin( radians('"+req.lat+"') ) * sin(radians(re.lat)) ) ) AS distance from Region re left join State st on re.stateid=st.stateid join MakeitUser mk on mk.regionid =re.regionid join Product pt on mk.userid = pt.makeit_userid  where pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1  group by re.regionid order by distance ASC ";
         }
              
         //  only where re.regionid=16 or  re.regionid= 3 or re.regionid = 19
@@ -4699,8 +4703,11 @@ Eatuser.get_eat_region_makeit_list_by_eatuserid = async function get_eat_region_
             var temparray = [];
             //  res2.forEach(function(v){ delete v.distance});
             let limit = 3;
+
+
+            console.log("-------------------------->",res2.length);
             for (let i = 0; i < res2.length; i++) {
-              var nearbyregionquery = "Select distinct mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regiontitle as regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,mk.member_type,mk.about,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and mk.ka_status = 2 and pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1 "+productquery+" GROUP BY pt.productid  ORDER BY distance";
+              var nearbyregionquery = "Select distinct mk.zone,mk.userid as makeituserid,mk.name as makeitusername,mk.brandname as makeitbrandname,mk.rating rating,mk.regionid,re.regiontitle as regionname,mk.costfortwo,mk.img1 as makeitimg,ly.localityname,mk.member_type,mk.about,fa.favid,IF(fa.favid,'1','0') as isfav, ( 3959 * acos( cos( radians("+req.lat+") ) * cos( radians( mk.lat ) )  * cos( radians( mk.lon ) - radians("+req.lon+") ) + sin( radians("+req.lat+") ) * sin(radians(mk.lat)) ) ) AS distance,JSON_ARRAYAGG(JSON_OBJECT('cuisineid',cm.cuisineid,'cuisinename',cu.cuisinename)) AS cuisines from MakeitUser mk join Product pt on mk.userid = pt.makeit_userid left join Region re on re.regionid = mk.regionid left join Fav fa on fa.makeit_userid = mk.userid and fa.eatuserid = "+req.eatuserid+"  left join Cuisine_makeit cm on cm.makeit_userid = mk.userid  left join Cuisine cu on cu.cuisineid=cm.cuisineid left join Locality ly on mk.localityid=ly.localityid  where mk.regionid ="+res2[i].regionid+"  and  mk.appointment_status = 3 and mk.verified_status = 1  and mk.ka_status = 2 and pt.approved_status=2 and  pt.quantity != 0 and pt.active_status = 1 and pt.delete_status !=1  GROUP BY pt.productid  ORDER BY distance";
               //console.log("makeitlist" +nearbyregionquery);
               let kitchenlist = await query(nearbyregionquery);
               var kitchendetaillist=[];
