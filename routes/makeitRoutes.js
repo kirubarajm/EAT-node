@@ -101,5 +101,4 @@ app.route("/makeit/referralmakeitdetails").post(middleware.checkToken,routesVers
 app.route("/makeit/referralmakeitlist").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.referral_makeit_list}));
 
 
-
 }

@@ -17,6 +17,8 @@ var ZoneModel    = require("../../model/common/zoneModel.js");
 var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTrackingModel');
 var Makeittimelog    = require("../../model/common/makeittimelogModel");
 var MakeitReferral   = require("../../model/common/makeitreferralhistoryModel.js");
+var request = require('request');
+var requestpromise = require('request-promise');
 
 //Task object constructor
 var Makeituser = function(makeituser) {
@@ -3956,16 +3958,23 @@ Makeituser.makeit_earnings_incentives= async function makeit_earnings_incentives
 
     var makeitincentivequery = "SELECT (incentive_amount+makeit_referral_earnings) as makeit_total_incentive,eligibility FROM Makeit_incentive WHERE makeit_id IN("+req.makeit_id+") AND date(from_date)='"+req.fromdate+"' AND  date(to_date)='"+req.todate+"'";
     var makeitincentive = await query(makeitincentivequery);
+    cur_date = moment().format("YYYY-MM-DD");
 
     if(makeitincentive.length>0){
       var incentive_eligibility = makeitincentive[0].eligibility;
+      var makeit_total_incentive = makeitincentive[0].makeit_total_incentive || 0;
     }else{
-      var incentive_eligibility = 2;
+      if(req.todate > cur_date){
+        var incentive_eligibility = 2;
+      }else{
+        var incentive_eligibility = 0;
+      }      
+      var makeit_total_incentive = 0;
     }
 
     if(makeitearnings && makeitincentive){
       var res =new Array();
-      res.push({'weekly_payouts':(makeitearnings[0].makeit_total_earnings+makeitincentive[0].makeit_total_incentive),'makeit_earnings':makeitearnings[0].makeit_total_earnings,'makeit_incentive':makeitincentive[0].makeit_total_incentive,'eligibility':incentive_eligibility});
+      res.push({'weekly_payouts':(makeitearnings[0].makeit_total_earnings+makeit_total_incentive),'makeit_earnings':makeitearnings[0].makeit_total_earnings,'makeit_incentive':makeit_total_incentive,'eligibility':incentive_eligibility});
       let resobj = {
         success: true,
         status : true,
@@ -4018,10 +4027,15 @@ Makeituser.visibility_makeit_incentive= async function visibility_makeit_incenti
   if(req.fromdate && req.todate && req.makeit_id){
     var getmakeitincentivequery = "SELECT incentive_amount,if(eligibility=1,'eligible','not eligible') as incentive_eligibility FROM Makeit_incentive WHERE makeit_id = "+req.makeit_id+" AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' ";
     var getmakeitincentive = await query(getmakeitincentivequery);
+    cur_date = moment().format("YYYY-MM-DD");
 
     if(getmakeitincentive.length==0){
       var incentive = 0;
-      var inc_eligibility = 'not eligible';
+      if(req.todate > cur_date){
+        var inc_eligibility = 2;
+      }else{
+        var inc_eligibility = 0;
+      }      
     }else{
       var incentive = getmakeitincentive[0].incentive_amount;
       var inc_eligibility = getmakeitincentive[0].incentive_eligibility;
@@ -4213,19 +4227,24 @@ Makeituser.referral_makeit_details= async function referral_makeit_details(req,r
 
     req.onboarded = getmakeitonboard[0].onboarded;
     req.day14 = moment(req.onboarded, "YYYY-MM-DD").add(14, 'days').format("YYYY-MM-DD");
-    
+    cur_date = moment().format("YYYY-MM-DD");
+   
     var getmakeitincentivequery = "SELECT referrel_incentive_amount FROM Makeit_referral_history WHERE makeit_id = "+req.makeit_id+" AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' ";
     var getmakeitincentive = await query(getmakeitincentivequery);
 
     if(getmakeitincentive.length==0){
       var incentive = 0;
-      var inc_eligibility = 'not eligible';
+      if(req.day14 > cur_date){
+        var inc_eligibility = 2;
+      }else{
+        var inc_eligibility = 0;
+      }      
     }else{
       var incentive = getmakeitincentive[0].referrel_incentive_amount ||0;
       if(getmakeitincentive[0].referrel_incentive_amount>0){
-        var inc_eligibility = 'eligible';
+        var inc_eligibility = 1;
       }else{
-        var inc_eligibility = 'not eligible';
+        var inc_eligibility = 0;
       }
     }
 
@@ -4352,9 +4371,9 @@ Makeituser.referral_makeit_list= async function referral_makeit_list(req,result)
     var weeklyincentive = await query(weeklyincentivequery);
 
     if(weeklyincentive.length>0){
-      Newarray.push({'weekly_incentive':weeklyincentive[0].makeit_referral_earnings});
+      var weekly_incentive = weeklyincentive[0].makeit_referral_earnings || 0;
     }else{
-      Newarray.push({'weekly_incentive':0});
+      var weekly_incentive = 0;
     }
     
     if(getreferrallist.length>0){
@@ -4366,19 +4385,24 @@ Makeituser.referral_makeit_list= async function referral_makeit_list(req,result)
 
         var onboarded_on = getmakeitonboard[0].onboarded;
         var maturing_on  = moment(getmakeitonboard[0].onboarded, "YYYY-MM-DD").add(14, 'days').format("YYYY-MM-DD");
-        
+        cur_date = moment().format("YYYY-MM-DD");
+
         var getmakeitincentivequery = "SELECT SUM(referrel_incentive_amount) as referrel_incentive_amount FROM Makeit_referral_history WHERE referred_makeit_id = "+getreferrallist[i].userid+" AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' ";
         var getmakeitincentive = await query(getmakeitincentivequery);
 
         if(getmakeitincentive.length==0){
           var incentive = 0;
-          var inc_eligibility = 'not eligible';
+          if(maturing_on > cur_date){
+            var inc_eligibility = 2;
+          }else{
+            var inc_eligibility = 0;
+          }         
         }else{
           var incentive = getmakeitincentive[0].referrel_incentive_amount ||0;
           if(getmakeitincentive[0].referrel_incentive_amount>0){
-            var inc_eligibility = 'eligible';
+            var inc_eligibility = 1;
           }else{
-            var inc_eligibility = 'not eligible';
+            var inc_eligibility = 0;
           }
         }
           
@@ -4389,6 +4413,7 @@ Makeituser.referral_makeit_list= async function referral_makeit_list(req,result)
       let resobj = {
           success: true,
           status : true,
+          weekly_incentive: weekly_incentive,
           result : Newarray
         };
         result(null, resobj);
@@ -4409,6 +4434,5 @@ Makeituser.referral_makeit_list= async function referral_makeit_list(req,result)
     result(null, resobj);
   }
 };
-
 
 module.exports = Makeituser;
