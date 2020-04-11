@@ -5615,20 +5615,19 @@ Eatuser.user_based_notification = async function user_based_notification(req, re
       result(err, null);
     } else {
    
+      var message="all";
       if (req.type==1) {
        var userlist = res.filter(re => re.with7day ===0);
+       message="without orders last 7 days users";
      }else if(req.type==2){
        var userlist = res.filter(re => re.with7day !==0);
+       message="with orders last 7 days users";
      }else{
        var userlist = res;
      }
-     // const userlist = res.filter(re => re.with7day===0);
-
-    //  const userlist = res;
-      
-   //   console.log(userlist.length);
+     
+     var userid="";
       for (let i = 0; i < userlist.length; i++) {
-        
         user={};
         user.userid = userlist[i].userid;
         user.user_message = req.user_message;
@@ -5637,34 +5636,29 @@ Eatuser.user_based_notification = async function user_based_notification(req, re
         if (req.image) {
           user.image = req.image;
         }
-       
-        await Notification.orderEatPushNotification(
+        userid=userid+","+userlist[i].userid;
+        await Notification.orderEatBulkPushNotification(
           null,
           user,
           PushConstant.Pageid_eat_send_notification
         );
         
       } 
-     
+    
+    console.log("Notification Via Admin--->",message);
+    console.log("userquery--->",getuserquery);
+    console.log("User-ids--->",userid);
   let resobj = {
     success: true,
     status: true,
-    message: "notification sent successfully"
+    message: "notification sent successfully",
+    ms:message,
+    res:userid
   };
 
   result(null, resobj);
    }
   });
-  
-
-  // let resobj = {
-  //   success: true,
-  //   status: true,
-  //   message: "notification sent successfully"
-  // };
-
-  // result(null, resobj);
-
 };
 
 
