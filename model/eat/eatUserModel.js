@@ -5604,9 +5604,9 @@ Eatuser.hub_based_userlist = async function hub_based_userlist(req, result) {
 Eatuser.user_based_notification = async function user_based_notification(req, result) {
  
   if (req.type==0) {
-    var getuserquery ="select userid,name from User where pushid_android NOT IN ( '0' )";
+    var getuserquery ="select userid,name,pushid_android from User where pushid_android NOT IN ( '0' ) and pushid_ios IS null";
   } else {
-    var getuserquery ="select u.userid,u.name,u.email,u.phoneno,ord.orderid,u.pushid_android,u.pushid_ios,u.Locality,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(),INTERVAL "+constant.interval_days+" DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid join MakeitUser as mk on mk.userid=ord.makeit_user_id  join Makeit_hubs as mh on mh.makeithub_id=mk.makeithub_id where u.pushid_android NOT IN ( '0' ) and u.userid!='' and mh.makeithub_id="+req.makeithub_id+"  and ord.orderstatus < 8 and orderid in (SELECT max(orderid) FROM Orders  GROUP BY userid) order by ord.created_at desc";
+    var getuserquery ="select u.userid,u.name,u.email,u.phoneno,ord.orderid,u.pushid_android,u.pushid_ios,u.Locality,(CASE WHEN (DATE(ord.created_at) BETWEEN DATE_SUB(CURDATE(),INTERVAL "+constant.interval_days+" DAY) AND  CURDATE()) THEN ord.orderid ELSE 0 END) as with7day from User as u join Orders as ord on ord.userid=u.userid join MakeitUser as mk on mk.userid=ord.makeit_user_id  join Makeit_hubs as mh on mh.makeithub_id=mk.makeithub_id where u.pushid_android NOT IN ( '0' ) and u.pushid_ios IS null and u.userid!='' and mh.makeithub_id="+req.makeithub_id+"  and ord.orderstatus < 8 and orderid in (SELECT max(orderid) FROM Orders  GROUP BY userid) order by ord.created_at desc";
   }
 
   sql.query(getuserquery,async function(err, res) {
@@ -5630,9 +5630,10 @@ Eatuser.user_based_notification = async function user_based_notification(req, re
       for (let i = 0; i < userlist.length; i++) {
         
         user={};
-        user.userid=userlist[i].userid;
+        user.userid = userlist[i].userid;
         user.user_message = req.user_message;
         user.title = req.title;
+        user.pushid_android = userlist[i].pushid_android;
         if (req.image) {
           user.image = req.image;
         }
