@@ -1041,7 +1041,8 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
       if (userdetails[0].first_tunnel == 0) {
         first_tunnel_status=true;
       }
-  
+ 
+
    
 
       for (let i = 0; i < orderitems.length; i++) {
