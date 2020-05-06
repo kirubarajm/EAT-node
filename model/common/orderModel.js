@@ -219,10 +219,10 @@ Order.read_a_proceed_to_pay = async function read_a_proceed_to_pay(req,orderitem
   }
 
 
-  // if (currenthour >= breatfastcycle && currenthour <= dinnerend) { //validate the time 11 clcok
+   if (currenthour >= breatfastcycle && currenthour <= dinnerend) { //validate the time 11 clcok
 
     
-  if ((cur_hr >= '06:45:00' && cur_hr < '09:00:00') || (cur_hr >= '11:45:00' && cur_hr < '14:00:00') || (cur_hr >= '17:45:00' && cur_hr < '20:30:00')) {
+  // if ((cur_hr >= '06:45:00' && cur_hr < '09:00:00') || (cur_hr >= '11:45:00' && cur_hr < '14:00:00') || (cur_hr >= '17:45:00' && cur_hr < '20:30:00')) {
     if (req.payment_type==1) {
       
 
