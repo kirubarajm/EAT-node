@@ -23,7 +23,7 @@ const calculate = {
   breatfastcycle: 8, //8 -12
   lunchcycle: 12, //12 - 4
   dinnercycle: 16, //4 - 11
-  dinnerend: 22,
+  dinnerend: 21,
   dinnerstart: 4,
   max_order_rating_skip: 2,
   tunnel_refund_amout: 100,

@@ -265,7 +265,7 @@ QuickSearch.eat_explore_quick_search = function eat_explore_quick_search(req, re
 };
 
 ///// Cron For BreakFast, Lunch, Dinner Every Cycle Start and End ///////////
-const liveproducthistory = new CronJob("0 0 8,12,16,23 * * *", async function(
+const liveproducthistory = new CronJob("0 0 8,12,16,22 * * *", async function(
   req,
   result
 ) {
@@ -405,7 +405,7 @@ QuickSearch.dunzo_task_create = function dunzo_task_create(orderid) {
   });
 };
 
-const order_auto_assign_Change = new CronJob("* */1 7-23 * * * ", async function() {
+const order_auto_assign_Change = new CronJob("* */1 7-22 * * * ", async function() {
   if (constant.order_assign_status==true) {
   var i = 0;
   // var res = await query(
@@ -899,7 +899,7 @@ const Package_tracking = new CronJob("0 0 7,0 * * * ", async function() {
 //Package_tracking.start();
 
 ///// KPI Product History CRON ///////////
-const kpidashboardproducthistory = new CronJob("* */10 8-23 * * * ", async function(req, result) {
+const kpidashboardproducthistory = new CronJob("* */10 8-22 * * * ", async function(req, result) {
   var breatfastcycle    = constant.breatfastcycle;
   var lunchcycle        = constant.lunchcycle;
   var dinnercyclestart  = constant.dinnercycle;
@@ -970,7 +970,7 @@ const moveitlog_out = new CronJob("0 59 7,11,15,22 * * *", async function() {
 //moveitlog_out.start();
 
 //// Not working cron run by moveit user online every cycle end.
-const moveitlog_in = new CronJob("0 0 8,12,16,23 * * *", async function() {
+const moveitlog_in = new CronJob("0 0 8,12,16,22 * * *", async function() {
   var cronLogReq={
     cron_id:11,
     cron_name:"Driver Time Log in",
@@ -1060,7 +1060,7 @@ const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
 //makeitlog_everyday.start();
 
 ///// Not Working Cron For BreakFast, Lunch, Dinner Every Cycle Start ///////////
-const liveproducthistory_cyclestart = new CronJob("0 0 8,12,16,23 * * *", async function(req, result) {
+const liveproducthistory_cyclestart = new CronJob("0 0 8,12,16,22 * * *", async function(req, result) {
   await QuickSearch.liveproducthistorycyclestart();
 });
 //liveproducthistory_cyclestart.start();
@@ -1389,17 +1389,17 @@ const moveitlog_in1hr = new CronJob("0 0 8,9,10,11,12,13,14,15,16,17,18,19,20,21
 });
 //moveitlog_in1hr.start();
 
-const product_unlive = new CronJob("* */1 7-23 * * * ", async function() {
+const product_unlive = new CronJob("* */1 7-21 * * * ", async function() {
  /// QuickSearch.product_unlive =  async function product_unlive(req,result) {
 
 var  cur_hr = moment().format("HH:mm");
-console.log("1",cur_hr);
 
-if ( cur_hr == '09:00' ||  cur_hr == '14:00' ||  cur_hr == '20:05') {
-  console.log("2",cur_hr);
+
+if ( cur_hr == '21:00') {
+  
 
   var productlist = await query("select productid from Product where active_status=1");
-  console.log("4",productlist.length);
+ 
   if (productlist.length !=0) {
     console.log("3",productlist.length);
     var update_product = await query("update Product SET active_status=0 ");

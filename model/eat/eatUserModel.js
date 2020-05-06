@@ -2922,7 +2922,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                   zoneName:zonename,
                   kitchencount :kitchencount ||0,
                   pagecount : pagecount ||0,
-                  empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+                  empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
                   empty_content:"EAT",
                   empty_subconent :"EAT",
                   result: kitchenlist
@@ -2938,7 +2938,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
               zoneName:zonename,
               kitchencount :kitchencount ||0,
               pagecount : pagecount ||0,
-              empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+              empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
               empty_content:"EAT",
               empty_subconent :"EAT",
               result: kitchenlist
@@ -2969,7 +2969,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                   zoneName:zonename,
                   kitchencount :kitchencount ||0,
                   pagecount : pagecount ||0,
-                  empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+                  empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
                   empty_content:"EAT",
                   empty_subconent :"EAT",
                   result: kitchenlist
@@ -2985,7 +2985,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
               zoneName:zonename,
               kitchencount :kitchencount ||0,
               pagecount : pagecount ||0,
-              empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+              empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
               empty_content:"EAT",
               empty_subconent :"EAT",
               result: kitchenlist
@@ -3016,7 +3016,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                   zoneName:zonename,
                   kitchencount :kitchencount ||0,
                   pagecount : pagecount ||0,
-                  empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+                  empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
                   empty_content:"EAT",
                   empty_subconent :"EAT",
                   result: kitchenlist                  
@@ -3032,7 +3032,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
               zoneName:zonename,
               kitchencount :kitchencount ||0,
               pagecount : pagecount ||0,
-              empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+              empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
               empty_content:"EAT",
               empty_subconent :"EAT",
               result: kitchenlist
@@ -3075,7 +3075,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                     zoneName:zonename,
                     kitchencount :kitchencount ||0,
                     pagecount : pagecount ||0,
-                    empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+                    empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
                     empty_content:"EAT",
                     empty_subconent :"EAT",
                     result: kitchenlist
@@ -3092,7 +3092,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
               zoneName:zonename,
               kitchencount :kitchencount ||0,
               pagecount : pagecount ||0,
-              empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+              empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
               empty_content:"EAT",
               empty_subconent :"EAT",
               result: kitchenlist
@@ -3123,7 +3123,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                   zoneName:zonename,
                   kitchencount :kitchencount ||0,
                   pagecount : pagecount ||0,
-                  empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+                  empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
                   empty_content:"EAT",
                   empty_subconent :"EAT",
                   result: kitchenlist
@@ -3139,7 +3139,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
               zoneName:zonename,
               kitchencount :kitchencount ||0,
               pagecount : pagecount ||0,
-              empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+              empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
               empty_content:"EAT",
               empty_subconent :"EAT",
               result: kitchenlist
@@ -3184,7 +3184,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                     zoneName:zonename,
                     kitchencount :kitchencount ||0,
                     pagecount : pagecount ||0,
-                    empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+                    empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
                      empty_content:"EAT",
                     empty_subconent :"EAT",
                     result: kitchenlist
@@ -3228,7 +3228,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
                           zoneName:zonename,
                           kitchencount :kitchencount ||0,
                           pagecount : pagecount ||0,
-                          empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+                          empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
                           empty_content:"EAT",
                           empty_subconent :"EAT",
                           result: kitchenlist
@@ -3249,7 +3249,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
               zoneName:zonename,
               kitchencount :kitchencount ||0,
               pagecount : pagecount ||0,
-              empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+              empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
               empty_content:"EAT",
               empty_subconent :"EAT",
               result: kitchenlist
@@ -3265,7 +3265,7 @@ Eatuser.get_eat_kitchen_list_sort_filter_v_2_2 = async function (req, result) {
         zoneName:zonename,
         kitchencount :kitchencount ||0,
         pagecount : pagecount ||0,
-        empty_url:"https://eattovo.s3.amazonaws.com/upload/admin/makeit/product/1586943310096-No%20service%20screen-02.png",
+        empty_url:"https://eattovo.s3.ap-south-1.amazonaws.com/upload/admin/makeit/product/1588685356375-No%20service%20screen-02.png",
         empty_content:"EAT",
         empty_subconent :"EAT",
         result: kitchenlist
