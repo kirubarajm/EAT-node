@@ -3764,7 +3764,7 @@ Makeituser.makeit_avg_preparation_report= async function makeit_avg_preparation_
   }); 
 };
 
-////Makeit avg preparation report/////////////
+////Makeit Incentive Graph/////////////
 Makeituser.makeit_incentives= async function makeit_incentives(req,result) {
   var makeit_avg_list = "select cycle_count as complete_succession_count,cancel_order_count as cancel_order_count,dinner_count,lunch_count,breakfast_count from Makeit_daywise_report where (Date(date) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  AND makeit_id = '"+req.makeit_id+"'";
  
@@ -3796,9 +3796,10 @@ Makeituser.makeit_incentives= async function makeit_incentives(req,result) {
       }
 
       averageproduct_count = product_count/cycle_count;
+      
 
       var Newarray = [];
-      Newarray.push({"complete_succession_count":complete_succession_count,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count});
+      Newarray.push({"complete_succession_count":complete_session_data,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count});
       
       let resobj = {
         success: true,
@@ -3946,6 +3947,52 @@ Makeituser.makeit_cycle_product_count = async function makeit_cycle_product_coun
     productcount[i].cycle3_qty=count;  
   }
   return productcount;
+};
+
+////Makeit Refwrral Incentive/////////////
+Makeituser.makeit_referral_incentives= async function makeit_referral_incentives(req,result) {
+  var makeit_avg_list = "select cycle_count as complete_succession_count,cancel_order_count as cancel_order_count,dinner_count,lunch_count,breakfast_count from Makeit_daywise_report where (Date(date) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  AND makeit_id = '"+req.makeit_id+"'";
+ 
+  sql.query(makeit_avg_list, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      var complete_succession_count = 0;
+      var cancel_order_count        = 0;
+      var averageproduct_count      = 0;
+      var cycle_count               = 0;
+      var product_count             = 0;
+
+      for(let i=0; i<res.length; i++){
+        complete_succession_count = complete_succession_count + res[i].complete_succession_count;
+        cancel_order_count        = cancel_order_count + res[i].cancel_order_count;
+        if(res[i].dinner_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].dinner_count;
+        }
+        if(res[i].lunch_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].lunch_count;
+        }
+        if(res[i].breakfast_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].breakfast_count;
+        }
+      }
+
+      averageproduct_count = product_count/cycle_count;
+
+      var Newarray = [];
+      Newarray.push({"complete_succession_count":complete_succession_count,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count});
+      
+      let resobj = {
+        success: true,
+        status : true,
+        result : Newarray
+      };
+      result(null, resobj);
+    }
+  });  
 };
 
 

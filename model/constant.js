@@ -122,9 +122,13 @@ const calculate = {
 
     /////////////Makit Incentive///////////////
     logtime_percentage :75,
+    makeit_tier1_count:12,
+    makeit_tier2_count:15,
+    makeit_tier3_count:18,
     makeit_tier1:500,
     makeit_tier2:750,
     makeit_tier3:1000,
+    makeit_in_cancel_count:3,
 
     ////////////////Moveit Cycle time//////////
     cycle1:4,

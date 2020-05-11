@@ -10501,13 +10501,13 @@ Order.makeit_incentive_report= async function makeit_incentive_report(req,inc_fr
         for (let i = 0; i < res.length; i++) {
           res[i].from_date  = inc_fromdate;
           res[i].to_date    = inc_todate;
-          if(res[i].complete_succession_count >= 18 && res[i].cancel_count <=3 ){
+          if(res[i].complete_succession_count >= constant.makeit_tier3_count && res[i].cancel_count <= constant.makeit_in_cancel_count ){
             res[i].eligibility = 1;
             res[i].incentive_amount = constant.makeit_tier3;
-          }else if(res[i].complete_succession_count >= 15 && res[i].complete_succession_count < 18 && res[i].cancel_count <=3 ){
+          }else if(res[i].complete_succession_count >= constant.makeit_tier2_count && res[i].complete_succession_count < constant.makeit_tier3_count && res[i].cancel_count <= constant.makeit_in_cancel_count ){
             res[i].eligibility = 1;
             res[i].incentive_amount = constant.makeit_tier2;
-          }else if(res[i].complete_succession_count >= 12 && res[i].complete_succession_count < 15 && res[i].cancel_count <=3 ){
+          }else if(res[i].complete_succession_count >= constant.makeit_tier1_count && res[i].complete_succession_count < constant.makeit_tier2_count && res[i].cancel_count <= constant.makeit_in_cancel_count ){
             res[i].eligibility = 1;
             res[i].incentive_amount = constant.makeit_tier1;
           }else{
