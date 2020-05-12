@@ -5,9 +5,12 @@ var sql = require("../db.js");
 var Makeitincentive = function(makeitincentive) {
   this.eligibility       = makeitincentive.eligibility;
   this.makeit_id         = makeitincentive.makeit_id;
-  this.complete_succession_count  = makeitincentive.complete_succession_count;
+  this.complete_succession_count    = makeitincentive.complete_succession_count;
   this.cancel_count      = makeitincentive.cancel_count;
   this.incentive_amount  = makeitincentive.incentive_amount;
+  this.makeit_aftercancel_earnings  = makeitincentive.makeit_aftercancel_earnings;
+  this.makeit_earnings   = makeitincentive.makeit_earnings;
+  this.makeit_referral_earnings     = makeitincentive.makeit_referral_earnings;
   this.from_date         = makeitincentive.from_date;
   this.to_date           = makeitincentive.to_date;
 };
