@@ -3780,7 +3780,7 @@ Makeituser.makeit_incentives= async function makeit_incentives(req,result) {
 
       for(let i=0; i<res.length; i++){
         complete_succession_count = complete_succession_count + res[i].complete_succession_count;
-        cancel_order_count        = cancel_order_count + res[i].cancel_order_count;
+        cancel_order_count        = cancel_order_count + res[i].cancel_order_count ||0;
         if(res[i].dinner_count !=0){
           cycle_count++;
           product_count = product_count+res[i].dinner_count;
@@ -3795,11 +3795,40 @@ Makeituser.makeit_incentives= async function makeit_incentives(req,result) {
         }
       }
 
-      averageproduct_count = product_count/cycle_count;
-      
+
+      averageproduct_count = product_count/cycle_count || 0;
+      var complete_session_data = [];
+      var averageproduct_data = [];
+      var cancel_order_data = [];
+      /////////////
+      complete_succession_count =req.complete_session;
+
+      if(complete_succession_count < constant.makeit_tier1_count){
+        complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier1_count,"earned_price":0,"earn_msg":"Complete "+constant.makeit_tier1_count+" & earn RS."+constant.makeit_tier1,"next_bonus_at":constant.makeit_tier1_count,"next_bonus_msg":"Complete "+constant.makeit_tier1_count+" & earn RS."+constant.makeit_tier1});
+      }else if(complete_succession_count == constant.makeit_tier1_count){
+        complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier1_count,"earned_price":constant.makeit_tier1,"earn_msg":"congrats! you earned RS."+constant.makeit_tier1,"next_bonus_at":constant.makeit_tier2_count,"next_bonus_msg":"Complete "+constant.makeit_tier2_count+" & earn RS."+constant.makeit_tier2});
+      }else if(complete_succession_count > constant.makeit_tier1_count){
+        if(complete_succession_count < constant.makeit_tier2_count){
+          complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier2_count,"earned_price":constant.makeit_tier1,"earn_msg":"congrats! you earned RS."+constant.makeit_tier1,"next_bonus_at":constant.makeit_tier2_count,"next_bonus_msg":"Complete "+constant.makeit_tier2_count+" & earn RS."+constant.makeit_tier2});
+        }else if(complete_succession_count == constant.makeit_tier2_count){
+          complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier2,"earn_msg":"congrats! you earned RS."+constant.makeit_tier2,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"Complete "+constant.makeit_tier3_count+" & earn RS."+constant.makeit_tier3});
+        }else if(complete_succession_count > constant.makeit_tier2_count){
+          if(complete_succession_count < constant.makeit_tier3_count){
+            complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier2,"earn_msg":"congrats! you earned RS."+constant.makeit_tier2,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"Complete "+constant.makeit_tier3_count+" & earn RS."+constant.makeit_tier3});
+          }else if(complete_succession_count == constant.makeit_tier3_count){
+            complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier3,"earn_msg":"congrats! you earned RS."+constant.makeit_tier3,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"congrats! you earned RS."+constant.makeit_tier3});
+          }else{
+            complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier3,"earn_msg":"congrats! you earned RS."+constant.makeit_tier3,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"congrats! you earned RS."+constant.makeit_tier3});
+          }
+        }
+      }
+
+      averageproduct_data.push({"avg_product_per_cycle":averageproduct_count,"avg_product_msg":"incentive bonus at 4 products per cycle "});
+
+      cancel_order_data.push({"canceled_product_count":cancel_order_count,"cancel_product_msg":"less than "+constant.makeit_in_cancel_count+" orders canceled per week will give you a incentive bonus"});
 
       var Newarray = [];
-      Newarray.push({"complete_succession_count":complete_session_data,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count});
+      Newarray.push({"complete_succession_count":complete_session_data,"cancel_order_count":cancel_order_data,"averageproduct_count":averageproduct_data});
       
       let resobj = {
         success: true,
