@@ -132,7 +132,7 @@ const calculate = {
     makeit_in_unique_products:4,
 
     /////////////Makit Referral Incentive///////////////
-    makeit_referral_daycount_x:92,
+    makeit_referral_daycount_x:14,
     makeit_referral_live_session_percentage_y:60,
     makeit_referral_unique_products_z:4,
     makeit_referral_cancel_percentage_p:10,

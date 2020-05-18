@@ -698,7 +698,7 @@ exports.makeit_incentive_graph = function(req, res) {
 
 /////makeit referral incentive list///
 exports.makeit_referral_incentive_list = function(req, res) {
-  Order.makeit_referral_incentive_list(req.body, function(err, user) {
+  Makeituser.makeit_referral_incentive_list(req.body, function(err, user) {
     if (err) res.send(err);
     res.json(user);
   });
@@ -706,7 +706,7 @@ exports.makeit_referral_incentive_list = function(req, res) {
 
 /////makeit referral incentive graph///
 exports.makeit_referral_incentive_graph = function(req, res) {
-  Order.makeit_referral_incentive_graph(req.body, function(err, user) {
+  Makeituser.makeit_referral_incentive_graph(req.body, function(err, user) {
     if (err) res.send(err);
     res.json(user);
   });
