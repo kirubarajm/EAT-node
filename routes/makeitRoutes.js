@@ -80,5 +80,11 @@ app.route("/makeit/order/cancellist").post(middleware.checkToken,routesVersionin
 ////Makeit Live Session/////////////
 app.route("/makeit/makeitlivesession").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_live_session}));
 
+////////Makeit Incentive grpah//////////
+app.route("/makeit/incentivegraph").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_incentive_graph}));
+/////makeit referral incentive list///
+app.route("/makeit/referalincentivelist").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_referral_incentive_list}));
+/////makeit referral incentive graph///
+app.route("/makeit/referalincentivegraph").post(middleware.checkToken,routesVersioning({"1.0.0": makeituser.makeit_referral_incentive_graph}));
 
 }

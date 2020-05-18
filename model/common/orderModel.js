@@ -30,6 +30,7 @@ var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTracki
 var sendsms =  require("../common/smsModel");
 var MakeitIncentive = require("../../model/common/makeitincentiveModel.js");
 var orderactionlog = require("../../model/common/orderactionlog.js");
+var MakeitReferralIncentive = require("../../model/common/makeitreferralincentiveModel.js");
 
 
 
@@ -10491,13 +10492,37 @@ Order.makeit_incentive_report= async function makeit_incentive_report(req,inc_fr
   var inc_todate    = moment().subtract(1, "days").format("YYYY-MM-DD");
   var inc_fromdate  = moment().subtract(7, "days").format("YYYY-MM-DD");
 
-  var query="select makeit_id,if(SUM(complete_succession_count),SUM(complete_succession_count),0) as complete_succession_count, if(SUM(cancel_order_count),SUM(cancel_order_count),0) as cancel_count  from Makeit_daywise_report where date(date) between '"+inc_fromdate+"' and '"+inc_todate+"' group by makeit_id";
+  var query1="select makeit_id,if(SUM(complete_succession_count),SUM(complete_succession_count),0) as complete_succession_count, if(SUM(cancel_order_count),SUM(cancel_order_count),0) as cancel_count  from Makeit_daywise_report where date(date) between '"+inc_fromdate+"' and '"+inc_todate+"' and breakfast_count >="+constant.makeit_in_unique_products+" and lunch_count >="+constant.makeit_in_unique_products+" and dinner_count >="+constant.makeit_in_unique_products+"  group by makeit_id";
   //console.log("query---------->",query);
-  sql.query(query,async function(err, res) {
+  sql.query(query1,async function(err, res) {
     if (err) {
       //result(err, null);
     } else {      
       if (res.length !== 0) {
+        let makeitusers = res.map(users => users.makeit_id);
+
+        var getusersearningsquery = "select makeit_user_id as makeit_id,sum(case when orderstatus=6 then makeit_earnings end) as makeit_earnings,sum(case when orderstatus=7 and makeit_actual_preparing_time!='' and makeit_actual_preparing_time!='null' then makeit_earnings end) as after_cancel_earnings from Orders where  makeit_user_id IN("+makeitusers+") and date(created_at) between '"+inc_fromdate+"' and '"+inc_todate+"' group by makeit_user_id";
+        var getusersearnings = await query(getusersearningsquery);
+
+        for(let m=0; m<res.length; m++){
+          for(let j=0; j<getusersearnings.length; j++){
+            if(res[m].makeit_id == getusersearnings[j].makeit_id){
+              res[m].makeit_earnings = getusersearnings[j].makeit_earnings;
+            }            
+          }
+        }
+
+        var getusersreferralearningsquery = "select referred_makeit_id as makeit_id,sum(referrel_incentive_amount) as makeit_referral_earnings from Makeit_referral_history where from_date='"+inc_fromdate+"' and to_date='"+inc_todate+"' group by referred_makeit_id";
+        var getusersreferralearning = await query(getusersreferralearningsquery);
+
+        for(let k=0; k<res.length; k++){
+          for(let l=0; l<getusersreferralearning.length; l++){
+            if(res[k].makeit_id == getusersearnings[l].makeit_id){
+              res[k].makeit_referral_earnings = getusersreferralearning[l].makeit_referral_earnings;
+            }            
+          }
+        }
+
         for (let i = 0; i < res.length; i++) {
           res[i].from_date  = inc_fromdate;
           res[i].to_date    = inc_todate;
@@ -11553,6 +11578,51 @@ Order.moveitlog_rawreport= async function moveitlog_rawreport(req,result) {
     };
     result(null, resobj);
   }    
+};
+
+/////makeit referral ince tst///
+Order.makeit_daywise_referral_check= async function makeit_daywise_referral_check() {    
+  var getusersquery = "select ru.userid as referredby_userid,ru.name as referredby_username,ru.created_at,mu.userid,mu.name,mu.created_at as registered_on,min(lph.created_at) as unboarding_date,DATEDIFF(DATE_SUB(CURDATE(), INTERVAL 1 DAY), min(lph.created_at)) as date_diff from MakeitUser as mu left join Live_Product_History as lph on lph.makeit_id=mu.userid left join MakeitUser as ru on ru.referalcode=mu.referredby where mu.referredby IS NOT NULL and ru.userid!='' and (select DATEDIFF(DATE_SUB(CURDATE(), INTERVAL 1 DAY),min(lph.created_at)))=92 group by mu.userid order by ru.userid";
+  var getusers = await query(getusersquery);
+
+  if(getusers.length>0){
+    getusers = getusers.filter(function (e) {
+      return e.date_diff == constant.makeit_referral_daycount_x;
+    });
+  
+    let makeitusers = getusers.map(users => users.userid);
+    
+    var getdataquery="select makeit_id,if(SUM(complete_succession_count),SUM(complete_succession_count),0) as complete_succession_count, if(SUM(cancel_order_count),SUM(cancel_order_count),0) as cancel_count,if(SUM(cycle_count),SUM(cycle_count),0) as cycle_count,SUM(breakfast_completed+lunch_completed+dinner_completed+breakfast_canceled+lunch_canceled+dinner_canceled) as ordercount from Makeit_daywise_report where makeit_id IN("+makeitusers+") and date(date) between '"+getusers[0].unboarding_date+"' and DATE_SUB(DATE_SUB(CURDATE(), INTERVAL 1 DAY), INTERVAL 1 DAY) and breakfast_count >="+constant.makeit_referral_unique_products_z+" and lunch_count >="+constant.makeit_referral_unique_products_z+" and dinner_count >="+constant.makeit_referral_unique_products_z+" group by makeit_id";
+    var getdatas = await query(getdataquery);
+    
+    for(let k=0; k<getdatas.length; k++){
+      for(let l=0;l<getusers.length; l++){
+        if(getdatas[k].makeit_id ==getusers[l].user_id){
+          getdatas[k].referredby_userid = getusers[l].referredby_userid;
+          getdatas[k].from_date = getusers[l].unboarding_date;
+        }
+      }
+    }
+  
+    var to_date  = moment().subtract(1, "days").format("YYYY-MM-DD");
+    var makeitrefhistory = [];
+  
+    if(getdatas.length>0){
+      for(let i=0; i<getdatas.length; i++){      
+        if((getdatas[i].complete_succession_count >= ((constant.makeit_referral_daycount_x*3)*constant.makeit_referral_live_session_percentage_y)/100)){
+          if((getdatas[i].ordercount >= ((getdatas[i].ordercount)*constant.makeit_referral_cancel_percentage_p)/100)){
+            makeitrefhistory.push({"makeit_id":getdatas[i].makeit_id,"referred_makeit_id":getdatas[i].referredby_userid,"referrel_incentive_amount":constant.makeit_referral_amount,"from_date":getdatas[i].from_date,"to_date":getdatas[i].to_date});          
+          }
+        }
+      }
+    }
+  
+    if(makeitrefhistory.length>0){
+      for(let j=0; j<makeitrefhistory.length; j++){
+        var inserhistory = await MakeitReferralIncentive.createmakeitreferralincentive(makeitrefhistory[j]);
+      }    
+    } 
+  }  
 };
 
 module.exports = Order;

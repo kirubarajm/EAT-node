@@ -1047,7 +1047,9 @@ const makeitlog_everyday = new CronJob("0 0 2 * * *", async function() {
       var new_makeit_daywise_data = new MakeitDayWise(makeit_daywise_data[i]);
       await MakeitDayWise.createmakeitdaywise(new_makeit_daywise_data);
     }
-  } 
+  }
+  
+  await Order.makeit_daywise_referral_check();
 
   var cronLogReq={
     cron_id:7,

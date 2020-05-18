@@ -129,6 +129,14 @@ const calculate = {
     makeit_tier2:750,
     makeit_tier3:1000,
     makeit_in_cancel_count:3,
+    makeit_in_unique_products:4,
+
+    /////////////Makit Referral Incentive///////////////
+    makeit_referral_daycount_x:92,
+    makeit_referral_live_session_percentage_y:60,
+    makeit_referral_unique_products_z:4,
+    makeit_referral_cancel_percentage_p:10,
+    makeit_referral_amount:1000,
 
     ////////////////Moveit Cycle time//////////
     cycle1:4,

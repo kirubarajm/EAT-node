@@ -4024,5 +4024,207 @@ Makeituser.makeit_referral_incentives= async function makeit_referral_incentives
   });  
 };
 
+////Makeit Referral Incentive Graph/////////////
+Makeituser.makeit_referral_incentives= async function makeit_referral_incentives(req,result) {
+  var makeit_avg_list = "select cycle_count as complete_succession_count,cancel_order_count as cancel_order_count,dinner_count,lunch_count,breakfast_count from Makeit_daywise_report where (Date(date) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  AND makeit_id = '"+req.makeit_id+"'";
+ 
+  sql.query(makeit_avg_list, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      var complete_succession_count = 0;
+      var cancel_order_count        = 0;
+      var averageproduct_count      = 0;
+      var cycle_count               = 0;
+      var product_count             = 0;
+
+      for(let i=0; i<res.length; i++){
+        complete_succession_count = complete_succession_count + res[i].complete_succession_count;
+        cancel_order_count        = cancel_order_count + res[i].cancel_order_count ||0;
+        if(res[i].dinner_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].dinner_count;
+        }
+        if(res[i].lunch_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].lunch_count;
+        }
+        if(res[i].breakfast_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].breakfast_count;
+        }
+      }
+
+
+      averageproduct_count = product_count/cycle_count || 0;
+      var complete_session_data = [];
+      var averageproduct_data = [];
+      var cancel_order_data = [];
+      /////////////
+      complete_succession_count =req.complete_session;
+
+      if(complete_succession_count < constant.makeit_tier1_count){
+        complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier1_count,"earned_price":0,"earn_msg":"Complete "+constant.makeit_tier1_count+" & earn RS."+constant.makeit_tier1,"next_bonus_at":constant.makeit_tier1_count,"next_bonus_msg":"Complete "+constant.makeit_tier1_count+" & earn RS."+constant.makeit_tier1});
+      }else if(complete_succession_count == constant.makeit_tier1_count){
+        complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier1_count,"earned_price":constant.makeit_tier1,"earn_msg":"congrats! you earned RS."+constant.makeit_tier1,"next_bonus_at":constant.makeit_tier2_count,"next_bonus_msg":"Complete "+constant.makeit_tier2_count+" & earn RS."+constant.makeit_tier2});
+      }else if(complete_succession_count > constant.makeit_tier1_count){
+        if(complete_succession_count < constant.makeit_tier2_count){
+          complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier2_count,"earned_price":constant.makeit_tier1,"earn_msg":"congrats! you earned RS."+constant.makeit_tier1,"next_bonus_at":constant.makeit_tier2_count,"next_bonus_msg":"Complete "+constant.makeit_tier2_count+" & earn RS."+constant.makeit_tier2});
+        }else if(complete_succession_count == constant.makeit_tier2_count){
+          complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier2,"earn_msg":"congrats! you earned RS."+constant.makeit_tier2,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"Complete "+constant.makeit_tier3_count+" & earn RS."+constant.makeit_tier3});
+        }else if(complete_succession_count > constant.makeit_tier2_count){
+          if(complete_succession_count < constant.makeit_tier3_count){
+            complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier2,"earn_msg":"congrats! you earned RS."+constant.makeit_tier2,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"Complete "+constant.makeit_tier3_count+" & earn RS."+constant.makeit_tier3});
+          }else if(complete_succession_count == constant.makeit_tier3_count){
+            complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier3,"earn_msg":"congrats! you earned RS."+constant.makeit_tier3,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"congrats! you earned RS."+constant.makeit_tier3});
+          }else{
+            complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier3,"earn_msg":"congrats! you earned RS."+constant.makeit_tier3,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"congrats! you earned RS."+constant.makeit_tier3});
+          }
+        }
+      }
+
+      averageproduct_data.push({"avg_product_per_cycle":averageproduct_count,"avg_product_msg":"incentive bonus at 4 products per cycle "});
+
+      cancel_order_data.push({"canceled_product_count":cancel_order_count,"cancel_product_msg":"less than "+constant.makeit_in_cancel_count+" orders canceled per week will give you a incentive bonus"});
+
+      var Newarray = [];
+      Newarray.push({"complete_succession_count":complete_session_data,"cancel_order_count":cancel_order_data,"averageproduct_count":averageproduct_data});
+      
+      let resobj = {
+        success: true,
+        status : true,
+        result : Newarray
+      };
+      result(null, resobj);
+    }
+  });  
+};
+
+////Makeit Incentive Graph/////////////
+Makeituser.makeit_incentive_graph= async function makeit_incentive_graph(req,result) {
+  var makeit_avg_list = "select cycle_count as complete_succession_count,cancel_order_count as cancel_order_count,dinner_count,lunch_count,breakfast_count from Makeit_daywise_report where (Date(date) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')  AND makeit_id = '"+req.makeit_id+"'";
+ 
+  sql.query(makeit_avg_list, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      var complete_succession_count = 0;
+      var cancel_order_count        = 0;
+      var averageproduct_count      = 0;
+      var cycle_count               = 0;
+      var product_count             = 0;
+
+      for(let i=0; i<res.length; i++){
+        complete_succession_count = complete_succession_count + res[i].complete_succession_count;
+        cancel_order_count        = cancel_order_count + res[i].cancel_order_count ||0;
+        if(res[i].dinner_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].dinner_count;
+        }
+        if(res[i].lunch_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].lunch_count;
+        }
+        if(res[i].breakfast_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].breakfast_count;
+        }
+      }
+
+
+      averageproduct_count = product_count/cycle_count || 0;
+      var complete_session_data = [];
+      var averageproduct_data = [];
+      var cancel_order_data = [];
+      /////////////
+      complete_succession_count =req.complete_session;
+
+      if(complete_succession_count < constant.makeit_tier1_count){
+        complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier1_count,"earned_price":0,"earn_msg":"Complete "+constant.makeit_tier1_count+" & earn RS."+constant.makeit_tier1,"next_bonus_at":constant.makeit_tier1_count,"next_bonus_msg":"Complete "+constant.makeit_tier1_count+" & earn RS."+constant.makeit_tier1});
+      }else if(complete_succession_count == constant.makeit_tier1_count){
+        complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier1_count,"earned_price":constant.makeit_tier1,"earn_msg":"congrats! you earned RS."+constant.makeit_tier1,"next_bonus_at":constant.makeit_tier2_count,"next_bonus_msg":"Complete "+constant.makeit_tier2_count+" & earn RS."+constant.makeit_tier2});
+      }else if(complete_succession_count > constant.makeit_tier1_count){
+        if(complete_succession_count < constant.makeit_tier2_count){
+          complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier2_count,"earned_price":constant.makeit_tier1,"earn_msg":"congrats! you earned RS."+constant.makeit_tier1,"next_bonus_at":constant.makeit_tier2_count,"next_bonus_msg":"Complete "+constant.makeit_tier2_count+" & earn RS."+constant.makeit_tier2});
+        }else if(complete_succession_count == constant.makeit_tier2_count){
+          complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier2,"earn_msg":"congrats! you earned RS."+constant.makeit_tier2,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"Complete "+constant.makeit_tier3_count+" & earn RS."+constant.makeit_tier3});
+        }else if(complete_succession_count > constant.makeit_tier2_count){
+          if(complete_succession_count < constant.makeit_tier3_count){
+            complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier2,"earn_msg":"congrats! you earned RS."+constant.makeit_tier2,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"Complete "+constant.makeit_tier3_count+" & earn RS."+constant.makeit_tier3});
+          }else if(complete_succession_count == constant.makeit_tier3_count){
+            complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier3,"earn_msg":"congrats! you earned RS."+constant.makeit_tier3,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"congrats! you earned RS."+constant.makeit_tier3});
+          }else{
+            complete_session_data.push({"Completed_count":complete_succession_count,"max_count":constant.makeit_tier3_count,"earned_price":constant.makeit_tier3,"earn_msg":"congrats! you earned RS."+constant.makeit_tier3,"next_bonus_at":constant.makeit_tier3_count,"next_bonus_msg":"congrats! you earned RS."+constant.makeit_tier3});
+          }
+        }
+      }
+
+      averageproduct_data.push({"avg_product_per_cycle":averageproduct_count,"avg_product_msg":"incentive bonus at 4 products per cycle "});
+
+      cancel_order_data.push({"canceled_product_count":cancel_order_count,"cancel_product_msg":"less than "+constant.makeit_in_cancel_count+" orders canceled per week will give you a incentive bonus"});
+
+      var Newarray = [];
+      Newarray.push({"complete_succession_count":complete_session_data,"cancel_order_count":cancel_order_data,"averageproduct_count":averageproduct_data});
+      
+      let resobj = {
+        success: true,
+        status : true,
+        result : Newarray
+      };
+      result(null, resobj);
+    }
+  });  
+};
+
+/////makeit referral incentive list///
+Makeituser.makeit_referral_incentive_list= async function makeit_referral_incentive_list(req,result) {
+  var makeit_avg_list = "SELECT ors.*,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where orderstatus = 7 and cancel_by=2 and makeit_user_id='"+req.makeit_id+"' and (Date(ors.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"') group by ors.orderid order by ors.orderid desc";
+ 
+  sql.query(makeit_avg_list, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      for (let i = 0; i < res.length; i++) {       
+        if (res[i].items) {
+          var items = JSON.parse(res[i].items);
+          res[i].items = items;
+        }
+      }      
+
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  });    
+};
+
+/////makeit referral incentive graph///
+Makeituser.makeit_referral_incentive_graph= async function makeit_referral_incentive_graph(req,result) {
+  var makeit_avg_list = "SELECT ors.*,JSON_ARRAYAGG(JSON_OBJECT('quantity', ci.quantity,'productid', ci.productid,'price',ci.price,'gst',ci.gst,'product_name',pt.product_name)) AS items  from Orders as ors left join OrderItem ci ON ci.orderid = ors.orderid left join Product pt on pt.productid = ci.productid where orderstatus = 7 and cancel_by=2 and makeit_user_id='"+req.makeit_id+"' and (Date(ors.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"') group by ors.orderid order by ors.orderid desc";
+ 
+  sql.query(makeit_avg_list, async function(err, res) {
+    if(err){
+      result(null, err);
+    }else{
+      for (let i = 0; i < res.length; i++) {       
+        if (res[i].items) {
+          var items = JSON.parse(res[i].items);
+          res[i].items = items;
+        }
+      }      
+
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  });    
+};
+
 
 module.exports = Makeituser;

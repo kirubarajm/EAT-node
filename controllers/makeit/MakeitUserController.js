@@ -2,6 +2,7 @@
 
 var Makeituser = require("../../model/makeit/makeitUserModel.js");
 var Allocation = require("../../model/sales/allocationModel");
+var Order = require("../../model/common/orderModel.js");
 
 exports.list_all_user = function(req, res) {
   Makeituser.getAllUser(function(err, user) {
@@ -682,6 +683,30 @@ exports.makeit_order_cancellist = function(req, res) {
 ////Makeit Live Session/////////////
 exports.makeit_live_session = function(req, res) {
   Makeituser.makeit_live_session(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+////Weekly Makeit incentive graph/////////////
+exports.makeit_incentive_graph = function(req, res) {
+  Makeituser.makeit_incentive_graph(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+/////makeit referral incentive list///
+exports.makeit_referral_incentive_list = function(req, res) {
+  Order.makeit_referral_incentive_list(req.body, function(err, user) {
+    if (err) res.send(err);
+    res.json(user);
+  });
+};
+
+/////makeit referral incentive graph///
+exports.makeit_referral_incentive_graph = function(req, res) {
+  Order.makeit_referral_incentive_graph(req.body, function(err, user) {
     if (err) res.send(err);
     res.json(user);
   });
