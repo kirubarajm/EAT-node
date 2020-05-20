@@ -4149,5 +4149,490 @@ Makeituser.makeit_referral_incentive_graph= async function makeit_referral_incen
   });  
 };
 
+////Weekly Makeit earnings and incentives/////////////
+Makeituser.makeit_earnings_incentives= async function makeit_earnings_incentives(req,result) {
+  if(req.fromdate && req.todate && req.makeit_id){
+    var makeiteaningsquery = "SELECT if(SUM(makeit_earnings),SUM(makeit_earnings),0) as makeit_total_earnings FROM Orders WHERE (orderstatus=6 OR (orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL)) AND makeit_user_id IN("+req.makeit_id+") AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' ";
+    var makeitearnings = await query(makeiteaningsquery);
+
+    var makeitincentivequery = "SELECT (incentive_amount+makeit_referral_earnings) as makeit_total_incentive,eligibility FROM Makeit_incentive WHERE makeit_id IN("+req.makeit_id+") AND date(from_date)='"+req.fromdate+"' AND  date(to_date)='"+req.todate+"'";
+    var makeitincentive = await query(makeitincentivequery);
+    cur_date = moment().format("YYYY-MM-DD");
+
+    if(makeitincentive.length>0){
+      var incentive_eligibility = makeitincentive[0].eligibility;
+      var makeit_total_incentive = makeitincentive[0].makeit_total_incentive || 0;
+    }else{
+      if(req.todate > cur_date){
+        var incentive_eligibility = 2;
+      }else{
+        var incentive_eligibility = 0;
+      }      
+      var makeit_total_incentive = 0;
+    }
+
+    if(makeitearnings && makeitincentive){
+      var res =new Array();
+      res.push({'weekly_payouts':(makeitearnings[0].makeit_total_earnings+makeit_total_incentive),'makeit_earnings':makeitearnings[0].makeit_total_earnings,'makeit_incentive':makeit_total_incentive,'eligibility':incentive_eligibility});
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  }else{
+    let resobj = {
+      success: false,
+      status : false,
+      Messgae : 'Please check your post values'
+    };
+    result(null, resobj);
+  }
+};
+
+////Day wise Makeit earnings and incentives/////////////
+Makeituser.makeit_daywise_earnings= async function makeit_daywise_earnings(req,result) {
+  if(req.fromdate && req.todate && req.makeit_id){
+    var totalearningsquery = "SELECT date(created_at) as date, if(SUM(CASE WHEN (orderstatus=6 or (orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL)) THEN makeit_earnings END),SUM(CASE WHEN (orderstatus=6 or (orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL)) THEN makeit_earnings END),0)as total_earnings, COUNT(CASE WHEN (orderstatus=6 or (orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL)) THEN orderid END) as total_order_count, if(SUM(CASE WHEN orderstatus=6 THEN makeit_earnings END),SUM(CASE WHEN orderstatus=6 THEN makeit_earnings END),0) as completed_earnings, COUNT(CASE WHEN orderstatus=6 THEN orderid END) as completed_order_count, if(SUM(CASE WHEN orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL THEN makeit_earnings END),SUM(CASE WHEN orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL THEN makeit_earnings END),0) as canceled_earnings, COUNT(CASE WHEN orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL THEN orderid END) as canceled_order_count FROM Orders WHERE makeit_user_id IN("+req.makeit_id+") AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' ";
+    var totalearnings = await query(totalearningsquery);
+
+    var daywisearningsquery = "SELECT date(created_at) as date, if(SUM(CASE WHEN (orderstatus=6 or (orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL)) THEN makeit_earnings END),SUM(CASE WHEN (orderstatus=6 or (orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL)) THEN makeit_earnings END),0)as total_earnings, COUNT(CASE WHEN (orderstatus=6 or (orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL)) THEN orderid END) as total_order_count, if(SUM(CASE WHEN orderstatus=6 THEN makeit_earnings END),SUM(CASE WHEN orderstatus=6 THEN makeit_earnings END),0) as completed_earnings, COUNT(CASE WHEN orderstatus=6 THEN orderid END) as completed_order_count, if(SUM(CASE WHEN orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL THEN makeit_earnings END),SUM(CASE WHEN orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL THEN makeit_earnings END),0) as canceled_earnings, COUNT(CASE WHEN orderstatus=7 AND makeit_actual_preparing_time IS NOT NULL THEN orderid END) as canceled_order_count FROM Orders WHERE makeit_user_id IN("+req.makeit_id+") AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' group by date(created_at)";
+    var daywisearnings = await query(daywisearningsquery);
+
+    if(totalearnings && daywisearnings){
+      var res =new Array();
+      res.push({"total_earnings":totalearnings});
+      res.push({"daily_earnings":daywisearnings});
+      let resobj = {
+        success: true,
+        status : true,
+        result : res
+      };
+      result(null, resobj);
+    }
+  }else{
+    let resobj = {
+      success: false,
+      status : false,
+      Messgae : 'Please check your post values'
+    };
+    result(null, resobj);
+  }
+};
+
+////Weekly day wise visiability Makeit incentives/////////////
+Makeituser.visibility_makeit_incentive= async function visibility_makeit_incentive(req,result) {
+  if(req.fromdate && req.todate && req.makeit_id){
+    var getmakeitincentivequery = "SELECT incentive_amount,if(eligibility=1,'eligible','not eligible') as incentive_eligibility FROM Makeit_incentive WHERE makeit_id = "+req.makeit_id+" AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' ";
+    var getmakeitincentive = await query(getmakeitincentivequery);
+    cur_date = moment().format("YYYY-MM-DD");
+
+    if(getmakeitincentive.length==0){
+      var incentive = 0;
+      if(req.todate > cur_date){
+        var inc_eligibility = 2;
+      }else{
+        var inc_eligibility = 0;
+      }      
+    }else{
+      var incentive = getmakeitincentive[0].incentive_amount;
+      var inc_eligibility = getmakeitincentive[0].incentive_eligibility;
+    }
+
+    var incentivedataquery = "SELECT cycle_count as complete_succession_count,cancel_order_count as cancel_order_count,dinner_count,lunch_count,breakfast_count FROM Makeit_daywise_report WHERE makeit_id = '"+req.makeit_id+"' AND (Date(date) BETWEEN '"+req.fromdate+"' AND  '"+req.todate+"')";
+    var res = await query(incentivedataquery);
+
+    if(res){
+      var complete_succession_count = 0;
+      var cancel_order_count        = 0;
+      var averageproduct_count      = 0;
+      var cycle_count               = 0;
+      var product_count             = 0;
+
+      for(let i=0; i<res.length; i++){
+        complete_succession_count = complete_succession_count + res[i].complete_succession_count;
+        cancel_order_count        = cancel_order_count + res[i].cancel_order_count;
+        if(res[i].dinner_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].dinner_count;
+        }
+        if(res[i].lunch_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].lunch_count;
+        }
+        if(res[i].breakfast_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].breakfast_count;
+        }
+      }
+
+      averageproduct_count = product_count/cycle_count;
+
+      var Newarray = [];
+      Newarray.push({"complete_succession_count":complete_succession_count,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count,'incentive_eligibility':inc_eligibility,'incentive':incentive});
+     
+      let resobj = {
+        success: true,
+        status : true,
+        result : Newarray
+      };
+      result(null, resobj);
+    }
+  }else{
+    let resobj = {
+      success: false,
+      status : false,
+      Messgae : 'Please check your post values'
+    };
+    result(null, resobj);
+  }
+};
+
+////Day wise complete session count/////////////
+Makeituser.daywise_complete_session= async function daywise_complete_session(req,result) {
+  if(req.fromdate && req.todate && req.makeit_id){
+    var completesessionquery = "SELECT date(date) as date,complete_succession_count FROM Makeit_daywise_report WHERE makeit_id = "+req.makeit_id+" AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' GROUP BY date(date)";
+    var completesession = await query(completesessionquery);
+
+    if(completesession.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        result : completesession
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        status : false,
+        message: 'sorry no date found'
+      };
+      result(null, resobj);
+    }  
+  }else{
+    let resobj = {
+      success: false,
+      status : false,
+      messgae : 'Please check your post values'
+    };
+    result(null, resobj);
+  }
+};
+
+////Day wise average product/////////////
+Makeituser.daywise_avg_product= async function daywise_avg_product(req,result) {
+  if(req.fromdate && req.todate && req.makeit_id){
+    var avgproductquery = "SELECT date(date) as date,(breakfast_count+lunch_count+dinner_count)/3 as avgproduct FROM Makeit_daywise_report WHERE makeit_id = "+req.makeit_id+" AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' GROUP BY date(date)";
+    var avgproduct = await query(avgproductquery);
+
+    if(avgproduct.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        result : avgproduct
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        status : false,
+        message: 'sorry no date found'
+      };
+      result(null, resobj);
+    }  
+  }else{
+    let resobj = {
+      success: false,
+      status : false,
+      messgae : 'Please check your post values'
+    };
+    result(null, resobj);
+  }
+};
+
+////Day wise cancel orders/////////////
+Makeituser.daywise_cancelorders= async function daywise_cancelorders(req,result) {
+  if(req.fromdate && req.todate && req.makeit_id){
+    var cancelorderquery = "SELECT date(date) as date,cancel_order_count FROM Makeit_daywise_report WHERE makeit_id = "+req.makeit_id+" AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' GROUP BY date(date)";
+    var cancelorder = await query(cancelorderquery);
+
+    if(cancelorder.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        result : cancelorder
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        status : false,
+        message: 'sorry no date found'
+      };
+      result(null, resobj);
+    }  
+  }else{
+    let resobj = {
+      success: false,
+      status : false,
+      messgae : 'Please check your post values'
+    };
+    result(null, resobj);
+  }
+};
+
+////Makeit Order History/////////////
+Makeituser.makeit_order_history= async function makeit_order_history(req,result) {
+  if(req.fromdate && req.todate && req.makeit_id && req.orderstatus){
+    if(req.orderstatus==7){
+      var canceledbyquery= " cancel_by="+req.canceledby+" AND ";
+    }else{
+      var canceledbyquery= "";
+    }
+    var orderhistoryquery = "select us.name,ord.orderid,ord.price,GROUP_CONCAT(pro.product_name,' * ',oi.quantity SEPARATOR ',') as products,CASE WHEN orderstatus=6 THEN 'completed' WHEN orderstatus=7 AND cancel_by=0 THEN 'canceled by EAT' WHEN orderstatus=7 AND cancel_by=1 THEN 'canceled by customer' WHEN orderstatus=7 AND cancel_by=2 THEN 'canceled by you' END as status from Orders as ord left join User as us on us.userid=ord.userid left join OrderItem as oi on oi.orderid=ord.orderid left join Product as pro on pro.productid=oi.productid where "+canceledbyquery+" orderstatus="+req.orderstatus+" AND date(ord.created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' AND ord.makeit_user_id="+req.makeit_id+" GROUP BY ord.orderid";
+    var orderhistory = await query(orderhistoryquery);
+
+    if(orderhistory.length>0){
+      let resobj = {
+        success: true,
+        status : true,
+        result : orderhistory
+      };
+      result(null, resobj);
+    }else{
+      let resobj = {
+        success: true,
+        status : false,
+        message: 'sorry no date found'
+      };
+      result(null, resobj);
+    }  
+  }else{
+    let resobj = {
+      success: false,
+      status : false,
+      messgae : 'Please check your post values'
+    };
+    result(null, resobj);
+  }
+};
+
+////Referral Makeit Details/////////////
+Makeituser.referral_makeit_details= async function referral_makeit_details(req,result) {
+  if(req.makeit_id && req.fromdate && req.todate){
+    var getmakeitonboardquery = "select date(created_at) as onboarded,makeit_id from Live_Product_History where makeit_id="+req.makeit_id+" ORDER BY created_at LIMIT 1";
+    var getmakeitonboard = await query(getmakeitonboardquery);
+
+    req.onboarded = getmakeitonboard[0].onboarded;
+    req.day14 = moment(req.onboarded, "YYYY-MM-DD").add(14, 'days').format("YYYY-MM-DD");
+    cur_date = moment().format("YYYY-MM-DD");
+   
+    var getmakeitincentivequery = "SELECT referrel_incentive_amount FROM Makeit_referral_history WHERE makeit_id = "+req.makeit_id+" AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' ";
+    var getmakeitincentive = await query(getmakeitincentivequery);
+
+    if(getmakeitincentive.length==0){
+      var incentive = 0;
+      if(req.day14 > cur_date){
+        var inc_eligibility = 2;
+      }else{
+        var inc_eligibility = 0;
+      }      
+    }else{
+      var incentive = getmakeitincentive[0].referrel_incentive_amount ||0;
+      if(getmakeitincentive[0].referrel_incentive_amount>0){
+        var inc_eligibility = 1;
+      }else{
+        var inc_eligibility = 0;
+      }
+    }
+
+    var incentivedataquery = "SELECT complete_succession_count,cancel_order_count,dinner_count,lunch_count,breakfast_count FROM Makeit_daywise_report WHERE makeit_id = '"+req.makeit_id+"' AND (Date(date) BETWEEN '"+req.onboarded+"' AND  '"+req.day14+"')";
+    var res = await query(incentivedataquery);
+
+    if(res){
+      var complete_succession_count = 0;
+      var cancel_order_count        = 0;
+      var averageproduct_count      = 0;
+      var cycle_count               = 0;
+      var product_count             = 0;
+
+      for(let i=0; i<res.length; i++){
+        complete_succession_count = complete_succession_count + res[i].complete_succession_count;
+        cancel_order_count        = cancel_order_count + res[i].cancel_order_count;
+        if(res[i].dinner_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].dinner_count;
+        }
+        if(res[i].lunch_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].lunch_count;
+        }
+        if(res[i].breakfast_count !=0){
+          cycle_count++;
+          product_count = product_count+res[i].breakfast_count;
+        }
+      }
+
+      averageproduct_count = product_count/cycle_count || 0;
+
+      var Newarray = [];
+      Newarray.push({"complete_succession_count":complete_succession_count,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count,'incentive_eligibility':inc_eligibility,'incentive':incentive,'onboard_on':req.onboarded,'14thday':req.day14,'homestar_id':req.makeit_id});
+     
+      let resobj = {
+        success: true,
+        status : true,
+        result : Newarray
+      };
+      result(null, resobj);
+    }
+  }else{
+    let resobj = {
+      success: false,
+      status : false,
+      Messgae : 'Please check your post values'
+    };
+    result(null, resobj);
+  }
+};
+
+//////Makeit Referral Earnings insert//////
+Makeituser.makeit_referral_incentive= async function makeit_referral_incentive(req,result) {
+  var makeitlistquery ="select mu.userid,date(lph.created_at) as onboard_on,DATE_SUB(CURDATE(),INTERVAL 1 DAY) as date14th,DATEDIFF(date(lph.created_at),DATE_SUB(CURDATE(),INTERVAL 1 DAY)) as date_diff, mu.referredby from MakeitUser as mu right join Live_Product_History as lph on lph.makeit_id=mu.userid  where DATEDIFF(date(lph.created_at),CURDATE())="+(constant.makeit_referral_daycount+1)+" AND mu.referredby IS NOT NULL AND mu.referredby!='' group by mu.userid";
+  //console.log("makeitlistquery-->",makeitlistquery);
+  var makeitlist = await query(makeitlistquery);
+  if(makeitlist.length>0){
+    for(let h=0; h<makeitlist.length; h++){
+      var incentivedataquery = "SELECT complete_succession_count,cancel_order_count,dinner_count,lunch_count,breakfast_count,order_count FROM Makeit_daywise_report WHERE makeit_id = "+makeitlist[h].userid+" AND (Date(date) BETWEEN '"+makeitlist[h].onboard_on+"' AND  '"+makeitlist[h].date14th+"')";
+      var res = await query(incentivedataquery);
+
+      if(res){
+        var complete_succession_count = 0;
+        var cancel_order_count        = 0;
+        var averageproduct_count      = 0;
+        var cycle_count               = 0;
+        var product_count             = 0;
+        var complete_order_count      = 0;
+  
+        for(let i=0; i<res.length; i++){
+          complete_succession_count = complete_succession_count + res[i].complete_succession_count;
+          cancel_order_count        = cancel_order_count + res[i].cancel_order_count;
+          if(res[i].dinner_count !=0){
+            cycle_count++;
+            product_count = product_count+res[i].dinner_count;
+          }
+          if(res[i].lunch_count !=0){
+            cycle_count++;
+            product_count = product_count+res[i].lunch_count;
+          }
+          if(res[i].breakfast_count !=0){
+            cycle_count++;
+            product_count = product_count+res[i].breakfast_count;
+          }
+          if(res[i].order_count !=0){
+            complete_order_count = complete_order_count+res[i].order_count;
+          }
+        }
+  
+        averageproduct_count = product_count/cycle_count;
+
+        var com_ses_y = (constant.makeit_referral_daycount_x*3)/complete_succession_count;
+
+        if((com_ses_y >= constant.makeit_referral_completesession_percentage_y) && (cancel_order_count <= constant.makeit_referral_cancelcount_z) && (averageproduct_count >= constant.makeit_referral_avg_product_p) && (complete_order_count >= constant.makeit_referral_ordercount_o)){
+          var getparantquery ="SELECT userid FROM MakeitUser WHERE referredby='"+makeitlist[h].referredby+"' ";
+          var getparant = await query(getparantquery);
+
+          var reffdata = [];
+          reffdata.push({"makeit_id":makeitlist[h].userid,'referred_makeit_id':getparant[0].userid,"referrel_incentive_amount":constant.makeit_referral_amount,"from_date":makeitlist[h].onboard_on,'to_date':makeitlist[h].date14th});
+
+        }
+      }
+    }
+  }
+
+  //////////Makeit Referral Incentive//////////////
+  for (let r = 0; r< reffdata.length; r++) {
+    var makeitreferral= await MakeitReferral.createmakeitreferral(reffdata[r]);
+  }
+};
+
+/////Makeit Referrals List///////////////
+Makeituser.referral_makeit_list= async function referral_makeit_list(req,result) {
+  if(req.makeit_id && req.fromdate && req.todate){
+    var getreferralquery = "SELECT referredby FROM MakeitUser WHERE userid="+req.makeit_id;
+    var getreferral = await query(getreferralquery);
+
+    var getreferrallistquery = "SELECT userid FROM MakeitUser WHERE referredby='"+getreferral[0].referredby+"' AND userid NOT IN("+req.makeit_id+") AND date(created_at)<='"+req.todate+"' ORDER BY userid DESC";
+    var getreferrallist = await query(getreferrallistquery);
+
+    var Newarray = [];
+    var weeklyincentivequery = "SELECT makeit_referral_earnings FROM Makeit_incentive WHERE makeit_id="+req.makeit_id+" AND date(from_date)='"+req.fromdate+"' AND date(to_date)='"+req.todate+"' ";
+    var weeklyincentive = await query(weeklyincentivequery);
+
+    if(weeklyincentive.length>0){
+      var weekly_incentive = weeklyincentive[0].makeit_referral_earnings || 0;
+    }else{
+      var weekly_incentive = 0;
+    }
+    
+    if(getreferrallist.length>0){
+      //var referral_list = new Array;
+      for(let i=0; i<getreferrallist.length; i++){
+        //referral_list.push(getreferrallist[i].userid);
+        var getmakeitonboardquery = "select date(lph.created_at) as onboarded,lph.makeit_id,mu.name from Live_Product_History as lph left join MakeitUser as mu on mu.userid=lph.makeit_id where lph.makeit_id="+getreferrallist[i].userid+" ORDER BY lph.created_at LIMIT 1";
+        var getmakeitonboard = await query(getmakeitonboardquery);
+
+        var onboarded_on = getmakeitonboard[0].onboarded;
+        var maturing_on  = moment(getmakeitonboard[0].onboarded, "YYYY-MM-DD").add(14, 'days').format("YYYY-MM-DD");
+        cur_date = moment().format("YYYY-MM-DD");
+
+        var getmakeitincentivequery = "SELECT SUM(referrel_incentive_amount) as referrel_incentive_amount FROM Makeit_referral_history WHERE referred_makeit_id = "+getreferrallist[i].userid+" AND date(created_at) BETWEEN '"+req.fromdate+"' AND '"+req.todate+"' ";
+        var getmakeitincentive = await query(getmakeitincentivequery);
+
+        if(getmakeitincentive.length==0){
+          var incentive = 0;
+          if(maturing_on > cur_date){
+            var inc_eligibility = 2;
+          }else{
+            var inc_eligibility = 0;
+          }         
+        }else{
+          var incentive = getmakeitincentive[0].referrel_incentive_amount ||0;
+          if(getmakeitincentive[0].referrel_incentive_amount>0){
+            var inc_eligibility = 1;
+          }else{
+            var inc_eligibility = 0;
+          }
+        }
+          
+          Newarray.push({"name":getmakeitonboard[0].name,"makeit_id":getreferrallist[i].userid,"onboard_on":onboarded_on,'maturing_on':maturing_on,'incentive':incentive,'eligiblity':inc_eligibility});
+      }
+      //console.log("referral_list -->",referral_list);
+
+      let resobj = {
+          success: true,
+          status : true,
+          weekly_incentive: weekly_incentive,
+          result : Newarray
+        };
+        result(null, resobj);
+    }else{
+      let resobj = {
+        success: false,
+        status : false,
+        Messgae : 'sorry no record'
+      };
+      result(null, resobj);
+    }        
+  }else{
+    let resobj = {
+      success: false,
+      status : false,
+      Messgae : 'Please check your post values'
+    };
+    result(null, resobj);
+  }
+};
+
 
 module.exports = Makeituser;
