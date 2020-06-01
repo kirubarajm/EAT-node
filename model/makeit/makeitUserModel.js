@@ -402,7 +402,6 @@ Makeituser.update_makeit_users_bankaccount = function(user, result) {
     "' WHERE userid = '" +
     user.userid +
     "'";
-  console.log(query);
   sql.query(query, function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -712,7 +711,6 @@ Makeituser.appointment_info = function(makeit_id, result) {
 };
 
 Makeituser.all_order_list_bydate = function(req, result) {
-  console.log(req.body);
   sql.query(
     "select * from Orders WHERE ordertime BETWEEN '" +
       req.startdate +
@@ -864,7 +862,6 @@ Makeituser.get_admin_list_all_makeitusers = function(req, result) {
 
   
 
-  console.log(query);
   sql.query(query, function(err, res) {
     if (err) {
       console.log("error: ", err);
@@ -900,7 +897,6 @@ Makeituser.admin_get_unapproved_makeitlist = function(req, result) {
   if (req.search) {
     query = query + searchquery;
   }
-  console.log(query);
   sql.query(query, function(err, res) {
     if (err) {
       result(err, null);
@@ -1260,8 +1256,7 @@ Makeituser.read_a_cartdetails_makeitid = async function read_a_cartdetails_makei
 
 
             
-            
-
+          
   
             //refund coupon amount detection algorithm 
             if (req.rcid) {
