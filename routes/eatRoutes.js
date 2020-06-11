@@ -172,7 +172,7 @@ app.route("/eat/customersupport").post(routesVersioning({"1.0.0":eatuser.eat_cus
 app.route("/eat/tunnelorder").post(middleware.checkToken,routesVersioning({"1.0.0":orders.create_tunnel_order}));
 app.route("/eat/getXfactors").post(middleware.checkToken,routesVersioning({"1.0.0":orders.getXfactors_by_userid}));
 app.route("/eat/updatetunneluser").put(middleware.checkToken,routesVersioning({"1.0.0":eatuser.update_tunnel_byid}));
-app.route("/eat/getotp/:phone_number").get(middleware.checkToken,routesVersioning({"1.0.0":eatuser.get_otp_phone_number}));
+app.route("/eat/getotp/:phone_number").get(routesVersioning({"1.0.0":eatuser.get_otp_phone_number}));
 
 //////////Razorpay////////////////////
 app.route("/eat/payment/retry").post(middleware.checkToken,routesVersioning({"1.0.0":eatuser.payment_retry}));
