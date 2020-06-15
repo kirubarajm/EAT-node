@@ -2433,7 +2433,7 @@ Makeituser.makeit_user_forgot_password_send_otp = function makeit_user_forgot_pa
     var otpurl =
     "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
     newUser.phoneno +
-    "&senderId=EATHOM&message=<%23>Your EAT App OTP is " +
+    "&senderId=BEATDM&message=<%23>Your EAT App OTP is " +
     OTP +
     ". Note: Please DO NOT SHARE this OTP with anyone. " +
     newUser.otpcode +
@@ -2443,7 +2443,7 @@ Makeituser.makeit_user_forgot_password_send_otp = function makeit_user_forgot_pa
     var otpurl =
     "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
     newUser.phoneno +
-    "&senderId=EATHOM&message=Your EAT App OTP is " +
+    "&senderId=BEATDM&message=Your EAT App OTP is " +
     OTP +
     ". Note: Please DO NOT SHARE this OTP with anyone. ";
   }
