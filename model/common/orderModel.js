@@ -30,6 +30,7 @@ var PackageInvetoryTracking = require('../../model/makeit/packageInventoryTracki
 var sendsms =  require("../common/smsModel");
 var MakeitIncentive = require("../../model/common/makeitincentiveModel.js");
 var orderactionlog = require("../../model/common/orderactionlog.js");
+var IVR =  require("../common/ivrcallModel");
 
 
 
@@ -1184,6 +1185,7 @@ Order.OrderInsert = async function OrderInsert(req, orderitems,isMobile,isOnline
 
         if (req.payment_type==0) {
           sendsms.send_sms_makeit(orderid);
+          IVR.send_ivr_call_makeit(orderid);
         }
         let resobj = {
           success: true,
@@ -1443,6 +1445,7 @@ if(order_place.payment_status === 1){
               PushConstant.pageidMakeit_Order_Post
             );
             sendsms.send_sms_makeit(order_place.orderid);
+            IVR.send_ivr_call_makeit(order_place.orderid);
             let resobj = {
               success: true,
               status: true,

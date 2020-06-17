@@ -25,9 +25,9 @@ SMS.send_sms_makeit =async function send_sms_makeit(orderid, result) {
       var otpurl =
       "https://bulksmsapi.vispl.in/?username=tovootp1&password=tovootp1@123&messageType=text&mobile=" +
       phonenumber +
-      "&senderId=EATHOM&message=You have received an order from EAT. orderid "+orderid+" -. Please check EAT Home app for further details. ";
+      "&senderId=BEATDM&message=You have received an order from EAT. orderid "+orderid+" -. Please check EAT Home app for further details. ";
   
-      console.log(otpurl);
+     
       request({
           method: "GET",
           rejectUnauthorized: false,
