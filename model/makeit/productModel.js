@@ -492,15 +492,15 @@ Product.update_quantity_byid = function update_quantity_byid(req, result) {
                
                   var isEdit=true;
                   req.active_status=res1[0].active_status;
-                  if(res1[0].virtualkey===0&&res1[0].makeit_type===0){
-                    console.log("No ...");
-                    Product.Check_Package(req,isEdit,result);
-                  }else if(res1[0].virtualkey===0&&res1[0].makeit_type===1){
-                    console.log("Check_cover_package ...");
-                    Product.Check_cover_package(req,isEdit,result);
-                  }else{
+                  // if(res1[0].virtualkey===0&&res1[0].makeit_type===0){
+                  //   console.log("No ...");
+                  //   Product.Check_Package(req,isEdit,result);
+                  // }else if(res1[0].virtualkey===0&&res1[0].makeit_type===1){
+                  //   console.log("Check_cover_package ...");
+                  //   Product.Check_cover_package(req,isEdit,result);
+                  // }else{
                     Product.update_quantity_valid_package(req,isEdit,result);
-                  } 
+                  //} 
               }
             }
           );
@@ -593,15 +593,15 @@ Product.update_quantity_product_byid = async function update_quantity_product_by
 
             console.log("res1[0].makeit_type-->",res1[0].makeit_type)
             var isEdit=false;
-            if(res1[0].virtualkey===0&&res1[0].makeit_type===0){
-              console.log("No ...");
-              Product.Check_Package(req,isEdit,result);
-            }else if(res1[0].virtualkey===0&&res1[0].makeit_type===1){
-              console.log("Check_cover_package ...");
-              Product.Check_cover_package(req,isEdit,result);
-            }else{
+            // if(res1[0].virtualkey===0&&res1[0].makeit_type===0){
+            //   console.log("No ...");
+            //   Product.Check_Package(req,isEdit,result);
+            // }else if(res1[0].virtualkey===0&&res1[0].makeit_type===1){
+            //   console.log("Check_cover_package ...");
+            //   Product.Check_cover_package(req,isEdit,result);
+            // }else{
               Product.update_quantity_valid_package(req,isEdit,result);
-            } 
+           // } 
             
           } else if (res1[0].approved_status === 0) {
            
