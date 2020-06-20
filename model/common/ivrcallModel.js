@@ -39,7 +39,6 @@ IVR.send_ivr_call_makeit =async function send_ivr_call_makeit(orderid, result) {
         'Accept-Language':'en_US'
       };
 
-      console.log("makeit callform",form);
       request.post({headers: headers, url: url, json: form, method: 'POST'},async function (error,response, body) {
         if (error) {
             console.log("error: ", err);
