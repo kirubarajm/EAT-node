@@ -4007,9 +4007,9 @@ Makeituser.makeit_incentive_graph= async function makeit_incentive_graph(req,res
         }
       }
 
-      averageproduct_data.push({"avg_product_per_cycle":averageproduct_count,"avg_product_msg":"incentive bonus at 4 products per cycle "});
+      averageproduct_data.push({"avg_product_per_cycle":averageproduct_count,"avg_product_msg":"incentive bonus at 4 products per cycle","max_count":constant.makeit_in_unique_products});
 
-      cancel_order_data.push({"canceled_product_count":cancel_order_count,"cancel_product_msg":"less than "+constant.makeit_in_cancel_count+" orders canceled per week will give you a incentive bonus"});
+      cancel_order_data.push({"canceled_product_count":cancel_order_count,"cancel_product_msg":"less than "+constant.makeit_in_cancel_count+" orders canceled per week will give you a incentive bonus","max_count":constant.makeit_in_cancel_count});
 
       var Newarray = [];
       Newarray.push({"complete_succession_count":complete_session_data,"cancel_order_count":cancel_order_data,"averageproduct_count":averageproduct_data});
@@ -4065,7 +4065,7 @@ Makeituser.makeit_referral_incentive_list= async function makeit_referral_incent
       }else{
         lastdate = moment(getreferrals[i].referralenddate).format("YYYY-MM-DD");
       }
-      Newarray.push({"userid":getreferrals[i].userid,"user_name":getreferrals[i].name,"unboarding_date":getreferrals[i].unboarding_date,"lastdate":lastdate,"complete_succession_count":complete_succession_count,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count});
+      Newarray.push({"userid":getreferrals[i].userid,"user_name":getreferrals[i].name,"unboarding_date":getreferrals[i].unboarding_date,"maturing_on":moment(getreferrals[i].referralenddate).format("YYYY-MM-DD") ,"lastdate":lastdate,"complete_succession_count":complete_succession_count,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count});
     }
     let resobj = {
       success: true,
@@ -4132,9 +4132,9 @@ Makeituser.makeit_referral_incentive_graph= async function makeit_referral_incen
         complete_session_data.push({"Completed_count":complete_succession_count,"max_count":final_succession_count,"earned_price":constant.makeit_referral_amount,"earn_msg":"Complete "+final_succession_count+" & earn RS."+constant.makeit_referral_amount,"next_bonus_at":final_succession_count,"next_bonus_msg":"you have achieved your best!"});
       }
 
-      averageproduct_data.push({"avg_product_per_cycle":averageproduct_count,"avg_product_msg":"incentive bonus at "+constant.makeit_referral_unique_products_z+" products per cycle "});
+      averageproduct_data.push({"avg_product_per_cycle":averageproduct_count,"avg_product_msg":"incentive bonus at "+constant.makeit_referral_unique_products_z+" products per cycle","max_count":constant.makeit_referral_unique_products_z});
 
-      cancel_order_data.push({"canceled_product_count":cancel_percentage_count,"cancel_product_msg":"less than "+constant.makeit_referral_cancel_percentage_p+" % of orders canceled in your referral peroied"});
+      cancel_order_data.push({"canceled_product_count":cancel_percentage_count,"cancel_product_msg":"less than "+constant.makeit_referral_cancel_percentage_p+" % of orders canceled in your referral peroied","max_count":constant.makeit_referral_cancel_percentage_p});
 
       var Newarray = [];
       Newarray.push({"complete_succession_count":complete_session_data,"cancel_order_count":cancel_order_data,"averageproduct_count":averageproduct_data});
@@ -4421,9 +4421,9 @@ Makeituser.makeit_order_history= async function makeit_order_history(req,result)
 ////Referral Makeit Details/////////////
 Makeituser.referral_makeit_details= async function referral_makeit_details(req,result) {
   if(req.makeit_id && req.fromdate && req.todate){
-    var getmakeitonboardquery = "select date(created_at) as onboarded,makeit_id from Live_Product_History where makeit_id="+req.makeit_id+" ORDER BY created_at LIMIT 1";
+    var getmakeitonboardquery = "select date(lph.created_at) as onboarded,lph.makeit_id,mu.name from Live_Product_History as lph left join MakeitUser as mu on mu.userid=lph.makeit_id where lph.makeit_id="+req.makeit_id+" ORDER BY lph.created_at LIMIT 1";
     var getmakeitonboard = await query(getmakeitonboardquery);
-
+    
     req.onboarded = getmakeitonboard[0].onboarded;
     req.day14 = moment(req.onboarded, "YYYY-MM-DD").add(14, 'days').format("YYYY-MM-DD");
     cur_date = moment().format("YYYY-MM-DD");
@@ -4476,8 +4476,9 @@ Makeituser.referral_makeit_details= async function referral_makeit_details(req,r
 
       averageproduct_count = product_count/cycle_count || 0;
 
+      var mess = getmakeitonboard[0].name+"’s performance will be reviewed for "+req.day14+" days from "+req.onboarded+" to decide your earning out of this referral!";
       var Newarray = [];
-      Newarray.push({"complete_succession_count":complete_succession_count,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count,'incentive_eligibility':inc_eligibility,'incentive':incentive,'onboard_on':req.onboarded,'14thday':req.day14,'homestar_id':req.makeit_id});
+      Newarray.push({"complete_succession_count":complete_succession_count,"cancel_order_count":cancel_order_count,"averageproduct_count":averageproduct_count,'incentive_eligibility':inc_eligibility,'incentive':incentive,'onboard_on':req.onboarded,'14thday':req.day14,'homestar_id':req.makeit_id,"homestar_name":getmakeitonboard[0].name,"message":mess});
      
       let resobj = {
         success: true,
