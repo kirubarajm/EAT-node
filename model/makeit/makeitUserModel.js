@@ -784,6 +784,7 @@ Makeituser.orderstatusbyorderid = async function(req, result) {
 Makeituser.get_admin_list_all_makeitusers = function(req, result) {
   req.appointment_status = req.appointment_status || "all";
   req.virtualkey = req.virtualkey;
+  // req.ka_status = req.virtualkey;
 
   //    rsearch = req.search || ''
 
@@ -796,14 +797,19 @@ Makeituser.get_admin_list_all_makeitusers = function(req, result) {
   }
 
   if(req.appointment_status!=="all"){
-    if(query.toLowerCase().includes('where')) query =query +" and mk.appointment_status  = '" + req.appointment_status+"'"
-    else query =query +" where mk.appointment_status  = '" + req.appointment_status+"'"
+    if(query.toLowerCase().includes('where')) query =query +" and mk.appointment_status  = '" + req.appointment_status+"' and delete_status=0"
+    else query =query +" where mk.appointment_status  = '" + req.appointment_status+"' and delete_status=0"
   }
 
   if(req.virtualkey!=="all"){
     if(query.toLowerCase().includes('where'))
     query =query +" and mk.virtualkey  = '" + req.virtualkey+"'"
     else query =query +" where mk.virtualkey  = '" + req.virtualkey+"'"
+  }
+  if(req.ka_status){
+    if(query.toLowerCase().includes('where'))
+    query =query +" and mk.ka_status  = '" + req.ka_status+"'"
+    else query =query +" where mk.ka_status  = '" + req.ka_status+"'"
   }
 
   if(req.search){
@@ -860,7 +866,7 @@ Makeituser.get_admin_list_all_makeitusers = function(req, result) {
   //   query = query + " where " + searchquery;
   // }
 
-  
+  console.log(query);
 
   sql.query(query, function(err, res) {
     if (err) {
