@@ -1461,7 +1461,8 @@ QuickSearch.onStartAllCron = function onStartAllCron(){
       moveitlog_out1hr.start();
       moveitlog_in1hr.start();
       Package_tracking.start();
-      order_auto_assign_Change.start();
+      //Hide by Praveen//
+      //order_auto_assign_Change.start();
       moveitautologout_midnight.start();
       incomplete_order_relese_product_cron.start();
       quick_search_cron.start();

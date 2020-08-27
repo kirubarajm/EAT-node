@@ -1057,6 +1057,22 @@ exports.dunzo_order_delivery= function(req, res) {
   }
 };
 
+//dunzo vendor order list
+exports.dunzovendor_order_list= function(req, res) {
+  Order.dunzovendor_order_list(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });  
+};
+
+//dunzo order unassign
+exports.dunzo_order_unassign = function(req, res) {
+  Order.dunzo_order_unassign(req.body, function(err, result) {
+    if (err) res.send(err);
+    res.json(result);
+  });
+};
+
 //Dunzo zone cod orders
 exports.list_dunzo_zone_cod_orders_list = function(req, res) {
   Order.list_dunzo_zone_cod_orders_list_by_admin(req.body, function(err, user) {

@@ -8372,6 +8372,9 @@ Order.dunzo_order_delivery_by_admin = function dunzo_order_delivery_by_admin(req
             // await Order.insert_order_status(req); 
 
             // await Order.insert_force_delivery(req); 
+            if(!req.moveit_user_id){
+              req.moveit_user_id=0;
+            }
 
             sql.query("UPDATE Orders SET orderstatus = 6,moveit_actual_delivered_time = ? WHERE orderid = ? and moveit_user_id =?",[ order_delivery_time, req.orderid, req.moveit_user_id],async function(err, res) {
                 if (err) {
@@ -8408,6 +8411,96 @@ Order.dunzo_order_delivery_by_admin = function dunzo_order_delivery_by_admin(req
       }
     }
   );
+};
+
+Order.dunzovendor_order_list =async function dunzovendor_order_list(req, result) {
+  if (req.order_status==1) {
+    var query = "Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and ors.delivery_vendor = 1 and (ors.orderstatus = 1 or ors.orderstatus = 2 or ors.orderstatus = 3) and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0"     
+  }else if(req.order_status==5){
+    var query = "Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and ors.delivery_vendor = 1 and (ors.orderstatus = "+req.order_status+") and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0"  
+  }else if(req.order_status==6){
+    var query = "Select mk.makeithub_id,mk.zone,mk.brandname,mk.virtualkey,us.name,ors.orderid,ors.ordertime,ors.created_at,ors.cus_address,ors.makeit_user_id,ors.orderstatus,ors.ordertype,ors.original_price,ors.price,ors.userid,mk.lat as makeit_lat,mk.lon as makeit_lon from Orders as ors left join User as us on ors.userid=us.userid left join MakeitUser as mk on mk.userid=ors.makeit_user_id where ors.moveit_user_id = 0 and ors.delivery_vendor = 1 and (ors.orderstatus = "+req.order_status+") and ors.lock_status=0 and DATE(ors.ordertime) = CURDATE() and ors.payment_status!=2 and ors.cancel_by = 0"  
+  }else{ 
+    let resobj = {
+      success: true,
+      status:false,
+      message: "sorry no data"
+    };
+    result(null, resobj);
+   }
+  sql.query(query, function(err, res1) {
+    if (err) {
+      result(err, null);
+    } else {
+      if(res1.length>0){
+        let resobj = {
+          success: true,
+          status:true,
+          result: res1
+        };
+        result(null, resobj);
+      }else{
+        let resobj = {
+          success: true,
+          status:false,
+          message: "sorry no data"
+        };
+        result(null, resobj);
+      }      
+    }
+  });   
+};
+
+Order.dunzo_order_unassign =async function dunzo_order_unassign(req, result) {
+  var query = "select * from Orders where orderid="+req.orderid;
+  sql.query(query,async function(err, res1) {
+    if (err) {
+      result(err, null);
+    } else {   
+      if(res1.length>0){
+        if(res1[0].orderstatus<6){
+          if(res1[0].orderstatus==5){
+            var updatequery = "update Orders set orderstatus=3,delivery_vendor=0 where orderid="+req.orderid;
+          }else{
+            var updatequery = "update Orders set delivery_vendor=0 where orderid="+req.orderid;
+          }     
+          sql.query(updatequery,async function(err, res2) {
+            if (err) {
+              result(err, null);
+            }else{  
+              let resobj = {
+                success: true,
+                status: true,
+                message:"order unassigned successfully"
+              };
+              result(null, resobj);
+            }
+          });
+        }else if(res1[0].orderstatus==5){
+          let resobj = {
+            success: true,
+            status: false,
+            message:"sorry order already pickedup"
+          };
+          result(null, resobj);
+        }else if(res1[0].orderstatus==6){
+          let resobj = {
+            success: true,
+            status: false,
+            message:"sorry order already delivered"
+          };
+          result(null, resobj);
+        }else if(res1[0].orderstatus==7){
+          let resobj = {
+            success: true,
+            status: false,
+            message:"sorry order already calceled"
+          };
+          result(null, resobj);
+        }        
+      }      
+    }
+  });     
 };
 
 ////Average Order Value////
