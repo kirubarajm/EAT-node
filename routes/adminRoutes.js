@@ -249,6 +249,9 @@ app.route("/admin/dunzoorderlist").post(routesVersioning({"1.0.0":orders.list_du
 app.route("/admin/dunzoorder/assign").post(routesVersioning({"1.0.0":orders.dunzo_order_assign}));
 app.route("/admin/dunzoorder/delivery").post(routesVersioning({"1.0.0":orders.dunzo_order_delivery}));
 
+app.route("/admin/dunzovendor/orderlist").post(routesVersioning({"1.0.0":orders.dunzovendor_order_list}));
+app.route("/admin/dunzoorder/unassign").post(routesVersioning({"1.0.0":orders.dunzo_order_unassign}));
+
 ////KPI Dashboard Reports Home Successtion rate////
 app.route("/admin/reports/homesuccesstionrate").post(routesVersioning({"1.0.0":makeituser.homesuccesstionrate_report}));
 ////KPI Dashboard Reports Moveit Avg First and Last Miles////
